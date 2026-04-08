@@ -91,8 +91,6 @@ Para manter a consistência do código e melhorar a produtividade da equipe, ins
 
 ---
 
----
-
 ## Padrões e Convenções
 
 Para manter a base de código organizada, legível e consistente entre toda a equipe:
