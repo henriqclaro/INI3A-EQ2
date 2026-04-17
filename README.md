@@ -5,19 +5,38 @@
 
 Antes de iniciar, certifique-se de ter os seguintes itens instalados:
 
-* **Node.js**
+* **Node.js:**
   Necessário para rodar o projeto.
   > https://nodejs.org/ (recomenda-se a versão LTS)
+  >
+  > ...ou no Terminal do Windows:
+  > ```bash
+  > winget install -e --id OpenJS.NodeJS.LTS
+  > ```
 
-* **Git**
+* **Git:**
   Utilizado para versionamento de código.
   > https://git-scm.com/downloads
+  >
+  > ...ou no Terminal do Windows:
+  > ```bash
+  > winget install -e --id Git.Git
+  > ```
+
+* **GitHub CLI:**
+  Utilizado para o login com GitHub.
+  > https://cli.github.com/
+  >
+  > ...ou no Terminal do Windows:
+  > ```bash
+  > winget install -e --id GitHub.cli
+  > ```
 
 * **Expo Go**
   Aplicativo para testar o projeto no celular:
 
-  * Android: Play Store
-  * iOS: App Store
+  * Android: [Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent&hl=pt_BR)
+  * iOS: [App Store](https://apps.apple.com/br/app/expo-go/id982107779)
 
 ---
 
@@ -25,31 +44,43 @@ Antes de iniciar, certifique-se de ter os seguintes itens instalados:
 
 No terminal, execute os passos abaixo na ordem:
 
-### 1. Clone o repositório
+### 1. Lembre-se de fazer login no git
+* Rode e siga os passos para fazer login com o navegador:
+  ```bash
+  gh auth login
+  ```
+
+* Se não fizer login diretamente, configure com o git: 
+  ```bash
+  git config --global user.name "Seu Nome do GitHub"
+  git config --global user.email "seu.email@unesp.br"
+  ```
+
+### 2. Clone o repositório
 
 ```bash
-git clone [URL_DO_REPOSITORIO]
+git clone https://github.com/AnaClara1506/INI3A-EQ2.git
 ```
 
-### 2. Acesse o diretório do projeto
+### 3. Acesse o diretório do projeto
 
 ```bash
-cd meu-confeito
+cd .\INI3A-EQ2\src\front\meu-confeito\
 ```
 
-### 3. Instale as dependências
+### 4. Instale as dependências
 
 ```bash
 npm install
 ```
 
-### 4. Inicie o servidor de desenvolvimento
+### 5. Inicie o servidor de desenvolvimento
 
 ```bash
 npx expo start
 ```
 
-### 5. Execute no celular
+### 6. Execute no celular
 
 * **Android:**
   Abra o **Expo Go** e escaneie o QR Code exibido no terminal.
@@ -65,29 +96,29 @@ Para manter a consistência do código e melhorar a produtividade da equipe, ins
 
 ### Extensões recomendadas
 
-* ✅ **Auto Rename Tag** (`formulahendry.auto-rename-tag`)
-  Renomeia automaticamente tags pareadas (HTML/JSX).
-
-* ✅ **Color Highlight** (`naumovs.color-highlight`)
-  Destaca cores diretamente no código.
-
 * ⚠️ **ESLint** (`dbaeumer.vscode-eslint`) *(Obrigatório)*
   Identifica e reporta padrões incorretos no código.
 
 * ⚠️ **Prettier - Code formatter** (`esbenp.prettier-vscode`) *(Obrigatório)*
   Formata o código automaticamente.
 
-* ✅ **ES7+ React/Redux/React-Native snippets** (`dsznajder.es7-react-js-snippets`)
-  Atalhos para criação rápida de componentes.
-
 * ⚠️ **React Native Tools** (`msjsdiag.vscode-react-native`) *(Obrigatório)*
   Suporte completo para desenvolvimento React Native.
+
+* ⚠️ **JavaScript and TypeScript Nightly** (`ms-vscode.vscode-typescript-next`) *(Obrigatório)*
+  Suporte atualizado para JavaScript e TypeScript.
 
 * ✅ **Error Lens** (`usernamehw.errorlens`)
   Exibe erros diretamente na linha do código.
 
-* ⚠️ **JavaScript and TypeScript Nightly** (`ms-vscode.vscode-typescript-next`) *(Obrigatório)*
-  Suporte atualizado para JavaScript e TypeScript.
+* ✅ **ES7+ React/Redux/React-Native snippets** (`dsznajder.es7-react-js-snippets`)
+  Atalhos para criação rápida de componentes.
+
+* ✅ **Auto Rename Tag** (`formulahendry.auto-rename-tag`)
+  Renomeia automaticamente tags pareadas (HTML/JSX).
+
+* ✅ **Color Highlight** (`naumovs.color-highlight`)
+  Destaca cores diretamente no código.
 
 ---
 
