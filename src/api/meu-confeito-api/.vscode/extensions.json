@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "formulahendry.auto-rename-tag",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "mikestead.dotenv",
+    "ExpressSnippets.vscode-express-snippets",
+    "christian-kohler.npm-intellisense",
+    "usernamehw.errorlens",
+    "ms-vscode.vscode-typescript-next"
+  ]
+}
