@@ -1,4 +1,4 @@
-const unicornPlugin = require('eslint-plugin-unicorn');
+const checkFilePlugin = require('eslint-plugin-check-file');
 const tsEslintPlugin = require('@typescript-eslint/eslint-plugin');
 const tsParser = require('@typescript-eslint/parser');
 const globals = require('globals');
@@ -22,20 +22,25 @@ module.exports = [
       },
     },
     plugins: {
-      unicorn: unicornPlugin.default || unicornPlugin,
+      'check-file': checkFilePlugin,
       '@typescript-eslint': tsEslintPlugin,
     },
     rules: {
-      'unicorn/filename-case': [
+      'check-file/filename-naming-convention': [
         'error',
         {
-          cases: {
-            kebabCase: true,
-          },
-          ignore: ['eslint.config.js'],
+          '**/*.{js,ts}': 'KEBAB_CASE',
+        },
+        {
+          ignoreMiddleExtensions: true,
         },
       ],
-
+      'check-file/folder-naming-convention': [
+        'error',
+        {
+          'src/**/': 'KEBAB_CASE',
+        },
+      ],
       '@typescript-eslint/naming-convention': [
         'error',
         { selector: 'default', format: ['camelCase'] },
@@ -47,6 +52,19 @@ module.exports = [
           prefix: ['is', 'should', 'has', 'can', 'did', 'will'],
         },
         { selector: 'typeLike', format: ['PascalCase'] },
+      ],
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        {
+          prefer: 'type-imports',
+          fixStyle: 'inline-type-imports',
+        },
+      ],
+      '@typescript-eslint/no-misused-promises': [
+        'error',
+        {
+          checksVoidReturn: false,
+        },
       ],
 
       'no-console': 'warn',
