@@ -10,15 +10,75 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  ADMIN
+  BAKER
+  CUSTOMER
+
+  @@map("role")
+}
+
 model User {
-  id            String  @id @default(uuid())
-  name          String  @db.VarChar(100)
-  email         String  @unique
-  phone         String  @unique
-  password_hash String
-  provider_id   String?
-  role          String  @default("client") @db.VarChar(50)
-  is_active     Boolean @default(true)
+  id           String   @id @default(uuid())
+  name         String   @db.VarChar(100)
+  email        String   @unique
+  phone        String?  @unique
+  pfpUrl       String?  @map("profile_picture_url") @db.VarChar(255)
+  passwordHash String   @map("password_hash")
+  providerId   String?  @map("provider_id") // !(NULL) -> Login com Google
+  role         Role     @default(BAKER)
+  createdAt    DateTime @default(now()) @map("created_at")
+  isActive     Boolean  @default(true) @map("is_active")
+
+  recipes Recipe[]
 
   @@map("user")
+}
+
+model Ingredient {
+  id       String @id @default(uuid())
+  name     String @unique @db.VarChar(100)
+  category String @db.VarChar(50)
+
+  recipes RecipeIngredient[]
+
+  @@map("ingredient")
+}
+
+model Recipe {
+  id           String   @id @default(uuid())
+  userId       String?  @map("user_id")
+  parentId     String?  @map("parent_id")
+  title        String   @db.VarChar(100)
+  coverUrl     String?  @map("cover_image_url") @db.VarChar(255)
+  instructions Json     @db.JsonB
+  baseYield    Decimal  @map("base_yield") @db.Decimal(10, 2) // Rendimento
+  yieldUnit    String   @map("yield_unit") @db.VarChar(50) // Unidade de rendimento
+  isPublic     Boolean  @default(false) @map("is_public")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // NULL -> Receita Base (Parent):
+  user   User?   @relation(fields: [userId], references: [id])
+  parent Recipe? @relation("RecipeHierarchy", fields: [parentId], references: [id])
+
+  children Recipe[] @relation("RecipeHierarchy")
+
+  ingredients RecipeIngredient[]
+
+  @@index([userId])
+  @@map("recipe")
+}
+
+model RecipeIngredient {
+  recipeId        String  @map("recipe_id")
+  ingredientId    String  @map("ingredient_id")
+  baseQuantity    Decimal @map("base_quantity") @db.Decimal(10, 3) // Qtde base pro rendimento
+  measurementUnit String  @map("unit") @db.VarChar(30)
+  notes           String  @db.VarChar(255) // Estado do ingrediente
+
+  recipe     Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id])
+
+  @@id([recipeId, ingredientId])
+  @@map("recipe_ingredient")
 }
