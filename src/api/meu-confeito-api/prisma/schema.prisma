@@ -2,12 +2,14 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider   = "postgresql"
+  extensions = [postgis]
 }
 
 enum Role {
@@ -15,70 +17,225 @@ enum Role {
   BAKER
   CUSTOMER
 
-  @@map("role")
+  @@map("role_type")
+}
+
+enum RecipeStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  SUSPENDED
+
+  @@map("recipe_status")
+}
+
+enum InventoryMovement {
+  PURCHASE
+  PRODUCTION_USAGE
+  WASTE
+  MANUAL_ADJUSTMENT
+
+  @@map("inventory_movement_type")
 }
 
 model User {
-  id           String   @id @default(uuid())
-  name         String   @db.VarChar(100)
-  email        String   @unique
-  phone        String?  @unique
-  pfpUrl       String?  @map("profile_picture_url") @db.VarChar(255)
-  passwordHash String   @map("password_hash")
-  providerId   String?  @map("provider_id") // !(NULL) -> Login com Google
-  role         Role     @default(BAKER)
-  createdAt    DateTime @default(now()) @map("created_at")
-  isActive     Boolean  @default(true) @map("is_active")
+  id           String                               @id @default(uuid())
+  name         String                               @db.VarChar(100)
+  email        String                               @unique @db.VarChar(255)
+  phone        String?                              @unique @db.VarChar(20)
+  location     Unsupported("geometry(Point, 4326)")
+  pfpUrl       String?                              @map("profile_picture_url") @db.VarChar(255)
+  passwordHash String                               @map("password_hash") @db.VarChar(255)
+  providerId   String?                              @map("provider_id") // !==(NULL) -> Login com Google
 
-  recipes Recipe[]
+  role      Role     @default(BAKER)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
+  isActive  Boolean  @default(true) @map("is_active")
+
+  ingredients  Ingredient[]
+  recipes      Recipe[]
+  inventories  UserInventory[]
+  productions  Production[]
+  transactions InventoryTransaction[]
+  saves        UserSavedRecipe[]
+  reviews      RecipeReview[]
 
   @@map("user")
 }
 
 model Ingredient {
-  id       String @id @default(uuid())
-  name     String @unique @db.VarChar(100)
-  category String @db.VarChar(50)
+  id          String  @id @default(uuid())
+  name        String  @unique @db.VarChar(100)
+  description String? @db.Text
+  category    String  @db.VarChar(50)
 
-  recipes RecipeIngredient[]
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  // NULL -> Ingrediente Base
+  user User? @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+
+  recipes      RecipeIngredient[]
+  inventories  UserInventory[]
+  transactions InventoryTransaction[]
 
   @@map("ingredient")
 }
 
 model Recipe {
-  id           String   @id @default(uuid())
-  userId       String?  @map("user_id")
-  parentId     String?  @map("parent_id")
-  title        String   @db.VarChar(100)
-  coverUrl     String?  @map("cover_image_url") @db.VarChar(255)
-  instructions Json     @db.JsonB
-  baseYield    Decimal  @map("base_yield") @db.Decimal(10, 2) // Rendimento
-  yieldUnit    String   @map("yield_unit") @db.VarChar(50) // Unidade de rendimento
-  isPublic     Boolean  @default(false) @map("is_public")
-  createdAt    DateTime @default(now()) @map("created_at")
+  id           String  @id @default(uuid())
+  userId       String? @map("user_id")
+  parentId     String? @map("parent_id")
+  title        String  @db.VarChar(100)
+  coverUrl     String? @map("cover_image_url") @db.VarChar(255)
+  instructions Json    @db.JsonB
+  baseYield    Decimal @map("base_yield") @db.Decimal(10, 2) // Rendimento
+  yieldUnit    String  @map("yield_unit") @db.VarChar(50) // Unidade de rendimento
+
+  totalSaves    Int     @default(0) @map("total_saves")
+  averageRating Decimal @default(0.00) @map("average_rating") @db.Decimal(3, 2)
+  totalReviews  Int     @default(0) @map("total_reviews")
+
+  profitMargin    Decimal @default(30.00) @map("profit_margin_percent") @db.Decimal(5, 2) // Margem de lucro
+  overhead        Decimal @default(10.00) @map("overhead_percent") @db.Decimal(5, 2) // Custos fixos
+  prepTimeMinutes Int     @default(0) @map("prep_time_minutes")
+  hourlyLabor     Decimal @default(0.00) @map("hourly_labor_rate") @db.Decimal(10, 2)
+  packagingCost   Decimal @default(0.00) @db.Decimal(10, 2)
+
+  status    RecipeStatus @default(DRAFT)
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime     @default(now()) @map("updated_at") @db.Timestamptz(3)
 
   // NULL -> Receita Base (Parent):
-  user   User?   @relation(fields: [userId], references: [id])
-  parent Recipe? @relation("RecipeHierarchy", fields: [parentId], references: [id])
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent Recipe? @relation("RecipeHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
 
   children Recipe[] @relation("RecipeHierarchy")
 
   ingredients RecipeIngredient[]
+  productions Production[]
+  tags        RecipeTag[]
+  saves       UserSavedRecipe[]
+  reviews     RecipeReview[]
 
   @@index([userId])
   @@map("recipe")
+}
+
+model Tag {
+  id   String @id @default(uuid())
+  name String @unique @db.VarChar(50)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  recipes RecipeTag[]
+
+  @@map("tag")
+}
+
+model RecipeTag {
+  recipeId String @map("recipe_id")
+  tagId    String @map("tag_id")
+
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([recipeId, tagId])
+  @@map("recipe_tag")
 }
 
 model RecipeIngredient {
   recipeId        String  @map("recipe_id")
   ingredientId    String  @map("ingredient_id")
   baseQuantity    Decimal @map("base_quantity") @db.Decimal(10, 3) // Qtde base pro rendimento
-  measurementUnit String  @map("unit") @db.VarChar(30)
-  notes           String  @db.VarChar(255) // Estado do ingrediente
+  measurementUnit String  @map("measurement_unit") @db.VarChar(30)
+  notes           String? @db.VarChar(255) // Estado do ingrediente
 
   recipe     Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  ingredient Ingredient @relation(fields: [ingredientId], references: [id])
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
 
   @@id([recipeId, ingredientId])
   @@map("recipe_ingredient")
+}
+
+model UserInventory {
+  userId          String  @map("user_id")
+  ingredientId    String  @map("ingredient_id")
+  currentQuantity Decimal @default(0.000) @map("current_quantity") @db.Decimal(10, 3)
+  measurementUnit String  @map("measurement_unit") @db.VarChar(30)
+
+  packagePrice Decimal @default(0.0000) @map("package_price") @db.Decimal(10, 4)
+  packageSize  Decimal @default(1.000) @map("package_size") @db.Decimal(10, 3)
+  costUnit     Decimal @map("cost_per_unit") @db.Decimal(10, 4) // Padronizar no tratamento de dados
+
+  lastUpdated DateTime @default(now()) @map("last_updated") @db.Timestamptz(3)
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+
+  @@id([userId, ingredientId])
+  @@map("user_inventory")
+}
+
+model Production {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  recipeId       String   @map("recipe_id")
+  yieldProduced  Decimal  @map("yield_produced") @db.Decimal(10, 2) // Rendimento Gerado
+  productionDate DateTime @default(now()) @map("production_date") @db.Timestamptz(3)
+
+  user         User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe       Recipe                 @relation(fields: [recipeId], references: [id], onDelete: Restrict)
+  transactions InventoryTransaction[]
+
+  @@map("production")
+}
+
+// Livro-Razão :(
+model InventoryTransaction {
+  id           String  @id @default(uuid())
+  userId       String  @map("user_id")
+  ingredientId String  @map("ingredient_id")
+  productionId String? @map("production_id")
+
+  transactionType InventoryMovement @map("transaction_type")
+  quantityChanged Decimal           @map("quantity_changed") @db.Decimal(10, 3)
+  measurementUnit String            @map("measurement_unit") @db.VarChar(30)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ingredient Ingredient  @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  production Production? @relation(fields: [productionId], references: [id], onDelete: SetNull)
+
+  @@map("inventory_transaction")
+}
+
+model UserSavedRecipe {
+  userId   String   @map("user_id")
+  recipeId String   @map("recipe_id")
+  savedAt  DateTime @default(now()) @map("saved_at") @db.Timestamptz(3)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, recipeId])
+  @@map("user_saved_recipes")
+}
+
+model RecipeReview {
+  id       String @id @default(uuid())
+  userId   String @map("user_id")
+  recipeId String @map("recipe_id")
+  rating   Int // Travamento de 1 a 5 no tratamento de dados
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, recipeId])
+  @@map("recipe_review")
 }
