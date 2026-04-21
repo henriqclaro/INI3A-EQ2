@@ -22,6 +22,7 @@ CREATE TABLE "user" (
     "provider_id" TEXT,
     "role" "role_type" NOT NULL DEFAULT 'BAKER',
     "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
@@ -100,7 +101,7 @@ CREATE TABLE "user_inventory" (
     "measurement_unit" VARCHAR(30) NOT NULL,
     "package_price" DECIMAL(10,4) NOT NULL DEFAULT 0.0000,
     "package_size" DECIMAL(10,3) NOT NULL DEFAULT 1.000,
-    "cost_per_unit" DECIMAL(10,4) NOT NULL DEFAULT (package_price / package_size) STORED,
+    "cost_per_unit" DECIMAL(10,4) NOT NULL,
     "last_updated" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "user_inventory_pkey" PRIMARY KEY ("user_id","ingredient_id")
@@ -132,12 +133,12 @@ CREATE TABLE "inventory_transaction" (
 );
 
 -- CreateTable
-CREATE TABLE "user_saved_recipes" (
+CREATE TABLE "user_saved_recipe" (
     "user_id" TEXT NOT NULL,
     "recipe_id" TEXT NOT NULL,
     "saved_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "user_saved_recipes_pkey" PRIMARY KEY ("user_id","recipe_id")
+    CONSTRAINT "user_saved_recipe_pkey" PRIMARY KEY ("user_id","recipe_id")
 );
 
 -- CreateTable
@@ -213,10 +214,10 @@ ALTER TABLE "inventory_transaction" ADD CONSTRAINT "inventory_transaction_ingred
 ALTER TABLE "inventory_transaction" ADD CONSTRAINT "inventory_transaction_production_id_fkey" FOREIGN KEY ("production_id") REFERENCES "production"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "user_saved_recipes" ADD CONSTRAINT "user_saved_recipes_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "user_saved_recipe" ADD CONSTRAINT "user_saved_recipe_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "user_saved_recipes" ADD CONSTRAINT "user_saved_recipes_recipe_id_fkey" FOREIGN KEY ("recipe_id") REFERENCES "recipe"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "user_saved_recipe" ADD CONSTRAINT "user_saved_recipe_recipe_id_fkey" FOREIGN KEY ("recipe_id") REFERENCES "recipe"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "recipe_review" ADD CONSTRAINT "recipe_review_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;

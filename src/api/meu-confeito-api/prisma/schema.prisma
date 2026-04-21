@@ -221,7 +221,7 @@ model UserSavedRecipe {
   recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 
   @@id([userId, recipeId])
-  @@map("user_saved_recipes")
+  @@map("user_saved_recipe")
 }
 
 model RecipeReview {
