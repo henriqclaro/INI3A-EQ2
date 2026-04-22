@@ -64,9 +64,14 @@ git clone https://github.com/AnaClara1506/INI3A-EQ2.git
 
 ### 3. Acesse o diretório do projeto
 
-```bash
-cd .\INI3A-EQ2\src\front\meu-confeito\
-```
+* Front:
+  ```bash
+  cd .\INI3A-EQ2\src\front\meu-confeito-app\
+  ```
+* API:
+  ```bash
+  cd .\INI3A-EQ2\src\api\meu-confeito-api\
+  ```
 
 ### 4. Instale as dependências
 
