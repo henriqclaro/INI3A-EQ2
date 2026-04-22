@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "meu-confeito",
-    "slug": "meu-confeito",
+    "slug": "meu-confeito-app",
+    "name": "meu-confeito-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "meuconfeito",
+    "scheme": "meuconfeitoapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
