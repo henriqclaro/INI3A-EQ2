@@ -141,12 +141,17 @@ Para manter a base de código organizada, legível e consistente entre toda a eq
 ### Pastas
 
 * Use **kebab-case** (minúsculas com hífen)
-  Ex: `components`, `screens`, `utils`, `assets`
+  Ex: `components`, `screens`, `utils`, `controllers`, `routes`
 
-### Componentes e Telas
+### Arquivos Front-end (Componentes e Telas)
 
-* Use **PascalCase**
-  Ex: `PrimaryButton.tsx`, `LoginScreen.tsx`
+* Iniciais maiúsculas (**PascalCase**)
+  * Ex: `PrimaryButton.tsx`, `LoginScreen.tsx`
+
+### Arquivos Back-end (Expresss)
+
+* Tudo minúsculo, uso de pontos para separar a entidade e a sua camada/responsabilidade
+  * Ex: `app.ts`, `user.controller.ts`, `auth.middleware.ts`
 
 ### Variáveis e Funções
 
