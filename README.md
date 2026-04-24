@@ -186,7 +186,13 @@ npx expo start
 
 ## Desenvolvimento da API
 
-Rode o seguinte comando para abrir o gerenciador do Banco no navegador:
+Para gerar a pasta com os models necessários, rode:
+
+```bash
+npx prisma generate
+```
+
+Para abrir o gerenciador do Banco no navegador, rode:
 
 ```bash
 npx prisma studio
