@@ -2,7 +2,7 @@
 CREATE EXTENSION IF NOT EXISTS "postgis";
 
 -- CreateEnum
-CREATE TYPE "role_type" AS ENUM ('ADMIN', 'BAKER', 'CUSTOMER');
+CREATE TYPE "role_type" AS ENUM ('ADMIN', 'MODERATOR', 'BAKER', 'CUSTOMER');
 
 -- CreateEnum
 CREATE TYPE "recipe_status" AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED', 'SUSPENDED');
@@ -31,10 +31,11 @@ CREATE TABLE "user" (
 -- CreateTable
 CREATE TABLE "ingredient" (
     "id" TEXT NOT NULL,
-    "name" VARCHAR(100) NOT NULL,
+    "parent_id" TEXT,
+    "name" TEXT[],
     "description" TEXT,
     "category" VARCHAR(50) NOT NULL,
-    "created_by" TEXT,
+    "creator_id" TEXT,
     "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "ingredient_pkey" PRIMARY KEY ("id")
@@ -50,6 +51,7 @@ CREATE TABLE "recipe" (
     "instructions" JSONB NOT NULL,
     "base_yield" DECIMAL(10,2) NOT NULL,
     "yield_unit" VARCHAR(50) NOT NULL,
+    "status" "recipe_status" NOT NULL DEFAULT 'DRAFT',
     "total_saves" INTEGER NOT NULL DEFAULT 0,
     "total_reviews" INTEGER NOT NULL DEFAULT 0,
     "average_rating" DECIMAL(3,2) NOT NULL DEFAULT 0.00,
@@ -58,7 +60,6 @@ CREATE TABLE "recipe" (
     "prep_time_minutes" INTEGER NOT NULL DEFAULT 0,
     "hourly_labor_rate" DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     "packaging_cost" DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    "status" "recipe_status" NOT NULL DEFAULT 'DRAFT',
     "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -173,7 +174,10 @@ CREATE UNIQUE INDEX "tag_name_key" ON "tag"("name");
 CREATE UNIQUE INDEX "recipe_review_user_id_recipe_id_key" ON "recipe_review"("user_id", "recipe_id");
 
 -- AddForeignKey
-ALTER TABLE "ingredient" ADD CONSTRAINT "ingredient_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "ingredient" ADD CONSTRAINT "ingredient_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ingredient" ADD CONSTRAINT "ingredient_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "ingredient"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "recipe" ADD CONSTRAINT "recipe_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
