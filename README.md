@@ -79,27 +79,11 @@ git clone https://github.com/AnaClara1506/INI3A-EQ2.git
 npm install
 ```
 
-### 5. Inicie o servidor de desenvolvimento
-
-```bash
-npx expo start
-```
-
-### 6. Execute no celular
-
-* **Android:**
-  Abra o **Expo Go** e escaneie o QR Code exibido no terminal.
-
-* **iOS:**
-  Abra o app **Câmera**, escaneie o QR Code e abra no Expo Go.
-
----
-
 ## Ambiente de Desenvolvimento (VS Code)
 
 Para manter a consistência do código e melhorar a produtividade da equipe, instale as seguintes extensões:
 
-### Extensões recomendadas
+### Extensões Gerais
 
 * ⚠️ **ESLint** (`dbaeumer.vscode-eslint`) *(Obrigatório)*
   Identifica e reporta padrões incorretos no código.
@@ -107,16 +91,18 @@ Para manter a consistência do código e melhorar a produtividade da equipe, ins
 * ⚠️ **Prettier - Code formatter** (`esbenp.prettier-vscode`) *(Obrigatório)*
   Formata o código automaticamente.
 
-* ⚠️ **React Native Tools** (`msjsdiag.vscode-react-native`) *(Obrigatório)*
-  Suporte completo para desenvolvimento React Native.
-
 * ⚠️ **JavaScript and TypeScript Nightly** (`ms-vscode.vscode-typescript-next`) *(Obrigatório)*
   Suporte atualizado para JavaScript e TypeScript.
 
 * ✅ **Error Lens** (`usernamehw.errorlens`)
   Exibe erros diretamente na linha do código.
 
-* ✅ **ES7+ React/Redux/React-Native snippets** (`dsznajder.es7-react-js-snippets`)
+### Extensões Front-end
+  
+* ⚠️ **React Native Tools** (`msjsdiag.vscode-react-native`) *(Obrigatório)*
+  Suporte completo para desenvolvimento React Native.
+
+* ⚠️ **ES7+ React/Redux/React-Native snippets** (`dsznajder.es7-react-js-snippets`) *(Obrigatório)*
   Atalhos para criação rápida de componentes.
 
 * ✅ **Auto Rename Tag** (`formulahendry.auto-rename-tag`)
@@ -124,6 +110,20 @@ Para manter a consistência do código e melhorar a produtividade da equipe, ins
 
 * ✅ **Color Highlight** (`naumovs.color-highlight`)
   Destaca cores diretamente no código.
+
+### Extensões Back-end
+
+* ⚠️ **Express Snippets** (`ExpressSnippets.vscode-express-snippets`) *(Obrigatório)*
+  Atalhos práticos de código para o Express.
+
+* ⚠️ **Prisma** (`Prisma.prisma`) *(Obrigatório)*
+  Suporte oficial de sintaxe e formatação para o ORM Prisma.
+  
+* ✅ **DotENV** (`mikestead.dotenv`)
+  Suporte de sintaxe para arquivos de ambiente .env.
+
+* ✅ **npm Intellisense** (`christian-kohler.npm-intellisense`)
+  Autocompletar para importação de módulos npm.
 
 ---
 
@@ -159,11 +159,33 @@ Para manter a base de código organizada, legível e consistente entre toda a eq
   Ex: `API_URL`, `PRIMARY_COLOR`, `MAX_ATTEMPTS`
 
 ---
+## Desenvolvimento do Front
+
+Após o desenvolvimento no código, verifique as mudanças da seguinte maneira:
+
+### 1. Inicie o servidor de desenvolvimento
+
+```bash
+npx expo start
+```
+
+### 2. Execute no celular
+
+* **Android:**
+  Abra o **Expo Go** e escaneie o QR Code exibido no terminal.
+
+* **iOS:**
+  Abra o app **Câmera**, escaneie o QR Code e abra no Expo Go.
+
+---
 
 ## Desenvolvimento da API
 
-As instruções e dependências do **Back-end (Express)** serão adicionadas futuramente.
+Rode o seguinte comando para abrir o gerenciador do Banco no navegador:
 
+```bash
+npx prisma studio
+```
 ---
 
 ## Notas para a Equipe
