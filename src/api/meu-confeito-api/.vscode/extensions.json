@@ -6,6 +6,7 @@
     "mikestead.dotenv",
     "ExpressSnippets.vscode-express-snippets",
     "christian-kohler.npm-intellisense",
+    "Prisma.prisma",
     "usernamehw.errorlens",
     "ms-vscode.vscode-typescript-next"
   ]

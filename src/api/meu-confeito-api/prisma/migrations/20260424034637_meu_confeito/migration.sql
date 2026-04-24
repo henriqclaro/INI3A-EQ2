@@ -8,7 +8,7 @@ CREATE TYPE "role_type" AS ENUM ('ADMIN', 'BAKER', 'CUSTOMER');
 CREATE TYPE "recipe_status" AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED', 'SUSPENDED');
 
 -- CreateEnum
-CREATE TYPE "inventory_movement_type" AS ENUM ('PURCHASE', 'PRODUCTION_USAGE', 'WASTE', 'MANUAL_ADJUSTMENT');
+CREATE TYPE "inventory_movement_type" AS ENUM ('PURCHASE', 'PRODUCTION_USAGE', 'PRODUCTION_REVERSAL', 'WASTE', 'MANUAL_ADJUSTMENT');
 
 -- CreateTable
 CREATE TABLE "user" (
@@ -51,13 +51,13 @@ CREATE TABLE "recipe" (
     "base_yield" DECIMAL(10,2) NOT NULL,
     "yield_unit" VARCHAR(50) NOT NULL,
     "total_saves" INTEGER NOT NULL DEFAULT 0,
-    "average_rating" DECIMAL(3,2) NOT NULL DEFAULT 0.00,
     "total_reviews" INTEGER NOT NULL DEFAULT 0,
+    "average_rating" DECIMAL(3,2) NOT NULL DEFAULT 0.00,
     "profit_margin_percent" DECIMAL(5,2) NOT NULL DEFAULT 30.00,
     "overhead_percent" DECIMAL(5,2) NOT NULL DEFAULT 10.00,
     "prep_time_minutes" INTEGER NOT NULL DEFAULT 0,
     "hourly_labor_rate" DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    "packagingCost" DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    "packaging_cost" DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     "status" "recipe_status" NOT NULL DEFAULT 'DRAFT',
     "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -114,6 +114,7 @@ CREATE TABLE "production" (
     "recipe_id" TEXT NOT NULL,
     "yield_produced" DECIMAL(10,2) NOT NULL,
     "production_date" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "canceled_at" TIMESTAMPTZ(3),
 
     CONSTRAINT "production_pkey" PRIMARY KEY ("id")
 );
