@@ -16,7 +16,7 @@ CREATE TABLE "user" (
     "name" VARCHAR(100) NOT NULL,
     "email" VARCHAR(255) NOT NULL,
     "phone" VARCHAR(20),
-    "location" geometry(Point, 4326) NOT NULL,
+    "location" geometry(Point, 4326),
     "profile_picture_url" VARCHAR(255),
     "password_hash" VARCHAR(255) NOT NULL,
     "provider_id" TEXT,

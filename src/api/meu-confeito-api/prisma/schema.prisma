@@ -40,14 +40,14 @@ enum InventoryMovement {
 }
 
 model User {
-  id           String                               @id @default(uuid())
-  name         String                               @db.VarChar(100)
-  email        String                               @unique @db.VarChar(255)
-  phone        String?                              @unique @db.VarChar(20)
-  location     Unsupported("geometry(Point, 4326)")
-  pfpUrl       String?                              @map("profile_picture_url") @db.VarChar(255)
-  passwordHash String                               @map("password_hash") @db.VarChar(255)
-  providerId   String?                              @map("provider_id") // !==(NULL) -> Login com Google
+  id           String                                @id @default(uuid())
+  name         String                                @db.VarChar(100)
+  email        String                                @unique @db.VarChar(255)
+  phone        String?                               @unique @db.VarChar(20)
+  location     Unsupported("geometry(Point, 4326)")?
+  pfpUrl       String?                               @map("profile_picture_url") @db.VarChar(255)
+  passwordHash String                                @map("password_hash") @db.VarChar(255)
+  providerId   String?                               @map("provider_id") // !==(NULL) -> Login com Google
 
   role      Role     @default(BAKER)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
