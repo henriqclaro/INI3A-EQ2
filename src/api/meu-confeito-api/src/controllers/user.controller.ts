@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 import { prisma } from '../config/database';
 import { type RegisterUserRequest, resgisterUserSchema } from '../dtos/user.dto';
-import { AppError } from '../utils/app-error.util';
+import { AppError, ValidationError } from '../errors/app.error';
 
 export class UserController {
   async register(req: Request<any, any, RegisterUserRequest>, res: Response) {
@@ -45,10 +45,11 @@ export class UserController {
       return res.status(201).json(data);
     } catch (error: any) {
       if (error instanceof z.ZodError) {
-        return new AppError(400, `Invalid data: ${z.treeifyError(error)}`);
+        //return new AppError(400, `Invalid data: ${z.treeifyError(error)}`);
+        return new ValidationError('Invalid data.', [z.treeifyError(error)]);
       }
 
-      console.error('[UserController.create] Internal error: ', error);
+      console.error('[UserController.register] Internal error: ', error);
       return new AppError(500, 'Internal Server Error');
     }
   }
