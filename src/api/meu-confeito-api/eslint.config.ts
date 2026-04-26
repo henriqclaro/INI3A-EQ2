@@ -1,11 +1,16 @@
-const checkFilePlugin = require('eslint-plugin-check-file');
-const tsEslintPlugin = require('@typescript-eslint/eslint-plugin');
-const tsParser = require('@typescript-eslint/parser');
-const globals = require('globals');
+import tsEslintPlugin from '@typescript-eslint/eslint-plugin';
+import tsParser from '@typescript-eslint/parser';
+import checkFilePlugin from 'eslint-plugin-check-file';
+import { node } from 'globals';
+import path, { format } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-module.exports = [
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export default [
   {
-    ignores: ['node_modules/', 'dist/', 'build/', 'eslint.config.js'],
+    ignores: ['node_modules/', 'dist/', 'build/', 'eslint.config.ts'],
   },
 
   {
@@ -18,7 +23,7 @@ module.exports = [
       },
 
       globals: {
-        ...globals.node,
+        ...node,
       },
     },
     plugins: {
@@ -44,6 +49,7 @@ module.exports = [
       '@typescript-eslint/naming-convention': [
         'error',
         { selector: 'default', format: ['camelCase'] },
+        { selector: 'import', format: ['camelCase', 'UPPER_CASE'] },
         { selector: 'variable', format: ['camelCase', 'UPPER_CASE'] },
         {
           selector: 'variable',
@@ -67,7 +73,6 @@ module.exports = [
         },
       ],
 
-      'no-console': 'warn',
       'eqeqeq': 'error',
       'prefer-const': 'error',
     },
