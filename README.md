@@ -186,13 +186,33 @@ npx expo start
 
 ## Desenvolvimento da API
 
-Para gerar a pasta com os models necessários, rode:
+Árvore da API, com pastas e arquivos mais importantes:
+
+```
+└── meu-confeito-api
+    ├── .env              --Variáveis importantes e sensíveis (não sobe pro GitHub)
+    ├── /prisma           --ORM: Schema do Banco e migrations
+    └── /src
+        ├── /config       --Configurações relacionada ao Banco
+        ├── /controllers  --Receptores de Requisições, mandam dados pro Service
+        ├── /dtos         --Esquemas e tipos de Requisições, baseados no Model
+        ├── /errors       --Gerenciamento de erros
+        ├── /generated    --Models e Prisma (gerar com o Prisma, não mexer)
+        ├── /middlewares  --Interceptadores de Rotas, para verificação
+        ├── /routes       --Gerenciamento de Rotas, chamam o Controller
+            └── index.ts  --Index de Rotas, todas as Rotas da API
+        ├── /services     --Parte lógica da API, processam dados com o Banco
+        ├── /types        --Tipagem e definição de Objetos úteis
+        └── /utils        --Funções úteis, para complementar (ex: conversão monetária)
+```
+
+### > Para gerar a pasta com os models necessários (generated), rode:
 
 ```bash
 npx prisma generate
 ```
 
-Para abrir o gerenciador do Banco no navegador, rode:
+### > Para abrir o gerenciador do Banco no navegador, rode:
 
 ```bash
 npx prisma studio
