@@ -11,7 +11,7 @@ routes.get('/ping', (req, res) => {
   });
 });
 
-// Adicionar as rotas aqui:
+// Adicionar as rotas abaixo desse comentário:
 routes.use('/api/users', userRoutes);
 
 export { routes };

@@ -3,25 +3,27 @@ import type { NextFunction, Request, Response } from 'express';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 import { ZodError, z } from 'zod';
 
-import { AppError } from '../errors/api.error';
+import { AppError } from '../errors/app.error';
 
-export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
+export function errorHandler(err: Error, _: Request, res: Response, __: NextFunction) {
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
-      status: err.name,
+      status: err.status,
       message: err.message,
+      code: err.errorCode,
     });
   }
 
   if (err instanceof ZodError) {
     return res.status(400).json({
-      status: 'ValidationError',
+      status: 'fail',
       message: z.prettifyError(err),
       errors: z.treeifyError(err),
+      code: 'INVALID_FORMAT',
     });
   }
 
-  // Adicionar erros acima desse comentário
+  // Adicionar erros operacionais acima desse comentário, e não-operacionais abaixo
 
   if (err instanceof PrismaClientKnownRequestError) {
     console.error('Internal Prisma Error: ', err);
@@ -29,6 +31,7 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
     return res.status(500).json({
       status: 'error',
       message: 'An internal server error occurred',
+      code: 'DATABASE_CONNECTION_FAILED',
     });
   }
 
@@ -37,5 +40,6 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
   return res.status(500).json({
     status: 'error',
     message: 'An internal server error occurred',
+    code: 'INTERNAL_SERVER_ERROR',
   });
 }

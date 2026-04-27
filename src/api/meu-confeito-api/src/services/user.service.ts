@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 
 import prisma from '../config/database';
 import type { RegisterUserRequest } from '../dtos/user.dto';
-import { ConflictError } from '../errors/api.error';
+import { ConflictError } from '../errors/http.error';
 
 export class UserService {
   async register(data: RegisterUserRequest) {
@@ -11,7 +11,7 @@ export class UserService {
     });
 
     if (userExists) {
-      throw new ConflictError('Email already in use.');
+      throw new ConflictError('Email already in use.', 'USER_ALREADY_EXISTS');
     }
 
     const saltRounds = 12;

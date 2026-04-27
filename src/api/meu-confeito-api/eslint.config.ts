@@ -48,7 +48,12 @@ export default [
       ],
       '@typescript-eslint/naming-convention': [
         'error',
-        { selector: 'default', format: ['camelCase'] },
+        {
+          selector: 'default',
+          format: ['camelCase'],
+          leadingUnderscore: 'allow',
+          trailingUnderscore: 'allow',
+        },
         { selector: 'import', format: ['camelCase', 'UPPER_CASE'] },
         { selector: 'variable', format: ['camelCase', 'UPPER_CASE'] },
         {
@@ -73,7 +78,7 @@ export default [
         },
       ],
 
-      'eqeqeq': 'error',
+      eqeqeq: 'error',
       'prefer-const': 'error',
     },
   },
