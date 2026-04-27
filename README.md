@@ -23,15 +23,6 @@ Antes de iniciar, certifique-se de ter os seguintes itens instalados:
   > winget install -e --id Git.Git
   > ```
 
-* **GitHub CLI:**
-  Utilizado para o login com GitHub.
-  > https://cli.github.com/
-  >
-  > ...ou no Terminal do Windows:
-  > ```bash
-  > winget install -e --id GitHub.cli
-  > ```
-
 * **Expo Go**
   Aplicativo para testar o projeto no celular:
 
@@ -44,17 +35,17 @@ Antes de iniciar, certifique-se de ter os seguintes itens instalados:
 
 No terminal, execute os passos abaixo na ordem:
 
-### 1. Lembre-se de fazer login no git
-* Rode e siga os passos para fazer login com o navegador:
-  ```bash
-  gh auth login
-  ```
-
-* Se não fizer login diretamente, configure com o git: 
+### 1. Faça login no git
+* Configure as variáveis no terminal:
   ```bash
   git config --global user.name "Seu Nome do GitHub"
   git config --global user.email "seu.email@unesp.br"
   ```
+
+  > Se quiser, pode tentar fazer login com o [GitHub CLI](https://cli.github.com/):
+  > ```bash
+  > gh auth login
+  > ```
 
 ### 2. Clone o repositório
 
@@ -96,6 +87,9 @@ Para manter a consistência do código e melhorar a produtividade da equipe, ins
 
 * ✅ **Error Lens** (`usernamehw.errorlens`)
   Exibe erros diretamente na linha do código.
+
+* ✅ **Path Intellisense** (`christian-kohler.path-intellisense`)
+  Autocompletar para nomes de arquivos.
 
 ### Extensões Front-end
   
@@ -191,32 +185,44 @@ npx expo start
 ```
 └── meu-confeito-api
     ├── .env              --Variáveis importantes e sensíveis (não sobe pro GitHub)
+    ├── /node_modules     --Dependências (não sobe pro GitHub, gerar com o npm)
     ├── /prisma           --ORM: Schema do Banco e migrations
     └── /src
-        ├── /config       --Configurações relacionada ao Banco
+        ├── /config       --Configurações relacionadas ao Banco
         ├── /controllers  --Receptores de Requisições, mandam dados pro Service
-        ├── /dtos         --Esquemas e tipos de Requisições, baseados no Model
+        ├── /dtos         --Esquemas e tipos de Requisições, baseados nos Models
         ├── /errors       --Gerenciamento de erros
-        ├── /generated    --Models e Prisma (gerar com o Prisma, não mexer)
-        ├── /middlewares  --Interceptadores de Rotas, para verificação
+        ├── /generated    --Models e Prisma (não sobe pro Github, gerar com o Prisma)
+        ├── /middlewares  --Interceptadores de Rotas, para verificação e tratamento
         ├── /routes       --Gerenciamento de Rotas, chamam o Controller
             └── index.ts  --Index de Rotas, todas as Rotas da API
         ├── /services     --Parte lógica da API, processam dados com o Banco
-        ├── /types        --Tipagem e definição de Objetos úteis
+        ├── /types        --Tipagem e definições de Objetos úteis
         └── /utils        --Funções úteis, para complementar (ex: conversão monetária)
 ```
+### 1. Configure o dotenv (`.env`)
 
-### > Para gerar a pasta com os models necessários (generated), rode:
+* Copie o arquivo `.env.example` e configure as variáveis.
+* *Não se esqueça de apagar o* `.example` *no final do arquivo.*
+* ***Não** apague o* `.env.example` *, ele sobe pro GitHub (diferentemente do* `.env` *)*
+
+### 2. Gere a pasta com os models necessários (`/generated`):
 
 ```bash
 npx prisma generate
 ```
 
-### > Para abrir o gerenciador do Banco no navegador, rode:
+### 3. Inicie o servidor da API localmente:
 
+```bash
+npm run dev
+```
+
+#### Para abrir o gerenciador do Banco no navegador, rode:
 ```bash
 npx prisma studio
 ```
+
 ---
 
 ## Notas para a Equipe
