@@ -62,7 +62,12 @@ export default [
           format: ['PascalCase'],
           prefix: ['is', 'should', 'has', 'can', 'did', 'will'],
         },
-        { selector: 'typeLike', format: ['PascalCase'] },
+        {
+          selector: 'typeLike',
+          format: ['PascalCase'],
+          leadingUnderscore: 'allow',
+          trailingUnderscore: 'allow',
+        },
       ],
       '@typescript-eslint/consistent-type-imports': [
         'error',

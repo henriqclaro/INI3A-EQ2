@@ -17,7 +17,7 @@ export class ConflictError extends AppError {
 }
 
 export class AuthError extends AppError {
-  constructor(statusCode: 401 | 403, message: string, errorCode: AuthErrorCode) {
-    super(statusCode, message, errorCode);
+  constructor(message: string, errorCode: AuthErrorCode) {
+    super(401, message, errorCode);
   }
 }

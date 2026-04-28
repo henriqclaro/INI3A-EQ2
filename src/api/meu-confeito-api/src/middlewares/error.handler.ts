@@ -15,10 +15,12 @@ export function errorHandler(err: Error, _: Request, res: Response, __: NextFunc
   }
 
   if (err instanceof ZodError) {
+    console.error(z.treeifyError(err));
+    console.error(z.prettifyError(err));
+
     return res.status(400).json({
       status: 'fail',
-      message: z.prettifyError(err),
-      errors: z.treeifyError(err),
+      message: 'Bad Request: Invalid format',
       code: 'INVALID_FORMAT',
     });
   }

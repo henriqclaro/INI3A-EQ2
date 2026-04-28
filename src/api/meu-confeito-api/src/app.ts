@@ -16,7 +16,7 @@ app.use(cors());
 
 app.use(routes);
 
-app.all(/(.*)/, (req, _res) => {
+app.use((req, _res) => {
   throw new NotFoundError(`Route ${req.originalUrl} does not exist.`, 'ROUTE_DOES_NOT_EXIST');
 });
 

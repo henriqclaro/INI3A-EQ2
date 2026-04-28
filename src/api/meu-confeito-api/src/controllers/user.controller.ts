@@ -1,13 +1,17 @@
 import type { Request, Response } from 'express';
 
-import { type RegisterUserRequest, registerUserSchema } from '../types/dtos/user.dto';
 import { UserService } from '../services/user.service';
+import type { ApiResponse } from '../types/api.response';
+import { UserDTO } from '../types/dtos/user.dto';
 
 export class UserController {
-  async register(req: Request<any, any, RegisterUserRequest>, res: Response) {
+  async register(
+    req: Request<any, any, UserDTO.RegisterRequest>,
+    res: Response<any, ApiResponse<UserDTO.RegisterResponse>>,
+  ) {
     const userService = new UserService();
 
-    const parsedData = registerUserSchema.parse(req.body);
+    const parsedData = UserDTO.registerSchema.parse(req.body);
 
     const newUser = await userService.register(parsedData);
 

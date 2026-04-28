@@ -2,10 +2,10 @@ import bcrypt from 'bcrypt';
 
 import prisma from '../config/database';
 import { ConflictError } from '../errors/http.error';
-import type { RegisterUserRequest } from '../types/dtos/user.dto';
+import type { UserDTO } from '../types/dtos/user.dto';
 
 export class UserService {
-  async register(data: RegisterUserRequest) {
+  async register(data: UserDTO.RegisterRequest) {
     const userExists = await prisma.user.findUnique({
       where: { email: data.email },
     });
