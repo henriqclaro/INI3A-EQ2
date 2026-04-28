@@ -190,21 +190,21 @@ npx expo start
     └── /src
         ├── /config       --Configurações relacionadas ao Banco
         ├── /controllers  --Receptores de Requisições, mandam dados pro Service
-        ├── /dtos         --Esquemas e tipos de Requisições, baseados nos Models
         ├── /errors       --Gerenciamento de erros
-        ├── /generated    --Models e Prisma (não sobe pro Github, gerar com o Prisma)
+        ├── /generated    --Models e Prisma (não sobe pro GitHub, gerar com o Prisma)
         ├── /middlewares  --Interceptadores de Rotas, para verificação e tratamento
         ├── /routes       --Gerenciamento de Rotas, chamam o Controller
             └── index.ts  --Index de Rotas, todas as Rotas da API
         ├── /services     --Parte lógica da API, processam dados com o Banco
-        ├── /types        --Tipagem e definições de Objetos úteis
+        ├── /types        --Tipagens e definições de Objetos úteis
+            └── /dtos     --Esquemas e tipos de Requisições, baseados nos Models
         └── /utils        --Funções úteis, para complementar (ex: conversão monetária)
 ```
 ### 1. Configure o dotenv (`.env`)
 
 * Copie o arquivo `.env.example` e configure as variáveis.
 * *Não se esqueça de apagar o* `.example` *no final do arquivo.*
-* ***Não** apague o* `.env.example` *, ele sobe pro GitHub (diferentemente do* `.env` *)*
+* ***Nunca** apague o* `.env.example` *, ele sobe pro GitHub (diferentemente do* `.env` *)*
 
 ### 2. Gere a pasta com os models necessários (`/generated`):
 
