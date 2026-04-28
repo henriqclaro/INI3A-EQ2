@@ -2,9 +2,9 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
 import { PrismaClient } from '../generated/prisma/client';
-import POSTGRE_URL from './url.config';
+import POSTGRES_URL from './url.config';
 
-const connectionString = POSTGRE_URL;
+const connectionString = POSTGRES_URL;
 
 const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);

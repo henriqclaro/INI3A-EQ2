@@ -29,6 +29,15 @@ enum RecipeStatus {
   @@map("recipe_status")
 }
 
+enum TagType {
+  USER
+  PRODUCT
+  VARIETY
+  ATTRIBUTE
+
+  @@map("tag_type")
+}
+
 enum InventoryMovement {
   PURCHASE
   PRODUCTION_USAGE
@@ -49,13 +58,14 @@ model User {
   passwordHash String                                @map("password_hash") @db.VarChar(255)
   providerId   String?                               @map("provider_id") // !==(NULL) -> Login com Google
 
-  role      Role     @default(BAKER)
+  role      Role
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
   isActive  Boolean  @default(true) @map("is_active")
 
   ingredients  Ingredient[]
   recipes      Recipe[]
+  tags         UserTag[]
   inventories  UserInventory[]
   productions  Production[]
   transactions InventoryTransaction[]
@@ -129,14 +139,27 @@ model Recipe {
 }
 
 model Tag {
-  id   String @id @default(uuid())
-  name String @unique @db.VarChar(50)
+  id   String  @id @default(uuid())
+  name String  @unique @db.VarChar(50)
+  type TagType
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
+  users   UserTag[]
   recipes RecipeTag[]
 
   @@map("tag")
+}
+
+model UserTag {
+  userId String @map("user_id")
+  tagId  String @map("tag_id")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([userId, tagId])
+  @@map("user_tag")
 }
 
 model RecipeTag {

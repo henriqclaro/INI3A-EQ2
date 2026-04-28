@@ -8,6 +8,9 @@ CREATE TYPE "role_type" AS ENUM ('ADMIN', 'MODERATOR', 'BAKER', 'CUSTOMER');
 CREATE TYPE "recipe_status" AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED', 'SUSPENDED');
 
 -- CreateEnum
+CREATE TYPE "tag_type" AS ENUM ('USER', 'PRODUCT', 'VARIETY', 'ATTRIBUTE');
+
+-- CreateEnum
 CREATE TYPE "inventory_movement_type" AS ENUM ('PURCHASE', 'PRODUCTION_USAGE', 'PRODUCTION_REVERSAL', 'WASTE', 'MANUAL_ADJUSTMENT');
 
 -- CreateTable
@@ -20,7 +23,7 @@ CREATE TABLE "user" (
     "profile_picture_url" VARCHAR(255),
     "password_hash" VARCHAR(255) NOT NULL,
     "provider_id" TEXT,
-    "role" "role_type" NOT NULL DEFAULT 'BAKER',
+    "role" "role_type" NOT NULL,
     "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
@@ -70,9 +73,18 @@ CREATE TABLE "recipe" (
 CREATE TABLE "tag" (
     "id" TEXT NOT NULL,
     "name" VARCHAR(50) NOT NULL,
+    "type" "tag_type" NOT NULL,
     "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "tag_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "user_tag" (
+    "user_id" TEXT NOT NULL,
+    "tag_id" TEXT NOT NULL,
+
+    CONSTRAINT "user_tag_pkey" PRIMARY KEY ("user_id","tag_id")
 );
 
 -- CreateTable
@@ -184,6 +196,12 @@ ALTER TABLE "recipe" ADD CONSTRAINT "recipe_user_id_fkey" FOREIGN KEY ("user_id"
 
 -- AddForeignKey
 ALTER TABLE "recipe" ADD CONSTRAINT "recipe_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "recipe"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "user_tag" ADD CONSTRAINT "user_tag_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "user_tag" ADD CONSTRAINT "user_tag_tag_id_fkey" FOREIGN KEY ("tag_id") REFERENCES "tag"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "recipe_tag" ADD CONSTRAINT "recipe_tag_recipe_id_fkey" FOREIGN KEY ("recipe_id") REFERENCES "recipe"("id") ON DELETE CASCADE ON UPDATE CASCADE;

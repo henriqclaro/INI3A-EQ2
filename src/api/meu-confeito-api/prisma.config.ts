@@ -1,6 +1,6 @@
 import { defineConfig } from 'prisma/config';
 
-import POSTGRE_URL from './src/config/url.config';
+import POSTGRES_URL from './src/config/url.config';
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',
@@ -8,6 +8,6 @@ export default defineConfig({
     path: 'prisma/migrations',
   },
   datasource: {
-    url: POSTGRE_URL,
+    url: POSTGRES_URL,
   },
 });

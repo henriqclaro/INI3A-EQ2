@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 
-import { type RegisterUserRequest, registerUserSchema } from '../dtos/user.dto';
+import { type RegisterUserRequest, registerUserSchema } from '../types/dtos/user.dto';
 import { UserService } from '../services/user.service';
 
 export class UserController {
