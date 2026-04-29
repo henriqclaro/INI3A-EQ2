@@ -65,7 +65,8 @@ model User {
 
   ingredients  Ingredient[]
   recipes      Recipe[]
-  tags         UserTag[]
+  profileTags  UserTag[]
+  createdTags  Tag[]
   inventories  UserInventory[]
   productions  Production[]
   transactions InventoryTransaction[]
@@ -144,6 +145,9 @@ model Tag {
   type TagType
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  creatorId String?  @map("creator_id")
+
+  user User? @relation(fields: [creatorId], references: [id], onDelete: SetNull)
 
   users   UserTag[]
   recipes RecipeTag[]

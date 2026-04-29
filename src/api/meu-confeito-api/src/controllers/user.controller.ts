@@ -1,8 +1,10 @@
 import type { Request, Response } from 'express';
 
+import { CreatedResponse } from '../responses/http.success';
 import { UserService } from '../services/user.service';
 import type { ApiResponse } from '../types/api.response';
-import { UserDTO } from '../types/dtos/user.dto';
+import type { UserDTO } from '../types/dtos/user.dto';
+import { registerSchema } from '../validation/user.schema';
 
 export class UserController {
   async register(
@@ -11,15 +13,11 @@ export class UserController {
   ) {
     const userService = new UserService();
 
-    const parsedData = UserDTO.registerSchema.parse(req.body);
+    const parsedData = registerSchema.parse(req.body);
 
-    const newUser = await userService.register(parsedData);
+    const newUser: UserDTO.RegisterResponse = await userService.register(parsedData);
 
-    const data = {
-      message: 'User created successfully.',
-      newUser,
-    };
-
-    return res.status(201).json(data);
+    //return res.status(201).json(newUser);
+    return new CreatedResponse(res, newUser, 'User created successfully').send();
   }
 }

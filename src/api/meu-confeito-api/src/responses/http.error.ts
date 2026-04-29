@@ -1,5 +1,5 @@
+import type { AppErrorCode, AuthErrorCode } from '../types/error.code';
 import { AppError } from './app.error';
-import type { AppErrorCode, AuthErrorCode } from './codes.error';
 
 export class NotFoundError extends AppError {
   constructor(message = 'Resource not found.', errorCode: AppErrorCode = 'RESOURCE_NOT_FOUND') {

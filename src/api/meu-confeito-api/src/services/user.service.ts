@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 
 import prisma from '../config/database';
-import { ConflictError } from '../errors/http.error';
+import { ConflictError } from '../responses/http.error';
 import type { UserDTO } from '../types/dtos/user.dto';
 
 export class UserService {

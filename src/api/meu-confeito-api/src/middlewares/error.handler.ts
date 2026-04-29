@@ -3,7 +3,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 import { ZodError, z } from 'zod';
 
-import { AppError } from '../errors/app.error';
+import { AppError } from '../responses/app.error';
 
 export function errorHandler(err: Error, _: Request, res: Response, __: NextFunction) {
   if (err instanceof AppError) {

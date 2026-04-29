@@ -75,6 +75,7 @@ CREATE TABLE "tag" (
     "name" VARCHAR(50) NOT NULL,
     "type" "tag_type" NOT NULL,
     "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "creator_id" TEXT,
 
     CONSTRAINT "tag_pkey" PRIMARY KEY ("id")
 );
@@ -196,6 +197,9 @@ ALTER TABLE "recipe" ADD CONSTRAINT "recipe_user_id_fkey" FOREIGN KEY ("user_id"
 
 -- AddForeignKey
 ALTER TABLE "recipe" ADD CONSTRAINT "recipe_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "recipe"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "tag" ADD CONSTRAINT "tag_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "user_tag" ADD CONSTRAINT "user_tag_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;

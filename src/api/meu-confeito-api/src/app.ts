@@ -2,8 +2,8 @@ import express from 'express';
 
 import cors from 'cors';
 
-import { NotFoundError } from './errors/http.error';
 import { errorHandler } from './middlewares/error.handler';
+import { NotFoundError } from './responses/http.error';
 import { routes } from './routes';
 
 const app = express();
@@ -20,6 +20,6 @@ app.use((req, _res) => {
   throw new NotFoundError(`Route ${req.originalUrl} does not exist.`, 'ROUTE_DOES_NOT_EXIST');
 });
 
-app.use(errorHandler);1
+app.use(errorHandler);
 
 export default app;
