@@ -15,9 +15,9 @@ export class UserController {
 
     const parsedData = registerSchema.parse(req.body);
 
-    const newUser: UserDTO.RegisterResponse = await userService.register(parsedData);
+    const data: UserDTO.RegisterResponse = await userService.register(parsedData);
 
     //return res.status(201).json(newUser);
-    return new CreatedResponse(res, newUser, 'User created successfully').send();
+    return new CreatedResponse(res, data, 'User created successfully').send();
   }
 }

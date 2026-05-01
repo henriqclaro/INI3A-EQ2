@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import 'dotenv/config';
 
 import prisma from '../config/database';
 import { ConflictError } from '../responses/http.error';
@@ -11,7 +12,7 @@ export class UserService {
     });
 
     if (userExists) {
-      throw new ConflictError('Email already in use.', 'USER_ALREADY_EXISTS');
+      throw new ConflictError('Email already in use', 'USER_ALREADY_EXISTS');
     }
 
     const SALT_ROUNDS = 12;
@@ -33,6 +34,10 @@ export class UserService {
       },
     });
 
-    return newUser;
+    const userData = {
+      user: newUser,
+    };
+
+    return userData;
   }
 }

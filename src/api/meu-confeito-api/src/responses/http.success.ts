@@ -1,6 +1,12 @@
 import type { Response } from 'express';
 
-import { SuccessResponse } from './success.response';
+import { SuccessResponse } from './response.success';
+
+export class DefaultSucessResponse extends SuccessResponse {
+  constructor(res: Response, data: any, message?: string) {
+    super(res, 200, data, message);
+  }
+}
 
 export class CreatedResponse extends SuccessResponse {
   constructor(res: Response, data: any, message?: string) {

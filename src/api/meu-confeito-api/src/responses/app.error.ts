@@ -1,11 +1,13 @@
 import type { AppErrorCode } from '../types/error.code';
 
 export class AppError extends Error {
-  public readonly statusCode: number;
-  public readonly status: string;
-  public readonly errorCode: AppErrorCode;
+  private readonly status: string;
 
-  constructor(statusCode = 400, message: string, errorCode: AppErrorCode) {
+  constructor(
+    protected readonly statusCode = 400,
+    message: string,
+    protected readonly errorCode: AppErrorCode,
+  ) {
     super(message);
 
     Object.setPrototypeOf(this, new.target.prototype);

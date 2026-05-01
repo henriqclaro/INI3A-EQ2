@@ -1,11 +1,11 @@
 import type { Response } from 'express';
 
-export class SuccessResponse {
+export abstract class SuccessResponse {
   constructor(
-    public readonly res: Response,
-    public readonly statusCode: number = 200,
-    public readonly data: any = null,
-    public readonly message?: string,
+    protected readonly res: Response,
+    protected readonly statusCode: number = 200,
+    protected readonly data: any = null,
+    protected readonly message?: string,
   ) {}
   public send() {
     return this.res.status(this.statusCode).json({
