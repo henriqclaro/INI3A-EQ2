@@ -1,9 +1,12 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { access } from 'node:fs';
 
 import prisma from '../config/database';
 import { AuthError } from '../responses/http.error';
 import type { AuthDTO } from '../types/dtos/auth.dto';
+
+const jwtSecret = process.env.JWT_SECRET;
 
 export class AuthService {
   async logIn(data: AuthDTO.LogInRequest) {
@@ -23,9 +26,9 @@ export class AuthService {
       throw new AuthError('Invalid credentials', 'AUTH_UNAUTHORIZED');
     }
 
-    const isMatch = await bcrypt.compare(data.password, foundUser.passwordHash);
+    const isPassValid = await bcrypt.compare(data.password, foundUser.passwordHash);
 
-    if (!isMatch) {
+    if (!isPassValid) {
       throw new AuthError('Invalid credentials', 'AUTH_UNAUTHORIZED');
     }
 
@@ -41,7 +44,7 @@ export class AuthService {
       role: foundUser.role,
     };
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+    const token = jwt.sign(payload, jwtSecret as string, { expiresIn: '1h' });
 
     const userData: AuthDTO.LogInResponse = {
       user,
@@ -53,5 +56,30 @@ export class AuthService {
     };
 
     return userData;
+  }
+
+  async refreshToken(expiredToken: string) {
+    const decoded = jwt.verify(expiredToken, jwtSecret as string) as any;
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+    });
+
+    if (!user) {
+      throw new AuthError('Error validating token', 'AUTH_TOKEN_INVALID');
+    }
+
+    const refreshToken = await prisma.refreshToken.findUnique({
+      where: { userId: decoded.id },
+      select: { token: true, expiresAt: true },
+    });
+
+    if (refreshToken?.token !== expiredToken) {
+      throw new AuthError('Error validating token', 'AUTH_TOKEN_INVALID');
+    }
+
+    const newToken = jwt.sign({ id: decoded.id }, jwtSecret as string, { expiresIn: '1h' });
+
+    return { accessToken: newToken };
   }
 }

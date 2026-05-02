@@ -1,12 +1,12 @@
 import type { AppErrorCode } from '../types/error.code';
 
-export class AppError extends Error {
-  private readonly status: string;
+export abstract class AppError extends Error {
+  public readonly status: string;
 
   constructor(
-    protected readonly statusCode = 400,
+    public readonly statusCode: number,
     message: string,
-    protected readonly errorCode: AppErrorCode,
+    public readonly errorCode: AppErrorCode,
   ) {
     super(message);
 

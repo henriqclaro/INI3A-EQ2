@@ -2,7 +2,7 @@ import type { Response } from 'express';
 
 import { SuccessResponse } from './response.success';
 
-export class DefaultSucessResponse extends SuccessResponse {
+export class DefaultSuccessResponse extends SuccessResponse {
   constructor(res: Response, data: any, message?: string) {
     super(res, 200, data, message);
   }

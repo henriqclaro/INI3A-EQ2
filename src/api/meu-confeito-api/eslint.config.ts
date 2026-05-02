@@ -4,6 +4,7 @@ import checkFilePlugin from 'eslint-plugin-check-file';
 import { node } from 'globals';
 import path, { format } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { types } from 'node:util';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -51,10 +52,11 @@ export default [
         {
           selector: 'default',
           format: ['camelCase'],
-          leadingUnderscore: 'allow',
+          leadingUnderscore: 'allowSingleOrDouble',
           trailingUnderscore: 'allow',
         },
         { selector: 'import', format: ['camelCase', 'UPPER_CASE'] },
+        { selector: 'property', format: ['snake-case'] },
         { selector: 'variable', format: ['camelCase', 'UPPER_CASE'] },
         {
           selector: 'variable',

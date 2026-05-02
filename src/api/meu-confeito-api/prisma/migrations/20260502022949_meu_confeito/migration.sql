@@ -32,6 +32,17 @@ CREATE TABLE "user" (
 );
 
 -- CreateTable
+CREATE TABLE "refresh_token" (
+    "id" TEXT NOT NULL,
+    "token" VARCHAR(255) NOT NULL,
+    "user_id" TEXT NOT NULL,
+    "expires_at" TIMESTAMPTZ(3) NOT NULL,
+    "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "refresh_token_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "ingredient" (
     "id" TEXT NOT NULL,
     "parent_id" TEXT,
@@ -175,6 +186,15 @@ CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
 CREATE UNIQUE INDEX "user_phone_key" ON "user"("phone");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "refresh_token_token_key" ON "refresh_token"("token");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "refresh_token_user_id_key" ON "refresh_token"("user_id");
+
+-- CreateIndex
+CREATE INDEX "refresh_token_user_id_idx" ON "refresh_token"("user_id");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "ingredient_name_key" ON "ingredient"("name");
 
 -- CreateIndex
@@ -185,6 +205,9 @@ CREATE UNIQUE INDEX "tag_name_key" ON "tag"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "recipe_review_user_id_recipe_id_key" ON "recipe_review"("user_id", "recipe_id");
+
+-- AddForeignKey
+ALTER TABLE "refresh_token" ADD CONSTRAINT "refresh_token_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ingredient" ADD CONSTRAINT "ingredient_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;

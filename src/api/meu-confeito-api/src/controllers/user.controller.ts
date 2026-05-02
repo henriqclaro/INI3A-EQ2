@@ -4,7 +4,6 @@ import { CreatedResponse } from '../responses/http.success';
 import { UserService } from '../services/user.service';
 import type { ApiResponse } from '../types/api.response';
 import type { UserDTO } from '../types/dtos/user.dto';
-import { registerSchema } from '../validation/user.schema';
 
 export class UserController {
   async register(
@@ -13,11 +12,9 @@ export class UserController {
   ) {
     const userService = new UserService();
 
-    const parsedData = registerSchema.parse(req.body);
-
-    const data: UserDTO.RegisterResponse = await userService.register(parsedData);
+    const responseData: UserDTO.RegisterResponse = await userService.register(req.body);
 
     //return res.status(201).json(newUser);
-    return new CreatedResponse(res, data, 'User created successfully').send();
+    return new CreatedResponse(res, responseData, 'User created successfully').send();
   }
 }

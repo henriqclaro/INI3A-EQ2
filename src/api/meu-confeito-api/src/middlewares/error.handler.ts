@@ -1,11 +1,15 @@
 import type { NextFunction, Request, Response } from 'express';
 
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
+import {
+  PrismaClientKnownRequestError,
+  PrismaClientValidationError,
+} from '@prisma/client/runtime/client';
+import { JsonWebTokenError } from 'jsonwebtoken';
 import { ZodError, z } from 'zod';
 
 import { AppError } from '../responses/app.error';
 
-export function errorHandler(err: Error, _: Request, res: Response, __: NextFunction) {
+export function errorHandler(err: Error, _req: Request, res: Response, __next: NextFunction) {
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
       status: err.status,
@@ -25,15 +29,25 @@ export function errorHandler(err: Error, _: Request, res: Response, __: NextFunc
     });
   }
 
+  if (err instanceof JsonWebTokenError) {
+    console.log(err);
+
+    return res.status(401).json({
+      status: 'fail',
+      message: 'Session invalid or expired: Log in again',
+      code: 'AUTH_TOKEN_INVALID',
+    });
+  }
+
   // Adicionar erros operacionais acima desse comentário, e não-operacionais abaixo
 
-  if (err instanceof PrismaClientKnownRequestError) {
+  if (err instanceof PrismaClientKnownRequestError || err instanceof PrismaClientValidationError) {
     console.error('Internal Prisma Error: ', err);
 
     return res.status(500).json({
       status: 'error',
       message: 'An internal server error occurred',
-      code: 'DATABASE_CONNECTION_FAILED',
+      code: 'INTERNAL_SERVER_ERROR',
     });
   }
 
