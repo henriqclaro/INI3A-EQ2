@@ -19,6 +19,7 @@ export type AuthErrorCode =
   | 'AUTH_UNAUTHORIZED'
   | 'AUTH_TOKEN_INVALID'
   | 'AUTH_TOKEN_EXPIRED'
+  | 'AUTH_TOKEN_MISSING'
   | 'AUTH_INSUFFICIENT_PERMISSIONS';
 
 export type SystemErrorCode =

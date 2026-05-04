@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 
-import type { ValidationSchemas } from '../types/validation.schema';
+import type { ValidationSchemas } from '../types/schema.interface';
 
 export const validate = (schemas: ValidationSchemas) => {
   return async (req: Request, _res: Response, next: NextFunction) => {

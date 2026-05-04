@@ -4,7 +4,7 @@ import {
   PrismaClientKnownRequestError,
   PrismaClientValidationError,
 } from '@prisma/client/runtime/client';
-import { JsonWebTokenError } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { ZodError, z } from 'zod';
 
 import { AppError } from '../responses/app.error';
@@ -29,7 +29,7 @@ export function errorHandler(err: Error, _req: Request, res: Response, __next: N
     });
   }
 
-  if (err instanceof JsonWebTokenError) {
+  if (err instanceof jwt.TokenExpiredError) {
     console.log(err);
 
     return res.status(401).json({

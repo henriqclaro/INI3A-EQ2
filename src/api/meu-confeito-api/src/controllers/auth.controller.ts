@@ -1,32 +1,45 @@
 import type { Request, Response } from 'express';
 
-import { CreatedResponse, DefaultSuccessResponse } from '../responses/http.success';
+import { AuthError } from '../responses/http.error';
+import { DefaultSuccessResponse } from '../responses/http.success';
 import { AuthService } from '../services/auth.service';
 import type { ApiResponse } from '../types/api.response';
 import type { AuthDTO } from '../types/dtos/auth.dto';
 
 export class AuthController {
+  private authService: AuthService;
+
+  constructor() {
+    this.authService = new AuthService();
+  }
+
   async logIn(
-    req: Request<any, any, AuthDTO.LogInRequest>,
-    res: Response<any, ApiResponse<AuthDTO.LogInResponse>>,
+    req: Request<unknown, unknown, AuthDTO.LogInRequest>,
+    res: Response<ApiResponse<AuthDTO.LogInResponse>>,
   ) {
-    const authService = new AuthService();
+    const clientType = (req.headers['x-client-type'] as string) || 'web';
 
-    const responseData = await authService.logIn(req.body);
+    const responseData = await this.authService.logIn(clientType, req.body);
 
-    return new DefaultSuccessResponse(res, responseData, 'Successfully logged in').send();
+    if (responseData.cookie) {
+      res.cookie(responseData.cookie.name, responseData.cookie.val, responseData.cookie.options);
+    }
+
+    return new DefaultSuccessResponse(res, responseData.userData, 'Successfully logged in').send();
   }
 
   async refreshToken(
-    req: Request<any, any, AuthDTO.RefreshTokenRequest>,
-    res: Response<any, ApiResponse<AuthDTO.RefreshTokenResponse>>,
+    req: Request<unknown, unknown, AuthDTO.RefreshTokenRequest>,
+    res: Response<ApiResponse<AuthDTO.RefreshTokenResponse>>,
   ) {
-    const { refreshToken } = req.body;
+    const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
 
-    const authService = new AuthService();
+    if (!refreshToken) {
+      throw new AuthError('Refresh Token Missing', 'AUTH_TOKEN_MISSING');
+    }
 
-    const tokenData = await authService.refreshToken(refreshToken);
+    const tokenData = await this.authService.refreshToken(refreshToken);
 
-    return new CreatedResponse(res, tokenData, 'Token successfully refreshed').send();
+    return new DefaultSuccessResponse(res, tokenData, 'Token successfully refreshed').send();
   }
 }

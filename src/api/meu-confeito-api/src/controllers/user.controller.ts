@@ -7,8 +7,8 @@ import type { UserDTO } from '../types/dtos/user.dto';
 
 export class UserController {
   async register(
-    req: Request<any, any, UserDTO.RegisterRequest>,
-    res: Response<any, ApiResponse<UserDTO.RegisterResponse>>,
+    req: Request<unknown, unknown, UserDTO.RegisterRequest>,
+    res: Response<ApiResponse<UserDTO.RegisterResponse>>,
   ) {
     const userService = new UserService();
 

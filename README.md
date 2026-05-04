@@ -183,24 +183,24 @@ npx expo start
 Árvore da API, com pastas e arquivos mais importantes:
 
 ```
-└── meu-confeito-api
+└── meu-confeito-api/
     ├── .env              --Variáveis importantes e sensíveis (não sobe pro GitHub)
     ├── .env.example      --Exemplo do .env para copiar (sobe pro GitHub)
-    ├── /node_modules     --Dependências (não sobe pro GitHub, gerar com o npm)
-    ├── /prisma           --ORM: Schema do Banco e migrations
-    └── /src
-        ├── /config       --Configurações relacionadas ao Banco
-        ├── /controllers  --Receptores de Requisições, mandam dados pro Service
-        ├── /generated    --Models e Prisma (não sobe pro GitHub, gerar com o Prisma)
-        ├── /middlewares  --Interceptadores de Rotas, para verificação e tratamento
-        ├── /responses    --Classess de Respostas, para padronização
-        ├── /routes       --Gerenciamento de Rotas, chamam o Controller
+    ├── node_modules/     --Dependências (não sobe pro GitHub, gerar com o npm)
+    ├── prisma/           --ORM: Schema do Banco e migrations
+    └── src/
+        ├── config/       --Configurações relacionadas ao Banco
+        ├── controllers/  --Receptores de Requisições, mandam dados pro Service
+        ├── generated/    --Models e Prisma (não sobe pro GitHub, gerar com o Prisma)
+        ├── middlewares/  --Interceptadores de Rotas, para verificação e tratamento
+        ├── responses/    --Classess de Respostas, para padronização
+        ├── routes/       --Gerenciamento de Rotas, chamam o Controller
             └── index.ts  --Index de Rotas, todas as Rotas da API
-        ├── /services     --Parte lógica da API, processam dados com o Banco
-        ├── /types        --Tipagens e Interfaces da API
-            └── /dtos     --Tipagem de Requisições e Respostas
-        ├── /utils        --Funções úteis, para complementar (ex: conversão monetária)
-        └── /validation   --Schemas de validação de Resquests do Zod
+        ├── services/     --Parte lógica da API, processam dados com o Banco
+        ├── types/        --Tipagens e Interfaces da API
+            └── dtos/     --Tipagem de Requisições e Respostas
+        ├── utils/        --Funções úteis, para complementar (ex: conversão monetária)
+        └── validation/   --Schemas de validação de Resquests do Zod
 ```
 ### 1. Configure o dotenv (`.env`)
 
@@ -208,7 +208,7 @@ npx expo start
 * *Não se esqueça de apagar o* `.example` *no final do arquivo.*
 * ***Nunca** apague o* `.env.example` *, ele sobe pro GitHub (diferentemente do* `.env` *)*
 
-### 2. Gere a pasta com os models necessários (`/generated`):
+### 2. Gere a pasta com os models necessários (`generated/`):
 
 ```bash
 npx prisma generate

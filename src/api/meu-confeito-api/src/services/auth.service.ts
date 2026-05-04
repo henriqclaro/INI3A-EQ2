@@ -1,21 +1,28 @@
 import bcrypt from 'bcrypt';
+import 'dotenv/config';
 import jwt from 'jsonwebtoken';
-import { access } from 'node:fs';
+import { randomBytes } from 'node:crypto';
 
 import prisma from '../config/database';
 import { AuthError } from '../responses/http.error';
 import type { AuthDTO } from '../types/dtos/auth.dto';
 
+if (!process.env.JWT_SECRET) {
+  console.error('ERROR: JWT_SECRET is not defined in environment variables');
+  throw new Error();
+}
+
 const jwtSecret = process.env.JWT_SECRET;
 
 export class AuthService {
-  async logIn(data: AuthDTO.LogInRequest) {
+  async logIn(clientType: string, data: AuthDTO.LogInRequest) {
     const foundUser = await prisma.user.findUnique({
       where: { email: data.email },
       select: {
         id: true,
         name: true,
         phone: true,
+        // location: true,
         pfpUrl: true,
         passwordHash: true,
         role: true,
@@ -36,7 +43,9 @@ export class AuthService {
       name: foundUser.name,
       email: data.email,
       phone: foundUser.phone,
+      // location: foundUser.location,
       pfpUrl: foundUser.pfpUrl,
+      role: foundUser.role,
     };
 
     const payload = {
@@ -44,7 +53,24 @@ export class AuthService {
       role: foundUser.role,
     };
 
-    const token = jwt.sign(payload, jwtSecret as string, { expiresIn: '1h' });
+    const token = jwt.sign(payload, jwtSecret, { expiresIn: '1h' });
+    const refreshToken = randomBytes(40).toString('hex');
+
+    const expireDate = new Date();
+    expireDate.setDate(expireDate.getDate() + 90);
+
+    await prisma.refreshToken.upsert({
+      where: { userId: foundUser.id },
+      update: {
+        token: refreshToken,
+        expiresAt: expireDate,
+      },
+      create: {
+        token: refreshToken,
+        userId: foundUser.id,
+        expiresAt: expireDate,
+      },
+    });
 
     const userData: AuthDTO.LogInResponse = {
       user,
@@ -55,30 +81,51 @@ export class AuthService {
       },
     };
 
-    return userData;
+    if (clientType === 'mobile') {
+      userData.auth.refreshToken = refreshToken;
+
+      return { userData };
+    } else {
+      // web
+      const cookie = {
+        name: 'refreshToken',
+        val: refreshToken,
+        options: {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict' as 'strict',
+          maxAge: 90 * 24 * 60 * 60 * 1000,
+        },
+      };
+
+      return { userData, cookie };
+    }
   }
 
-  async refreshToken(expiredToken: string) {
-    const decoded = jwt.verify(expiredToken, jwtSecret as string) as any;
-
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
+  async refreshToken(toRefreshToken: string) {
+    const storedToken = await prisma.refreshToken.findFirst({
+      where: { token: toRefreshToken },
+      include: { user: true },
     });
 
-    if (!user) {
+    if (!storedToken) {
       throw new AuthError('Error validating token', 'AUTH_TOKEN_INVALID');
     }
 
-    const refreshToken = await prisma.refreshToken.findUnique({
-      where: { userId: decoded.id },
-      select: { token: true, expiresAt: true },
-    });
+    if (new Date() > storedToken.expiresAt) {
+      await prisma.refreshToken.delete({
+        where: { id: storedToken.id },
+      });
 
-    if (refreshToken?.token !== expiredToken) {
-      throw new AuthError('Error validating token', 'AUTH_TOKEN_INVALID');
+      throw new AuthError('Session Expired. Log In again', 'AUTH_TOKEN_EXPIRED');
     }
 
-    const newToken = jwt.sign({ id: decoded.id }, jwtSecret as string, { expiresIn: '1h' });
+    const payload = {
+      id: storedToken.user.id,
+      role: storedToken.user.role,
+    };
+
+    const newToken = jwt.sign(payload, jwtSecret as string, { expiresIn: '1h' });
 
     return { accessToken: newToken };
   }

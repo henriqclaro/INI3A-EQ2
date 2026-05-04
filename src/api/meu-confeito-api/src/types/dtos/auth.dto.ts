@@ -9,12 +9,15 @@ export namespace AuthDTO {
       name: string;
       email: string;
       phone: string | null;
+      // location: string | null;
       pfpUrl: string | null;
+      role: string;
     };
     auth: {
       accessToken: string;
       tokenType: string;
       expiresIn: number;
+      refreshToken?: string;
     };
   }
 

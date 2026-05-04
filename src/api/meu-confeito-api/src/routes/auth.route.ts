@@ -2,24 +2,17 @@ import { type Response, Router } from 'express';
 
 import { AuthController } from '../controllers/auth.controller';
 import { validate } from '../middlewares/validate.middleware';
-import type { ApiResponse } from '../types/api.response';
-import type { AuthDTO } from '../types/dtos/auth.dto';
 import * as auth from '../validation/auth.schema';
 
 const authRoutes = Router();
 const authController = new AuthController();
 
-authRoutes.post(
-  '/sessions',
-  validate({ body: auth.logInSchema }),
-  (req, res: Response<any, ApiResponse<AuthDTO.LogInResponse>>) => authController.logIn(req, res),
+authRoutes.post('/sessions', validate({ body: auth.logInSchema }), (req, res) =>
+  authController.logIn(req, res),
 );
 
-authRoutes.post(
-  '/tokens',
-  validate({ body: auth.refreshTokenSchema }),
-  (req, res: Response<any, ApiResponse<AuthDTO.RefreshTokenResponse>>) =>
-    authController.refreshToken(req, res),
+authRoutes.post('/tokens', validate({ body: auth.refreshTokenSchema }), (req, res) =>
+  authController.refreshToken(req, res),
 );
 
 export { authRoutes };
