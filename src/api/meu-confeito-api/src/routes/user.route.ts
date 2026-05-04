@@ -1,4 +1,4 @@
-import { type Response, Router } from 'express';
+import { Router } from 'express';
 
 import { UserController } from '../controllers/user.controller';
 import { validate } from '../middlewares/validate.middleware';

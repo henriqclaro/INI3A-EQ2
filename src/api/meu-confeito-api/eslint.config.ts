@@ -1,10 +1,10 @@
 import tsEslintPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import checkFilePlugin from 'eslint-plugin-check-file';
+// import unusedImports from 'eslint-plugin-unused-imports';
 import { node } from 'globals';
-import path, { format } from 'node:path';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { types } from 'node:util';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -30,6 +30,7 @@ export default [
     plugins: {
       'check-file': checkFilePlugin,
       '@typescript-eslint': tsEslintPlugin,
+      //'unused-imports': unusedImports,
     },
     rules: {
       'check-file/filename-naming-convention': [

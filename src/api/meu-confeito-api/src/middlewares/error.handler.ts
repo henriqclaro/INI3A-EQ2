@@ -29,13 +29,23 @@ export function errorHandler(err: Error, _req: Request, res: Response, __next: N
     });
   }
 
+  if (err instanceof jwt.JsonWebTokenError) {
+    console.error(err);
+
+    return res.status(401).json({
+      status: 'fail',
+      message: 'Invalid token',
+      code: 'AUTH_TOKEN_INVALID',
+    });
+  }
+
   if (err instanceof jwt.TokenExpiredError) {
-    console.log(err);
+    console.error(err);
 
     return res.status(401).json({
       status: 'fail',
       message: 'Session invalid or expired: Log in again',
-      code: 'AUTH_TOKEN_INVALID',
+      code: 'AUTH_TOKEN_EXPIRED',
     });
   }
 

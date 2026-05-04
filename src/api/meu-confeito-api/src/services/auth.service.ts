@@ -117,7 +117,7 @@ export class AuthService {
         where: { id: storedToken.id },
       });
 
-      throw new AuthError('Session Expired. Log In again', 'AUTH_TOKEN_EXPIRED');
+      throw new AuthError('Session expired. Log in again', 'AUTH_TOKEN_EXPIRED');
     }
 
     const payload = {
