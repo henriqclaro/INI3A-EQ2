@@ -1,8 +1,9 @@
 import type { NextFunction, Request, Response } from 'express';
 
-import 'dotenv/config';
 import jwt from 'jsonwebtoken';
 
+import { env } from '../config/env.config';
+import { AuthError } from '../responses/http.error';
 import { headerSchema } from '../validation/auth.schema';
 
 export function authMiddleware(req: Request, _res: Response, next: NextFunction) {
@@ -10,7 +11,11 @@ export function authMiddleware(req: Request, _res: Response, next: NextFunction)
 
   const [, token] = validatedHeader.authorization.split(' ');
 
-  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string) as any;
+  if (!token) {
+    throw new AuthError('Access token missing', 'AUTH_ACCESS_TOKEN_MISSING');
+  }
+
+  const decoded = jwt.verify(token, env.JWT_SECRET) as any;
   const { id, role } = decoded;
 
   req.userId = id;

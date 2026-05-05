@@ -1,5 +1,4 @@
 import bcrypt from 'bcrypt';
-import 'dotenv/config';
 
 import prisma from '../config/database';
 import { ConflictError } from '../responses/http.error';

@@ -2,15 +2,15 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
 import { PrismaClient } from '../generated/prisma/client';
-import POSTGRES_URL from './url.config';
+import { env } from './env.config';
 
-const connectionString = POSTGRES_URL;
+const connectionString = env.DATABASE_URL;
 
 const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({
   adapter,
-  log: process.env.NODE_ENV === 'dev' ? ['query', 'error', 'warn'] : ['error'],
+  log: env.NODE_ENV === 'dev' ? ['query', 'error', 'warn'] : ['error'],
 });
 
 export async function connectDB() {

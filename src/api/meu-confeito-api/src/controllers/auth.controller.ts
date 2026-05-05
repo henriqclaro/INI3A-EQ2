@@ -35,7 +35,7 @@ export class AuthController {
     const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
 
     if (!refreshToken) {
-      throw new AuthError('Refresh token missing', 'AUTH_TOKEN_MISSING');
+      throw new AuthError('Refresh token missing', 'AUTH_REFRESH_TOKEN_MISSING');
     }
 
     const tokenData = await this.authService.refreshToken(refreshToken);

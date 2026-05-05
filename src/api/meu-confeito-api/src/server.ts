@@ -1,12 +1,11 @@
-import 'dotenv/config';
-
 import app from './app';
 import { connectDB } from './config/database';
-
-const PORT = process.env.SERVER_PORT || 3000;
+import { env } from './config/env.config';
 
 connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`MeuConfeito server successfully running on port ${PORT}`);
+  app.listen(env.SERVER_PORT, () => {
+    console.log(
+      `MeuConfeito server successfully running in ${env.NODE_ENV} mode on port ${env.SERVER_PORT}`,
+    );
   });
 });

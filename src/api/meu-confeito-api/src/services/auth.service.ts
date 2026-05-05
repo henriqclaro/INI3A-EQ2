@@ -1,18 +1,11 @@
 import bcrypt from 'bcrypt';
-import 'dotenv/config';
 import jwt from 'jsonwebtoken';
 import { randomBytes } from 'node:crypto';
 
 import prisma from '../config/database';
+import { env } from '../config/env.config';
 import { AuthError } from '../responses/http.error';
 import type { AuthDTO } from '../types/dtos/auth.dto';
-
-if (!process.env.JWT_SECRET) {
-  console.error('ERROR: JWT_SECRET is not defined in environment variables');
-  throw new Error();
-}
-
-const jwtSecret = process.env.JWT_SECRET;
 
 export class AuthService {
   async logIn(clientType: string, data: AuthDTO.LogInRequest) {
@@ -53,7 +46,7 @@ export class AuthService {
       role: foundUser.role,
     };
 
-    const token = jwt.sign(payload, jwtSecret, { expiresIn: '1h' });
+    const token = jwt.sign(payload, env.JWT_SECRET, { expiresIn: '1h' });
     const refreshToken = randomBytes(40).toString('hex');
 
     const expireDate = new Date();
@@ -92,7 +85,7 @@ export class AuthService {
         val: refreshToken,
         options: {
           httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
+          secure: env.NODE_ENV === 'production',
           sameSite: 'strict' as 'strict',
           maxAge: 90 * 24 * 60 * 60 * 1000,
         },
@@ -102,9 +95,9 @@ export class AuthService {
     }
   }
 
-  async refreshToken(toRefreshToken: string) {
+  async refreshToken(incomingRefreshToken: string) {
     const storedToken = await prisma.refreshToken.findFirst({
-      where: { token: toRefreshToken },
+      where: { token: incomingRefreshToken },
       include: { user: true },
     });
 
@@ -125,7 +118,7 @@ export class AuthService {
       role: storedToken.user.role,
     };
 
-    const newToken = jwt.sign(payload, jwtSecret as string, { expiresIn: '1h' });
+    const newToken = jwt.sign(payload, env.JWT_SECRET, { expiresIn: '1h' });
 
     return { accessToken: newToken };
   }
