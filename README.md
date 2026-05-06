@@ -200,7 +200,7 @@ npx expo start
         ├── types/        --Tipagens e Interfaces da API
             └── dtos/     --Tipagem de Requisições e Respostas
         ├── utils/        --Funções úteis, para complementar (ex: conversão monetária)
-        └── validation/   --Schemas de validação de Resquests do Zod
+        └── validation/   --Schemas de validação de Requisições do Zod
 ```
 ### 1. Configure o dotenv (`.env`)
 
