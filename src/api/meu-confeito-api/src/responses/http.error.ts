@@ -14,16 +14,25 @@ export class AuthError extends AppError {
 }
 
 export class NotFoundError extends AppError {
-  constructor(message = 'Resource not found.', errorCode: AppErrorCode = 'RESOURCE_NOT_FOUND') {
+  constructor(message = 'Resource not found', errorCode: AppErrorCode = 'RESOURCE_NOT_FOUND') {
     super(404, message, errorCode);
   }
 }
 
 export class ConflictError extends AppError {
   constructor(
-    message = 'Data conflict error.',
+    message = 'Data conflict error',
     errorCode: AppErrorCode = 'RESOURCE_ALREADY_EXISTS',
   ) {
     super(409, message, errorCode);
+  }
+}
+
+export class GoneError extends AppError {
+  constructor(
+    message = 'Resource gone, do not request it again',
+    errorCode: AppErrorCode = 'RESOURCE_GONE',
+  ) {
+    super(410, message, errorCode);
   }
 }

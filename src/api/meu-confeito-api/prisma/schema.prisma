@@ -60,7 +60,7 @@ model User {
 
   role      Role
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
   isActive  Boolean  @default(true) @map("is_active")
 
   refreshTokens RefreshToken[]
@@ -138,7 +138,7 @@ model Recipe {
   packagingCost   Decimal @default(0.00) @map("packaging_cost") @db.Decimal(10, 2)
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   // NULL -> Receita Base (Parent):
   user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -218,7 +218,7 @@ model UserInventory {
   packageSize  Decimal @default(1.000) @map("package_size") @db.Decimal(10, 3)
   costUnit     Decimal @map("cost_per_unit") @db.Decimal(10, 4) // Padronizar no tratamento de dados
 
-  lastUpdated DateTime @default(now()) @map("last_updated") @db.Timestamptz(3)
+  lastUpdated DateTime @updatedAt @map("last_updated") @db.Timestamptz(3)
 
   user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
@@ -283,7 +283,7 @@ model RecipeReview {
   rating   Int // Travamento de 1 a 5 no tratamento de dados
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)

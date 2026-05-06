@@ -1,19 +1,20 @@
 export type ClientErrorCode =
   | 'ROUTE_DOES_NOT_EXIST'
   | 'MISSING_REQUIRED_FIELD'
-  | 'INVALID_INPUT'
   | 'INVALID_FORMAT'
   | 'PAYLOAD_TOO_LARGE';
 
 export type ResourceErrorCode =
   | 'RESOURCE_NOT_FOUND'
   | 'RESOURCE_ALREADY_EXISTS'
-  | 'RESOURCE_STATE_CONFLICT';
+  | 'RESOURCE_STATE_CONFLICT'
+  | 'RESOURCE_GONE';
 
 export type UserErrorCode =
+  | 'USER_NOT_FOUND'
   | 'USER_ALREADY_EXISTS'
   | 'USER_INVALID_PASSWORD'
-  | 'USER_ACCOUNT_SUSPENDED';
+  | 'USER_ACCOUNT_GONE';
 
 export type AuthErrorCode =
   | 'AUTH_UNAUTHORIZED'

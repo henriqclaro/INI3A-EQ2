@@ -25,7 +25,7 @@ CREATE TABLE "user" (
     "provider_id" TEXT,
     "role" "role_type" NOT NULL,
     "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ(3) NOT NULL,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
@@ -76,7 +76,7 @@ CREATE TABLE "recipe" (
     "hourly_labor_rate" DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     "packaging_cost" DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ(3) NOT NULL,
 
     CONSTRAINT "recipe_pkey" PRIMARY KEY ("id")
 );
@@ -128,7 +128,7 @@ CREATE TABLE "user_inventory" (
     "package_price" DECIMAL(10,4) NOT NULL DEFAULT 0.0000,
     "package_size" DECIMAL(10,3) NOT NULL DEFAULT 1.000,
     "cost_per_unit" DECIMAL(10,4) NOT NULL,
-    "last_updated" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "last_updated" TIMESTAMPTZ(3) NOT NULL,
 
     CONSTRAINT "user_inventory_pkey" PRIMARY KEY ("user_id","ingredient_id")
 );
@@ -175,7 +175,7 @@ CREATE TABLE "recipe_review" (
     "recipe_id" TEXT NOT NULL,
     "rating" INTEGER NOT NULL,
     "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ(3) NOT NULL,
 
     CONSTRAINT "recipe_review_pkey" PRIMARY KEY ("id")
 );

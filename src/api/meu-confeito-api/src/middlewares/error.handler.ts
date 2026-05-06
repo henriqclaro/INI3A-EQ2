@@ -8,6 +8,7 @@ import jwt from 'jsonwebtoken';
 import { ZodError, z } from 'zod';
 
 import { AppError } from '../responses/app.error';
+import { NotFoundError } from '../responses/http.error';
 
 export function errorHandler(err: Error, _req: Request, res: Response, __next: NextFunction) {
   if (err instanceof AppError) {
@@ -47,6 +48,10 @@ export function errorHandler(err: Error, _req: Request, res: Response, __next: N
       message: 'Session invalid or expired: Log in again',
       code: 'AUTH_TOKEN_EXPIRED',
     });
+  }
+
+  if (err instanceof PrismaClientKnownRequestError && err.code === 'P2025') {
+    throw new NotFoundError('User not found', 'USER_NOT_FOUND');
   }
 
   // Adicionar erros operacionais acima desse comentário, e não-operacionais abaixo

@@ -189,7 +189,7 @@ npx expo start
     ├── node_modules/     --Dependências (não sobe pro GitHub, gerar com o npm)
     ├── prisma/           --ORM: Schema do Banco e migrations
     └── src/
-        ├── config/       --Configurações relacionadas ao Banco
+        ├── config/       --Configurações do ambiente da API
         ├── controllers/  --Receptores de Requisições, mandam dados pro Service
         ├── generated/    --Models e Prisma (não sobe pro GitHub, gerar com o Prisma)
         ├── middlewares/  --Interceptadores de Rotas, para verificação e tratamento

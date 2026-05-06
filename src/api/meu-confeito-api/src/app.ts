@@ -17,7 +17,7 @@ app.use(cors());
 app.use(routes);
 
 app.use((req, _res) => {
-  throw new NotFoundError(`Route ${req.originalUrl} does not exist.`, 'ROUTE_DOES_NOT_EXIST');
+  throw new NotFoundError(`Route ${req.originalUrl} does not exist`, 'ROUTE_DOES_NOT_EXIST');
 });
 
 app.use(errorHandler);
