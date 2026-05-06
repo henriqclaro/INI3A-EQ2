@@ -63,7 +63,7 @@ model User {
   updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
   isActive  Boolean  @default(true) @map("is_active")
 
-  refreshTokens RefreshToken?
+  refreshTokens RefreshToken[]
   ingredients   Ingredient[]
   recipes       Recipe[]
   profileTags   UserTag[]
@@ -78,15 +78,17 @@ model User {
 }
 
 model RefreshToken {
-  id     String @id @default(uuid())
-  token  String @unique @db.VarChar(255)
-  userId String @unique @map("user_id")
+  id        String @id @default(uuid())
+  token     String @unique @db.VarChar(255)
+  userId    String @map("user_id")
+  sessionId String @map("session_id")
 
   expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, sessionId])
   @@index([userId])
   @@map("refresh_token")
 }

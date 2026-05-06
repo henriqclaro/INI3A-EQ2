@@ -17,9 +17,7 @@ export class AuthController {
     req: Request<unknown, unknown, AuthDTO.LogInRequest>,
     res: Response<ApiResponse<AuthDTO.LogInResponse>>,
   ) {
-    const clientType = (req.headers['x-client-type'] as string) || 'web';
-
-    const responseData = await this.authService.logIn(clientType, req.body);
+    const responseData = await this.authService.logIn(req.body);
 
     if (responseData.cookie) {
       res.cookie(responseData.cookie.name, responseData.cookie.val, responseData.cookie.options);

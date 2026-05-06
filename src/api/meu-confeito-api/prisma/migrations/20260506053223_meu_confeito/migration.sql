@@ -36,6 +36,7 @@ CREATE TABLE "refresh_token" (
     "id" TEXT NOT NULL,
     "token" VARCHAR(255) NOT NULL,
     "user_id" TEXT NOT NULL,
+    "session_id" TEXT NOT NULL,
     "expires_at" TIMESTAMPTZ(3) NOT NULL,
     "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -189,10 +190,10 @@ CREATE UNIQUE INDEX "user_phone_key" ON "user"("phone");
 CREATE UNIQUE INDEX "refresh_token_token_key" ON "refresh_token"("token");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "refresh_token_user_id_key" ON "refresh_token"("user_id");
+CREATE INDEX "refresh_token_user_id_idx" ON "refresh_token"("user_id");
 
 -- CreateIndex
-CREATE INDEX "refresh_token_user_id_idx" ON "refresh_token"("user_id");
+CREATE UNIQUE INDEX "refresh_token_user_id_session_id_key" ON "refresh_token"("user_id", "session_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ingredient_name_key" ON "ingredient"("name");

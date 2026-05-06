@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 
 import prisma from '../config/database';
+import { env } from '../config/env.config';
 import { ConflictError } from '../responses/http.error';
 import type { UserDTO } from '../types/dtos/user.dto';
 
@@ -14,13 +15,13 @@ export class UserService {
       throw new ConflictError('Email already in use', 'USER_ALREADY_EXISTS');
     }
 
-    const SALT_ROUNDS = 12;
-    const hashedPassword = await bcrypt.hash(data.password, SALT_ROUNDS);
+    const hashedPassword = await bcrypt.hash(data.password, env.BCRYPT_ROUNDS);
 
     const newUser = await prisma.user.create({
       data: {
         name: data.name,
         email: data.email,
+        phone: data.phone,
         passwordHash: hashedPassword,
         role: data.role,
       },

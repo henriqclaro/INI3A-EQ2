@@ -8,7 +8,7 @@ import { AuthError } from '../responses/http.error';
 import type { AuthDTO } from '../types/dtos/auth.dto';
 
 export class AuthService {
-  async logIn(clientType: string, data: AuthDTO.LogInRequest) {
+  async logIn(data: AuthDTO.LogInRequest) {
     const foundUser = await prisma.user.findUnique({
       where: { email: data.email },
       select: {
@@ -50,10 +50,10 @@ export class AuthService {
     const refreshToken = randomBytes(40).toString('hex');
 
     const expireDate = new Date();
-    expireDate.setDate(expireDate.getDate() + 90);
+    expireDate.setDate(expireDate.getDate() + env.RT_TTL_DAYS);
 
     await prisma.refreshToken.upsert({
-      where: { userId: foundUser.id },
+      where: { userId_sessionId: { userId: foundUser.id, sessionId: data.sessionId } },
       update: {
         token: refreshToken,
         expiresAt: expireDate,
@@ -61,6 +61,7 @@ export class AuthService {
       create: {
         token: refreshToken,
         userId: foundUser.id,
+        sessionId: data.sessionId,
         expiresAt: expireDate,
       },
     });
@@ -74,7 +75,7 @@ export class AuthService {
       },
     };
 
-    if (clientType === 'mobile') {
+    if (data.clientType === 'mobile') {
       userData.auth.refreshToken = refreshToken;
 
       return { userData };
@@ -87,7 +88,7 @@ export class AuthService {
           httpOnly: true,
           secure: env.NODE_ENV === 'production',
           sameSite: 'strict' as 'strict',
-          maxAge: 90 * 24 * 60 * 60 * 1000,
+          maxAge: env.RT_TTL_DAYS * 24 * 60 * 60 * 1000,
         },
       };
 
