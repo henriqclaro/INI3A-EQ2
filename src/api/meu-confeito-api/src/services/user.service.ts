@@ -1,13 +1,20 @@
 import bcrypt from 'bcrypt';
-import { is } from 'zod/v4/locales/index.js';
 
 import prisma from '../config/database';
 import { env } from '../config/env.config';
 import type { UserModel } from '../generated/prisma/models';
-import { AuthError, ConflictError, GoneError, NotFoundError } from '../responses/http.error';
+import { ConflictError, ForbiddenError, GoneError, NotFoundError } from '../responses/http.error';
+import type { RequestContext } from '../types/context.interface';
 import type { UserDTO } from '../types/dtos/user.dto';
 
 export class UserService {
+  private checkPermission(context: RequestContext, id: string) {
+    if (context.userId !== id && context.userRole !== 'ADMIN') {
+      console.log(context.userId, id);
+      throw new ForbiddenError('Action denied for lack of privileges');
+    }
+  }
+
   private checkUser(
     user: Pick<UserModel, 'isActive'> | null,
   ): asserts user is Pick<UserModel, 'isActive'> {
@@ -51,7 +58,9 @@ export class UserService {
     return { user };
   }
 
-  async select(id: string) {
+  async select(context: RequestContext, id: string) {
+    this.checkPermission(context, id);
+
     const user = await prisma.user.findUnique({
       where: { id: id },
       select: {
@@ -71,7 +80,19 @@ export class UserService {
     return { user };
   }
 
-  async update(id: string, data: UserDTO.UpdateRequest) {
+  async update(context: RequestContext, id: string, data: UserDTO.UpdateRequest) {
+    this.checkPermission(context, id);
+
+    if (data.email) {
+      const emailInUse = await prisma.user.findUnique({
+        where: { email: data.email },
+      });
+
+      if (emailInUse && emailInUse.id !== id) {
+        throw new ConflictError('Email already in use', 'USER_ALREADY_EXISTS');
+      }
+    }
+
     const user = await prisma.user.update({
       where: { id: id },
       data: data,
@@ -90,7 +111,9 @@ export class UserService {
     return { user };
   }
 
-  async delete(id: string, data: UserDTO.DeleteRequest) {
+  async delete(context: RequestContext, id: string, data: UserDTO.DeleteRequest) {
+    this.checkPermission(context, id);
+
     const user = await prisma.user.findUnique({
       where: { id: id },
       select: {
@@ -102,13 +125,17 @@ export class UserService {
 
     const isSuspended = data.state === 'SUSPENDED';
 
+    await prisma.refreshToken.deleteMany({
+      where: { userId: id },
+    });
+
     await prisma.user.update({
       where: { id: id },
       data: {
         isActive: false,
 
-        name: `${data.state}_user`,
-        email: isSuspended ? undefined : `${data.state}_${id}@anonymized.local`,
+        name: `${data.state}_USER`,
+        email: isSuspended ? undefined : `${data.state.toLocaleLowerCase()}_${id}@anonymized.local`,
         phone: isSuspended ? undefined : null,
         pfpUrl: null,
         providerId: null,

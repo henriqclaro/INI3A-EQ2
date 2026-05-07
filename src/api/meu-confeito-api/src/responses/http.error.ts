@@ -13,6 +13,15 @@ export class AuthError extends AppError {
   }
 }
 
+export class ForbiddenError extends AppError {
+  constructor(
+    messsage = 'Forbidden for lack of privileges',
+    errorCode: AppErrorCode = 'AUTH_INSUFFICIENT_PERMISSIONS',
+  ) {
+    super(403, messsage, errorCode);
+  }
+}
+
 export class NotFoundError extends AppError {
   constructor(message = 'Resource not found', errorCode: AppErrorCode = 'RESOURCE_NOT_FOUND') {
     super(404, message, errorCode);

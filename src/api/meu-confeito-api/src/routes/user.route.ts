@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { UserController } from '../controllers/user.controller';
+import { authMiddleware } from '../middlewares/auth.middleware';
 import { validate } from '../middlewares/validate.middleware';
 import * as user from '../validation/user.schema';
 
@@ -10,27 +11,28 @@ const userController = new UserController();
 userRoutes.post(
   '/',
   validate({ body: user.registerSchema }),
-  async (req, res) => await userController.register(req, res),
+  userController.register.bind(userController),
 );
 
-userRoutes.get('/:id', validate({ params: user.paramsSchema }), async (req, res) => {
-  await userController.select(req, res);
-});
+userRoutes.use(authMiddleware);
+
+userRoutes.get(
+  '/:id',
+  validate({ params: user.paramsSchema }),
+  userController.select.bind(userController),
+);
 
 userRoutes.patch(
   '/:id',
   validate({ params: user.paramsSchema, body: user.updateSchema }),
-  async (req, res) => {
-    await userController.update(req, res);
-  },
+
+  userController.update.bind(userController),
 );
 
 userRoutes.delete(
   '/:id',
   validate({ params: user.paramsSchema, body: user.deleteSchema }),
-  async (req, res) => {
-    await userController.delete(req, res);
-  },
+  userController.delete.bind(userController),
 );
 
 export { userRoutes };

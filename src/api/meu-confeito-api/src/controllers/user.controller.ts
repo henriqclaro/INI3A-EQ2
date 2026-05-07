@@ -15,6 +15,12 @@ export class UserController {
   constructor() {
     this.userService = new UserService();
   }
+  private extractProps(req: Request) {
+    const userId = req.userId;
+    const userRole = req.userRole;
+
+    return { userId, userRole };
+  }
 
   async register(
     req: Request<unknown, unknown, UserDTO.RegisterRequest>,
@@ -26,9 +32,11 @@ export class UserController {
   }
 
   async select(req: Request<any>, res: Response<ApiResponse<UserDTO.SelectResponse>>) {
+    const context = this.extractProps(req);
+
     const userId = req.params.id;
 
-    const responseData: UserDTO.SelectResponse = await this.userService.select(userId);
+    const responseData: UserDTO.SelectResponse = await this.userService.select(context, userId);
 
     return new DefaultSuccessResponse(res, responseData, 'User selected successfully').send();
   }
@@ -37,17 +45,25 @@ export class UserController {
     req: Request<any, unknown, UserDTO.UpdateRequest>,
     res: Response<ApiResponse<UserDTO.UpdateResponse>>,
   ) {
+    const context = this.extractProps(req);
+
     const userId = req.params.id;
 
-    const responseData: UserDTO.UpdateResponse = await this.userService.update(userId, req.body);
+    const responseData: UserDTO.UpdateResponse = await this.userService.update(
+      context,
+      userId,
+      req.body,
+    );
 
     return new DefaultSuccessResponse(res, responseData, 'User updated sucessfully').send();
   }
 
-  async delete(req: Request<any, unknown, UserDTO.DeleteRequest>, res: Response) {
+  async delete(req: Request<any, unknown, UserDTO.DeleteRequest>, res: Response<ApiResponse>) {
+    const context = this.extractProps(req);
+
     const userId = req.params.id;
 
-    await this.userService.delete(userId, req.body);
+    await this.userService.delete(context, userId, req.body);
 
     return new NoContentResponse(res, 'User deleted successfully').send();
   }

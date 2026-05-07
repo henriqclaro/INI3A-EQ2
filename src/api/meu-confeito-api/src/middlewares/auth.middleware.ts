@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 
-import jwt from 'jsonwebtoken';
+import jwt, { type JwtPayload } from 'jsonwebtoken';
 
 import { env } from '../config/env.config';
 import { AuthError } from '../responses/http.error';
@@ -15,7 +15,7 @@ export function authMiddleware(req: Request, _res: Response, next: NextFunction)
     throw new AuthError('Access token missing', 'AUTH_ACCESS_TOKEN_MISSING');
   }
 
-  const decoded = jwt.verify(token, env.JWT_SECRET) as any;
+  const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
   const { id, role } = decoded;
 
   req.userId = id;

@@ -10,13 +10,13 @@ const authController = new AuthController();
 authRoutes.post(
   '/sessions',
   validate({ body: auth.logInSchema }),
-  async (req, res) => await authController.logIn(req, res),
+  authController.logIn.bind(authController),
 );
 
 authRoutes.post(
   '/tokens',
   validate({ body: auth.refreshTokenSchema }),
-  async (req, res) => await authController.refreshToken(req, res),
+  authController.refreshToken.bind(authController),
 );
 
 export { authRoutes };
