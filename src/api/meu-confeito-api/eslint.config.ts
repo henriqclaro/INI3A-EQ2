@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 
 export default [
   {
-    ignores: ['node_modules/', 'dist/', 'build/', 'eslint.config.ts'],
+    ignores: ['node_modules/', 'dist/', 'build/', 'src/generated/', 'eslint.config.ts'],
   },
 
   {
@@ -57,8 +57,13 @@ export default [
           trailingUnderscore: 'allow',
         },
         { selector: 'import', format: ['camelCase', 'UPPER_CASE'] },
-        { selector: 'property', format: ['snake-case'] },
-        { selector: 'variable', format: ['camelCase', 'UPPER_CASE'] },
+        { selector: 'property', format: null },
+        {
+          selector: 'variable',
+          format: ['camelCase', 'UPPER_CASE'],
+          leadingUnderscore: 'allowSingleOrDouble',
+          trailingUnderscore: 'allow',
+        },
         {
           selector: 'variable',
           types: ['boolean'],
