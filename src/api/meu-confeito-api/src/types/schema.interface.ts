@@ -3,7 +3,7 @@ interface Schema {
 }
 
 export interface ValidationSchemas {
+  headers?: Schema;
   params?: Schema;
   body?: Schema;
-  headers?: Schema;
 }

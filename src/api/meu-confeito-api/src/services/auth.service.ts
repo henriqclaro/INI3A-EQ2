@@ -47,7 +47,7 @@ export class AuthService {
       role: foundUser.role,
     };
 
-    const token = jwt.sign(payload, env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign(payload, env.JWT_SECRET, { expiresIn: '30m' });
     const refreshToken = randomBytes(40).toString('hex');
 
     const expireDate = new Date();
@@ -72,16 +72,11 @@ export class AuthService {
       auth: {
         accessToken: token,
         tokenType: 'Bearer',
-        expiresIn: 3600,
+        expiresIn: 1800,
       },
     };
 
-    if (data.clientType === 'mobile') {
-      userData.auth.refreshToken = refreshToken;
-
-      return { userData };
-    } else {
-      // web
+    if (data.clientType === 'web') {
       const cookie = {
         name: 'refreshToken',
         val: refreshToken,
@@ -94,6 +89,11 @@ export class AuthService {
       };
 
       return { userData, cookie };
+    } else {
+      // mobile
+      userData.auth.refreshToken = refreshToken;
+
+      return { userData };
     }
   }
 
@@ -120,8 +120,14 @@ export class AuthService {
       role: storedToken.user.role,
     };
 
-    const newToken = jwt.sign(payload, env.JWT_SECRET, { expiresIn: '1h' });
+    const newToken = jwt.sign(payload, env.JWT_SECRET, { expiresIn: '30' });
 
-    return { accessToken: newToken };
+    const auth = {
+      accessToken: newToken,
+      tokenType: 'Bearer',
+      expiresIn: 1800,
+    };
+
+    return { auth };
   }
 }

@@ -10,7 +10,6 @@ import type { UserDTO } from '../types/dtos/user.dto';
 export class UserService {
   private checkPermission(context: RequestContext, id: string) {
     if (context.userId !== id && context.userRole !== 'ADMIN') {
-      console.log(context.userId, id);
       throw new ForbiddenError('Action denied for lack of privileges');
     }
   }
@@ -123,19 +122,20 @@ export class UserService {
 
     this.checkUser(user);
 
-    const isSuspended = data.state === 'SUSPENDED';
-
     await prisma.refreshToken.deleteMany({
       where: { userId: id },
     });
+
+    const isSuspended = data.state === 'SUSPENDED';
+    const stateString = data.state.toLocaleLowerCase();
 
     await prisma.user.update({
       where: { id: id },
       data: {
         isActive: false,
 
-        name: `${data.state}_USER`,
-        email: isSuspended ? undefined : `${data.state.toLocaleLowerCase()}_${id}@anonymized.local`,
+        name: `${stateString}_user`,
+        email: isSuspended ? undefined : `${stateString}_${id}@anonymized.local`,
         phone: isSuspended ? undefined : null,
         pfpUrl: null,
         providerId: null,

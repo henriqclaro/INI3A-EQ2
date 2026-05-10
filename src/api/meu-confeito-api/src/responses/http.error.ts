@@ -1,4 +1,4 @@
-import type { AppErrorCode, AuthErrorCode } from '../types/error.code';
+import type { AppErrorCode, AuthErrorCode, SystemErrorCode } from '../types/error.code';
 import { AppError } from './app.error';
 
 export class DefaultAppError extends AppError {
@@ -43,5 +43,14 @@ export class GoneError extends AppError {
     errorCode: AppErrorCode = 'RESOURCE_GONE',
   ) {
     super(410, message, errorCode);
+  }
+}
+
+export class InternalError extends AppError {
+  constructor(
+    message = 'An internal server error occurred',
+    errorCode: SystemErrorCode = 'INTERNAL_SERVER_ERROR',
+  ) {
+    super(500, message, errorCode);
   }
 }

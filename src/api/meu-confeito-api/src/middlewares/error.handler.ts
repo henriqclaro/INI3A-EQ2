@@ -8,7 +8,7 @@ import jwt from 'jsonwebtoken';
 import { ZodError, z } from 'zod';
 
 import { AppError } from '../responses/app.error';
-import { NotFoundError } from '../responses/http.error';
+import { InternalError, NotFoundError } from '../responses/http.error';
 
 export function errorHandler(err: Error, _req: Request, res: Response, __next: NextFunction) {
   if (err instanceof AppError) {
@@ -51,7 +51,7 @@ export function errorHandler(err: Error, _req: Request, res: Response, __next: N
   }
 
   if (err instanceof PrismaClientKnownRequestError && err.code === 'P2025') {
-    throw new NotFoundError('User not found', 'USER_NOT_FOUND');
+    throw new NotFoundError();
   }
 
   // Adicionar erros operacionais acima desse comentário, e não-operacionais abaixo
@@ -59,18 +59,10 @@ export function errorHandler(err: Error, _req: Request, res: Response, __next: N
   if (err instanceof PrismaClientKnownRequestError || err instanceof PrismaClientValidationError) {
     console.error('Internal Prisma Error: ', err);
 
-    return res.status(500).json({
-      status: 'error',
-      message: 'An internal server error occurred',
-      code: 'INTERNAL_SERVER_ERROR',
-    });
+    throw new InternalError();
   }
 
   console.error('Internal Server Error: ', err);
 
-  return res.status(500).json({
-    status: 'error',
-    message: 'An internal server error occurred',
-    code: 'INTERNAL_SERVER_ERROR',
-  });
+  throw new InternalError();
 }
