@@ -1,4 +1,22 @@
-# Meu Confeito
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/LogoDarkHorizontal-MeuConfeito.png">
+    <img src="docs/LogoLightHorizontal-MeuConfeito.png">
+  </picture>
+</div>
+
+<br>
+
+<div align="center">
+    <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-22+-green?style=for-the-badge&logo=node.js" alt="Node.js Badge"></a>
+    <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-6.x-blue?style=for-the-badge&logo=typescript" alt="TypeScript Badge"></a><br>
+    <a href="https://expressjs.com"><img src="https://img.shields.io/badge/Express.js-5.x-lightgrey?style=for-the-badge&logo=express" alt="Express.js Badge"></a>
+    <a href="https://www.prisma.io/orm"><img src="https://img.shields.io/badge/Prisma-7.x-black?style=for-the-badge&logo=prisma" alt="Prisma ORM Badge"></a>
+    <a href="https://www.postgresql.org"><img src="https://img.shields.io/badge/Postgresql-18.x-blue?style=for-the-badge&logo=postgresql" alt="PostgreSQL Badge"></a><br>
+    <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19.x-cyan?style=for-the-badge&logo=React" alt="React Badge"></a>
+    <a href="https://expo.dev/go"><img src="https://img.shields.io/badge/Expo-54.x-white?style=for-the-badge&logo=Expo" alt="Expo Badge"></a>
+</div>
+
 ---
 
 ## Pré-requisitos
