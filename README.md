@@ -68,7 +68,7 @@ No terminal, execute os passos abaixo na ordem:
 ### 2. Clone o repositório
 
 ```bash
-git clone https://github.com/AnaClara1506/INI3A-EQ2.git
+git clone https://github.com/henriqclaro/INI3A-EQ2.git
 ```
 
 ### 3. Acesse o diretório do projeto
