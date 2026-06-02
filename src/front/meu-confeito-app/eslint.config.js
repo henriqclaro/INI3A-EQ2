@@ -49,8 +49,12 @@ module.exports = defineConfig([
           format: ['camelCase'],
         },
         {
+          selector: 'import',
+          format: ['camelCase', 'PascalCase'],
+        },
+        {
           selector: 'variable',
-          format: ['camelCase', 'UPPER_CASE'],
+          format: ['camelCase', 'UPPER_CASE', 'PascalCase'],
         },
         {
           selector: 'variable',
