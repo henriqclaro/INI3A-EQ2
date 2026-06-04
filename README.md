@@ -44,8 +44,8 @@ Antes de iniciar, certifique-se de ter os seguintes itens instalados:
 * **Expo Go**
   Aplicativo para testar o projeto no celular:
 
-  * Android: [Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent&hl=pt_BR)
-  * iOS: [App Store](https://apps.apple.com/br/app/expo-go/id982107779)
+  * Android: [Site do Expo](https://expo.dev/go?sdkVersion=55&platform=android&device=true)
+  * iOS: Fazer build manualmente
 
 ---
 
