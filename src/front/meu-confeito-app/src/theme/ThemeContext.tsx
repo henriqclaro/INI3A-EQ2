@@ -2,12 +2,12 @@ import { ReactNode, createContext, useContext, useState } from 'react';
 
 import { AppTheme, lightTheme } from './themes';
 
-type ThemeMode = 'light';
+export type ThemeMode = 'light';
 
 interface ThemeContextType {
   theme: AppTheme;
-  themeMode: ThemeMode;
-  setThemeMode: (mode: ThemeMode) => void;
+  currentMode: ThemeMode;
+  setMode: (mode: ThemeMode) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -20,13 +20,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }[themeMode];
 
   return (
-    <ThemeContext.Provider value={{ theme, themeMode, setThemeMode }}>
+    <ThemeContext.Provider value={{ theme, currentMode: themeMode, setMode: setThemeMode }}>
       {children}
     </ThemeContext.Provider>
   );
 }
 
-export function useTheme() {
+export function useThemeMode() {
   const context = useContext(ThemeContext);
 
   if (!context) {
