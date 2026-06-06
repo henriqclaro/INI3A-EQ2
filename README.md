@@ -157,8 +157,11 @@ Para manter a base de código organizada, legível e consistente entre toda a eq
 
 ### Arquivos Front-end (Componentes e Telas)
 
-* Iniciais maiúsculas (**PascalCase**)
-  * Ex: `PrimaryButton.tsx`, `LoginScreen.tsx`
+* Componentes com iniciais maiúsculas (**PascalCase**)
+  * Ex: `PrimaryButton.tsx`, `CustomTabBar.tsx`
+  
+* Rotas (telas) com tudo em minúsculo, separado por hífen (**kebab-case**)
+  * Ex: `index.tsx`, `user-profile.tsx`
 
 ### Arquivos Back-end (Expresss)
 

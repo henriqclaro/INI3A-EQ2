@@ -9,7 +9,11 @@ function RootLayoutContent() {
 
   return (
     <PaperProvider theme={theme}>
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
         <Stack.Screen name="(tabs)" />
       </Stack>
     </PaperProvider>

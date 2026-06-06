@@ -12,7 +12,15 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: false,
+        headerStyle: {
+          backgroundColor: theme.colors.primary,
+        },
+        headerTintColor: theme.colors.background,
+        headerTitleAlign: 'center',
+        headerTitleStyle: {
+          fontSize: 32,
+          fontWeight: 'bold',
+        },
       }}
       tabBar={({ navigation, state, descriptors, insets }) => (
         <BottomNavigation.Bar
