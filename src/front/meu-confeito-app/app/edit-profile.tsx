@@ -1,5 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { Stack } from 'expo-router';
+
 import { useThemeMode } from '@/src/theme/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
@@ -9,9 +11,12 @@ export default function EditProfileScreen() {
   const styles = createStyles(theme);
 
   return (
-    <View style={styles.container}>
-      <Text>Oie</Text>
-    </View>
+    <>
+      <Stack.Screen options={{ title: 'Editar Perfil' }} />
+      <View style={styles.container}>
+        <Text>Oie</Text>
+      </View>
+    </>
   );
 }
 

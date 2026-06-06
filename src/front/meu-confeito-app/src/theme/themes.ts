@@ -9,11 +9,16 @@ export const lightTheme = {
     primary: '#C53557',
     secondary: '#FBA8AF',
     border: '#40242B',
+    pitchBackground: '#FFFFFF',
+    placeholder: '#A9A9A9',
 
     secondaryContainer: '#FBA8AF',
     onSecondaryContainer: '#40242B',
     onSurface: '#F6EDDC',
     onSurfaceVariant: '#F6EDDC',
+  },
+  header: {
+
   },
   spacing: {
     sm: 8,

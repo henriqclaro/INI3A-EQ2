@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 
 import { PaperProvider } from 'react-native-paper';
 
+import { CustomHeader } from '@/src/components';
 import { ThemeProvider, useThemeMode } from '@/src/theme/ThemeContext';
 
 function RootLayoutContent() {
@@ -11,10 +12,12 @@ function RootLayoutContent() {
     <PaperProvider theme={theme}>
       <Stack
         screenOptions={{
-          headerShown: false,
+          headerShown: true,
+
+          header: (props) => <CustomHeader {...props} />,
         }}
       >
-        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
     </PaperProvider>
   );
