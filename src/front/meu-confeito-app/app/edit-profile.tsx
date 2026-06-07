@@ -15,8 +15,9 @@ export default function EditProfileScreen() {
   return (
     <>
       <Stack.Screen options={{ title: 'Editar Perfil' }} />
+
       <View style={styles.container}>
-        <BackButton route={'/(tabs)/profile'} />
+        <BackButton route="/(tabs)/profile" />
         <Image src="/assets/images/icon.png" alt="Foto de Perfil" style={styles.image} />
         <Input placeholder="Nome de Usuário" />
         <Input placeholder="Email de Usuário" keyboardType="email-address" />
