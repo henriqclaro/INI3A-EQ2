@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
 import { Link } from 'expo-router';
@@ -9,7 +10,7 @@ import { AppTheme } from '@/src/theme/themes';
 export default function ProfileScreen() {
   const { theme } = useThemeMode();
 
-  const styles = createStyles(theme);
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   return (
     <View style={styles.container}>

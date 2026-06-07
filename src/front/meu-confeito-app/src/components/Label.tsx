@@ -1,6 +1,8 @@
+import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useThemeMode } from '../theme/ThemeContext';
+import { AppTheme } from '../theme/themes';
 
 interface LabelProps {
   text?: string;
@@ -10,7 +12,17 @@ interface LabelProps {
 export const Label = ({ text, placeholder }: LabelProps) => {
   const { theme } = useThemeMode();
 
-  const styles = StyleSheet.create({
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.lblText}>{text || placeholder}</Text>
+    </View>
+  );
+};
+
+const createStyles = (theme: AppTheme) =>
+  StyleSheet.create({
     container: {
       width: 250,
       height: 55,
@@ -27,10 +39,3 @@ export const Label = ({ text, placeholder }: LabelProps) => {
       color: theme.colors.text,
     },
   });
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.lblText}>{text || placeholder}</Text>
-    </View>
-  );
-};

@@ -1,7 +1,8 @@
-import { ReactNode } from 'react';
+import { ReactNode, useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 
 import { useThemeMode } from '../theme/ThemeContext';
+import { AppTheme } from '../theme/themes';
 
 interface PrimaryButtonProps {
   name?: string;
@@ -13,7 +14,18 @@ interface PrimaryButtonProps {
 export const PrimaryButton = ({ name, onPress, children, style }: PrimaryButtonProps) => {
   const { theme } = useThemeMode();
 
-  const styles = StyleSheet.create({
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
+  return (
+    <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
+      <Text style={styles.btnText}>{name}</Text>
+      {children}
+    </TouchableOpacity>
+  );
+};
+
+const createStyles = (theme: AppTheme) =>
+  StyleSheet.create({
     button: {
       width: 275,
       height: 55,
@@ -30,11 +42,3 @@ export const PrimaryButton = ({ name, onPress, children, style }: PrimaryButtonP
       fontSize: 18,
     },
   });
-
-  return (
-    <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
-      <Text style={styles.btnText}>{name}</Text>
-      {children}
-    </TouchableOpacity>
-  );
-};

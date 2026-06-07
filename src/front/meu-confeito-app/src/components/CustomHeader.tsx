@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { BottomTabHeaderProps } from '@react-navigation/bottom-tabs';
@@ -5,23 +6,14 @@ import { NativeStackHeaderProps } from '@react-navigation/native-stack';
 import { Appbar } from 'react-native-paper';
 
 import { useThemeMode } from '../theme/ThemeContext';
+import { AppTheme } from '../theme/themes';
 
 type CustomHeaderProps = NativeStackHeaderProps | BottomTabHeaderProps;
 
 export const CustomHeader = ({ navigation, route, options }: CustomHeaderProps) => {
   const { theme } = useThemeMode();
 
-  const styles = StyleSheet.create({
-    header: {
-      backgroundColor: theme.colors.primary,
-    },
-    headerTitle: {
-      alignItems: 'center',
-    },
-    headerText: {
-      fontSize: 32,
-    },
-  });
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   const title = options.title ?? route.name;
 
@@ -32,3 +24,16 @@ export const CustomHeader = ({ navigation, route, options }: CustomHeaderProps) 
     </Appbar.Header>
   );
 };
+
+const createStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    header: {
+      backgroundColor: theme.colors.primary,
+    },
+    headerTitle: {
+      alignItems: 'center',
+    },
+    headerText: {
+      fontSize: 32,
+    },
+  });

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useThemeMode } from '@/src/theme/ThemeContext';
@@ -6,7 +7,7 @@ import { AppTheme } from '@/src/theme/themes';
 export default function ReportsScreen() {
   const { theme } = useThemeMode();
 
-  const styles = createStyles(theme);
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   return (
     <View style={styles.container}>

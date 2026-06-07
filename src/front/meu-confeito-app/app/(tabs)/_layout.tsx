@@ -15,17 +15,6 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: true,
         header: (props) => <CustomHeader {...props} />,
-        /*
-        headerStyle: {
-          backgroundColor: theme.colors.primary,
-        },
-        headerTintColor: theme.colors.background,
-        headerTitleAlign: 'center',
-        headerTitleStyle: {
-          fontSize: 32,
-          fontWeight: 'bold',
-        },
-        */
       }}
       tabBar={({ navigation, state, descriptors, insets }) => (
         <BottomNavigation.Bar
