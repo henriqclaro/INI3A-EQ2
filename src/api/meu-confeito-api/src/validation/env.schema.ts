@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const envSchema = z
   .object({
     NODE_ENV: z.enum(['dev', 'test', 'production']).default('production'),
+    SERVER_HOST: z.string('Invalid SERVER_HOST').default('localhost'),
     SERVER_PORT: z.coerce.number('Invalid SERVER_PORT').default(3000),
     BCRYPT_ROUNDS: z.coerce
       .number('Invalid number of salt rounds in BCRYPT_ROUNDS')
