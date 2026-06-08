@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { Stack } from 'expo-router';
 
-import { useThemeMode } from '@/src/theme/ThemeContext';
+import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
 export default function ReportsScreen() {

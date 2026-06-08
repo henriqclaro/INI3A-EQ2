@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { StyleProp, StyleSheet, TextInput, TextInputProps, View, ViewStyle } from 'react-native';
 
-import { useThemeMode } from '../theme/ThemeContext';
+import { useThemeMode } from '../contexts/ThemeContext';
 import { AppTheme } from '../theme/themes';
 
 interface InputProps extends TextInputProps {

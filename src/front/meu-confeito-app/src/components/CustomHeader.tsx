@@ -5,7 +5,7 @@ import { BottomTabHeaderProps } from '@react-navigation/bottom-tabs';
 import { NativeStackHeaderProps } from '@react-navigation/native-stack';
 import { Appbar } from 'react-native-paper';
 
-import { useThemeMode } from '../theme/ThemeContext';
+import { useThemeMode } from '../contexts/ThemeContext';
 import { AppTheme } from '../theme/themes';
 
 type CustomHeaderProps = NativeStackHeaderProps | BottomTabHeaderProps;

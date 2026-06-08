@@ -4,7 +4,7 @@ import { Image, StyleSheet, View } from 'react-native';
 import { Link } from 'expo-router';
 
 import { Label, PrimaryButton } from '@/src/components';
-import { useThemeMode } from '@/src/theme/ThemeContext';
+import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
 export default function ProfileScreen() {
