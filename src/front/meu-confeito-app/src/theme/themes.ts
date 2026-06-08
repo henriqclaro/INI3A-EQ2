@@ -12,10 +12,11 @@ export const lightTheme = {
     pitchBackground: '#FFFFFF',
     placeholder: '#A9A9A9',
 
-    secondaryContainer: '#FBA8AF',
-    onSecondaryContainer: '#40242B',
-    onSurface: '#F6EDDC',
-    onSurfaceVariant: '#F6EDDC',
+    // Barra de Navegação
+    secondaryContainer: '#FBA8AF', // Pílula
+    onSecondaryContainer: '#40242B', //  Ícone Selecionado
+    onSurface: '#F6EDDC', // Texto
+    onSurfaceVariant: '#F6EDDC', // Ícone Padrão
   },
   header: {
 

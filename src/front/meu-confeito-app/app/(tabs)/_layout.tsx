@@ -4,8 +4,8 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { CommonActions } from '@react-navigation/native';
 import { BottomNavigation } from 'react-native-paper';
 
-import { CustomHeader } from '@/src/components';
-import { useThemeMode } from '@/src/theme/ThemeContext';
+// import { CustomHeader } from '@/src/components';
+import { useThemeMode } from '@/src/contexts/ThemeContext';
 
 export default function TabsLayout() {
   const { theme } = useThemeMode();
@@ -13,8 +13,8 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: true,
-        header: (props) => <CustomHeader {...props} />,
+        headerShown: false,
+        // header: (props) => <CustomHeader {...props} />,
       }}
       tabBar={({ navigation, state, descriptors, insets }) => (
         <BottomNavigation.Bar

@@ -3,7 +3,7 @@ import { Stack } from 'expo-router';
 import { PaperProvider } from 'react-native-paper';
 
 import { CustomHeader } from '@/src/components';
-import { ThemeProvider, useThemeMode } from '@/src/theme/ThemeContext';
+import { ThemeProvider, useThemeMode } from '@/src/contexts/ThemeContext';
 
 function RootLayoutContent() {
   const { theme } = useThemeMode();

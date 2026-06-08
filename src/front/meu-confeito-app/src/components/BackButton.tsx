@@ -5,7 +5,7 @@ import { Href, Link } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { useThemeMode } from '../theme/ThemeContext';
+import { useThemeMode } from '../contexts/ThemeContext';
 import { AppTheme } from '../theme/themes';
 
 interface BackButtonProps {

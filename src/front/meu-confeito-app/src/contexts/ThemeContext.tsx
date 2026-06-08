@@ -1,6 +1,6 @@
 import { ReactNode, createContext, useContext, useState } from 'react';
 
-import { AppTheme, lightTheme } from './themes';
+import { AppTheme, lightTheme } from '../theme/themes';
 
 export type ThemeMode = 'light';
 
