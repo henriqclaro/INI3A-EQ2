@@ -25,7 +25,6 @@ userRoutes.get(
 userRoutes.patch(
   '/:id',
   validate({ params: user.paramsSchema, body: user.updateSchema }),
-
   userController.update.bind(userController),
 );
 
