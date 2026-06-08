@@ -12,6 +12,7 @@ export default function EditProfileScreen() {
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
+  //Telas fora da pasta de abas necessitam de declaração de nome:
   return (
     <>
       <Stack.Screen options={{ title: 'Editar Perfil' }} />

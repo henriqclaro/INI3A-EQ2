@@ -16,9 +16,12 @@ export default function ProfileScreen() {
     <View style={styles.container}>
       <Image src="/assets/images/icon.png" alt="Foto de Perfil" style={styles.image} />
       <Label placeholder="Nome de Usuário" />
+
+      {/*Botão que chama outra tela (utilizando Link): */}
       <Link href="/edit-profile" asChild>
         <PrimaryButton name="Editar Perfil" />
       </Link>
+      
       <PrimaryButton name="Sair da Conta" style={styles.logoutButton} />
     </View>
   );

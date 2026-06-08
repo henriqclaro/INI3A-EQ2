@@ -47,14 +47,22 @@ module.exports = defineConfig([
         {
           selector: 'default',
           format: ['camelCase'],
+          leadingUnderscore: 'allowSingleOrDouble',
+          trailingUnderscore: 'allow',
         },
         {
           selector: 'import',
           format: ['camelCase', 'PascalCase'],
         },
         {
+          selector: 'property',
+          format: null,
+        },
+        {
           selector: 'variable',
           format: ['camelCase', 'UPPER_CASE', 'PascalCase'],
+          leadingUnderscore: 'allowSingleOrDouble',
+          trailingUnderscore: 'allow',
         },
         {
           selector: 'variable',
@@ -65,6 +73,8 @@ module.exports = defineConfig([
         {
           selector: 'typeLike',
           format: ['PascalCase'],
+          leadingUnderscore: 'allowSingleOrDouble',
+          trailingUnderscore: 'allow',
         },
         {
           selector: 'function',
