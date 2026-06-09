@@ -15,9 +15,9 @@ export default function ReportsScreen() {
   return (
     <>
       <Stack.Screen options={{ title: 'Login' }} />
-
+    
       <View style={styles.container}>
-        <BackButton route='/' />
+        
         <Text>Oie</Text>
       </View>
     </>

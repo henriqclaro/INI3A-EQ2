@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, useWindowDimensions, ScrollView } from 'react-native';
 
 import { Stack } from 'expo-router';
 
@@ -37,14 +37,12 @@ export default function RecipesScreen() {
           </Picker>
         </View>
         {viewMode === 'recipe' ? (
-          <View style={styles.recipeContainer}>
+          <View style={styles.modeContainer}>
             <Text style={styles.primaryTitle}>Nome da Receita</Text>
             <Text style={styles.textQuantity}>Rende X porções de X gramas</Text>
-            <br></br>
-            <View style={styles.boxIngredients}>
+            <ScrollView style={styles.box}>
               <Text style={styles.secondaryTitle}>Ingredientes</Text>
-              <br></br>
-              <View style={styles.ingredient}>
+              <View style={styles.lineBox}>
                 <TouchableOpacity
                   style={[styles.checkbox, isChecked && styles.checkedCheckbox]}
                   onPress={() => setIsChecked(!isChecked)}
@@ -53,11 +51,39 @@ export default function RecipesScreen() {
                 </TouchableOpacity>
                 <Text> Quantidade de ingrediente 1</Text>
               </View>
-            </View>
+            </ScrollView>
+            <ScrollView style={styles.box}>
+              <Text style={styles.secondaryTitle}>Modo de Preparo</Text>
+              <View style={styles.lineBox}>
+                <Text style={styles.step}>1</Text>
+                <Text> Descrição da primeira etapa do modo de preparo da receita</Text>
+              </View>
+            </ScrollView>
           </View>
         ) : (
-          <View>
-            <Text>Visualização por preços</Text>
+          <View style={styles.modeContainer}>
+            <Text style={styles.primaryTitle}>Nome da Receita</Text>
+            <Text style={styles.textQuantity}>Rende X porções de X gramas</Text>
+            <ScrollView style={styles.box}>
+              <Text style={styles.secondaryTitle}>Preço por Ingrediente</Text>
+              <View style={styles.lineBox}>
+                <Text>R$XX,XX </Text>
+                <Text> Quantidade de ingrediente 1</Text>
+              </View>
+            </ScrollView>
+            <View style={styles.box}>
+              <Text style={styles.secondaryTitle}>Preço Gasto - Total</Text>
+              <Text>Preço gasto por unidade: R$XX,XX</Text>
+              <Text>Preço gasto por receita: R$XX,XX</Text>
+            </View>
+            <View style={styles.box}>
+              <Text style={styles.secondaryTitle}>Preço Sugerido</Text>
+              <Text>Preço para venda por unidade:</Text>
+              <Text style={styles.priceText}>R$ XX,XX</Text>
+              <Text>Margem de Lucro: XX%</Text>
+              <Text>Lucro por unidade: R$XX,XX</Text>
+              <Text>Lucro por receita: R$XX,XX</Text>
+            </View>
           </View>
         )}
       </View>
@@ -78,7 +104,7 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       flexDirection: isSmallScreen ? 'column' : 'row',
       alignItems: 'center',
       gap: 10,
-      margin: 20,
+      margin: 30,
       alignSelf: 'flex-end',
       marginLeft: 80,
     },
@@ -92,7 +118,7 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       borderRadius: 10,
       padding: 5,
     },
-    recipeContainer: {
+    modeContainer: {
       width: '100%',
       paddingRight: 20,
     },
@@ -104,24 +130,33 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
     },
     textQuantity: {
       fontSize: 18,
+      marginBottom: 10
     },
-    boxIngredients: {
+    box: {
+      maxHeight: 180,
       borderRadius: 10,
       borderWidth: 1,
       borderColor: theme.colors.primary,
       backgroundColor: theme.colors.pitchBackground,
       padding: 10,
+      marginTop: 5,
+      gap: 5
     },
     secondaryTitle: {
       color: theme.colors.text,
       fontFamily: 'Playfair Display SC',
       fontSize: 20,
       fontWeight: 'bold',
+      marginBottom: 10,
     },
-    ingredient: {
+    lineBox: {
       flexDirection: 'row',
       gap: 10,
       alignItems: 'center',
+    },
+    step:{
+      fontSize: 30,
+      color: theme.colors.primary,
     },
     checkbox: {
       width: 15,
@@ -139,4 +174,9 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
     checkedCheckbox: {
       backgroundColor: theme.colors.secondary,
     },
+    priceText:{
+      color: theme.colors.primary,
+      fontSize: 18,
+      fontWeight: 'bold',
+    }
   });
