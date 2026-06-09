@@ -9,8 +9,8 @@ export namespace TagDTO {
       id: string;
       name: string;
       type: string;
-      createdAt: Date;
       creatorId: string | null;
+      createdAt: Date;
     };
   }
 }

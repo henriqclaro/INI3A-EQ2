@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { authRoutes } from './auth.route';
+import { ingredientRoutes } from './ingredient.route';
 import { tagRoutes } from './tag.route';
 import { userRoutes } from './user.route';
 
@@ -14,10 +15,12 @@ routes.get('/ping', (_req, res) => {
 });
 
 // Adicionar as rotas abaixo desse comentário:
-routes.use('api/v1/users', userRoutes);
+routes.use('/users', userRoutes);
 
-routes.use('api/v1/auth', authRoutes);
+routes.use('/auth', authRoutes);
 
-routes.use('api/v1/tags', tagRoutes);
+routes.use('/tags', tagRoutes);
+
+routes.use('/ingredients', ingredientRoutes);
 
 export { routes };

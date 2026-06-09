@@ -14,7 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(cors());
 
-app.use(routes);
+app.use('/api/v1', routes);
 
 app.use((req, _res) => {
   throw new NotFoundError(`Route ${req.originalUrl} does not exist`, 'ROUTE_DOES_NOT_EXIST');
