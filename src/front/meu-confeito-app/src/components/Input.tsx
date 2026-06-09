@@ -17,6 +17,7 @@ export const Input = ({ value, onChangeText, style, containerStyle, ...rest }: I
     if (value !== undefined && value?.toString() !== localValue) {
       setLocalValue(value.toString());
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   const handleTextChange = (text: string) => {

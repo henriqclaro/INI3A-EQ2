@@ -21,7 +21,7 @@ export default function ProfileScreen() {
       <Link href="/edit-profile" asChild>
         <PrimaryButton name="Editar Perfil" />
       </Link>
-      
+
       <PrimaryButton name="Sair da Conta" style={styles.logoutButton} />
     </View>
   );

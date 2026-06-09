@@ -18,9 +18,7 @@ export const lightTheme = {
     onSurface: '#F6EDDC', // Texto
     onSurfaceVariant: '#F6EDDC', // Ícone Padrão
   },
-  header: {
-
-  },
+  header: {},
   spacing: {
     sm: 8,
     md: 16,

@@ -46,6 +46,7 @@ Antes de iniciar, certifique-se de ter os seguintes itens instalados:
 
   * Android: [Site do Expo](https://expo.dev/go?sdkVersion=55&platform=android&device=true)
   * iOS: Fazer build manualmente
+  * Geral: Abrir pelo navegador
 
 ---
 
@@ -87,6 +88,12 @@ git clone https://github.com/henriqclaro/INI3A-EQ2.git
 ```bash
 npm install
 ```
+
+### 5. Configure as variáveis de ambiente (`.env`)
+
+* Copie o arquivo `.env.example` e configure as variáveis.
+* *Não se esqueça de apagar o* `.example` *no final do arquivo.*
+* ***Nunca** apague o* `.env.example` *, ele sobe pro GitHub (diferentemente do* `.env` *)*
 
 ## Ambiente de Desenvolvimento (VS Code)
 
@@ -171,12 +178,12 @@ Para manter a base de código organizada, legível e consistente entre toda a eq
 ### Variáveis e Funções
 
 * Use **camelCase**
-  Ex: `loggedUser`, `validateForm()`, `handleSubmit`
+  * Ex: `loggedUser`, `validateForm()`, `handleSubmit`
 
 ### Constantes Globais
 
 * Use **UPPER_SNAKE_CASE**
-  Ex: `API_URL`, `PRIMARY_COLOR`, `MAX_ATTEMPTS`
+  * Ex: `API_URL`, `PRIMARY_COLOR`, `MAX_ATTEMPTS`
 
 ---
 ## Desenvolvimento do Front
@@ -194,8 +201,8 @@ npx expo start
 * **Android:**
   Abra o **Expo Go** e escaneie o QR Code exibido no terminal.
 
-* **iOS:**
-  Abra o app **Câmera**, escaneie o QR Code e abra no Expo Go.
+* **Geral:**
+  Abra no navegador e use o **Inspencionar** para simular as dimensões de um celular.
 
 ---
 
@@ -223,16 +230,19 @@ npx expo start
         ├── utils/        --Funções úteis, para complementar (ex: conversão monetária)
         └── validation/   --Schemas de validação de Requisições do Zod
 ```
-### 1. Configure o dotenv (`.env`)
 
-* Copie o arquivo `.env.example` e configure as variáveis.
-* *Não se esqueça de apagar o* `.example` *no final do arquivo.*
-* ***Nunca** apague o* `.env.example` *, ele sobe pro GitHub (diferentemente do* `.env` *)*
-
-### 2. Gere a pasta com os models necessários (`generated/`):
+### 1. Gere a pasta com os models necessários (`generated/`):
 
 ```bash
 npx prisma generate
+```
+
+### 2. Sincronize com o Banco de Dados:
+
+Configuradas as variáveis de ambiente, rode:
+
+```bash
+npx prisma db push
 ```
 
 ### 3. Inicie o servidor da API localmente:
@@ -250,7 +260,7 @@ npx prisma studio
 
 ## Notas para a Equipe
 
-* Sempre execute antes de começar:
+* Sempre execute **antes de começar** e **antes de fazer um commit**:
 
 ```bash
 git pull
