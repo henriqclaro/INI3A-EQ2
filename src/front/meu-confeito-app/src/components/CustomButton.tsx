@@ -1,24 +1,31 @@
-import { ReactNode, useMemo } from 'react';
+import { ReactNode, use, useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 
 import { useThemeMode } from '../contexts/ThemeContext';
 import { AppTheme } from '../theme/themes';
 
 interface PrimaryButtonProps {
-  name?: string;
+  title?: string;
   onPress?: () => void;
   children?: ReactNode;
   style?: object;
+  variant?: 'primary' | 'secondary';
 }
 
-export const PrimaryButton = ({ name, onPress, children, style }: PrimaryButtonProps) => {
+export const CustomButton = ({
+  title,
+  onPress,
+  children,
+  variant = 'primary',
+  style,
+}: PrimaryButtonProps) => {
   const { theme } = useThemeMode();
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   return (
     <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
-      <Text style={styles.btnText}>{name}</Text>
+      <Text style={styles.btnText}>{title}</Text>
       {children}
     </TouchableOpacity>
   );

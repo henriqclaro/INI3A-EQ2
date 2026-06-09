@@ -3,7 +3,7 @@ import { Image, StyleSheet, View } from 'react-native';
 
 import { Link } from 'expo-router';
 
-import { Label, PrimaryButton } from '@/src/components';
+import { CustomButton, Label } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
@@ -19,10 +19,10 @@ export default function ProfileScreen() {
 
       {/*Botão que chama outra tela (utilizando Link): */}
       <Link href="/edit-profile" asChild>
-        <PrimaryButton name="Editar Perfil" />
+        <CustomButton title="Editar Perfil" />
       </Link>
 
-      <PrimaryButton name="Sair da Conta" style={styles.logoutButton} />
+      <CustomButton title="Sair da Conta" style={styles.logoutButton} />
     </View>
   );
 }

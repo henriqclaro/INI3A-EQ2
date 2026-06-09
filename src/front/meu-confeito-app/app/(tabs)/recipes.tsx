@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { Link } from 'expo-router';
 
-import { PrimaryButton } from '@/src/components';
+import { CustomButton } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
@@ -16,7 +16,7 @@ export default function RecipesScreen() {
     <View style={styles.container}>
       <Text>Oie</Text>
       <Link href="/single-recipe" asChild>
-        <PrimaryButton name="Receita Unitária" />
+        <CustomButton title="Receita Unitária" />
       </Link>
     </View>
   );
