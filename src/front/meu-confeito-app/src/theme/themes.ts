@@ -9,6 +9,7 @@ export const lightTheme = {
     primary: '#C53557',
     secondary: '#FBA8AF',
     border: '#40242B',
+    secBorder: '#FBA8AF',
     pitchBackground: '#FFFFFF',
     placeholder: '#A9A9A9',
 
@@ -18,7 +19,6 @@ export const lightTheme = {
     onSurface: '#F6EDDC', // Texto
     onSurfaceVariant: '#F6EDDC', // Ícone Padrão
   },
-  header: {},
   spacing: {
     sm: 8,
     md: 16,

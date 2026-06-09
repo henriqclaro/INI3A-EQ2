@@ -1,5 +1,5 @@
-import { ReactNode, use, useMemo } from 'react';
-import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { ReactNode, useMemo } from 'react';
+import { StyleProp, StyleSheet, Text, TouchableOpacity, ViewStyle } from 'react-native';
 
 import { useThemeMode } from '../contexts/ThemeContext';
 import { AppTheme } from '../theme/themes';
@@ -8,7 +8,7 @@ interface PrimaryButtonProps {
   title?: string;
   onPress?: () => void;
   children?: ReactNode;
-  style?: object;
+  style?: StyleProp<ViewStyle>;
   variant?: 'primary' | 'secondary';
 }
 
@@ -21,7 +21,7 @@ export const CustomButton = ({
 }: PrimaryButtonProps) => {
   const { theme } = useThemeMode();
 
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const styles = useMemo(() => createStyles(theme, variant), [theme, variant]);
 
   return (
     <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
@@ -31,14 +31,15 @@ export const CustomButton = ({
   );
 };
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = (theme: AppTheme, variant: 'primary' | 'secondary') =>
   StyleSheet.create({
     button: {
       width: 275,
       height: 55,
-      backgroundColor: theme.colors.secondary,
+      backgroundColor:
+        variant === 'primary' ? theme.colors.secondary : theme.colors.pitchBackground,
       borderWidth: 0.8,
-      borderColor: theme.colors.border,
+      borderColor: variant === 'primary' ? theme.colors.border : theme.colors.secBorder,
       borderRadius: 10,
       paddingVertical: 12,
       justifyContent: 'center',

@@ -8,6 +8,7 @@ interface RetryAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
 }
 
+// eslint-disable-next-line import/no-named-as-default-member
 export const api = axios.create({
   baseURL: env.EXPO_PUBLIC_API_URL,
   timeout: 7500,

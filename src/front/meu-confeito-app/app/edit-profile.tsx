@@ -12,14 +12,14 @@ export default function EditProfileScreen() {
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
-  //Telas fora da pasta de abas necessitam de declaração de nome:
+  // Telas fora da pasta de abas necessitam de declaração de nome:
   return (
     <>
       <Stack.Screen options={{ title: 'Editar Perfil' }} />
 
       <View style={styles.container}>
         <BackButton route="/(tabs)/profile" />
-        <Image src="/assets/images/icon.png" alt="Foto de Perfil" style={styles.image} />
+        <Image alt="Foto de Perfil" style={styles.image} />
         <Input placeholder="Nome de Usuário" />
         <Input placeholder="Email de Usuário" keyboardType="email-address" />
         <Input placeholder="Telefone de Usuário" keyboardType="number-pad" />
