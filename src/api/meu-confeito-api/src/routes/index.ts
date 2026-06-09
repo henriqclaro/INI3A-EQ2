@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import { authRoutes } from './auth.route';
 import { ingredientRoutes } from './ingredient.route';
+import { recipeRoutes } from './recipe.route';
 import { tagRoutes } from './tag.route';
 import { userRoutes } from './user.route';
 
@@ -22,5 +23,7 @@ routes.use('/auth', authRoutes);
 routes.use('/tags', tagRoutes);
 
 routes.use('/ingredients', ingredientRoutes);
+
+routes.use('/recipes', recipeRoutes);
 
 export { routes };
