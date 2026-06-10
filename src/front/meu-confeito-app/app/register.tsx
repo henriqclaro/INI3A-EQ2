@@ -6,7 +6,7 @@ import { Stack } from 'expo-router';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
-export default function ReportsScreen() {
+export default function RegisterScreen() {
   const { theme } = useThemeMode();
 
   const styles = useMemo(() => createStyles(theme), [theme]);

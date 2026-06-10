@@ -1,16 +1,53 @@
-import { useMemo } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Alert, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 
-import { Link, Stack } from 'expo-router';
+import * as Crypto from 'expo-crypto';
+import { Link, Stack, router } from 'expo-router';
+
+import { ActivityIndicator } from 'react-native-paper';
 
 import { BackButton, CustomButton, Input } from '@/src/components';
+import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
-export default function ReportsScreen() {
+export default function LogInScreen() {
   const { theme } = useThemeMode();
+  const { width } = useWindowDimensions();
+
+  const isSmallScreen = width < 450;
 
   const styles = useMemo(() => createStyles(theme), [theme]);
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setLoading] = useState(false);
+
+  const { signIn } = useAuth();
+
+  async function handleLogIn() {
+    if (!email || !password) {
+      Alert.alert('Preencha todos os campos.');
+      return;
+    }
+
+    setLoading(true);
+
+    const clientType = isSmallScreen ? 'mobile' : 'web';
+
+    const sessionId = Crypto.randomUUID();
+
+    try {
+      await signIn({ email, password, clientType, sessionId });
+
+      router.push('/home');
+    } catch (error) {
+      console.log(error);
+      Alert.alert('Falha no LogIn');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <>
@@ -18,28 +55,32 @@ export default function ReportsScreen() {
 
       <View style={styles.container}>
         <BackButton route="/" />
-
         <Text style={styles.mainText}>Digite seus dados:</Text>
-
         <Input
+          value={email}
           placeholder="@email"
           keyboardType="email-address"
           autoCapitalize="none"
+          onChangeText={setEmail}
         />
-
-        <Input placeholder="senha" secureTextEntry autoCapitalize="none" />
-
+        <Input
+          value={password}
+          placeholder="senha"
+          secureTextEntry
+          autoCapitalize="none"
+          onChangeText={setPassword}
+        />
         {/*<Link href="/forgot" style={styles.forgotContainer}>
           <TouchableOpacity>
-            <Text style={styles.forgotText}>Esqueci a sSenha</Text>
+            <Text style={styles.forgotText}>Esqueci a Senha</Text>
           </TouchableOpacity>
         </Link>*/}
-
-        <Link href="/home">
-          <CustomButton title="Cadastrar" variant="secondary" />
-        </Link>
+        {isLoading ? (
+          <ActivityIndicator size="large" />
+        ) : (
+          <CustomButton title="Entrar" variant="secondary" onPress={handleLogIn} />
+        )}
       </View>
-      <CustomButton title="Esqueci a Senha" />
     </>
   );
 }

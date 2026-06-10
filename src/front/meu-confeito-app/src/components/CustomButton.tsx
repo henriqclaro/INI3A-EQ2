@@ -1,12 +1,12 @@
 import { ReactNode, useMemo } from 'react';
-import { StyleProp, StyleSheet, Text, TouchableOpacity, ViewStyle } from 'react-native';
+import { GestureResponderEvent, StyleProp, StyleSheet, Text, TouchableOpacity, ViewStyle } from 'react-native';
 
 import { useThemeMode } from '../contexts/ThemeContext';
 import { AppTheme } from '../theme/themes';
 
-interface PrimaryButtonProps {
+interface CustomButtonProps {
   title?: string;
-  onPress?: () => void;
+  onPress?: (event: GestureResponderEvent) => void | Promise<void>;
   children?: ReactNode;
   style?: StyleProp<ViewStyle>;
   variant?: 'primary' | 'secondary';
@@ -18,7 +18,7 @@ export const CustomButton = ({
   children,
   variant = 'primary',
   style,
-}: PrimaryButtonProps) => {
+}: CustomButtonProps) => {
   const { theme } = useThemeMode();
 
   const styles = useMemo(() => createStyles(theme, variant), [theme, variant]);

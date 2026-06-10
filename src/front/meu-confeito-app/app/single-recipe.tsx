@@ -9,7 +9,7 @@ import { BackButton } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
-export default function RecipesScreen() {
+export default function RecipeScreen() {
   const { theme } = useThemeMode();
   const { width } = useWindowDimensions();
   const isSmallScreen = width < 350;

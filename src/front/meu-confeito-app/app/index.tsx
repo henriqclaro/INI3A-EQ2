@@ -7,7 +7,7 @@ import { CustomButton } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
-export default function ReportsScreen() {
+export default function WelcomeScreen() {
   const { theme } = useThemeMode();
 
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -24,15 +24,15 @@ export default function ReportsScreen() {
           projetar suas vendas e armazenar suas receitas.
         </Text>
 
-        <Link href="/login">
+        <Link href="/login" asChild>
           <CustomButton title="Sou Confeiteira" />
         </Link>
 
-        <Link href="/login">
+        <Link href="/login" asChild>
           <CustomButton title="Sou Cliente" />
         </Link>
-        
-        <Link href="/register">
+
+        <Link href="/register" asChild>
           <CustomButton title="Cadastrar" variant="secondary" />
         </Link>
       </View>
