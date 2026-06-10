@@ -22,5 +22,6 @@ const createStyles = (theme: AppTheme) =>
       flex: 1,
       backgroundColor: theme.colors.background,
       alignItems: 'center',
+      paddingTop: 80,
     },
   });

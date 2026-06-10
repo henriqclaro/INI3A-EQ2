@@ -68,7 +68,7 @@ module.exports = defineConfig([
           selector: 'variable',
           types: ['boolean'],
           format: ['PascalCase'],
-          prefix: ['is', 'should', 'has', 'can', 'did', 'will'],
+          prefix: ['is', 'in', 'should', 'has', 'can', 'did', 'will'],
         },
         {
           selector: 'typeLike',

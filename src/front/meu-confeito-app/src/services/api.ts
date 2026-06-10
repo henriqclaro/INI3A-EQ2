@@ -1,8 +1,7 @@
-import * as SecureStore from 'expo-secure-store';
-
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 import { env } from '../config/env';
+import { Storage } from '../utils/storage';
 
 interface RetryAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
@@ -33,7 +32,7 @@ const processQueue = (error: any, token: string | null = null) => {
 
 api.interceptors.request.use(
   async (config) => {
-    const accessToken = await SecureStore.getItemAsync('access_token');
+    const accessToken = await Storage.getItem('access_token');
 
     if (accessToken && config.headers) {
       config.headers.Authorization = `Bearer ${accessToken}`;
@@ -54,8 +53,8 @@ api.interceptors.response.use(
     }
 
     if (originalRequest.url?.includes('/tokens')) {
-      await SecureStore.deleteItemAsync('access_token');
-      await SecureStore.deleteItemAsync('refresh_token');
+      await Storage.removeItem('access_token');
+      await Storage.removeItem('refresh_token');
 
       return Promise.reject(error);
     }
@@ -77,7 +76,7 @@ api.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      const refreshToken = await SecureStore.getItemAsync('refresh_token');
+      const refreshToken = await Storage.getItem('refresh_token');
 
       if (!refreshToken) {
         throw new Error('Refresh Token not found');
@@ -87,7 +86,7 @@ api.interceptors.response.use(
 
       const { accessToken: newAccessToken } = response.data;
 
-      await SecureStore.setItemAsync('access_token', newAccessToken);
+      await Storage.setItem('access_token', newAccessToken);
 
       if (originalRequest.headers) {
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
@@ -99,8 +98,8 @@ api.interceptors.response.use(
     } catch (refreshError) {
       processQueue(refreshError, null);
 
-      await SecureStore.deleteItemAsync('access_token');
-      await SecureStore.deleteItemAsync('refresh_token');
+      await Storage.removeItem('access_token');
+      await Storage.removeItem('refresh_token');
 
       return Promise.reject(refreshError);
     } finally {

@@ -1,28 +1,46 @@
 import { useMemo } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 
 import { CustomButton, Label } from '@/src/components';
+import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
 export default function ProfileScreen() {
   const { theme } = useThemeMode();
 
+  const { user, signOut } = useAuth();
+
   const styles = useMemo(() => createStyles(theme), [theme]);
+
+  function handleLogOut() {
+    try {
+      signOut();
+
+      router.replace('/');
+    } catch (error) {
+      console.error('Error signing out: ', error);
+    }
+  }
 
   return (
     <View style={styles.container}>
       <Image src="/assets/images/icon.png" alt="Foto de Perfil" style={styles.image} />
-      <Label placeholder="Nome de Usuário" />
+      <Label text={user?.name} placeholder="Nome de Usuário" />
 
       {/*Botão que chama outra tela (utilizando Link): */}
       <Link href="/edit-profile" asChild>
         <CustomButton title="Editar Perfil" />
       </Link>
 
-      <CustomButton title="Sair da Conta" style={styles.logoutButton} />
+      <CustomButton
+        title="Sair da Conta"
+        variant="secondary"
+        style={styles.logoutButton}
+        onPress={handleLogOut}
+      />
     </View>
   );
 }
@@ -33,6 +51,7 @@ const createStyles = (theme: AppTheme) =>
       flex: 1,
       backgroundColor: theme.colors.background,
       alignItems: 'center',
+      paddingTop: 80,
     },
     image: {
       backgroundColor: theme.colors.placeholder,

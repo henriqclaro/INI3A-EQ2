@@ -6,6 +6,7 @@ export namespace AuthDTO {
   export type LogInRequest = z.infer<typeof auth.logInSchema>;
   export interface LogInResponse {
     user: {
+      id: string,
       name: string;
       email: string;
       phone: string | null;

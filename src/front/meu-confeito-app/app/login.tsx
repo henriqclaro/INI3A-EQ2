@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import * as Crypto from 'expo-crypto';
 import { Link, Stack, router } from 'expo-router';
@@ -13,9 +13,6 @@ import { AppTheme } from '@/src/theme/themes';
 
 export default function LogInScreen() {
   const { theme } = useThemeMode();
-  const { width } = useWindowDimensions();
-
-  const isSmallScreen = width < 450;
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -33,14 +30,14 @@ export default function LogInScreen() {
 
     setLoading(true);
 
-    const clientType = isSmallScreen ? 'mobile' : 'web';
+    const clientType = Platform.OS;
 
     const sessionId = Crypto.randomUUID();
 
     try {
       await signIn({ email, password, clientType, sessionId });
 
-      router.push('/home');
+      router.replace('/home');
     } catch (error) {
       console.log(error);
       Alert.alert('Falha no LogIn');

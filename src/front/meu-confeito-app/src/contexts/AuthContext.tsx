@@ -1,11 +1,24 @@
-import { ReactNode, createContext, useContext, useState } from 'react';
-
-import * as SecureStore from 'expo-secure-store';
+import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
 
 import { AuthService, LogInData, LogInResponse } from '../services/auth';
+import { Storage } from '../utils/storage';
+
+/*
+// IMPLEMENTAR LÓGICA DE ATUALIZAÇÃO DEPOIS
+*/
+
+interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  pfpUrl: string | null;
+  role: string;
+}
 
 interface AuthContextData {
-  user: any | null;
+  user: UserProfile | null;
+  isLoadingStorage: boolean;
   signIn: (data: LogInData) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -14,27 +27,55 @@ const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<any | null>(null);
+  const [isLoadingStorage, setIsLoadingStorage] = useState(true);
+
+  useEffect(() => {
+    async function loadStorageData() {
+      try {
+        const storedToken = await Storage.getItem('access_token');
+        const storedUser = await Storage.getItem('user_profile');
+
+        if (storedToken && storedUser) {
+          setUser(JSON.parse(storedUser));
+        }
+      } catch (error) {
+        console.error('Error loading items from Storage: ', error);
+      } finally {
+        setIsLoadingStorage(false);
+      }
+    }
+
+    loadStorageData();
+  }, []);
 
   async function signIn(data: LogInData) {
     const res: LogInResponse = await AuthService.logIn(data);
 
     const { user, auth } = res.data;
 
-    await SecureStore.setItemAsync('session_id', data.sessionId);
-    await SecureStore.setItemAsync('access_token', auth.accessToken);
-    await SecureStore.setItemAsync('refresh_token', auth.refreshToken);
+    await Storage.setItem('session_id', data.sessionId);
+    await Storage.setItem('access_token', auth.accessToken);
+    await Storage.setItem('refresh_token', auth.refreshToken);
+
+    await Storage.setItem('user_profile', JSON.stringify(user));
 
     setUser(user);
   }
 
   async function signOut() {
-    await SecureStore.deleteItemAsync('access_token');
-    await SecureStore.deleteItemAsync('refresh_token');
+    await Storage.removeItem('session_id');
+    await Storage.removeItem('access_token');
+    await Storage.removeItem('refresh_token');
+    await Storage.removeItem('user_profile');
 
     setUser(null);
   }
 
-  return <AuthContext.Provider value={{ user, signIn, signOut }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, isLoadingStorage, signIn, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

@@ -4,11 +4,14 @@ import { Image, StyleSheet, View } from 'react-native';
 import { Stack } from 'expo-router';
 
 import { BackButton, Input } from '@/src/components';
+import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
 export default function EditProfileScreen() {
   const { theme } = useThemeMode();
+
+  const { user } = useAuth();
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -20,9 +23,13 @@ export default function EditProfileScreen() {
       <View style={styles.container}>
         <BackButton route="/(tabs)/profile" />
         <Image alt="Foto de Perfil" style={styles.image} />
-        <Input placeholder="Nome de Usuário" />
-        <Input placeholder="Email de Usuário" keyboardType="email-address" />
-        <Input placeholder="Telefone de Usuário" keyboardType="number-pad" />
+        <Input value={user?.name} placeholder="Nome de Usuário" />
+        <Input value={user?.email} placeholder="Email de Usuário" keyboardType="email-address" />
+        <Input
+          value={user?.phone ? user.phone : ''}
+          placeholder="Telefone de Usuário"
+          keyboardType="number-pad"
+        />
       </View>
     </>
   );
