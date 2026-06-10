@@ -18,6 +18,12 @@ export const lightTheme = {
     onSecondaryContainer: '#40242B', //  Ícone Selecionado
     onSurface: '#F6EDDC', // Texto
     onSurfaceVariant: '#F6EDDC', // Ícone Padrão
+
+    tags: {
+      product: '#FFF25E',
+      variety: '#8DFBFF',
+      attribute: '#FFA189',
+    },
   },
   spacing: {
     sm: 8,

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
+import { Image } from 'expo-image';
 import { Link, Stack } from 'expo-router';
 
 import { CustomButton } from '@/src/components';
@@ -62,9 +63,9 @@ const createStyles = (theme: AppTheme) =>
       marginBottom: 35,
     },
     logo: {
-      width: 150,
-      height: 150,
+      width: 225,
+      height: 225,
       resizeMode: 'contain',
-      marginBottom: 20,
+      marginBottom: 10,
     },
   });
