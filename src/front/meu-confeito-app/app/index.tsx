@@ -17,16 +17,21 @@ export default function ReportsScreen() {
 
       <View style={styles.container}>
         <Image source={require('../assets/images/logo.svg')} style={styles.logo} />
+
+        <Text style={styles.mainText}>Seja bem-vindo(a) ao MeuConfeito!</Text>
         <Text style={styles.text}>
-          Seja bem-vindo(a) ao <b>MeuConfeito</b>! Um aplicativo pensado para auxiliar confeiteiras
-          que desejam organizar suas produções, projetar suas vendas e armazenar suas receitas.
+          Um aplicativo pensado para auxiliar confeiteiras que desejam organizar suas produções,
+          projetar suas vendas e armazenar suas receitas.
         </Text>
+
         <Link href="/login">
           <CustomButton title="Sou Confeiteira" />
         </Link>
+
         <Link href="/login">
           <CustomButton title="Sou Cliente" />
         </Link>
+        
         <Link href="/register">
           <CustomButton title="Cadastrar" variant="secondary" />
         </Link>
@@ -41,11 +46,20 @@ const createStyles = (theme: AppTheme) =>
       backgroundColor: theme.colors.background,
       alignItems: 'center',
     },
+    mainText: {
+      color: theme.colors.text,
+      textAlign: 'center',
+      padding: 15,
+      fontSize: 25,
+      fontWeight: 'bold',
+      fontFamily: 'Playfair Display SC',
+    },
     text: {
       color: theme.colors.text,
       textAlign: 'center',
       padding: 20,
       fontSize: 20,
+      marginBottom: 35,
     },
     logo: {
       width: 150,
