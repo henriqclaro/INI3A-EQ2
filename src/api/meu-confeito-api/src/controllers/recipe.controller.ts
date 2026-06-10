@@ -33,16 +33,29 @@ export class RecipeController {
     return new CreatedResponse(res, responseData, 'Recipe created successfully').send();
   }
 
-  async selectSingle(req: Request<any>, res: Response<ApiResponse<RecipeDTO.SelectResponse>>) {
+  async selectSingle(
+    req: Request<any>,
+    res: Response<ApiResponse<RecipeDTO.SingleSelectResponse>>,
+  ) {
     const context = this.extractProps(req);
 
     const recipeId = req.params.id;
 
-    const responseData: RecipeDTO.SelectResponse = await this.recipeService.selectSingle(
+    const responseData: RecipeDTO.SingleSelectResponse = await this.recipeService.selectSingle(
       context,
       recipeId,
     );
 
     return new DefaultSuccessResponse(res, responseData, 'Recipe selected successfully').send();
+  }
+
+  async search(req: Request<any>, res: Response<ApiResponse<RecipeDTO.SearchResponse>>) {
+    const search = req.query.search as string;
+
+    const page = req.query.page as unknown as number;
+
+    const responseData: RecipeDTO.SearchResponse = await this.recipeService.search(search, page);
+
+    return new DefaultSuccessResponse(res, responseData, 'Recipes selected successfully').send();
   }
 }

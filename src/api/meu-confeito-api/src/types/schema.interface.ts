@@ -6,4 +6,5 @@ export interface ValidationSchemas {
   headers?: Schema;
   params?: Schema;
   body?: Schema;
+  query?: Schema;
 }

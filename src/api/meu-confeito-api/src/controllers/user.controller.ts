@@ -22,6 +22,8 @@ export class UserController {
     return { userId, userRole };
   }
 
+  // Métodos de CRUD ------------------------
+
   async register(
     req: Request<unknown, unknown, UserDTO.RegisterRequest>,
     res: Response<ApiResponse<UserDTO.RegisterResponse>>,
@@ -66,5 +68,43 @@ export class UserController {
     await this.userService.delete(context, userId, req.body);
 
     return new NoContentResponse(res, 'User deleted successfully').send();
+  }
+
+  // Métodos de Relações ------------------------
+
+  async selectUserRecipe(
+    req: Request<any>,
+    res: Response<ApiResponse<UserDTO.SelectUserRecipesResponse>>,
+  ) {
+    const context = this.extractProps(req);
+
+    const userId = req.params.id;
+
+    const responseData: UserDTO.SelectUserRecipesResponse = await this.userService.selectUserRecipe(
+      context,
+      userId,
+    );
+
+    return new DefaultSuccessResponse(
+      res,
+      responseData,
+      'User Recipes selected successfully',
+    ).send();
+  }
+
+  async selectUserSaves(
+    req: Request<any>,
+    res: Response<ApiResponse<UserDTO.SelectUserSavesResponse>>,
+  ) {
+    const context = this.extractProps(req);
+
+    const userId = req.params.id;
+
+    const responseData: UserDTO.SelectUserSavesResponse = await this.userService.selectUserSaves(
+      context,
+      userId,
+    );
+
+    return new DefaultSuccessResponse(res, responseData, 'User Saves selected successfully').send();
   }
 }

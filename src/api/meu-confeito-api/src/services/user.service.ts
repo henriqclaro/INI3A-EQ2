@@ -26,6 +26,8 @@ export class UserService {
     }
   }
 
+  // Queries de CRUD ------------------------
+
   async register(data: UserDTO.RegisterRequest) {
     const userExists = await prisma.user.findUnique({
       where: { email: data.email },
@@ -142,5 +144,82 @@ export class UserService {
         passwordHash: 'DELETED',
       },
     });
+  }
+
+  // Queries de Relações ------------------------
+
+  async selectUserRecipe(context: RequestContext, id: string) {
+    this.checkPermission(context, id);
+
+    const recipes = await prisma.recipe.findMany({
+      where: { userId: id },
+      take: 10,
+      select: {
+        id: true,
+        title: true,
+        coverUrl: true,
+
+        profitMargin: true,
+        overhead: true,
+        hourlyLabor: true,
+        packagingCost: true,
+
+        createdAt: true,
+        updatedAt: true,
+
+        tags: {
+          select: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+                type: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return { recipes };
+  }
+
+  async selectUserSaves(context: RequestContext, id: string) {
+    this.checkPermission(context, id);
+
+    const userSaves = await prisma.userSavedRecipe.findMany({
+      where: { userId: id },
+      take: 10,
+      select: {
+        savedAt: true,
+
+        recipe: {
+          select: {
+            id: true,
+            title: true,
+            coverUrl: true,
+
+            profitMargin: true,
+            overhead: true,
+            hourlyLabor: true,
+            packagingCost: true,
+
+            tags: {
+              select: {
+                tag: {
+                  select: {
+                    id: true,
+                    name: true,
+                    type: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return { userSaves };
   }
 }

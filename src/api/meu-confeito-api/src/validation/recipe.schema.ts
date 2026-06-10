@@ -19,3 +19,12 @@ export const registerSchema = z.object({
 export const paramsSchema = z.object({
   id: z.uuid('Invalid UUID for recipe ID'),
 });
+
+export const querySchema = z.object({
+  page: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val, 10) : 1))
+    .pipe(z.number().int().positive()),
+  search: z.string('Search query must be a single string').trim().optional(),
+});

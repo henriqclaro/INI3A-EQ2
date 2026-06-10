@@ -71,4 +71,54 @@ export class RecipeService {
 
     return { recipe };
   }
+
+  async search(search?: string, page?: number) {
+    const baseFilter: any = {
+      status: 'PUBLISHED',
+      recipe: {},
+    };
+
+    if (search) {
+      baseFilter.recipe.name = {
+        contains: search,
+        mode: 'insensitive',
+      };
+    }
+
+    const recipes = await prisma.recipe.findMany({
+      where: baseFilter,
+      take: 10,
+      skip: (page || 0) * 10,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      select: {
+        id: true,
+        title: true,
+        coverUrl: true,
+
+        profitMargin: true,
+        overhead: true,
+        hourlyLabor: true,
+        packagingCost: true,
+
+        createdAt: true,
+        updatedAt: true,
+
+        tags: {
+          select: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+                type: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return { recipes };
+  }
 }

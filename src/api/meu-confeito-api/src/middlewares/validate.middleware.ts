@@ -16,6 +16,10 @@ export const validate = (schemas: ValidationSchemas) => {
       req.body = await schemas.body.parseAsync(req.body);
     }
 
+    if (schemas.query) {
+      req.query = await schemas.query.parseAsync(req.query);
+    }
+
     return next();
   };
 };

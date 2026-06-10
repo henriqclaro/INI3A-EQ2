@@ -18,8 +18,14 @@ recipeRoutes.post(
 
 recipeRoutes.get(
   '/:id',
-  validate({ body: recipe.registerSchema }),
+  validate({ params: recipe.paramsSchema }),
   recipeController.selectSingle.bind(recipeController),
+);
+
+recipeRoutes.get(
+  '/',
+  validate({ query: recipe.querySchema }),
+  recipeController.search.bind(recipeController),
 );
 
 export { recipeRoutes };

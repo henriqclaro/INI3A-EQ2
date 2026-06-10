@@ -28,7 +28,7 @@ export namespace RecipeDTO {
 
   export type RequestParam = z.infer<typeof recipe.paramsSchema>;
 
-  export interface SelectResponse {
+  export interface SingleSelectResponse {
     recipe: {
       id: string;
       userId: string | null;
@@ -53,5 +53,26 @@ export namespace RecipeDTO {
       createdAt: Date;
       updatedAt: Date;
     };
+  }
+
+  export interface SearchResponse {
+    recipes: {
+      title: string;
+      coverUrl: string | null;
+      profitMargin: Decimal;
+      overhead: Decimal;
+      hourlyLabor: Decimal;
+      packagingCost: Decimal;
+      id: string;
+      createdAt: Date;
+      updatedAt: Date;
+      tags: {
+        tag: {
+          type: string;
+          id: string;
+          name: string;
+        };
+      }[];
+    }[];
   }
 }
