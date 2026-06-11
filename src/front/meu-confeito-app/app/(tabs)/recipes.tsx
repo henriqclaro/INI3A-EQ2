@@ -47,8 +47,11 @@ const createStyles = (theme: AppTheme) =>
       paddingTop: 80,
     },
     scrollContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
       padding: 20,
-      gap: 20,
-      alignItems: 'center',
+      gap: 15,
+      justifyContent: 'center',
+      minWidth: '99%',
     },
   });

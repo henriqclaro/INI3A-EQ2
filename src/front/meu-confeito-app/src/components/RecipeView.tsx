@@ -64,7 +64,7 @@ const createStyles = (theme: AppTheme) =>
       backgroundColor: theme.colors.pitchBackground,
       borderRadius: 16,
       padding: 16,
-      width: 260,
+      width: 180,
     },
     image: {
       width: '100%',
@@ -84,7 +84,8 @@ const createStyles = (theme: AppTheme) =>
     tagsContainer: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 8,
+      // justifyContent: 'center',
+      gap: 7,
     },
     tagBadge: {
       paddingVertical: 6,
@@ -92,7 +93,8 @@ const createStyles = (theme: AppTheme) =>
       borderRadius: 20,
     },
     tagText: {
-      fontSize: 14,
+      fontSize: 12,
       color: theme.colors.text,
+      fontWeight: 'bold',
     },
   });

@@ -91,21 +91,21 @@ export default function RecipeScreen() {
           <View style={styles.modeContainer}>
             <Text style={styles.primaryTitle}>{recipe?.title || 'Nome da Receita'}</Text>
             <Text style={styles.textQuantity}>
-              Rende {recipe?.baseYield || 'X'} {recipe?.yieldUnit || 'porções de X gramas'}
+              Rende {recipe?.baseYield || 'X'} {recipe?.yieldUnit + '(s)' || 'porções de X gramas'}
             </Text>
-            <ScrollView style={styles.box}>
+            <ScrollView style={styles.box} contentContainerStyle={styles.boxContent}>
               <Text style={styles.secondaryTitle}>Preço por Ingrediente</Text>
               <View style={styles.lineBox}>
                 <Text>R$XX,XX </Text>
                 <Text> Quantidade de ingrediente 1</Text>
               </View>
             </ScrollView>
-            <View style={styles.box}>
+            <View style={[styles.box, styles.boxContent]}>
               <Text style={styles.secondaryTitle}>Preço Gasto - Total</Text>
               <Text>Preço gasto por unidade: R$XX,XX</Text>
               <Text>Preço gasto por receita: R$XX,XX</Text>
             </View>
-            <View style={styles.box}>
+            <View style={[styles.box, styles.boxContent]}>
               <Text style={styles.secondaryTitle}>Preço Sugerido</Text>
               <Text>Preço para venda por unidade:</Text>
               <Text style={styles.priceText}>R$ XX,XX</Text>
