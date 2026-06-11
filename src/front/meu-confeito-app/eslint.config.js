@@ -38,6 +38,7 @@ module.exports = defineConfig([
           cases: {
             pascalCase: true,
             kebabCase: true,
+            camelCase: true,
           },
           ignore: ['eslint.config.js'],
         },

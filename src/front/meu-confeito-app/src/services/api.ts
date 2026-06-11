@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 import { env } from '../config/env';
@@ -32,10 +34,21 @@ const processQueue = (error: any, token: string | null = null) => {
 
 api.interceptors.request.use(
   async (config) => {
-    const accessToken = await Storage.getItem('access_token');
+    const [accessToken, sessionId] = await Promise.all([
+      Storage.getItem('access_token'),
+      Storage.getItem('session_id'),
+    ]);
 
-    if (accessToken && config.headers) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
+    if (config.headers) {
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
+
+      if (sessionId) {
+        config.headers['x-session-id'] = sessionId;
+      }
+
+      config.headers['x-client-type'] = Platform.OS;
     }
 
     return config;

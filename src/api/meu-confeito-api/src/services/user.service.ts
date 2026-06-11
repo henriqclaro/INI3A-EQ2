@@ -159,10 +159,12 @@ export class UserService {
         title: true,
         coverUrl: true,
 
+        /*
         profitMargin: true,
         overhead: true,
         hourlyLabor: true,
         packagingCost: true,
+        */
 
         createdAt: true,
         updatedAt: true,

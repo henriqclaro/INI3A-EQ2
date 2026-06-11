@@ -3,13 +3,10 @@ import { Image, StyleSheet, Text, View } from 'react-native';
 
 import { useThemeMode } from '../contexts/ThemeContext';
 import { AppTheme } from '../theme/themes';
+import { PartialTag } from '../types';
 
 interface TagData {
-  tag: {
-    type: string;
-    name: string;
-    id: string;
-  };
+  tag: PartialTag;
 }
 
 interface RecipeViewProps {
@@ -26,7 +23,8 @@ export const RecipeView = ({ title, coverUrl, tags }: RecipeViewProps) => {
   const styledTags = useMemo(() => {
     return tags.map((item) => {
       const tagType = item.tag.type;
-      const backgroundColor = theme.colors.tags[tagType as keyof typeof theme.colors.tags];
+      const backgroundColor =
+        theme.colors.tags[tagType.toLocaleLowerCase() as keyof typeof theme.colors.tags];
 
       return {
         ...item,

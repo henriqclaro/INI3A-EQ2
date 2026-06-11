@@ -48,10 +48,12 @@ export namespace UserDTO {
       id: string;
       title: string;
       coverUrl: string | null;
+      /*
       profitMargin: Decimal;
       overhead: Decimal;
       hourlyLabor: Decimal;
       packagingCost: Decimal;
+      */
       createdAt: Date;
       updatedAt: Date;
       tags: {

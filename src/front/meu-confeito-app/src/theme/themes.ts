@@ -20,9 +20,9 @@ export const lightTheme = {
     onSurfaceVariant: '#F6EDDC', // Ícone Padrão
 
     tags: {
-      product: '#FFF25E',
-      variety: '#8DFBFF',
-      attribute: '#FFA189',
+      product: '#FFA189',
+      variety: '#FFF25E',
+      attribute: '#8DFBFF',
     },
   },
   spacing: {

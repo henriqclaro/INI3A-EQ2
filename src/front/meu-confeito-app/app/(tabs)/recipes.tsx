@@ -1,23 +1,36 @@
 import { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 
-import { CustomButton } from '@/src/components';
+import { RecipeView } from '@/src/components';
+import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { useUserRecipes } from '@/src/hooks/useUserRecipes';
 import { AppTheme } from '@/src/theme/themes';
 
 export default function RecipesScreen() {
   const { theme } = useThemeMode();
+  const { user } = useAuth();
+  const { recipes } = useUserRecipes(user!.id);
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   return (
     <View style={styles.container}>
-      <Text>Oie</Text>
-      <Link href="/single-recipe" asChild>
-        <CustomButton title="Receita Unitária" />
-      </Link>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        showsHorizontalScrollIndicator={false}
+      >
+        {recipes.map((recipe) => (
+          <RecipeView
+            key={recipe.id}
+            title={recipe.title}
+            coverUrl={recipe.coverUrl}
+            tags={recipe.tags}
+          />
+        ))}
+      </ScrollView>
     </View>
   );
 }
@@ -29,5 +42,10 @@ const createStyles = (theme: AppTheme) =>
       backgroundColor: theme.colors.background,
       alignItems: 'center',
       paddingTop: 80,
+    },
+    scrollContainer: {
+      padding: 20,
+      gap: 20,
+      alignItems: 'center',
     },
   });
