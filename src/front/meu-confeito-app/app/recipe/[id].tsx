@@ -1,17 +1,21 @@
 import { useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, useWindowDimensions, ScrollView } from 'react-native';
 
-import { Stack } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 
 import { Picker } from '@react-native-picker/picker';
 
 import { BackButton } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
+import { useRecipe } from '@/src/hooks/useRecipe';
 
 export default function RecipeScreen() {
   const { theme } = useThemeMode();
   const { width } = useWindowDimensions();
+  const { recipeId } = useLocalSearchParams();
+  const { recipe } = useRecipe(recipeId as unknown as string)
+
   const isSmallScreen = width < 350;
 
   const styles = useMemo(() => createStyles(theme, isSmallScreen), [theme, isSmallScreen]);

@@ -1,4 +1,4 @@
-import { PartialRecipe, PartialTag } from '../types';
+import { PartialRecipe } from '../types';
 import { api } from './api';
 
 export interface UserRecipesResponse {

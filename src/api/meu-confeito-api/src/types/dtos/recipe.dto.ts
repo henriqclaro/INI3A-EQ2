@@ -16,11 +16,11 @@ export namespace RecipeDTO {
       baseYield: Decimal;
 
       yieldUnit: string;
-      profitMargin?: Decimal;
-      overhead?: Decimal;
-      prepTimeMinutes?: number;
-      hourlyLabor?: Decimal;
-      packagingCost?: Decimal;
+      profitMargin: Decimal;
+      overhead: Decimal;
+      prepTimeMinutes: number;
+      hourlyLabor: Decimal;
+      packagingCost: Decimal;
 
       createdAt: Date;
     };
@@ -44,11 +44,11 @@ export namespace RecipeDTO {
       totalReviews: number;
       averageRating: Decimal;
 
-      profitMargin?: Decimal;
-      overhead?: Decimal;
-      prepTimeMinutes?: number;
-      hourlyLabor?: Decimal;
-      packagingCost?: Decimal;
+      profitMargin: Decimal;
+      overhead: Decimal;
+      prepTimeMinutes: number;
+      hourlyLabor: Decimal;
+      packagingCost: Decimal;
 
       createdAt: Date;
       updatedAt: Date;

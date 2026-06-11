@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { useThemeMode } from '../contexts/ThemeContext';
 import { AppTheme } from '../theme/themes';
@@ -13,9 +13,10 @@ interface RecipeViewProps {
   title: string;
   coverUrl: string | null;
   tags: TagData[];
+  onPress: () => void;
 }
 
-export const RecipeView = ({ title, coverUrl, tags }: RecipeViewProps) => {
+export const RecipeView = ({ title, coverUrl, tags, onPress }: RecipeViewProps) => {
   const { theme } = useThemeMode();
 
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -34,7 +35,7 @@ export const RecipeView = ({ title, coverUrl, tags }: RecipeViewProps) => {
   }, [tags, theme]);
 
   return (
-    <View style={styles.container}>
+    <TouchableOpacity style={styles.container} onPress={onPress}>
       {coverUrl ? (
         <Image source={{ uri: coverUrl }} style={styles.image} resizeMode="cover" />
       ) : (
@@ -53,7 +54,7 @@ export const RecipeView = ({ title, coverUrl, tags }: RecipeViewProps) => {
           </View>
         ))}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

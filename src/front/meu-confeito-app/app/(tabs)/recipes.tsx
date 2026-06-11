@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 
 import { RecipeView } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
@@ -28,6 +28,9 @@ export default function RecipesScreen() {
             title={recipe.title}
             coverUrl={recipe.coverUrl}
             tags={recipe.tags}
+            onPress={() => {
+              router.push(`/recipe/${recipe.id}`);
+            }}
           />
         ))}
       </ScrollView>
