@@ -29,7 +29,7 @@ export default function RecipesScreen() {
             coverUrl={recipe.coverUrl}
             tags={recipe.tags}
             onPress={() => {
-              router.push(`/recipe/${recipe.id}`);
+              router.push({ pathname: '/single-recipe', params: { recipeId: recipe.id } });
             }}
           />
         ))}

@@ -11,7 +11,7 @@ export function useRecipe(recipeId: string) {
   const fetchRecipe = useCallback(async () => {
     try {
       const res = await RecipeService.getRecipe(recipeId);
-
+      
       setRecipe(res.data.recipe);
     } catch (error) {
       console.error('Error fetching recipe: ', error);
