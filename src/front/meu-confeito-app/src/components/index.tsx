@@ -3,4 +3,5 @@ export { CustomButton } from '@/src/components/CustomButton';
 export { CustomHeader } from '@/src/components/CustomHeader';
 export { Input } from '@/src/components/Input';
 export { Label } from '@/src/components/Label';
+export { RecipeSmallView } from '@/src/components/RecipeSmallView';
 export { RecipeView } from '@/src/components/RecipeView';
