@@ -51,7 +51,7 @@ export default function LogInScreen() {
       <Stack.Screen options={{ title: 'Login' }} />
 
       <View style={styles.container}>
-        <BackButton route="/" />
+        <BackButton />
         <Text style={styles.mainText}>Digite seus dados:</Text>
         <Input
           value={email}

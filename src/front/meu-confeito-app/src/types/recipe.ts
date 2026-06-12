@@ -4,6 +4,7 @@ export interface PartialRecipe {
   id: string;
   title: string;
   coverUrl: string | null;
+  prepTimeMinutes: number;
   createdAt: Date;
   updatedAt: Date;
   tags: {

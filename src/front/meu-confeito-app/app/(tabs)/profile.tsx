@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
+import { Image } from 'expo-image';
 import { Link, router } from 'expo-router';
 
 import { CustomButton, Label } from '@/src/components';
@@ -27,7 +28,16 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <Image src="/assets/images/icon.png" alt="Foto de Perfil" style={styles.image} />
+      {user?.pfpUrl ? (
+        <Image
+          source={{ uri: user?.pfpUrl }}
+          alt="Foto de Perfil"
+          style={styles.image}
+          contentFit="cover"
+        />
+      ) : (
+        <View style={styles.image}></View>
+      )}
       <Label text={user?.name} placeholder="Nome de Usuário" />
 
       {/*Botão que chama outra tela (utilizando Link): */}

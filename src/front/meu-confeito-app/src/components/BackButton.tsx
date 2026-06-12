@@ -1,28 +1,24 @@
 import { useMemo } from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
-import { Href, Link } from 'expo-router';
+import { router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { useThemeMode } from '../contexts/ThemeContext';
 import { AppTheme } from '../theme/themes';
 
-interface BackButtonProps {
-  route: Href;
-}
-
-export const BackButton = ({ route }: BackButtonProps) => {
+export const BackButton = () => {
   const { theme } = useThemeMode();
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   return (
-    <Link href={route} asChild style={styles.btnContainer}>
-      <TouchableOpacity style={styles.button}>
+    <View style={styles.btnContainer}>
+      <TouchableOpacity style={styles.button} onPress={() => router.back()}>
         <MaterialCommunityIcons name="arrow-left" color={theme.colors.text} size={26} />
       </TouchableOpacity>
-    </Link>
+    </View>
   );
 };
 

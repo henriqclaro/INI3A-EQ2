@@ -37,6 +37,7 @@ export default function HomeScreen() {
                 key={recipe.id}
                 title={recipe.title}
                 coverUrl={recipe.coverUrl}
+                prepTimeMinutes={recipe.prepTimeMinutes}
                 onPress={() => {
                   router.push({ pathname: '/single-recipe', params: { recipeId: recipe.id } });
                 }}

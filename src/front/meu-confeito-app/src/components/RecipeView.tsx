@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+import { Image } from 'expo-image';
 
 import { useThemeMode } from '../contexts/ThemeContext';
 import { AppTheme } from '../theme/themes';
@@ -37,7 +39,7 @@ export const RecipeView = ({ title, coverUrl, tags, onPress }: RecipeViewProps) 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       {coverUrl ? (
-        <Image source={{ uri: coverUrl }} style={styles.image} resizeMode="cover" />
+        <Image source={{ uri: coverUrl }} style={styles.image} contentFit="cover" />
       ) : (
         <View style={[styles.image, styles.placeholder]} />
       )}

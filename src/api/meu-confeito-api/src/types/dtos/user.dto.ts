@@ -54,6 +54,7 @@ export namespace UserDTO {
       hourlyLabor: Decimal;
       packagingCost: Decimal;
       */
+      prepTimeMinutes: number;
       createdAt: Date;
       updatedAt: Date;
       tags: {

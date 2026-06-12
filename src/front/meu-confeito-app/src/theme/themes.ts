@@ -11,6 +11,7 @@ export const lightTheme = {
     border: '#40242B',
     secBorder: '#FBA8AF',
     pitchBackground: '#FFFFFF',
+    lightGray: '#D6D6D6',
     placeholder: '#A9A9A9',
 
     // Barra de Navegação
