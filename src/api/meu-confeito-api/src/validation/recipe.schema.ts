@@ -24,7 +24,7 @@ export const querySchema = z.object({
   page: z
     .string()
     .optional()
-    .transform((val) => (val ? parseInt(val, 10) : 1))
-    .pipe(z.number().int().positive()),
+    .transform((val) => (val ? parseInt(val, 10) : 0))
+    .pipe(z.number().int()),
   search: z.string('Search query must be a single string').trim().optional(),
 });

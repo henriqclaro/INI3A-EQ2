@@ -1,6 +1,7 @@
 import type { JsonNullClass } from '@prisma/client/runtime/client';
 
 import prisma from '../config/database';
+import type { Prisma } from '../generated/prisma/client';
 import { ForbiddenError, NotFoundError } from '../responses/http.error';
 import type { RequestContext } from '../types/context.interface';
 import type { RecipeDTO } from '../types/dtos/recipe.dto';
@@ -73,22 +74,40 @@ export class RecipeService {
   }
 
   async search(search?: string, page?: number) {
-    const baseFilter: any = {
+    const baseFilter: Prisma.RecipeWhereInput = {
       status: 'PUBLISHED',
-      recipe: {},
     };
 
     if (search) {
-      baseFilter.recipe.name = {
-        contains: search,
-        mode: 'insensitive',
-      };
+      baseFilter.OR = [
+        {
+          title: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        },
+        {
+          tags: {
+            some: {
+              tag: {
+                name: {
+                  contains: search,
+                  mode: 'insensitive',
+                },
+              },
+            },
+          },
+        },
+      ];
     }
+
+    const safePage = Number(page);
+    const skipValue = !isNaN(safePage) && safePage > 0 ? safePage * 10 : 0;
 
     const recipes = await prisma.recipe.findMany({
       where: baseFilter,
       take: 10,
-      skip: (page || 0) * 10,
+      skip: skipValue,
       orderBy: {
         createdAt: 'desc',
       },

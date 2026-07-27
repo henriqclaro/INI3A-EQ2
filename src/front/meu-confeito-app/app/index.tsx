@@ -34,7 +34,7 @@ export default function WelcomeScreen() {
         </Link>
 
         <Link href="/register" asChild>
-          <CustomButton title="Cadastrar" variant="secondary" />
+          <CustomButton title="Cadastrar" />
         </Link>
       </View>
     </>

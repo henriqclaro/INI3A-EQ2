@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { router } from 'expo-router';
+import { Link, router } from 'expo-router';
 
-import { RecipeView } from '@/src/components';
+import { CustomButton, RecipeView } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useUserRecipes } from '@/src/hooks/useUserRecipes';
@@ -34,6 +34,10 @@ export default function RecipesScreen() {
           />
         ))}
       </ScrollView>
+
+      <Link href="/public-recipes" asChild>
+        <CustomButton title="Receitas Públicas" variant="secondary" style={styles.button} />
+      </Link>
     </View>
   );
 }
@@ -53,5 +57,9 @@ const createStyles = (theme: AppTheme) =>
       gap: 15,
       justifyContent: 'center',
       minWidth: '99%',
+    },
+    button: {
+      position: 'absolute',
+      bottom: 20,
     },
   });

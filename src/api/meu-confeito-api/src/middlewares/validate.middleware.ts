@@ -17,7 +17,14 @@ export const validate = (schemas: ValidationSchemas) => {
     }
 
     if (schemas.query) {
-      req.query = await schemas.query.parseAsync(req.query);
+      const validatedQuery = await schemas.query.parseAsync(req.query);
+
+      Object.defineProperty(req, 'query', {
+        value: validatedQuery,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
     }
 
     return next();
