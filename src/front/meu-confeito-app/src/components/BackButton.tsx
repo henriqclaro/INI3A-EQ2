@@ -1,5 +1,3 @@
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
-
 import { router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';

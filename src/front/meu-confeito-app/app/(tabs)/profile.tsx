@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 
 import { Image } from 'expo-image';
 import { Link, router } from 'expo-router';
@@ -16,13 +16,14 @@ export default function ProfileScreen() {
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
-  function handleLogOut() {
+  async function handleLogOut() {
     try {
-      signOut();
+      await signOut();
 
       router.replace('/');
     } catch (error) {
       console.error('Error signing out: ', error);
+      Alert.alert('Erro ao sair da conta.');
     }
   }
 

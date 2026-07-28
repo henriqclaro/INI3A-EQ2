@@ -67,11 +67,11 @@ export default function LogInScreen() {
           autoCapitalize="none"
           onChangeText={setPassword}
         />
-        {/*<Link href="/forgot" style={styles.forgotContainer}>
+        <Link href="/" style={styles.forgotContainer}>
           <TouchableOpacity>
             <Text style={styles.forgotText}>Esqueci a Senha</Text>
           </TouchableOpacity>
-        </Link>*/}
+        </Link>
         {isLoading ? (
           <ActivityIndicator size="large" />
         ) : (
@@ -100,9 +100,11 @@ const createStyles = (theme: AppTheme) =>
       fontFamily: 'Playfair Display SC',
     },
     forgotContainer: {
-      marginBottom: 20,
+      width: 100,
+      marginBottom: 15,
     },
     forgotText: {
+      textAlign: 'center',
       color: theme.colors.text,
       fontSize: 14,
       fontWeight: 'bold',

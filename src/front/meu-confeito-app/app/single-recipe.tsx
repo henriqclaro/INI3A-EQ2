@@ -15,14 +15,14 @@ import { Picker } from '@react-native-picker/picker';
 
 import { BackButton } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
-import { useRecipe } from '@/src/hooks/useRecipe';
+import { useSingleRecipe } from '@/src/hooks/useRecipes';
 import { AppTheme } from '@/src/theme/themes';
 
 export default function RecipeScreen() {
   const { theme } = useThemeMode();
   const { width } = useWindowDimensions();
   const { recipeId } = useLocalSearchParams() as { recipeId: string };
-  const { recipe } = useRecipe(recipeId);
+  const { recipe } = useSingleRecipe(recipeId);
 
   const isSmallScreen = width < 350;
 
@@ -42,7 +42,7 @@ export default function RecipeScreen() {
           showsVerticalScrollIndicator={false}
         >
           <BackButton />
-          
+
           {recipe?.coverUrl ? (
             <Image source={{ uri: recipe.coverUrl }} style={styles.image} contentFit="cover" />
           ) : null}

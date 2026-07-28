@@ -6,7 +6,7 @@ import { Link, router } from 'expo-router';
 import { CustomButton, RecipeView } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
-import { useUserRecipes } from '@/src/hooks/useUserRecipes';
+import { useUserRecipes } from '@/src/hooks/useRecipes';
 import { AppTheme } from '@/src/theme/themes';
 
 export default function RecipesScreen() {

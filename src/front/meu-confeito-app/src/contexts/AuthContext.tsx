@@ -1,6 +1,6 @@
 import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
 
-import { AuthService, LogInData, LogInResponse } from '../services/auth';
+import { AuthService, LogInData, LogInResponse, LogOutData } from '../services/auth';
 import { Storage } from '../utils/storage';
 
 /*
@@ -63,6 +63,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signOut() {
+    const refreshToken = await Storage.getItem('refresh_token');
+
+    if (refreshToken) {
+      await AuthService.logOut(refreshToken);
+    }
+
     await Storage.removeItem('session_id');
     await Storage.removeItem('access_token');
     await Storage.removeItem('refresh_token');

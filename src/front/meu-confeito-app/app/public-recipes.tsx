@@ -4,16 +4,15 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { Stack, router } from 'expo-router';
 
 import { BackButton, Input, RecipeView } from '@/src/components';
-import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
-import { useRecipes } from '@/src/hooks/useRecipes';
+import { useManyRecipes } from '@/src/hooks/useRecipes';
 import { AppTheme } from '@/src/theme/themes';
 
 export default function PublicRecipesScreen() {
   const [search, setSearch] = useState('');
 
   const { theme } = useThemeMode();
-  const { recipes } = useRecipes(search);
+  const { recipes } = useManyRecipes(search);
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 

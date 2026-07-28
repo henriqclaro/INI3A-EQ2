@@ -54,6 +54,10 @@ export const UserService = {
     const response = await api.patch<UserEditResponse>(`/users/${userId}`, data);
     return response.data;
   },
+  delete: async (userId: string) => {
+    const response = await api.delete(`/user/${userId}`, { data: { state: 'DELETED' } });
+    return response.data;
+  },
   getRecipes: async (userId: string) => {
     const response = await api.get<UserRecipesResponse>(`/users/${userId}/recipes`);
     return response.data;

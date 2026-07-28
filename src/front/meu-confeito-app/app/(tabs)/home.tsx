@@ -6,13 +6,13 @@ import { router } from 'expo-router';
 import { RecipeSmallView } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
-import { useUserRecipes } from '@/src/hooks/useUserRecipes';
+import { useUserRecipes } from '@/src/hooks/useRecipes';
 import { AppTheme } from '@/src/theme/themes';
 
 export default function HomeScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
-  const { recipes } = useUserRecipes(user?.id || '');
+  const { recipes } = useUserRecipes(user?.id);
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 

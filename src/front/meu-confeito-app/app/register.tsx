@@ -8,7 +8,7 @@ import { ActivityIndicator } from 'react-native-paper';
 
 import { CustomButton, Input } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
-import { UserService } from '@/src/services/user';
+import { useUserRegister } from '@/src/hooks/useUsers';
 import { AppTheme } from '@/src/theme/themes';
 
 export default function RegisterScreen() {
@@ -17,7 +17,8 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [passVef, setPassVef] = useState('');
   // const [phone, setPhone] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+
+  const { registerUser, isLoading } = useUserRegister();
 
   const { theme } = useThemeMode();
 
@@ -30,21 +31,17 @@ export default function RegisterScreen() {
     }
 
     if (password !== passVef) {
-      Alert.alert('As senha não batem.');
+      Alert.alert('As senhas não batem.');
       return;
     }
 
-    setIsLoading(true);
-
     try {
-      await UserService.register({ name, email, password, phone: null, role: 'BAKER' });
+      await registerUser({ name, email, password, phone: null, role: 'BAKER' });
       Alert.alert('Cadastro realizado com sucesso');
+
       router.replace('/login');
-    } catch (error) {
-      console.error(error);
+    } catch (_err) {
       Alert.alert('Erro ao realizar cadastro');
-    } finally {
-      setIsLoading(false);
     }
   }
 

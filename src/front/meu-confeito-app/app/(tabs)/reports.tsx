@@ -11,7 +11,7 @@ export default function ReportsScreen() {
 
   return (
     <View style={styles.container}>
-      <Text>Oie</Text>
+      <Text></Text>
     </View>
   );
 }

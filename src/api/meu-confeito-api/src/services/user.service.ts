@@ -165,7 +165,7 @@ export class UserService {
         hourlyLabor: true,
         packagingCost: true,
         */
-       prepTimeMinutes: true,
+        prepTimeMinutes: true,
 
         createdAt: true,
         updatedAt: true,

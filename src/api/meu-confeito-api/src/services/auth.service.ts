@@ -97,7 +97,13 @@ export class AuthService {
     }
   }
 
-  async refreshToken(incomingRefreshToken: string) {
+  async logOut(refreshToken: string) {
+    await prisma.refreshToken.deleteMany({
+      where: { token: refreshToken },
+    });
+  }
+
+  async toRefreshToken(incomingRefreshToken: string) {
     const storedToken = await prisma.refreshToken.findFirst({
       where: { token: incomingRefreshToken },
       include: { user: true },

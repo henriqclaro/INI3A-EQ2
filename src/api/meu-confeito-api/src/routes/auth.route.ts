@@ -13,10 +13,16 @@ authRoutes.post(
   authController.logIn.bind(authController),
 );
 
+authRoutes.delete(
+  '/sessions',
+  validate({ body: auth.refreshOrDeleteSchema }),
+  authController.logOut.bind(authController),
+);
+
 authRoutes.post(
   '/tokens',
-  validate({ body: auth.refreshTokenSchema }),
-  authController.refreshToken.bind(authController),
+  validate({ body: auth.refreshOrDeleteSchema }),
+  authController.toRefreshToken.bind(authController),
 );
 
 export { authRoutes };

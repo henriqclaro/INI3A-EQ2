@@ -73,7 +73,7 @@ export default function TabsLayout() {
           ),
         }}
       />
-      {/*<Tabs.Screen
+      <Tabs.Screen
         name="reports"
         options={{
           title: 'Relatórios',
@@ -81,7 +81,7 @@ export default function TabsLayout() {
             <MaterialCommunityIcons name="chart-bar" color={color} size={26} />
           ),
         }}
-      />*/}
+      />
       <Tabs.Screen
         name="profile"
         options={{

@@ -7,6 +7,10 @@ export interface LogInData {
   sessionId: string;
 }
 
+export interface LogOutData {
+  refreshToken: string;
+}
+
 export interface LogInResponse {
   data: {
     user: {
@@ -29,6 +33,10 @@ export interface LogInResponse {
 export const AuthService = {
   logIn: async (data: LogInData) => {
     const response = await api.post<LogInResponse>('/auth/sessions', data);
+    return response.data;
+  },
+  logOut: async (refreshToken: string) => {
+    const response = await api.delete('/auth/sessions', { data: { refreshToken: refreshToken } });
     return response.data;
   },
 };

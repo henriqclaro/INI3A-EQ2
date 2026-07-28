@@ -7,7 +7,7 @@ import { Stack, router } from 'expo-router';
 import { BackButton, CustomButton, Input } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
-import { UserService } from '@/src/services/user';
+import { useUserEdit } from '@/src/hooks/useUsers';
 import { AppTheme } from '@/src/theme/themes';
 
 export default function EditProfileScreen() {
@@ -15,8 +15,8 @@ export default function EditProfileScreen() {
   const [email, setEmail] = useState('');
 
   const { theme } = useThemeMode();
-
   const { user } = useAuth();
+  const { editUser } = useUserEdit();
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -27,12 +27,11 @@ export default function EditProfileScreen() {
     };
 
     try {
-      await UserService.edit(data, user!.id);
-      user!.name = name;
-      user!.email = email;
+      await editUser(data, user!.id);
+      user!.name = name || user!.name;
+      user!.email = email || user!.email;
       router.push('/profile');
     } catch (error) {
-      console.log('Error editing user: ', error);
       Alert.alert('Erro ao editar usuário.');
     }
   }

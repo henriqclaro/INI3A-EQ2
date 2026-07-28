@@ -9,12 +9,12 @@ export const logInSchema = z.object({
 
 export const headerSchema = z.object({
   authorization: z
-    .string('Token missing')
+    .string('Token missing in header')
     .startsWith('Bearer ', 'Invalid format, use: Bearer <token>'),
   'x-client-type': z.string('Client type must be specified'),
   'x-session-id': z.uuid('Invalid UUID for session ID'),
 });
 
-export const refreshTokenSchema = z.object({
+export const refreshOrDeleteSchema = z.object({
   refreshToken: z.string('Token missing'),
 });
