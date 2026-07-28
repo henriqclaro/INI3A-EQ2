@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const recipeIngredientSchema = z.object({
   ingredientId: z.uuid('Invalid UUDI for Ingredient ID'),
-  baseQauntity: z.number('Ingredient base quantity must be a number'),
+  baseQuantity: z.number('Ingredient base quantity must be a number'),
   measurementUnit: z.string('Ingredient measurement unit is required'),
   notes: z.string().nullable(),
 });

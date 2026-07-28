@@ -10,7 +10,10 @@ export namespace AuthDTO {
       name: string;
       email: string;
       phone: string | null;
-      // location: string | null;
+      location: {
+        latitude: number;
+        longitude: number;
+      };
       pfpUrl: string | null;
       role: string;
     };

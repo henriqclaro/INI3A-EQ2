@@ -23,6 +23,10 @@ export namespace UserDTO {
       name: string;
       email: string;
       phone: string | null;
+      location: {
+        latitude: number;
+        longitude: number;
+      };
       pfpUrl: string | null;
       role: string;
       updatedAt: Date;
@@ -35,6 +39,10 @@ export namespace UserDTO {
       name: string;
       email: string;
       phone: string | null;
+      location: {
+        latitude: number;
+        longitude: number;
+      };
       pfpUrl: string | null;
       updatedAt: Date;
       isActive: boolean;

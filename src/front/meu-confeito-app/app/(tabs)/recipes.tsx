@@ -12,7 +12,7 @@ import { AppTheme } from '@/src/theme/themes';
 export default function RecipesScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
-  const { recipes } = useUserRecipes(user!.id);
+  const { recipes } = useUserRecipes(user?.id);
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 

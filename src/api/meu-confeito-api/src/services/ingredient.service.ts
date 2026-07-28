@@ -14,6 +14,10 @@ export class IngredientService {
   async register(context: RequestContext, data: IngredientDTO.RegisterRequest) {
     this.checkPermission(context, data.creatorId);
 
+    data.name.map((name) => {
+      name = name.toLocaleLowerCase();
+    });
+
     const ingredientExists = await prisma.ingredient.findUnique({
       where: { name: data.name },
     });

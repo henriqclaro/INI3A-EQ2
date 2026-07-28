@@ -13,7 +13,10 @@ export interface LogInResponse {
       name: string;
       email: string;
       phone: string | null;
-      // location: string | null;
+      location: {
+        lat: number;
+        lng: number;
+      };
       pfpUrl: string | null;
       role: string;
     };

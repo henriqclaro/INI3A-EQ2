@@ -9,18 +9,22 @@ import type { AuthDTO } from '../types/dtos/auth.dto';
 
 export class AuthService {
   async logIn(data: AuthDTO.LogInRequest) {
-    const foundUser = await prisma.user.findUnique({
-      where: { email: data.email },
-      select: {
-        id: true,
-        name: true,
-        phone: true,
-        // location: true,
-        pfpUrl: true,
-        passwordHash: true,
-        role: true,
-      },
-    });
+    // eslint-disable-next-line @ts-safeql/check-sql
+    const result = await prisma.$queryRaw<any[]>`
+      SELECT
+        id,
+        name,
+        phone,
+        profile_picture_url as "pfpUrl",
+        password_hash as "passwordHash",
+        role as "roleType",
+        ST_AsGeoJSON(location)::json as location
+      FROM "user"
+      WHERE email = ${data.email}
+      LIMIT 1
+    `;
+
+    const foundUser = result[0] || null;
 
     if (!foundUser) {
       throw new AuthError('Invalid credentials', 'AUTH_UNAUTHORIZED');
@@ -37,9 +41,9 @@ export class AuthService {
       name: foundUser.name,
       email: data.email,
       phone: foundUser.phone,
-      // location: foundUser.location,
+      location: foundUser.location,
       pfpUrl: foundUser.pfpUrl,
-      role: foundUser.role,
+      role: foundUser.roleType,
     };
 
     const payload = {

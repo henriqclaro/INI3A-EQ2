@@ -62,19 +62,24 @@ export class UserService {
   async select(context: RequestContext, id: string) {
     this.checkPermission(context, id);
 
-    const user = await prisma.user.findUnique({
-      where: { id: id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        pfpUrl: true,
-        role: true,
-        updatedAt: true,
-        isActive: true,
-      },
-    });
+    // eslint-disable-next-line @ts-safeql/check-sql
+    const result = await prisma.$queryRaw<any[]>`
+      SELECT
+        id,
+        name,
+        email,
+        phone,
+        profile_picture_url as "pfpUrl",
+        role as "roleType",
+        updated_at as "updatedAt",
+        is_active as "isActive",
+        ST_AsGeoJSON(location)::json as location
+      FROM "user"
+      WHERE id = ${id}
+      LIMIT 1
+    `;
+
+    const user = result[0] || null;
 
     this.checkUser(user);
 
@@ -94,22 +99,63 @@ export class UserService {
       }
     }
 
-    const user = await prisma.user.update({
-      where: { id: id },
-      data: data,
-      select: {
-        name: true,
-        email: true,
-        phone: true,
-        pfpUrl: true,
-        updatedAt: true,
-        isActive: true,
-      },
+    const { location, ...standartData } = data;
+
+    const updatedUser = prisma.$transaction(async (tx) => {
+      const existingUser = await tx.user.findUnique({
+        where: { id: id },
+        select: { isActive: true },
+      });
+
+      this.checkUser(existingUser);
+
+      let user = null;
+
+      if (Object.keys(standartData).length > 0) {
+        user = await tx.user.update({
+          where: { id: id },
+          data: standartData,
+          select: {
+            name: true,
+            email: true,
+            phone: true,
+            pfpUrl: true,
+            updatedAt: true,
+            isActive: true,
+          },
+        });
+      } else {
+        user = await tx.user.findUnique({
+          where: { id: id },
+          select: {
+            name: true,
+            email: true,
+            phone: true,
+            pfpUrl: true,
+            updatedAt: true,
+            isActive: true,
+          },
+        });
+      }
+
+      if (location) {
+        await tx.$executeRaw`
+         UPDATE "user"
+         SET
+          location = ST_SetSRID(ST_MakePoint(${location.longitude}, ${location.latitude}), 4326),
+          updated_at = NOW()
+         WHERE id = ${id}::uuid
+        `;
+      }
+
+      if (user) {
+        user.updatedAt = new Date();
+      }
+
+      return user;
     });
 
-    this.checkUser(user);
-
-    return { user };
+    return { updatedUser };
   }
 
   async delete(context: RequestContext, id: string, data: UserDTO.DeleteRequest) {
@@ -124,25 +170,33 @@ export class UserService {
 
     this.checkUser(user);
 
-    await prisma.refreshToken.deleteMany({
-      where: { userId: id },
-    });
-
     const isSuspended = data.state === 'SUSPENDED';
     const stateString = data.state.toLocaleLowerCase();
 
-    await prisma.user.update({
-      where: { id: id },
-      data: {
-        isActive: false,
+    await prisma.$transaction(async (tx) => {
+      await tx.refreshToken.deleteMany({
+        where: { userId: id },
+      });
 
-        name: `${stateString}_user`,
-        email: isSuspended ? undefined : `${stateString}_${id}@anonymized.local`,
-        phone: isSuspended ? undefined : null,
-        pfpUrl: null,
-        providerId: null,
-        passwordHash: 'DELETED',
-      },
+      await tx.user.update({
+        where: { id: id },
+        data: {
+          isActive: false,
+
+          name: `${stateString}_user`,
+          email: isSuspended ? undefined : `${stateString}_${id}@anonymized.local`,
+          phone: isSuspended ? undefined : null,
+          pfpUrl: null,
+          providerId: null,
+          passwordHash: 'DELETED',
+        },
+      });
+
+      await tx.$executeRaw`
+        UPDATE "user"
+        SET location = NULL
+        WHERE id = ${id}::uuid
+      `;
     });
   }
 

@@ -1,3 +1,4 @@
+import * as safeQLEslintPlugin from '@ts-safeql/eslint-plugin';
 import tsEslintPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import checkFilePlugin from 'eslint-plugin-check-file';
@@ -30,6 +31,7 @@ export default [
     plugins: {
       'check-file': checkFilePlugin,
       '@typescript-eslint': tsEslintPlugin,
+      '@ts-safeql': safeQLEslintPlugin,
       //'unused-imports': unusedImports,
     },
     rules: {
@@ -88,6 +90,17 @@ export default [
         'error',
         {
           checksVoidReturn: false,
+        },
+      ],
+      '@ts-safeql/check-sql': [
+        'error',
+        {
+          connections: [
+            {
+              migrationsDir: './prisma/migrations',
+              targets: [{ tag: 'prisma.+($queryRaw|$executeRaw)', transform: '{type}[]' }],
+            },
+          ],
         },
       ],
 

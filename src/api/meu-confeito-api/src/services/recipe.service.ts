@@ -34,7 +34,7 @@ export class RecipeService {
         ingredients: {
           create: data.ingredients.map((ing) => ({
             ingredientId: ing.ingredientId,
-            baseQuantity: ing.baseQauntity,
+            baseQuantity: ing.baseQuantity,
             measurementUnit: ing.measurementUnit,
             notes: ing.notes,
           })),
