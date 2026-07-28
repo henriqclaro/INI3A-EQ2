@@ -7,10 +7,6 @@ export interface LogInData {
   sessionId: string;
 }
 
-export interface LogOutData {
-  refreshToken: string;
-}
-
 export interface LogInResponse {
   data: {
     user: {

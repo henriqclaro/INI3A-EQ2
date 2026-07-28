@@ -1,6 +1,6 @@
 import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
 
-import { AuthService, LogInData, LogInResponse, LogOutData } from '../services/auth';
+import { AuthService, LogInData, LogInResponse } from '../services/auth';
 import { Storage } from '../utils/storage';
 
 /*
