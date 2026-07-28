@@ -15,4 +15,13 @@ export namespace IngredientDTO {
       createdAt: Date;
     };
   }
+
+  export interface SearchResponse {
+    ingredients: {
+      id: string;
+      name: string[];
+      description: string | null;
+      category: string;
+    }[];
+  }
 }

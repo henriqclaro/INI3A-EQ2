@@ -1,11 +1,18 @@
 import { z } from 'zod';
 
+export const recipeIngredientSchema = z.object({
+  ingredientId: z.uuid('Invalid UUDI for Ingredient ID'),
+  baseQauntity: z.number('Ingredient base quantity must be a number'),
+  measurementUnit: z.string('Ingredient measurement unit is required'),
+  notes: z.string().nullable(),
+});
+
 export const registerSchema = z.object({
   userId: z.uuid('Invalid UUID for User ID'),
   parentId: z.uuid('Invalid UUID for Parent ID').nullable(),
   title: z.string('Title is required'),
   coverUrl: z.url('Invalid URL for Cover Image').nullable(),
-  intructions: z.json('Invalid JSON for Instructions'),
+  instructions: z.json('Invalid JSON for Instructions'),
   baseYield: z.number('Base yield must be a number'),
   yieldUnit: z.string('Yield unit is required'),
 
@@ -14,6 +21,8 @@ export const registerSchema = z.object({
   prepTimeMinutes: z.int('Preparation time must be an integer').optional(),
   hourlyLabor: z.number('Hourly labor must be a number').optional(),
   packagingCost: z.number('Packaging cost must be a number').optional(),
+
+  ingredients: z.array(recipeIngredientSchema).min(1, 'Recipe must have at least 1 ingredient'),
 });
 
 export const paramsSchema = z.object({

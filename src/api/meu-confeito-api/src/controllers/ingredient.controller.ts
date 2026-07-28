@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 
-import { CreatedResponse } from '../responses/http.success';
+import { CreatedResponse, DefaultSuccessResponse } from '../responses/http.success';
 import { IngredientService } from '../services/ingredient.service';
 import type { ApiResponse } from '../types/api.response';
 import type { IngredientDTO } from '../types/dtos/ingredient.dto';
@@ -31,5 +31,22 @@ export class IngredientController {
     );
 
     return new CreatedResponse(res, responseData, 'Ingredient created successfully').send();
+  }
+
+  async serach(req: Request<any>, res: Response<ApiResponse<IngredientDTO.SearchResponse>>) {
+    const search = req.query.search as string;
+
+    const page = req.query.page as unknown as number;
+
+    const responseData: IngredientDTO.SearchResponse = await this.ingredientService.search(
+      search,
+      page,
+    );
+
+    return new DefaultSuccessResponse(
+      res,
+      responseData,
+      'Ingredients selected successfully',
+    ).send();
   }
 }

@@ -22,7 +22,7 @@ export class RecipeService {
         parentId: data.parentId,
         title: data.title,
         coverUrl: data.coverUrl,
-        instructions: data.intructions as unknown as JsonNullClass,
+        instructions: data.instructions as unknown as JsonNullClass,
         baseYield: data.baseYield,
         yieldUnit: data.yieldUnit,
         profitMargin: data.profitMargin,
@@ -30,6 +30,15 @@ export class RecipeService {
         prepTimeMinutes: data.prepTimeMinutes,
         hourlyLabor: data.hourlyLabor,
         packagingCost: data.packagingCost,
+
+        ingredients: {
+          create: data.ingredients.map((ing) => ({
+            ingredientId: ing.ingredientId,
+            baseQuantity: ing.baseQauntity,
+            measurementUnit: ing.measurementUnit,
+            notes: ing.notes,
+          })),
+        },
       },
       select: {
         id: true,
@@ -46,6 +55,15 @@ export class RecipeService {
         hourlyLabor: true,
         packagingCost: true,
         createdAt: true,
+
+        ingredients: {
+          select: {
+            ingredientId: true,
+            baseQuantity: true,
+            measurementUnit: true,
+            notes: true,
+          },
+        },
       },
     });
 
@@ -55,6 +73,25 @@ export class RecipeService {
   async selectSingle(context: RequestContext, id: string) {
     const recipe = await prisma.recipe.findUnique({
       where: { id: id },
+
+      include: {
+        ingredients: {
+          select: {
+            baseQuantity: true,
+            measurementUnit: true,
+            notes: true,
+            ingredientId: true,
+
+            ingredient: {
+              select: {
+                id: true,
+                name: true,
+                category: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!recipe || recipe.status === 'SUSPENDED') {

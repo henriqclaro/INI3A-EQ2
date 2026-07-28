@@ -9,3 +9,12 @@ export const registerSchema = z.object({
   category: z.string('Invalid string for category'),
   creatorId: z.uuid('Invalid UUID for Creator ID'),
 });
+
+export const querySchema = z.object({
+  page: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val, 10) : 0))
+    .pipe(z.number().int()),
+  search: z.string('Search query must be a single string').trim().optional(),
+});

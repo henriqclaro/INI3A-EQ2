@@ -1,4 +1,5 @@
 import prisma from '../config/database';
+import type { Prisma } from '../generated/prisma/client';
 import { ConflictError, ForbiddenError, NotFoundError } from '../responses/http.error';
 import type { RequestContext } from '../types/context.interface';
 import type { IngredientDTO } from '../types/dtos/ingredient.dto';
@@ -49,5 +50,39 @@ export class IngredientService {
     });
 
     return { ingredient };
+  }
+
+  async search(search?: string, page?: number) {
+    const baseFilter: Prisma.IngredientWhereInput = {};
+
+    if (search) {
+      baseFilter.OR = [
+        {
+          name: {
+            has: search.toLocaleLowerCase(),
+          },
+        },
+      ];
+    }
+
+    const safePage = Number(page);
+    const skipValue = !isNaN(safePage) && safePage > 0 ? safePage * 15 : 0;
+
+    const ingredients = await prisma.ingredient.findMany({
+      where: baseFilter,
+      take: 15,
+      skip: skipValue,
+      orderBy: {
+        createdAt: 'asc',
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        category: true,
+      },
+    });
+
+    return { ingredients };
   }
 }

@@ -16,4 +16,10 @@ ingredientRoutes.post(
   ingredientController.register.bind(ingredientController),
 );
 
+ingredientRoutes.get(
+  '/',
+  validate({ query: ingredient.querySchema }),
+  ingredientController.serach.bind(ingredientController),
+);
+
 export { ingredientRoutes };

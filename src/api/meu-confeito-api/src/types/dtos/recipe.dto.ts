@@ -23,6 +23,13 @@ export namespace RecipeDTO {
       packagingCost: Decimal;
 
       createdAt: Date;
+
+      ingredients: {
+        ingredientId: string;
+        baseQuantity: Decimal;
+        measurementUnit: string;
+        notes: string | null;
+      }[];
     };
   }
 
@@ -52,6 +59,18 @@ export namespace RecipeDTO {
 
       createdAt: Date;
       updatedAt: Date;
+
+      ingredients: {
+        ingredientId: string;
+        baseQuantity: Decimal;
+        measurementUnit: string;
+        notes: string | null;
+        ingredient: {
+          id: string;
+          name: string[];
+          category: string;
+        };
+      }[];
     };
   }
 
