@@ -61,7 +61,7 @@ export default function TabsLayout() {
         name="home"
         options={{
           title: 'Início',
-          tabBarIcon: ({ color }) => <MaterialCommunityIcons name="home" color={color} size={26} />,
+          tabBarIcon: ({ color }) => <MaterialCommunityIcons name="home-outline" color={color} size={26} />,
         }}
       />
       <Tabs.Screen
@@ -69,7 +69,7 @@ export default function TabsLayout() {
         options={{
           title: 'Receitas',
           tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="book-edit" color={color} size={26} />
+            <MaterialCommunityIcons name="book-open-variant-outline" color={color} size={26} />
           ),
         }}
       />
@@ -78,7 +78,7 @@ export default function TabsLayout() {
         options={{
           title: 'Relatórios',
           tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="chart-bar" color={color} size={26} />
+            <MaterialCommunityIcons name="chart-box-outline" color={color} size={26} />
           ),
         }}
       />
@@ -87,7 +87,7 @@ export default function TabsLayout() {
         options={{
           title: 'Perfil',
           tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="account" color={color} size={26} />
+            <MaterialCommunityIcons name="account-outline" color={color} size={26} />
           ),
         }}
       />

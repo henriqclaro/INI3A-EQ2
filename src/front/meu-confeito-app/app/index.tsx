@@ -25,16 +25,16 @@ export default function WelcomeScreen() {
           projetar suas vendas e armazenar suas receitas.
         </Text>
 
-        <Link href="/login" asChild>
-          <CustomButton title="Sou Confeiteira" />
-        </Link>
-
-        <Link href="/login" asChild>
-          <CustomButton title="Sou Cliente" />
+        <Link href="/register" asChild>
+          <CustomButton title="Cadastrar como Confeiteira" variant='primary' />
         </Link>
 
         <Link href="/register" asChild>
-          <CustomButton title="Cadastrar" />
+          <CustomButton title="Cadastrar como Cliente" variant='secondary' /> 
+        </Link>
+
+        <Link href="/login" asChild>
+          <CustomButton title="Já tenho cadastro" variant='neutral' />
         </Link>
       </View>
     </>

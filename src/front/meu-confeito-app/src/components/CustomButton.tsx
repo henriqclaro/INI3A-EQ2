@@ -16,7 +16,7 @@ interface CustomButtonProps {
   onPress?: (event: GestureResponderEvent) => void | Promise<void>;
   children?: ReactNode;
   style?: StyleProp<ViewStyle>;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'neutral';
 }
 
 export const CustomButton = ({
@@ -38,16 +38,20 @@ export const CustomButton = ({
   );
 };
 
-const createStyles = (theme: AppTheme, variant: 'primary' | 'secondary') =>
+const createStyles = (theme: AppTheme, variant: 'primary' | 'secondary' | 'neutral') =>
   StyleSheet.create({
     button: {
       width: 275,
       height: 55,
       backgroundColor:
-        variant === 'primary' ? theme.colors.secondary : theme.colors.pitchBackground,
-      borderWidth: 0.8,
-      borderColor: variant === 'primary' ? theme.colors.border : theme.colors.secBorder,
-      borderRadius: 10,
+        variant === 'primary'
+          ? theme.colors.primary
+          : variant === 'secondary'
+            ? theme.colors.secondary
+            : theme.colors.background,
+      borderWidth: 1,
+      borderColor: variant === 'secondary' ? theme.colors.secondary : theme.colors.primary,
+      borderRadius: 12,
       paddingVertical: 12,
       justifyContent: 'center',
       alignItems: 'center',
@@ -55,5 +59,12 @@ const createStyles = (theme: AppTheme, variant: 'primary' | 'secondary') =>
     },
     btnText: {
       fontSize: 18,
+      fontWeight: 600,
+      color:
+        variant === 'primary'
+          ? theme.colors.secondaryText
+          : variant === 'secondary'
+            ? theme.colors.text
+            : theme.colors.primary,
     },
   });

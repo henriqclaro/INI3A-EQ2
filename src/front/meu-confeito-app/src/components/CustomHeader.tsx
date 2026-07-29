@@ -28,12 +28,13 @@ export const CustomHeader = ({ navigation, route, options }: CustomHeaderProps) 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     header: {
-      backgroundColor: theme.colors.primary,
+      backgroundColor: theme.colors.background,
     },
     headerTitle: {
       alignItems: 'center',
     },
     headerText: {
       fontSize: 32,
+      color: theme.colors.primary,
     },
   });

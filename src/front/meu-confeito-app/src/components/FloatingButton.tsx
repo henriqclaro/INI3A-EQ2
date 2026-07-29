@@ -14,17 +14,24 @@ import { AppTheme } from '../theme/themes';
 interface FloatingButtonProps {
   onPress?: (event: GestureResponderEvent) => void | Promise<void>;
   children?: ReactNode;
+  containerStyle?: StyleProp<ViewStyle>;
   style?: StyleProp<ViewStyle>;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'neutral';
 }
 
-export const FloatingButton = ({ onPress, children, style, variant }: FloatingButtonProps) => {
+export const FloatingButton = ({
+  onPress,
+  children,
+  containerStyle,
+  style,
+  variant,
+}: FloatingButtonProps) => {
   const { theme } = useThemeMode();
 
   const styles = useMemo(() => createStyles(theme, variant), [theme, variant]);
 
   return (
-    <View style={styles.btnContainer}>
+    <View style={[styles.btnContainer, containerStyle]}>
       <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
         {children}
       </TouchableOpacity>
@@ -32,12 +39,10 @@ export const FloatingButton = ({ onPress, children, style, variant }: FloatingBu
   );
 };
 
-const createStyles = (theme: AppTheme, variant?: 'primary' | 'secondary') =>
+const createStyles = (theme: AppTheme, variant?: 'primary' | 'secondary' | 'neutral') =>
   StyleSheet.create({
     btnContainer: {
       position: 'absolute',
-      top: 20,
-      left: 20,
     },
     button: {
       width: 50,
@@ -45,9 +50,18 @@ const createStyles = (theme: AppTheme, variant?: 'primary' | 'secondary') =>
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor:
-        variant === 'primary' ? theme.colors.secondary : theme.colors.pitchBackground,
-      borderWidth: 0.8,
-      borderColor: theme.colors.border,
-      borderRadius: 100,
+        variant === 'primary'
+          ? theme.colors.primary
+          : variant === 'secondary'
+            ? theme.colors.secondary
+            : theme.colors.background,
+      borderWidth: 1,
+      borderColor:
+        variant === 'primary'
+          ? theme.colors.primary
+          : variant === 'secondary'
+            ? theme.colors.secondary
+            : theme.colors.background,
+      borderRadius: 60,
     },
   });

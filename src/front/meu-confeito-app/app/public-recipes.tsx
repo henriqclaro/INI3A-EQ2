@@ -34,6 +34,8 @@ export default function PublicRecipesScreen() {
               title={recipe.title}
               coverUrl={recipe.coverUrl}
               tags={recipe.tags}
+              // ---> CONSERTAR RETORNO DA API:
+              prepTimeMinutes={recipe.prepTimeMinutes}
               onPress={() => {
                 router.push({ pathname: '/single-recipe', params: { recipeId: recipe.id } });
               }}
@@ -50,7 +52,6 @@ const createStyles = (theme: AppTheme) =>
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
-      alignItems: 'center',
       paddingTop: 80,
     },
     scrollContainer: {

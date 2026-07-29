@@ -3,7 +3,9 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { Link, router } from 'expo-router';
 
-import { CustomButton, RecipeView } from '@/src/components';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+
+import { FloatingButton, RecipeView } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useUserRecipes } from '@/src/hooks/useRecipes';
@@ -28,6 +30,7 @@ export default function RecipesScreen() {
             title={recipe.title}
             coverUrl={recipe.coverUrl}
             tags={recipe.tags}
+            prepTimeMinutes={recipe.prepTimeMinutes}
             onPress={() => {
               router.push({ pathname: '/single-recipe', params: { recipeId: recipe.id } });
             }}
@@ -36,7 +39,9 @@ export default function RecipesScreen() {
       </ScrollView>
 
       <Link href="/public-recipes" asChild>
-        <CustomButton title="Receitas Públicas" variant="secondary" style={styles.button} />
+        <FloatingButton variant="secondary" containerStyle={styles.button}>
+          <MaterialCommunityIcons name="plus" color={theme.colors.text} size={26} />
+        </FloatingButton>
       </Link>
     </View>
   );
@@ -61,5 +66,6 @@ const createStyles = (theme: AppTheme) =>
     button: {
       position: 'absolute',
       bottom: 20,
+      right: 20,
     },
   });
