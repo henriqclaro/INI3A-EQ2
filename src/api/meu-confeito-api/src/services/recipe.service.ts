@@ -157,6 +157,7 @@ export class RecipeService {
         overhead: true,
         hourlyLabor: true,
         packagingCost: true,
+        prepTimeMinutes: true,
 
         createdAt: true,
         updatedAt: true,

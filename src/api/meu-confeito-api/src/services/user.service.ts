@@ -14,9 +14,7 @@ export class UserService {
     }
   }
 
-  private checkUser(
-    user: Pick<UserModel, 'isActive'> | null,
-  ): asserts user is Pick<UserModel, 'isActive'> {
+  private checkUser<T extends Pick<UserModel, 'isActive'>>(user: T | null): asserts user is T {
     if (!user) {
       throw new NotFoundError('User not found', 'USER_NOT_FOUND');
     }
@@ -24,6 +22,15 @@ export class UserService {
     if (!user.isActive) {
       throw new GoneError('User suspended or deleted', 'USER_ACCOUNT_GONE');
     }
+  }
+
+  private parseLocation(rawLocation: any) {
+    if (rawLocation) {
+      const [longitude, latitude] = rawLocation.coordinates;
+      return { latitude, longitude };
+    }
+
+    return null;
   }
 
   // Queries de CRUD ------------------------
@@ -79,9 +86,23 @@ export class UserService {
       LIMIT 1
     `;
 
-    const user = result[0] || null;
+    const rawUser = result[0] || null;
 
-    this.checkUser(user);
+    this.checkUser(rawUser);
+
+    const parsedLocation = this.parseLocation(rawUser.locationGeoJSON);
+
+    const user = {
+      id: rawUser.id,
+      name: rawUser.name,
+      email: rawUser.email,
+      phone: rawUser.phone,
+      pfpUrl: rawUser.pfpUrl,
+      role: rawUser.role,
+      updatedAt: rawUser.updatedAt,
+      isActive: rawUser.isActive,
+      location: parsedLocation,
+    };
 
     return { user };
   }
@@ -101,7 +122,7 @@ export class UserService {
 
     const { location, ...standartData } = data;
 
-    const updatedUser = prisma.$transaction(async (tx) => {
+    const rawUpdatedUser: any = prisma.$transaction(async (tx) => {
       const existingUser = await tx.user.findUnique({
         where: { id: id },
         select: { isActive: true },
@@ -109,32 +130,10 @@ export class UserService {
 
       this.checkUser(existingUser);
 
-      let user = null;
-
       if (Object.keys(standartData).length > 0) {
-        user = await tx.user.update({
+        await tx.user.update({
           where: { id: id },
           data: standartData,
-          select: {
-            name: true,
-            email: true,
-            phone: true,
-            pfpUrl: true,
-            updatedAt: true,
-            isActive: true,
-          },
-        });
-      } else {
-        user = await tx.user.findUnique({
-          where: { id: id },
-          select: {
-            name: true,
-            email: true,
-            phone: true,
-            pfpUrl: true,
-            updatedAt: true,
-            isActive: true,
-          },
         });
       }
 
@@ -144,18 +143,44 @@ export class UserService {
          SET
           location = ST_SetSRID(ST_MakePoint(${location.longitude}, ${location.latitude}), 4326),
           updated_at = NOW()
-         WHERE id = ${id}::uuid
+         WHERE id = ${id}
         `;
       }
 
-      if (user) {
-        user.updatedAt = new Date();
-      }
+      const result = await tx.$queryRaw<any[]>`
+        SELECT 
+          id, 
+          name, 
+          email, 
+          phone, 
+          profile_picture_url as "pfpUrl", 
+          role as "role", 
+          updated_at as "updatedAt", 
+          is_active as "isActive",
+          ST_AsGeoJSON(location)::json as "locationGeoJSON"
+        FROM "user"
+        WHERE id = ${id}
+        LIMIT 1
+      `;
 
-      return user;
+      return result[0];
     });
 
-    return { updatedUser };
+    const parsedLocation = this.parseLocation(rawUpdatedUser.locationGeoJSON);
+
+    const user = {
+      id: rawUpdatedUser.id,
+      name: rawUpdatedUser.name,
+      email: rawUpdatedUser.email,
+      phone: rawUpdatedUser.phone,
+      pfpUrl: rawUpdatedUser.pfpUrl,
+      role: rawUpdatedUser.role,
+      updatedAt: rawUpdatedUser.updatedAt,
+      isActive: rawUpdatedUser.isActive,
+      location: parsedLocation,
+    };
+
+    return { user };
   }
 
   async delete(context: RequestContext, id: string, data: UserDTO.DeleteRequest) {
@@ -195,7 +220,7 @@ export class UserService {
       await tx.$executeRaw`
         UPDATE "user"
         SET location = NULL
-        WHERE id = ${id}::uuid
+        WHERE id = ${id}
       `;
     });
   }
@@ -219,6 +244,7 @@ export class UserService {
         hourlyLabor: true,
         packagingCost: true,
         */
+
         prepTimeMinutes: true,
 
         createdAt: true,
@@ -260,6 +286,7 @@ export class UserService {
             overhead: true,
             hourlyLabor: true,
             packagingCost: true,
+            prepTimeMinutes: true,
 
             tags: {
               select: {

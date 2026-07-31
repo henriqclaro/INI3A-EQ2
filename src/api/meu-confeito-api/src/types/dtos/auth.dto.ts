@@ -13,7 +13,7 @@ export namespace AuthDTO {
       location: {
         latitude: number;
         longitude: number;
-      };
+      } | null;
       pfpUrl: string | null;
       role: string;
     };

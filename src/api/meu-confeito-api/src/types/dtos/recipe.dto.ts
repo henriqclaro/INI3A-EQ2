@@ -82,6 +82,7 @@ export namespace RecipeDTO {
       overhead: Decimal;
       hourlyLabor: Decimal;
       packagingCost: Decimal;
+      prepTimeMinutes: number;
       id: string;
       createdAt: Date;
       updatedAt: Date;

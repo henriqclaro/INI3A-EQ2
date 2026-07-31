@@ -26,7 +26,7 @@ export namespace UserDTO {
       location: {
         latitude: number;
         longitude: number;
-      };
+      } | null;
       pfpUrl: string | null;
       role: string;
       updatedAt: Date;
@@ -34,20 +34,7 @@ export namespace UserDTO {
   }
 
   export type UpdateRequest = z.infer<typeof user.updateSchema>;
-  export interface UpdateResponse {
-    user: {
-      name: string;
-      email: string;
-      phone: string | null;
-      location: {
-        latitude: number;
-        longitude: number;
-      };
-      pfpUrl: string | null;
-      updatedAt: Date;
-      isActive: boolean;
-    };
-  }
+  export type UpdateResponse = SelectResponse;
 
   export type DeleteRequest = z.infer<typeof user.deleteSchema>;
 
@@ -85,6 +72,7 @@ export namespace UserDTO {
         overhead: Decimal;
         hourlyLabor: Decimal;
         packagingCost: Decimal;
+        prepTimeMinutes: number;
         tags: {
           tag: {
             name: string;
