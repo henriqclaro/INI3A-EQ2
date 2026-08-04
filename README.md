@@ -74,6 +74,8 @@ git clone https://github.com/henriqclaro/INI3A-EQ2.git
 
 ### 3. Acesse o diretório do projeto
 
+No terminal do Windows:
+
 * Front:
   ```bash
   cd .\INI3A-EQ2\src\front\meu-confeito-app\
@@ -188,25 +190,49 @@ Para manter a base de código organizada, legível e consistente entre toda a eq
 ---
 ## Desenvolvimento do Front
 
-Após o desenvolvimento no código, verifique as mudanças da seguinte maneira:
+Árvore da aplicação, com pastas e arquivos mais importantes:
 
-### 1. Inicie o servidor de desenvolvimento
+```
+└── meu-confeito-app
+    ├── .env              --Variáveis importantes e sensíveis (não sobe pro GitHub)
+    ├── .env.example      --Exemplo do .env para copiar (sobe pro GitHub)
+    ├── node_modules/     --Dependências (não sobe pro GitHub, gerar com o npm)
+    ├── app/              --Onde ficam todas as telas do aplicativo, arquivos .tsx
+    │   └── (tabs)/       --Telas principais, que aparecem em abas inferiores
+    ├── assets/           --Arquivos de imagem e recursos visuais estáticos da aplicação
+    └── src/
+        ├── components/   --Componentes customizados e tematizados
+        ├── config/       --Configurações de ambiente da aplicação
+        ├── contexts/     --Compartilhamento de dados globais da aplicação, como o login
+        ├── hooks/        --Ponte entre Telas e Serviços, isolam lógicas repetitivas
+        ├── services/     --Funções que processam as Requisições diretamente, chamadas por hooks
+        ├── theme/        --Definições de estilos e cores dos temas da aplicação
+        ├── types/        --Tipagens e Interfaces para Requisições
+        └── utils/        --Funções úteis, como o armazenamento de credenciais
+```
+
+### 1. Configure o `.env` com a URL base da API pública
+
+A API está hospedada nos servidores do colégio, a URL base foi compartilhada nos nossos grupos
+
+### 2. Inicie o servidor de desenvolvimento
 
 ```bash
 npx expo start
 ```
 
-### 2. Execute no celular
+### 3. Teste a aplicação
 
-* **Android:**
+* **Celulares Android:**
   Abra o **Expo Go** e escaneie o QR Code exibido no terminal.
 
 * **Geral:**
-  Abra no navegador e use o **Inspencionar** para simular as dimensões de um celular.
+  Abra no navegador por meio da URL local no terminal.
+  * OBS: use o **Inspecionar** para simular as dimensões de um celular se necessário.
 
 ---
 
-## Desenvolvimento da API
+## Desenvolvimento da API (apenas se for hospedar localmente)
 
 Árvore da API, com pastas e arquivos mais importantes:
 
@@ -219,6 +245,7 @@ npx expo start
     └── src/
         ├── config/       --Configurações do ambiente da API
         ├── controllers/  --Receptores de Requisições, mandam dados pro Service
+        ├── docs/         --Arquivos para geração da documentação com o Swagger
         ├── generated/    --Models e Prisma (não sobe pro GitHub, gerar com o Prisma)
         ├── middlewares/  --Interceptadores de Rotas, para verificação e tratamento
         ├── responses/    --Classess de Respostas, para padronização
@@ -228,7 +255,7 @@ npx expo start
         ├── types/        --Tipagens e Interfaces da API
             └── dtos/     --Tipagem de Requisições e Respostas
         ├── utils/        --Funções úteis, para complementar (ex: conversão monetária)
-        └── validation/   --Schemas de validação de Requisições do Zod
+        └── validation/   --Schemas para validação de Requisições com o Zod
 ```
 
 ### 1. Gere a pasta com os models necessários (`generated/`):

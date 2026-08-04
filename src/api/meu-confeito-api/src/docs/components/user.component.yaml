@@ -3,54 +3,60 @@ components:
     UserRegisterResponse:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        email:
-          type: string
-        role:
-          type: string
-          enum:
-            - BAKER
-            - CUSTOMER
-        createdAt:
-          type: string
-          format: date-time
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+            email:
+              type: string
+            role:
+              type: string
+              enum:
+                - BAKER
+                - CUSTOMER
+            createdAt:
+              type: string
+              format: date-time
     UserSelectResponse:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        email:
-          type: string
-        phone:
-          type: string
-          nullable: true
-        location:
+        user:
           type: object
           properties:
-            latitude:
-              type: number
-            longitude:
-              type: number
-          nullable: true
-        pfpUrl:
-          type: string
-          format: url
-          nullable: true
-        role:
-          type: string
-          enum:
-            - BAKER
-            - CUSTOMER
-        updatedAt:
-          type: string
-          format: date-time
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+            email:
+              type: string
+            phone:
+              type: string
+              nullable: true
+            location:
+              type: object
+              properties:
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+              nullable: true
+            pfpUrl:
+              type: string
+              format: url
+              nullable: true
+            role:
+              type: string
+              enum:
+                - BAKER
+                - CUSTOMER
+            updatedAt:
+              type: string
+              format: date-time
     UserRecipesSelectResponse:
       type: object
       properties:
