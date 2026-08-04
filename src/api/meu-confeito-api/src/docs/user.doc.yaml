@@ -1,0 +1,123 @@
+paths:
+  /users:
+    post:
+      summary: Cadastra um novo usuário
+      tags:
+        - Usuários
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegisterSchema'
+      responses:
+        '201':
+          description: Usuário cadastrado com sucesso
+        '400':
+          description: Erro na validação dos dados
+        '409':
+          description: E-mail já em uso
+  /users/{id}:
+    get:
+      summary: Seleciona um usuário por ID
+      tags:
+        - Usuários
+      parameters:
+        - in: path
+          name: id
+          required: true,
+          schema:
+            $ref: '#/components/schemas/UserParamsSchema'
+      responses:
+        '201':
+          description: Usuário selecionado com sucesso
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Usuário não encontrado
+        '410':
+          description: Usuário suspenso ou excluído
+    patch:
+      summary: Atualiza dados de um usuário
+      tags:
+        - Usuários
+      parameters:
+        - in: path
+          name: id
+          required: true,
+          schema:
+            $ref: '#/components/schemas/UserParamsSchema'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateSchema'
+      responses:
+        '201':
+          description: Usuário atualizado com sucesso
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Usuário não encontrado
+        '410':
+          description: Usuário suspenso ou excluído
+    delete:
+      summary: Exclue um usuário
+      tags:
+        - Usuários
+      parameters:
+        - in: path
+          name: id
+          required: true,
+          schema:
+            $ref: '#/components/schemas/UserParamsSchema'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDeleteSchema'
+      responses:
+        '204':
+          description: Usuário excluído com sucesso
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Usuário não encontrado
+        '410':
+          description: Usuário suspenso ou excluído
+  /users/{id}/recipes:
+      get:
+        summary: Seleciona as receitas próprias de um usuário
+        tags:
+          - Usuários
+          - Receitas
+        parameters:
+        - in: path
+          name: id
+          required: true,
+          schema:
+            $ref: '#/components/schemas/UserParamsSchema'
+        responses:
+        '201':
+          description: Receitas selecionadas com sucesso
+        '403':
+          description: Ação negada por falta de privilégios
+  /users/{id}/saves:
+      get:
+        summary: Seleciona as receitas salvas por um usuário
+        tags:
+          - Usuários
+          - Receitas
+        parameters:
+        - in: path
+          name: id
+          required: true,
+          schema:
+            $ref: '#/components/schemas/UserParamsSchema'
+        responses:
+        '201':
+          description: Receitas selecionadas com sucesso
+        '403':
+          description: Ação negada por falta de privilégios

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const recipeIngredientSchema = z.object({
+export const ingredientSchema = z.object({
   ingredientId: z.uuid('Invalid UUDI for Ingredient ID'),
   baseQuantity: z.number('Ingredient base quantity must be a number'),
   measurementUnit: z.string('Ingredient measurement unit is required'),
@@ -22,7 +22,7 @@ export const registerSchema = z.object({
   hourlyLabor: z.number('Hourly labor must be a number').optional(),
   packagingCost: z.number('Packaging cost must be a number').optional(),
 
-  ingredients: z.array(recipeIngredientSchema).min(1, 'Recipe must have at least 1 ingredient'),
+  ingredients: z.array(ingredientSchema).min(1, 'Recipe must have at least 1 ingredient'),
 });
 
 export const paramsSchema = z.object({
