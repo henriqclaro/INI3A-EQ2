@@ -1,0 +1,187 @@
+components:
+  schemas:
+    RecipeRegisterResponse:
+      type: object
+      properties:
+        recipe:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            userId:
+              type: string
+              format: uuid
+              nullable: true
+            parentId:
+              type: string
+              format: uuid
+              nullable: true
+            title:
+              type: string
+            coverUrl:
+              type: string
+              format: url
+              nullable: true
+            instructions:
+              type: object
+            baseYield:
+              type: number
+            yieldUnit:
+              type: string
+            profitMargin:
+              type: number
+            overhead:
+              type: number
+            prepTimeMinutes:
+              type: integer
+            hourlyLabor:
+              type: number
+            packagingCost:
+              type: number
+            createdAt:
+              type: string
+              format: date-time
+            ingredients:
+              type: array
+              items:
+                type: object
+                properties:
+                  ingredientId:
+                    type: string
+                    format: uuid
+                  baseQuantity:
+                    type: number
+                  measurementUnit:
+                    type: string
+                  notes:
+                    type: string
+                    nullable: true
+    RecipeSingleSelectResponse:
+      type: object
+      properties:
+        recipe:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            userId:
+              type: string
+              format: uuid
+              nullable: true
+            parentId:
+              type: string
+              format: uuid
+              nullable: true
+            title:
+              type: string
+            coverUrl:
+              type: string
+              format: url
+              nullable: true
+            instructions:
+              type: object
+            baseYield:
+              type: number
+            yieldUnit:
+              type: string
+            status:
+              type: string
+            totalSaves:
+              type: integer
+            totalReviews:
+              type: integer
+            averageRating:
+              type: number
+            profitMargin:
+              type: number
+            overhead:
+              type: number
+            prepTimeMinutes:
+              type: integer
+            hourlyLabor:
+              type: number
+            packagingCost:
+              type: number
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+            ingredients:
+              type: array
+              items:
+                type: object
+                properties:
+                  ingredientId:
+                    type: string
+                    format: uuid
+                  baseQuantity:
+                    type: number
+                  measurementUnit:
+                    type: string
+                  notes:
+                    type: string
+                    nullable: true
+                  ingredient:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      name:
+                        type: array
+                        items:
+                          type: string
+                      category:
+                        type: string
+    RecipeSearchResponse:
+      type: object
+      properties:
+        recipes:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              coverUrl:
+                type: string
+                format: url
+                nullable: true
+              profitMargin:
+                type: number
+              overhead:
+                type: number
+              hourlyLabor:
+                type: number
+              packagingCost:
+                type: number
+              prepTimeMinutes:
+                type: integer
+              id:
+                type: string
+                format: uuid
+              createdAt:
+                type: string
+                format: date-time
+              updatedAt:
+                type: string
+                format: date-time
+              tags:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    tag:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                        id:
+                          type: string
+                          format: uuid
+                        name:
+                          type: string

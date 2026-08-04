@@ -1,0 +1,141 @@
+components:
+  schemas:
+    UserRegisterResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum:
+            - BAKER
+            - CUSTOMER
+        createdAt:
+          type: string
+          format: date-time
+    UserSelectResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        location:
+          type: object
+          properties:
+            latitude:
+              type: number
+            longitude:
+              type: number
+          nullable: true
+        pfpUrl:
+          type: string
+          format: url
+          nullable: true
+        role:
+          type: string
+          enum:
+            - BAKER
+            - CUSTOMER
+        updatedAt:
+          type: string
+          format: date-time
+    UserRecipesSelectResponse:
+      type: object
+      properties:
+        recipes:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              title:
+                type: string
+              coverUrl:
+                type: string
+                format: url
+                nullable: true
+              prepTimeMinutes:
+                type: number
+              createdAt:
+                type: string
+                format: date-time
+              updatedAt:
+                type: string
+                format: date-time
+              tags:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    tag:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        name:
+                          type: string
+                        type:
+                          type: string
+    UserSavesSelectResponse:
+      type: object
+      properties:
+        userSaves:
+          type: array
+          items:
+            type: object
+            properties:
+              recipe:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  title:
+                    type: string
+                  coverUrl:
+                    type: string
+                    format: url
+                    nullable: true
+                  profitMargin:
+                    type: number
+                  overhead:
+                    type: number
+                  hourlyLabor:
+                    type: number
+                  packagingCost:
+                    type: number
+                  prepTimeMinutes:
+                    type: number
+                  tags:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tag:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              format: uuid
+                            name:
+                              type: string
+                            type:
+                              type: string
+              savedAt:
+                type: string
+                format: date-time

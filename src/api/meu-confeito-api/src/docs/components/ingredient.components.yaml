@@ -1,0 +1,51 @@
+components:
+  schemas:
+    IngredientRegisterResponse:
+      type: object
+      properties:
+        ingredient:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            parentId:
+              type: string
+              format: uuid
+              nullable: true
+            name:
+              type: array
+              items:
+                type: string
+            description:
+              type: string
+              nullable: true
+            category:
+              type: string
+            creatorId:
+              type: string
+              format: uuid
+              nullable: true
+            createdAt:
+              type: string
+              format: date-time
+    IngredientSearchResponse:
+      type: object
+      properties:
+        ingredients:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              name:
+                type: array
+                items:
+                  type: string
+              description:
+                type: string
+                nullable: true
+              category:
+                type: string

@@ -1,0 +1,54 @@
+paths:
+  /auth/sessions:
+    post:
+      summary: Realiza o login do usuário
+      tags:
+        - Autenticação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthLogInSchema'
+      responses:
+        '200':
+          description: Login realizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthLogInResponse'
+        '401':
+          description: Credenciais inválidas
+    delete:
+      summary: Realiza o logout do usuário
+      tags:
+        - Autenticação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRefreshOrDeleteSchema'
+      responses:
+        '204':
+          description: Logout realizado com sucesso
+  /auth/tokens:
+    post:
+      summary: Atualiza o token de acesso
+      tags:
+        - Autenticação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRefreshOrDeleteSchema'
+      responses:
+        '200':
+          description: Token atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthRefreshTokenResponse'
+        '401':
+          description: Token inválido ou expirado

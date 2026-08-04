@@ -13,6 +13,10 @@ paths:
       responses:
         '201':
           description: Usuário cadastrado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRegisterResponse'
         '400':
           description: Erro na validação dos dados
         '409':
@@ -31,6 +35,10 @@ paths:
       responses:
         '201':
           description: Usuário selecionado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSelectResponse'
         '403':
           description: Ação negada por falta de privilégios
         '404':
@@ -56,6 +64,10 @@ paths:
       responses:
         '201':
           description: Usuário atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSelectResponse'
         '403':
           description: Ação negada por falta de privilégios
         '404':
@@ -100,10 +112,14 @@ paths:
           schema:
             $ref: '#/components/schemas/UserParamsSchema'
         responses:
-        '201':
-          description: Receitas selecionadas com sucesso
-        '403':
-          description: Ação negada por falta de privilégios
+          '201':
+            description: Receitas selecionadas com sucesso
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/UserRecipesSelectResponse'
+          '403':
+            description: Ação negada por falta de privilégios
   /users/{id}/saves:
       get:
         summary: Seleciona as receitas salvas por um usuário
@@ -117,7 +133,11 @@ paths:
           schema:
             $ref: '#/components/schemas/UserParamsSchema'
         responses:
-        '201':
-          description: Receitas selecionadas com sucesso
-        '403':
-          description: Ação negada por falta de privilégios
+          '201':
+            description: Receitas selecionadas com sucesso
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/UserSavesSelectResponse'
+          '403':
+            description: Ação negada por falta de privilégios

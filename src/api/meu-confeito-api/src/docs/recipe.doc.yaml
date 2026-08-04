@@ -1,0 +1,65 @@
+paths:
+  /recipes:
+    post:
+      summary: Cadastra uma nova receita
+      tags:
+        - Receitas
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeRegisterSchema'
+      responses:
+        '201':
+          description: Receita cadastrada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeRegisterResponse'
+        '400':
+          description: Erro na validação dos dados
+        '403':
+          description: Ação negada por falta de privilégios
+    get:
+      summary: Busca e lista receitas
+      tags:
+        - Receitas
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Receitas selecionadas com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeSearchResponse'
+  /recipes/{id}:
+    get:
+      summary: Seleciona uma receita por ID
+      tags:
+        - Receitas
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/RecipeParamsSchema'
+      responses:
+        '200':
+          description: Receita selecionada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeSingleSelectResponse'
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Receita não encontrada

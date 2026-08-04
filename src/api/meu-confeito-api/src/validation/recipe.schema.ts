@@ -12,7 +12,7 @@ export const registerSchema = z.object({
   parentId: z.uuid('Invalid UUID for Parent ID').nullable(),
   title: z.string('Title is required'),
   coverUrl: z.url('Invalid URL for Cover Image').nullable(),
-  instructions: z.json('Invalid JSON for Instructions'),
+  instructions: z.looseObject({}, { error: 'Invalid JSON for Instructions' }),
   baseYield: z.number('Base yield must be a number'),
   yieldUnit: z.string('Yield unit is required'),
 

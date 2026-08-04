@@ -1,0 +1,48 @@
+components:
+  schemas:
+    AuthLogInResponse:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+            email:
+              type: string
+            phone:
+              type: string
+              nullable: true
+            location:
+              type: object
+              properties:
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+              nullable: true
+            pfpUrl:
+              type: string
+              format: url
+              nullable: true
+            role:
+              type: string
+        auth:
+          type: object
+          properties:
+            accessToken:
+              type: string
+            tokenType:
+              type: string
+            expiresIn:
+              type: integer
+            refreshToken:
+              type: string
+    AuthRefreshTokenResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string

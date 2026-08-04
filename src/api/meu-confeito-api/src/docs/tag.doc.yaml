@@ -1,0 +1,23 @@
+paths:
+  /tags:
+    post:
+      summary: Cadastra uma nova tag
+      tags:
+        - Tags
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagRegisterSchema'
+      responses:
+        '201':
+          description: Tag cadastrada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagRegisterResponse'
+        '403':
+          description: Ação negada por falta de privilégios
+        '409':
+          description: Tag já existente

@@ -1,0 +1,45 @@
+paths:
+  /ingredients:
+    post:
+      summary: Cadastra um novo ingrediente
+      tags:
+        - Ingredientes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngredientRegisterSchema'
+      responses:
+        '201':
+          description: Ingrediente cadastrado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngredientRegisterResponse'
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Ingrediente pai não encontrado
+        '409':
+          description: Ingrediente já existente
+    get:
+      summary: Busca e lista ingredientes
+      tags:
+        - Ingredientes
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ingredientes selecionados com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngredientSearchResponse'
