@@ -35,6 +35,11 @@ export default function RegisterScreen() {
       return;
     }
 
+    if (password.length < 8) {
+      Alert.alert('A senha necessitar ter ao menos 8 caracteres');
+      return;
+    }
+
     try {
       await registerUser({ name, email, password, phone: null, role: 'BAKER' });
       Alert.alert('Cadastro realizado com sucesso');
