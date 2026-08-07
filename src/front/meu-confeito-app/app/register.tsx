@@ -36,7 +36,7 @@ export default function RegisterScreen() {
     }
 
     if (password.length < 8) {
-      Alert.alert('A senha necessitar ter ao menos 8 caracteres');
+      Alert.alert('A senha deve conter ao menos 8 caracteres');
       return;
     }
 

@@ -16,7 +16,7 @@ export const BackButton = () => {
 
   return (
     <FloatingButton onPress={() => router.back()} variant="neutral" style={styles.button}>
-      <MaterialCommunityIcons name="arrow-left" color={theme.colors.text} size={26} />
+      <MaterialCommunityIcons name="arrow-left-circle-outline" color={theme.colors.text} size={32} />
     </FloatingButton>
   );
 };
@@ -25,7 +25,7 @@ const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     button: {
       top: 20,
-      left: 20,
+      left: 10,
       zIndex: 10,
     },
   });
