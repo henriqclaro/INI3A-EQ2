@@ -1,5 +1,5 @@
-import { useMemo, useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Dimensions } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { Dimensions, StyleSheet, Text, View } from 'react-native';
 
 import { Image } from 'expo-image';
 import { Link, Stack } from 'expo-router';
@@ -29,7 +29,6 @@ export default function WelcomeScreen() {
       <Stack.Screen options={{ title: 'Bem-Vindo' }} />
 
       <View style={styles.container}>
-        
         <View style={styles.contentContainer}>
           <Image source={require('../assets/images/logo.svg')} style={styles.logo} />
 
@@ -39,16 +38,16 @@ export default function WelcomeScreen() {
             projetar suas vendas e armazenar suas receitas.
           </Text>
 
-          <Link href="/login" asChild>
-            <CustomButton title="Sou Confeiteira" />
-          </Link>
-
-          <Link href="/login" asChild>
-            <CustomButton title="Sou Cliente" />
+          <Link href="/register" asChild>
+            <CustomButton title="Cadastrar como Confeiteira" variant="primary" />
           </Link>
 
           <Link href="/register" asChild>
-            <CustomButton title="Cadastrar" variant="secondary" />
+            <CustomButton title="Cadastrar como Cliente" variant="secondary" />
+          </Link>
+
+          <Link href="/login" asChild>
+            <CustomButton title="Já tenho cadastro" variant="neutral" />
           </Link>
         </View>
 
@@ -56,13 +55,12 @@ export default function WelcomeScreen() {
         {isDesktop && (
           <View style={styles.imageContainer}>
             <Image
-              source={require('../assets/images/imagem-inicio.jpg')}
+              source={require('../assets/images/index-image.jpg')}
               style={styles.backgroundImage}
               contentFit="cover"
             />
           </View>
         )}
-
       </View>
     </>
   );
@@ -77,20 +75,20 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
     contentContainer: {
       flex: 1,
       alignItems: 'center',
-      justifyContent: isDesktop ? 'flex-start' : 'center', 
-      paddingTop: isDesktop ? 40 : 20, 
+      justifyContent: isDesktop ? 'flex-start' : 'center',
+      paddingTop: isDesktop ? 40 : 20,
       paddingHorizontal: 20,
     },
     imageContainer: {
       width: isDesktop ? 650 : '100%',
-      height: isDesktop ? '100%': 250, 
+      height: isDesktop ? '100%' : 250,
       justifyContent: 'center',
-      alignItems: 'flex-end',          
+      alignItems: 'flex-end',
     },
     backgroundImage: {
       width: '100%',
       height: '100%',
-      resizeMode: 'contain', 
+      resizeMode: 'contain',
     },
     mainText: {
       color: theme.colors.text,
