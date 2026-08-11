@@ -1,3 +1,4 @@
+import { RecipeIngredient } from './ingredient';
 import { PartialTag } from './tag';
 
 export interface PartialRecipe {
@@ -35,4 +36,6 @@ export interface FullRecipe {
 
   createdAt: Date;
   updatedAt: Date;
+
+  ingredients: RecipeIngredient[];
 }
