@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { useMemo } from 'react';
+import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { Image } from 'expo-image';
 import { Link, Stack } from 'expo-router';
@@ -10,17 +10,8 @@ import { AppTheme } from '@/src/theme/themes';
 
 export default function WelcomeScreen() {
   const { theme } = useThemeMode();
-  const [isDesktop, setIsDesktop] = useState(false);
-
-  // Monitora a largura para saber se está na tela do PC
-  useEffect(() => {
-    const updateLayout = () => {
-      setIsDesktop(Dimensions.get('window').width >= 768);
-    };
-    updateLayout();
-    const subscription = Dimensions.addEventListener('change', updateLayout);
-    return () => subscription.remove();
-  }, []);
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 768;
 
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 

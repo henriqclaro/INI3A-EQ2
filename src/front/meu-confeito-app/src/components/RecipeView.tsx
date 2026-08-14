@@ -54,7 +54,9 @@ export const RecipeView = ({
       )}
 
       <View style={styles.infoContainer}>
-        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.title} numberOfLines={3}>
+          {title}
+        </Text>
 
         <View style={styles.tagsContainer}>
           {styledTags.map((item) => (
@@ -104,6 +106,8 @@ const createStyles = (theme: AppTheme) =>
     },
     title: {
       fontSize: 22,
+      lineHeight: 28,
+      height: 84,
       fontWeight: '600',
       color: theme.colors.text,
       marginBottom: 12,
