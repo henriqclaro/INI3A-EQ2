@@ -145,3 +145,82 @@ components:
               savedAt:
                 type: string
                 format: date-time
+    UserInventorySelectResponse:
+      type: object
+      properties:
+        userInventories:
+          type: array
+          items:
+            type: object
+            properties:
+              ingredientId:
+                type: string
+                format: uuid
+              currentQuantity:
+                type: number
+              measurementUnit:
+                type: string
+              packagePrice:
+                type: number
+              packageSize:
+                type: number
+              costUnit:
+                type: number
+              lastUpdated:
+                type: string
+                format: date-time
+              ingredient:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  name:
+                    type: array
+                    items:
+                      type: string
+                  category:
+                    type: string
+                  description:
+                    type: string
+                    nullable: true
+    UserInventoryRegisterResponse:
+      type: object
+      properties:
+        userInventory:
+          type: object
+          properties:
+            userId:
+              type: string
+              format: uuid
+            ingredientId:
+              type: string
+              format: uuid
+            currentQuantity:
+              type: number
+            measurementUnit:
+              type: string
+            packagePrice:
+              type: number
+            packageSize:
+              type: number
+            costUnit:
+              type: number
+            lastUpdated:
+              type: string
+              format: date-time
+            ingredient:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                name:
+                  type: array
+                  items:
+                    type: string
+                category:
+                  type: string
+                description:
+                  type: string
+                  nullable: true

@@ -30,3 +30,15 @@ export const updateSchema = z
 export const deleteSchema = z.object({
   state: z.enum(['DELETED', 'SUSPENDED']),
 });
+
+export const inventoryRegisterSchema = z.object({
+  ingredientId: z.uuid('Invalid UUID for ingredient ID'),
+  measurementUnit: z.string('Measurement unit is required'),
+  currentQuantity: z.number('Current quantity must be a number').optional(),
+  packagePrice: z.number('Package price must be a number').optional(),
+  packageSize: z
+    .number('Package size must be a number')
+    .positive('Package size must be positive')
+    .optional(),
+  costUnit: z.number('Cost per unit must be a number').optional(),
+});
