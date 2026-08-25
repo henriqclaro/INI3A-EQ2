@@ -29,6 +29,11 @@ export const paramsSchema = z.object({
   id: z.uuid('Invalid UUID for recipe ID'),
 });
 
+export const userInventoryParamsSchema = z.object({
+  id: z.uuid('Invalid UUID for recipe ID'),
+  userId: z.uuid('Invalid UUID for user ID'),
+});
+
 export const querySchema = z.object({
   page: z
     .string()

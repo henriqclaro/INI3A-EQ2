@@ -34,6 +34,7 @@ export namespace RecipeDTO {
   }
 
   export type RequestParam = z.infer<typeof recipe.paramsSchema>;
+  export type UserInventoryRequestParam = z.infer<typeof recipe.userInventoryParamsSchema>;
 
   export interface SingleSelectResponse {
     recipe: {
@@ -70,6 +71,54 @@ export namespace RecipeDTO {
           name: string[];
           category: string;
         };
+      }[];
+    };
+  }
+
+  export interface SingleSelectUserInventoryResponse {
+    recipe: {
+      id: string;
+      userId: string | null;
+      parentId: string | null;
+      title: string;
+      coverUrl: string | null;
+      instructions: JsonValue;
+      baseYield: Decimal;
+      yieldUnit: string;
+
+      status: string;
+      totalSaves: number;
+      totalReviews: number;
+      averageRating: Decimal;
+
+      profitMargin: Decimal;
+      overhead: Decimal;
+      prepTimeMinutes: number;
+      hourlyLabor: Decimal;
+      packagingCost: Decimal;
+
+      createdAt: Date;
+      updatedAt: Date;
+
+      ingredients: {
+        ingredientId: string;
+        baseQuantity: Decimal;
+        measurementUnit: string;
+        notes: string | null;
+        ingredient: {
+          id: string;
+          name: string[];
+          category: string;
+          description: string | null;
+        };
+        inventory: {
+          currentQuantity: Decimal;
+          measurementUnit: string;
+          packagePrice: Decimal;
+          packageSize: Decimal;
+          costUnit: Decimal;
+          lastUpdated: Date;
+        } | null;
       }[];
     };
   }
