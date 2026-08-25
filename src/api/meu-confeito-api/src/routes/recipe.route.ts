@@ -23,6 +23,12 @@ recipeRoutes.get(
 );
 
 recipeRoutes.get(
+  '/:id/users/:userId',
+  validate({ params: recipe.userInventoryParamsSchema }),
+  recipeController.selectSingleUserInventory.bind(recipeController),
+);
+
+recipeRoutes.get(
   '/',
   validate({ query: recipe.querySchema }),
   recipeController.search.bind(recipeController),

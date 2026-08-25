@@ -110,6 +110,96 @@ export class RecipeService {
     return { recipe };
   }
 
+  async selectSingleUserInventory(context: RequestContext, id: string, userId: string) {
+    this.checkPermission(context, userId);
+
+    const recipe = await prisma.recipe.findUnique({
+      where: { id: id },
+
+      include: {
+        ingredients: {
+          select: {
+            ingredientId: true,
+            baseQuantity: true,
+            measurementUnit: true,
+            notes: true,
+
+            ingredient: {
+              select: {
+                id: true,
+                name: true,
+                category: true,
+                description: true,
+                inventories: {
+                  where: {
+                    userId: userId,
+                  },
+                  select: {
+                    currentQuantity: true,
+                    measurementUnit: true,
+                    packagePrice: true,
+                    packageSize: true,
+                    costUnit: true,
+                    lastUpdated: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!recipe || recipe.status === 'SUSPENDED') {
+      throw new NotFoundError('Recipe not found', 'RESOURCE_NOT_FOUND');
+    }
+
+    if (context.userId !== recipe.userId && recipe.status !== 'PUBLISHED') {
+      // Privacidade para os usuários
+      if (context.userRole === 'ADMIN') {
+        throw new ForbiddenError('Action denied for lack of privileges');
+      } else {
+        throw new NotFoundError('Recipe not found', 'RESOURCE_NOT_FOUND');
+      }
+    }
+
+    const formattedIngredients = recipe.ingredients.map((item) => {
+      const inventory = item.ingredient.inventories[0] ?? null;
+
+      return {
+        ingredientId: item.ingredientId,
+        baseQuantity: item.baseQuantity,
+        measurementUnit: item.measurementUnit,
+        notes: item.notes,
+        ingredient: {
+          id: item.ingredient.id,
+          name: item.ingredient.name,
+          category: item.ingredient.category,
+          description: item.ingredient.description,
+        },
+        inventory: inventory
+          ? {
+              currentQuantity: inventory.currentQuantity,
+              measurementUnit: inventory.measurementUnit,
+              packagePrice: inventory.packagePrice,
+              packageSize: inventory.packageSize,
+              costUnit: inventory.costUnit,
+              lastUpdated: inventory.lastUpdated,
+            }
+          : null,
+      };
+    });
+
+    const { ingredients: _ingredients, ...recipeData } = recipe;
+
+    return {
+      recipe: {
+        ...recipeData,
+        ingredients: formattedIngredients,
+      },
+    };
+  }
+
   async search(search?: string, page?: number) {
     const baseFilter: Prisma.RecipeWhereInput = {
       status: 'PUBLISHED',

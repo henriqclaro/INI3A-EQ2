@@ -49,6 +49,25 @@ export class RecipeController {
     return new DefaultSuccessResponse(res, responseData, 'Recipe selected successfully').send();
   }
 
+  async selectSingleUserInventory(
+    req: Request<RecipeDTO.UserInventoryRequestParam>,
+    res: Response<ApiResponse<RecipeDTO.SingleSelectUserInventoryResponse>>,
+  ) {
+    const context = this.extractProps(req);
+
+    const recipeId = req.params.id;
+    const userId = req.params.userId;
+
+    const responseData: RecipeDTO.SingleSelectUserInventoryResponse =
+      await this.recipeService.selectSingleUserInventory(context, recipeId, userId);
+
+    return new DefaultSuccessResponse(
+      res,
+      responseData,
+      'Recipe with user inventory selected successfully',
+    ).send();
+  }
+
   async search(req: Request<any>, res: Response<ApiResponse<RecipeDTO.SearchResponse>>) {
     const search = req.query.search as string;
 

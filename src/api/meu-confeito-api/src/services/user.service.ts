@@ -306,4 +306,107 @@ export class UserService {
 
     return { userSaves };
   }
+
+  async registerUserInventory(
+    context: RequestContext,
+    id: string,
+    data: UserDTO.RegisterUserInventoryRequest,
+  ) {
+    this.checkPermission(context, id);
+
+    const user = await prisma.user.findUnique({
+      where: { id: id },
+      select: { isActive: true },
+    });
+
+    this.checkUser(user);
+
+    const ingredientExists = await prisma.ingredient.findUnique({
+      where: { id: data.ingredientId },
+    });
+
+    if (!ingredientExists) {
+      throw new NotFoundError('Ingredient not found', 'RESOURCE_NOT_FOUND');
+    }
+
+    const inventoryExists = await prisma.userInventory.findUnique({
+      where: {
+        userId_ingredientId: {
+          userId: id,
+          ingredientId: data.ingredientId,
+        },
+      },
+    });
+
+    if (inventoryExists) {
+      throw new ConflictError(
+        'Inventory item already exists for this ingredient',
+        'RESOURCE_ALREADY_EXISTS',
+      );
+    }
+
+    const packagePrice = data.packagePrice ?? 0;
+    const packageSize = data.packageSize ?? 1;
+    const costUnit = data.costUnit ?? (packageSize > 0 ? packagePrice / packageSize : 0);
+
+    const userInventory = await prisma.userInventory.create({
+      data: {
+        userId: id,
+        ingredientId: data.ingredientId,
+        currentQuantity: data.currentQuantity ?? 0,
+        measurementUnit: data.measurementUnit,
+        packagePrice: packagePrice,
+        packageSize: packageSize,
+        costUnit: costUnit,
+      },
+      select: {
+        userId: true,
+        ingredientId: true,
+        currentQuantity: true,
+        measurementUnit: true,
+        packagePrice: true,
+        packageSize: true,
+        costUnit: true,
+        lastUpdated: true,
+        ingredient: {
+          select: {
+            id: true,
+            name: true,
+            category: true,
+            description: true,
+          },
+        },
+      },
+    });
+
+    return { userInventory };
+  }
+
+  async selectUserInventory(context: RequestContext, id: string) {
+    this.checkPermission(context, id);
+
+    const userInventories = await prisma.userInventory.findMany({
+      where: { userId: id },
+      take: 10,
+      select: {
+        ingredientId: true,
+        currentQuantity: true,
+        measurementUnit: true,
+        packagePrice: true,
+        packageSize: true,
+        costUnit: true,
+        lastUpdated: true,
+        ingredient: {
+          select: {
+            id: true,
+            name: true,
+            category: true,
+            description: true,
+          },
+        },
+      },
+    });
+
+    return { userInventories };
+  }
 }

@@ -84,4 +84,43 @@ export namespace UserDTO {
       savedAt: Date;
     }[];
   }
+
+  export type RegisterUserInventoryRequest = z.infer<typeof user.inventoryRegisterSchema>;
+
+  export interface RegisterUserInventoryResponse {
+    userInventory: {
+      userId: string;
+      ingredientId: string;
+      currentQuantity: Decimal;
+      measurementUnit: string;
+      packagePrice: Decimal;
+      packageSize: Decimal;
+      costUnit: Decimal;
+      lastUpdated: Date;
+      ingredient: {
+        id: string;
+        name: string[];
+        category: string;
+        description: string | null;
+      };
+    };
+  }
+
+  export interface SelectUserInventoryResponse {
+    userInventories: {
+      ingredientId: string;
+      currentQuantity: Decimal;
+      measurementUnit: string;
+      packagePrice: Decimal;
+      packageSize: Decimal;
+      costUnit: Decimal;
+      lastUpdated: Date;
+      ingredient: {
+        id: string;
+        name: string[];
+        category: string;
+        description: string | null;
+      };
+    }[];
+  }
 }

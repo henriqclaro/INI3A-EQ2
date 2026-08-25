@@ -63,3 +63,33 @@ paths:
           description: Ação negada por falta de privilégios
         '404':
           description: Receita não encontrada
+  /recipes/{id}/users/{userId}:
+    get:
+      summary: Seleciona uma receita por ID incluindo o estoque do usuário
+      tags:
+        - Receitas
+        - Ingredientes
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Receita com estoque do usuário selecionada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeSingleSelectUserInventoryResponse'
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Receita não encontrada
