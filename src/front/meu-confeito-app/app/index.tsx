@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { Image } from 'expo-image';
 import { Link, Stack } from 'expo-router';
@@ -20,7 +20,12 @@ export default function WelcomeScreen() {
       <Stack.Screen options={{ title: 'Bem-Vindo' }} />
 
       <View style={styles.container}>
+        <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            showsHorizontalScrollIndicator={false}
+          >
         <View style={styles.contentContainer}>
+          
           <Image source={require('../assets/images/logo.svg')} style={styles.logo} />
 
           <Text style={styles.mainText}>Seja bem-vindo(a) ao MeuConfeito!</Text>
@@ -28,7 +33,7 @@ export default function WelcomeScreen() {
             Um aplicativo pensado para auxiliar confeiteiras que desejam organizar suas produções,
             projetar suas vendas e armazenar suas receitas.
           </Text>
-
+        
           <Link href="/register" asChild>
             <CustomButton title="Cadastrar como Confeiteira" variant="primary" />
           </Link>
@@ -41,7 +46,7 @@ export default function WelcomeScreen() {
             <CustomButton title="Já tenho cadastro" variant="neutral" />
           </Link>
         </View>
-
+        </ScrollView>
         {/* Foto que aparece no PC */}
         {isDesktop && (
           <View style={styles.imageContainer}>
@@ -51,7 +56,9 @@ export default function WelcomeScreen() {
               contentFit="cover"
             />
           </View>
+          
         )}
+
       </View>
     </>
   );
@@ -101,5 +108,9 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       width: 225,
       height: 225,
       marginBottom: 10,
+    },
+    scrollContainer: {
+      padding: 10,
+      width: '100%',
     },
   });
