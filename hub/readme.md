@@ -1,4 +1,4 @@
-# Nome do Projeto
+# Meu Confeito
 
 > **Slogan / Resumo de uma linha sobre o projeto**
 
@@ -16,26 +16,25 @@ Explique aqui detalhadamente a proposta do projeto:
 
 ## 🚀 Tecnologias e Arquitetura
 
-- **Linguagem / Framework Backend:** PHP / Laravel
+- **Linguagem / Framework Backend:** TypeScript / Express.js
 - **Banco de Dados:** PostgreSQL
-- **Frontend / Estilização:** Blade / TailwindCSS / JavaScript
+- **Frontend / Estilização:** Expo / React Native
 - **Hospedagem / Infra:** Docker / Nginx
 
 ---
 
 ## 👥 Equipe e Papéis
 
-| Integrante  | Papel no Projeto   | E-mail          |
-| :---------- | :----------------- | :-------------- |
-| **Aluno 1** | Product Owner (PO) | aluno1@unesp.br |
-| **Aluno 2** | Scrum Master       | aluno2@unesp.br |
-| **Aluno 3** | Tech Leader        | aluno3@unesp.br |
-| **Aluno 4** | Desenvolvedor      | aluno4@unesp.br |
-| **Aluno 5** | Desenvolvedor      | aluno5@unesp.br |
-| **Aluno 6** | Desenvolvedor      | aluno6@unesp.br |
-| **Aluno 7** | Desenvolvedor      | aluno7@unesp.br |
+| Integrante           | Papel no Projeto   | E-mail                       |
+| :------------------- | :----------------- | :--------------------------- |
+| **Rodrigo Ribeiro**  | Product Owner (PO) | rr.rodrigues@unesp.br        |
+| **Ana Clara**        | Scrum Master       | ana-clara.coldibeli@unesp.br |
+| **Henrique Claro**   | Tech Leader        | henrique.claro@unesp.br      |
+| **Sophia Ceide**     | Desenvolvedor      | sophia.ceide@unesp.br        |
+| **Giovanna Ribeiro** | Desenvolvedor      | giovanna.r.oliveira@unesp.br |
+| **Ashley Victoria**  | Desenvolvedor      | eshley.r.oliveira@unesp.br   |
 
-**Orientador(a):** Prof. Nome do Orientador
+**Orientador(a):** Amanda de Maia Areias
 
 ---
 
@@ -43,20 +42,8 @@ Explique aqui detalhadamente a proposta do projeto:
 
 ```bash
 # 1. Clone o repositório
-git clone https://github.com/usuario/nome-do-repositorio.git
+git clone https://github.com/henriqclaro/INI3A-EQ2.git
 
 # 2. Acesse a pasta
-cd nome-do-repositorio
-
-# 3. Instale as dependências
-composer install
-npm install
-
-# 4. Configure o ambiente
-cp .env.example .env
-php artisan key:generate
-
-# 5. Execute as migrações e inicie o servidor
-php artisan migrate
-php artisan serve
+cd INI-3A-EQ2
 ```

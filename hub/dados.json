@@ -4,7 +4,7 @@
   "ano": 2026,
   "turma": "A",
   "curso": "Técnico em Informática",
-  "tecnologia_principal": "Express",
+  "tecnologia_principal": "Express.js",
   "tecnologias": [
     "TypeScript",
     "Prisma ORM",
@@ -31,7 +31,7 @@
     {
       "nome": "Henrique Claro Alvares",
       "email": "henrique.claro@unesp.br",
-      "papel": "T"
+      "papel": "Tech Leader"
     },
     {
       "nome": "Sophia Zechi Ceide",
@@ -44,7 +44,7 @@
       "papel": "Desenvolvedor"
     },
     {
-      "nome": "Eshley Victoria Rocha de Oliveira",
+      "nome": "Ashley Victoria Rocha de Oliveira",
       "email": "eshley.r.oliveira@unesp.br",
       "papel": "Desenvolvedor"
     }
