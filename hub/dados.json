@@ -1,0 +1,58 @@
+{
+  "nome": "Meu Confeito",
+  "slogan": "Com amor feito",
+  "ano": 2026,
+  "turma": "A",
+  "curso": "Técnico em Informática",
+  "tecnologia_principal": "Express",
+  "tecnologias": [
+    "TypeScript",
+    "Prisma ORM",
+    "PostgreSQL",
+    "Expo",
+    "React Native"
+  ],
+  "objetivo": "Descreva aqui em um ou dois parágrafos qual problema real o projeto resolve e qual o público-alvo beneficiado.",
+  "video_url": "https://www.youtube.com/watch?v=exemplo-video-comercial",
+  "repositorio_url": "https://github.com/henriqclaro/INI3A-EQ2.git",
+  "deploy_url": "https://eq.projetoscti.com.br/26-meuconfeito",
+  "url_atual": null,
+  "autores": [
+    {
+      "nome": "Rodrigo Ribeiro Rodrigues",
+      "email": "rr.rodrigues@unesp.br",
+      "papel": "Product Owner (PO)"
+    },
+    {
+      "nome": "Ana Clara de Menezes Coldibeli",
+      "email": "ana-clara.coldibeli@unesp.br",
+      "papel": "Scrum Master"
+    },
+    {
+      "nome": "Henrique Claro Alvares",
+      "email": "henrique.claro@unesp.br",
+      "papel": "Tech Leader"
+    },
+    {
+      "nome": "Sophia Zechi Ceide",
+      "email": "sophia.ceide@unesp.br",
+      "papel": "Desenvolvedor"
+    },
+    {
+      "nome": "Giovanna Ribeiro Garcia de Oliveira",
+      "email": "giovanna.r.oliveira@unesp.br",
+      "papel": "Desenvolvedor"
+    },
+    {
+      "nome": "Eshley Victoria Rocha de Oliveira",
+      "email": "eshley.r.oliveira@unesp.br",
+      "papel": "Desenvolvedor"
+    }
+  ],
+  "orientadores": [
+    {
+      "nome": "Amanda de Maia Areias",
+      "email": "amanda.areias@unesp.br"
+    }
+  ]
+}
