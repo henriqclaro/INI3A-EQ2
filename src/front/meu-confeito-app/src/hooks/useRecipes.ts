@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { RecipeService } from '../services/recipe';
 import { UserService } from '../services/user';
 import { PartialRecipe } from '../types';
-import { FullRecipe } from '../types/recipe';
+import { FullRecipe, RecipeRegisterInput } from '../types/recipe';
 
 export function useManyRecipes(search?: string) {
   const [recipes, setRecipes] = useState<PartialRecipe[]>([]);
@@ -83,3 +83,26 @@ export function useUserRecipes(userId: string | undefined) {
 
   return { recipes, isLoading, error, refetch: fetchUserRecipes };
 }
+
+export function useRecipeRegister() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const registerRecipe = async (data: RecipeRegisterInput) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await RecipeService.register(data);
+      return response;
+    } catch (err) {
+      console.error('Error during recipe registration: ', err);
+      setError('Erro ao cadastrar receita.');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { registerRecipe, isLoading, error };
+}
+
