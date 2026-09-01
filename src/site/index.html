@@ -1,0 +1,1940 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Meu Confeito - Plataforma inteligente de gestão prática, padronização de receitas, fichas técnicas automáticas, radar de tendências e precificação para confeiteiras autônomas."
+    />
+    <meta
+      name="keywords"
+      content="Meu Confeito, confeitaria, ficha técnica, precificação de doces, gestão de confeitaria, confeiteiras autônomas, receitas virais"
+    />
+    <meta name="author" content="Projeto Meu Confeito" />
+    <title>Meu Confeito | Gestão Prática e Inteligente para Confeiteiras</title>
+
+    <!-- Google Fonts: Playfair Display SC & Inter (as defined in DESIGN.md) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display+SC:ital,wght@0,600;0,700;0,900;1,600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="media/Logo-MeuConfeito.png" />
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- =========================================================================
+       Header & Navigation Bar
+       ========================================================================= -->
+    <header class="site-header" id="siteHeader">
+      <div class="container header-container">
+        <a
+          href="#hero"
+          class="brand-logo"
+          aria-label="Meu Confeito - Página Inicial"
+        >
+          <img
+            src="media/Logo-MeuConfeito.png"
+            alt="Logo Meu Confeito"
+            class="brand-logo-img"
+            width="48"
+            height="48"
+          />
+          <div>
+            <span class="brand-title">MEU CONFEITO</span>
+            <span class="brand-subtitle">Confeitaria Inteligente</span>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <nav class="nav-desktop" aria-label="Navegação Principal">
+          <ul class="nav-links">
+            <li><a href="#sobre" class="nav-link">Visão Geral</a></li>
+            <li><a href="#solucao" class="nav-link">O Desafio & Solução</a></li>
+            <li><a href="#diferenciais" class="nav-link">Diferenciais</a></li>
+            <li><a href="#calculadora" class="nav-link">Ficha Técnica</a></li>
+            <li>
+              <a href="#tendencias" class="nav-link">Tendências & Mapa</a>
+            </li>
+            <li><a href="#tecnologias" class="nav-link">Tecnologias</a></li>
+            <li><a href="#faq" class="nav-link">Dúvidas</a></li>
+          </ul>
+          <a href="#calculadora" class="btn btn--primary btn--sm"
+            >Testar Simulador</a
+          >
+        </nav>
+
+        <!-- Mobile Navigation Hamburger Toggle -->
+        <button
+          class="mobile-menu-toggle"
+          id="mobileMenuToggle"
+          aria-label="Abrir Menu"
+          aria-expanded="false"
+          aria-controls="mobileNavDrawer"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Mobile Drawer Menu -->
+    <div
+      class="mobile-nav-drawer"
+      id="mobileNavDrawer"
+      aria-label="Menu Mobile"
+    >
+      <ul class="mobile-nav-links">
+        <li><a href="#sobre" class="nav-link">Visão Geral</a></li>
+        <li><a href="#solucao" class="nav-link">O Desafio & Solução</a></li>
+        <li><a href="#diferenciais" class="nav-link">Diferenciais</a></li>
+        <li>
+          <a href="#calculadora" class="nav-link">Ficha Técnica Interativa</a>
+        </li>
+        <li><a href="#tendencias" class="nav-link">Tendências & Mapa</a></li>
+        <li><a href="#tecnologias" class="nav-link">Tecnologias</a></li>
+        <li><a href="#faq" class="nav-link">Dúvidas Frequentes</a></li>
+      </ul>
+      <div style="margin-top: 16px">
+        <a href="#calculadora" class="btn btn--primary" style="width: 100%"
+          >Testar Simulador</a
+        >
+      </div>
+    </div>
+
+    <main>
+      <!-- =========================================================================
+         Hero Section
+         ========================================================================= -->
+      <section class="hero-section" id="hero">
+        <div class="container hero-grid">
+          <!-- Hero Left Column: Copywriting -->
+          <div class="hero-content">
+            <div class="chip chip--primary">
+              <span class="chip-dot"></span>
+              PROJETO DE CONFEITARIA INTELIGENTE • 100% GRATUITO
+            </div>
+
+            <h1 class="headline-xl hero-title">
+              A doçura de criar, a <span>precisão de gerenciar</span>.
+            </h1>
+
+            <p class="body-lg">
+              O <strong>Meu Confeito</strong> é a solução prática e completa
+              projetada para confeiteiras autônomas e pequenos negócios de
+              sobremesas. Da padronização de receitas e cálculo exato de custos
+              até o radar de tendências virais e divulgação de pontos de venda.
+            </p>
+
+            <div class="hero-actions">
+              <a href="#calculadora" class="btn btn--primary btn--lg">
+                Simular Ficha Técnica
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </a>
+              <a href="#diferenciais" class="btn btn--outline btn--lg"
+                >Explorar Recursos</a
+              >
+            </div>
+
+            <div class="hero-highlights">
+              <div class="highlight-item">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span class="label-md">Mobile-First Android & Desktop</span>
+              </div>
+              <div class="highlight-item">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span class="label-md">Ficha Técnica Automatizada</span>
+              </div>
+              <div class="highlight-item">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span class="label-md">Zero Custo & Sem Mensalidades</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hero Right Column: Tactile Recipe Card Mockup -->
+          <div class="hero-mockup-card">
+            <div class="mockup-recipe-header">
+              <div>
+                <span
+                  class="label-sm"
+                  style="color: var(--mc-primary); text-transform: uppercase"
+                  >Ficha Técnica Ativa</span
+                >
+                <h2 class="mockup-recipe-title">
+                  Brigadeiro Gourmet Belga Tradicional
+                </h2>
+                <div class="mockup-recipe-meta">
+                  <span class="chip chip--accent" style="font-size: 11px"
+                    >Rendimento: 25 unidades</span
+                  >
+                  <span class="chip chip--success" style="font-size: 11px"
+                    >Margem: 120%</span
+                  >
+                </div>
+              </div>
+              <img
+                src="media/Logo-MeuConfeito.png"
+                alt="Selo Meu Confeito"
+                style="
+                  width: 44px;
+                  height: 44px;
+                  border-radius: 8px;
+                  border: 1px solid var(--mc-outline-variant);
+                "
+              />
+            </div>
+
+            <table class="mockup-table">
+              <thead>
+                <tr>
+                  <th>Insumo</th>
+                  <th>Qtd Usada</th>
+                  <th>Custo Proporcional</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Leite Condensado 395g</td>
+                  <td>395g (1 lata)</td>
+                  <td><strong>R$ 7,50</strong></td>
+                </tr>
+                <tr>
+                  <td>Creme de Leite 200g</td>
+                  <td>200g (1 cx)</td>
+                  <td><strong>R$ 4,20</strong></td>
+                </tr>
+                <tr>
+                  <td>Cacau em Pó 100%</td>
+                  <td>50g</td>
+                  <td><strong>R$ 2,80</strong></td>
+                </tr>
+                <tr>
+                  <td>Confeito Belga Callebaut</td>
+                  <td>100g</td>
+                  <td><strong>R$ 7,00</strong></td>
+                </tr>
+                <tr>
+                  <td>Embalagens e Forminhas</td>
+                  <td>25 un</td>
+                  <td><strong>R$ 3,75</strong></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="mockup-metrics-grid">
+              <div class="metric-box">
+                <span class="label-sm" style="color: var(--mc-outline)"
+                  >Custo do Lote</span
+                >
+                <span class="metric-value">R$ 25,25</span>
+              </div>
+              <div class="metric-box">
+                <span class="label-sm" style="color: var(--mc-outline)"
+                  >Custo / Unidade</span
+                >
+                <span class="metric-value">R$ 1,01</span>
+              </div>
+              <div class="metric-box">
+                <span class="label-sm" style="color: var(--mc-outline)"
+                  >Venda Sugerida</span
+                >
+                <span class="metric-value metric-value--success"
+                  >R$ 3,50
+                  <span style="font-size: 11px; font-weight: normal"
+                    >(+R$ 2,49 lucro)</span
+                  ></span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================================
+         Overview & Context Section (Sobre o Projeto)
+         ========================================================================= -->
+      <section class="section-padding" id="sobre">
+        <div class="container">
+          <div class="section-header section-header--center">
+            <div class="section-tag label-md">VISÃO GERAL DO PROJETO</div>
+            <h2 class="headline-lg">
+              Fortalecendo quem transforma açúcar e dedicação em sustento
+            </h2>
+            <p class="body-md" style="margin-top: 12px">
+              O mercado alimentício artesanal cresce a passos largos no Brasil.
+              Cada vez mais confeiteiras e confeiteiros encontram na confecção
+              de doces personalizados uma oportunidade de sustento familiar e
+              independência financeira. O <strong>Meu Confeito</strong> nasce
+              para ser o aliado digital de cada cozinha.
+            </p>
+          </div>
+
+          <div class="grid-12" style="margin-top: var(--mc-space-8)">
+            <div class="card" style="grid-column: span 4">
+              <div class="card-icon-box">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"
+                  ></path>
+                </svg>
+              </div>
+              <h3
+                class="headline-md"
+                style="font-size: 20px; margin-bottom: 8px"
+              >
+                Autonomia Financeira
+              </h3>
+              <p class="body-sm">
+                Permite que pequenas empreendedoras conheçam seus custos centavo
+                a centavo, garantindo que suas horas de trabalho sejam
+                justamente remuneradas e lucrativas.
+              </p>
+            </div>
+
+            <div class="card" style="grid-column: span 4">
+              <div class="card-icon-box">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"
+                  ></path>
+                </svg>
+              </div>
+              <h3
+                class="headline-md"
+                style="font-size: 20px; margin-bottom: 8px"
+              >
+                Padronização de Qualidade
+              </h3>
+              <p class="body-sm">
+                Mantenha o mesmo sabor, textura e rendimento em cada encomenda
+                através de fichas técnicas estruturadas e controle rigoroso de
+                proporções.
+              </p>
+            </div>
+
+            <div class="card" style="grid-column: span 4">
+              <div class="card-icon-box">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              </div>
+              <h3
+                class="headline-md"
+                style="font-size: 20px; margin-bottom: 8px"
+              >
+                Conexão com Clientes
+              </h3>
+              <p class="body-sm">
+                Aproxime confeiteiras do público consumidor local por meio de
+                geolocalização de pontos físicos e acompanhe receitas em alta
+                impulsionadas pelos salvamentos dos próprios usuários.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================================
+         Problem & Solution Comparison
+         ========================================================================= -->
+      <section class="section-padding problem-solution-section" id="solucao">
+        <div class="container">
+          <div class="section-header">
+            <div class="section-tag label-md">O CENÁRIO & A NOSSA PROPOSTA</div>
+            <h2 class="headline-lg">
+              Do improviso à gestão profissional descomplicada
+            </h2>
+            <p class="body-md" style="margin-top: 8px">
+              Entenda como o Meu Confeito resolve os maiores gargalos
+              vivenciados no dia a dia da confeitaria autônoma.
+            </p>
+          </div>
+
+          <div class="comparison-grid">
+            <!-- The Problem -->
+            <div class="comparison-card comparison-card--problem">
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  margin-bottom: 12px;
+                "
+              >
+                <span
+                  class="chip chip--accent"
+                  style="
+                    color: var(--mc-error);
+                    border-color: var(--mc-error-container);
+                    background-color: var(--mc-error-container);
+                  "
+                >
+                  O Problema Atual
+                </span>
+              </div>
+              <h3 class="headline-md" style="font-size: 22px">
+                As barreiras da confeitaria tradicional
+              </h3>
+
+              <div class="comparison-list">
+                <div class="comparison-item">
+                  <div class="comparison-icon comparison-icon--problem">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </div>
+                  <div>
+                    <strong
+                      style="color: var(--mc-espresso-dark); font-size: 14px"
+                      >Precificação por "regra do x3" ou intuição:</strong
+                    >
+                    <p class="body-sm">
+                      Ignora o custo real de cada grama de insumo, gás,
+                      embalagens e horas trabalhadas, gerando prejuízos ocultos.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="comparison-item">
+                  <div class="comparison-icon comparison-icon--problem">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </div>
+                  <div>
+                    <strong
+                      style="color: var(--mc-espresso-dark); font-size: 14px"
+                      >Anotações em papel e caderninhos:</strong
+                    >
+                    <p class="body-sm">
+                      Receitas perdidas, falta de rastreio de estoque e compras
+                      repetidas por falta de controle de validade.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="comparison-item">
+                  <div class="comparison-icon comparison-icon--problem">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </div>
+                  <div>
+                    <strong
+                      style="color: var(--mc-espresso-dark); font-size: 14px"
+                      >Ferramentas caras ou restritas a computadores:</strong
+                    >
+                    <p class="body-sm">
+                      Softwares de ERP pesados, com mensalidades proibitivas e
+                      sem foco na rotina ágil do smartphone.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- The Solution -->
+            <div class="comparison-card comparison-card--solution">
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  margin-bottom: 12px;
+                "
+              >
+                <span class="chip chip--success"> A Solução Meu Confeito </span>
+              </div>
+              <h3 class="headline-md" style="font-size: 22px">
+                Tecnologia acessível na palma da mão
+              </h3>
+
+              <div class="comparison-list">
+                <div class="comparison-item">
+                  <div class="comparison-icon comparison-icon--solution">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </div>
+                  <div>
+                    <strong
+                      style="color: var(--mc-espresso-dark); font-size: 14px"
+                      >Cálculo automatizado e margem garantida:</strong
+                    >
+                    <p class="body-sm">
+                      Fichas técnicas dinâmicas que recalculam o preço sugerido
+                      sempre que o valor do leite condensado ou cacau oscilar no
+                      mercado.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="comparison-item">
+                  <div class="comparison-icon comparison-icon--solution">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </div>
+                  <div>
+                    <strong
+                      style="color: var(--mc-espresso-dark); font-size: 14px"
+                      >Controle de estoque e relatórios visuais:</strong
+                    >
+                    <p class="body-sm">
+                      Acompanhamento do que entra, do que sai e gráficos claros
+                      de faturamento e lucro líquido de cada período.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="comparison-item">
+                  <div class="comparison-icon comparison-icon--solution">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </div>
+                  <div>
+                    <strong
+                      style="color: var(--mc-espresso-dark); font-size: 14px"
+                      >Mobile Android + Desktop 100% Gratuito:</strong
+                    >
+                    <p class="body-sm">
+                      Foco total em dispositivos móveis Android (utilizados pela
+                      maioria das confeiteiras) com espelhamento Desktop e zero
+                      custo.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================================
+         Features & Differentials Section
+         ========================================================================= -->
+      <section class="section-padding" id="diferenciais">
+        <div class="container">
+          <div class="section-header section-header--center">
+            <div class="section-tag label-md">RECURSOS COMPLETOS</div>
+            <h2 class="headline-lg">
+              Diferenciais pensados para a rotina da cozinha
+            </h2>
+            <p class="body-md" style="margin-top: 8px">
+              Muito mais do que um controle financeiro: um ecossistema completo
+              para impulsionar suas vendas e antecipar tendências.
+            </p>
+          </div>
+
+          <div class="features-grid">
+            <!-- Feature 1 -->
+            <div class="card feature-card">
+              <div class="feature-tag-row">
+                <div class="card-icon-box">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                    ></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                  </svg>
+                </div>
+                <span class="chip chip--primary">Essencial</span>
+              </div>
+              <h3 class="headline-md" style="font-size: 20px">
+                Fichas Técnicas & Padronização
+              </h3>
+              <p class="body-sm">
+                Cadastre cada receita com gramaturas exatas, tempo de preparo,
+                perdas e rendimento em porções ou unidades. Mantenha a qualidade
+                constante.
+              </p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="card feature-card">
+              <div class="feature-tag-row">
+                <div class="card-icon-box">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect
+                      x="2"
+                      y="3"
+                      width="20"
+                      height="14"
+                      rx="2"
+                      ry="2"
+                    ></rect>
+                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                  </svg>
+                </div>
+                <span class="chip chip--success">Diferencial</span>
+              </div>
+              <h3 class="headline-md" style="font-size: 20px">
+                Radar de Tendências Virais
+              </h3>
+              <p class="body-sm">
+                Descubra quais sobremesas e sabores estão em alta a partir dos
+                dados de salvamentos da comunidade, sugerindo receitas virais de
+                forma 100% orientada pelos próprios usuários.
+              </p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="card feature-card">
+              <div class="feature-tag-row">
+                <div class="card-icon-box">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"
+                    ></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                </div>
+                <span class="chip chip--secondary">Geolocalização</span>
+              </div>
+              <h3 class="headline-md" style="font-size: 20px">
+                Pontos de Venda Físicos & Encomenda
+              </h3>
+              <p class="body-sm">
+                Divulgue a localização do seu ateliê ou ponto de pronta entrega
+                no mapa interativo para que consumidores vizinhos encontrem seus
+                doces.
+              </p>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="card feature-card">
+              <div class="feature-tag-row">
+                <div class="card-icon-box">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                    ></path>
+                  </svg>
+                </div>
+                <span class="chip chip--accent">Gestão</span>
+              </div>
+              <h3 class="headline-md" style="font-size: 20px">
+                Gestão de Estoque & Compras
+              </h3>
+              <p class="body-sm">
+                Acompanhe o consumo de embalagens, chocolates e leite
+                condensado. Saiba a hora exata de comprar e evite compras com
+                preços abusivos.
+              </p>
+            </div>
+
+            <!-- Feature 5 -->
+            <div class="card feature-card">
+              <div class="feature-tag-row">
+                <div class="card-icon-box">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                  </svg>
+                </div>
+                <span class="chip chip--success">Financeiro</span>
+              </div>
+              <h3 class="headline-md" style="font-size: 20px">
+                Gráficos & Análise de Lucro
+              </h3>
+              <p class="body-sm">
+                Relatórios financeiros automáticos e visuais: veja os produtos
+                mais lucrativos, evolução do faturamento mensal e balanço geral.
+              </p>
+            </div>
+
+            <!-- Feature 6 -->
+            <div class="card feature-card">
+              <div class="feature-tag-row">
+                <div class="card-icon-box">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polygon
+                      points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                    ></polygon>
+                  </svg>
+                </div>
+                <span class="chip chip--primary">100% Gratuito</span>
+              </div>
+              <h3 class="headline-md" style="font-size: 20px">
+                Acesso Total Sem Bloqueios
+              </h3>
+              <p class="body-sm">
+                Todas as funções fundamentais disponíveis gratuitamente para
+                empoderar confeiteiras autônomas sem taxas abusivas ou
+                surpresas.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================================
+         Interactive Recipe & Pricing Calculator Simulator
+         ========================================================================= -->
+      <section class="section-padding calculator-section" id="calculadora">
+        <div class="container">
+          <div class="section-header">
+            <div class="section-tag label-md">SIMULAÇÃO PRÁTICA INTERATIVA</div>
+            <h2 class="headline-lg">
+              Calculadora de Ficha Técnica & Precificação
+            </h2>
+            <p class="body-md" style="margin-top: 8px">
+              Experimente como o Meu Confeito calcula o custo por grama de cada
+              ingrediente, rateia os custos indiretos e gera a sugestão de venda
+              ideal para garantir o seu lucro.
+            </p>
+          </div>
+
+          <div class="calculator-wrapper">
+            <!-- Left: Ingredients & Parameters Input -->
+            <div class="calc-ingredients-panel">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <div>
+                  <h3 class="headline-md" style="font-size: 18px">
+                    Ingredientes do Lote
+                  </h3>
+                  <span class="body-sm"
+                    >Edite os insumos, pesos e valores de compra:</span
+                  >
+                </div>
+                <button
+                  type="button"
+                  class="btn btn--outline btn--sm"
+                  id="addIngredientBtn"
+                >
+                  + Adicionar Insumo
+                </button>
+              </div>
+
+              <!-- Dynamic Ingredients List Container -->
+              <div class="calc-items-list" id="calcItemsList">
+                <!-- Dynamically populated by script.js -->
+              </div>
+
+              <!-- Batch Parameters (Yield, Overhead %, Margin %) -->
+              <div class="calc-params-row">
+                <div class="form-group">
+                  <label class="form-label" for="calcYield"
+                    >Rendimento (Unidades)</label
+                  >
+                  <input
+                    type="number"
+                    id="calcYield"
+                    class="form-input"
+                    value="25"
+                    min="1"
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="calcOverhead"
+                    >Custos Fixos / Gás / Luz (%)</label
+                  >
+                  <input
+                    type="number"
+                    id="calcOverhead"
+                    class="form-input"
+                    value="15"
+                    min="0"
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="calcMargin"
+                    >Margem de Lucro Desejada (%)</label
+                  >
+                  <input
+                    type="number"
+                    id="calcMargin"
+                    class="form-input"
+                    value="120"
+                    min="0"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Calculated Results Summary -->
+            <div class="calc-results-panel">
+              <div>
+                <div class="results-header">
+                  <span class="label-md" style="color: var(--mc-primary)"
+                    >Demonstrativo Financeiro</span
+                  >
+                  <h3
+                    class="headline-md"
+                    style="font-size: 20px; margin-top: 4px"
+                  >
+                    Resumo da Receita
+                  </h3>
+                </div>
+
+                <div class="breakdown-list">
+                  <div class="breakdown-row">
+                    <span>Custo Direto dos Insumos:</span>
+                    <span id="outTotalCost">R$ 0,00</span>
+                  </div>
+                  <div class="breakdown-row">
+                    <span>Custos Indiretos / Gás / Energia:</span>
+                    <span id="outOverheadCost">R$ 0,00</span>
+                  </div>
+                  <div
+                    class="breakdown-row"
+                    style="
+                      border-top: 1px dashed var(--mc-outline-variant);
+                      padding-top: 8px;
+                    "
+                  >
+                    <strong>Custo Total de Produção do Lote:</strong>
+                    <strong id="outGrandTotal" style="color: var(--mc-primary)"
+                      >R$ 0,00</strong
+                    >
+                  </div>
+                  <div class="breakdown-row">
+                    <span>Custo Real por Unidade:</span>
+                    <span id="outUnitCost" style="font-weight: 600"
+                      >R$ 0,00</span
+                    >
+                  </div>
+                </div>
+
+                <div class="results-hero-box">
+                  <span class="results-price-label"
+                    >Preço Sugerido de Venda (por unidade)</span
+                  >
+                  <div class="results-price-val" id="outSuggestedPrice">
+                    R$ 0,00
+                  </div>
+                  <span
+                    style="font-size: 11px; color: var(--mc-on-surface-variant)"
+                    >Com a margem configurada</span
+                  >
+                </div>
+              </div>
+
+              <div class="results-profit-row">
+                <div class="metric-box" style="text-align: center">
+                  <span class="label-sm" style="color: var(--mc-outline)"
+                    >Lucro Líquido / Unid.</span
+                  >
+                  <span
+                    class="metric-value metric-value--success"
+                    id="outProfitPerUnit"
+                    >R$ 0,00</span
+                  >
+                </div>
+                <div class="metric-box" style="text-align: center">
+                  <span class="label-sm" style="color: var(--mc-outline)"
+                    >Lucro Total do Lote</span
+                  >
+                  <span
+                    class="metric-value metric-value--success"
+                    id="outTotalBatchProfit"
+                    >R$ 0,00</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================================
+         Trends Radar & Geolocation Point-of-Sale Section
+         ========================================================================= -->
+      <section class="section-padding" id="tendencias">
+        <div class="container">
+          <div class="section-header">
+            <div class="section-tag label-md">INTELIGÊNCIA DE MERCADO</div>
+            <h2 class="headline-lg">
+              Radar de Tendências & Vitrine de Pontos de Venda
+            </h2>
+            <p class="body-md" style="margin-top: 8px">
+              Apresentamos receitas virais sugeridas periodicamente com base nas
+              preferências e salvamentos de receitas da comunidade, conectando
+              você ao público da sua região.
+            </p>
+          </div>
+
+          <!-- Filter bar for trends -->
+          <div
+            class="trends-filter-bar"
+            role="tablist"
+            aria-label="Filtros de Tendências"
+          >
+            <button
+              type="button"
+              class="filter-btn is-active"
+              data-filter="all"
+            >
+              Todas as Tendências
+            </button>
+            <button type="button" class="filter-btn" data-filter="viral">
+              🔥 Mais Salvas (Virais da Comunidade)
+            </button>
+            <button
+              type="button"
+              class="filter-btn"
+              data-filter="pronta-entrega"
+            >
+              ⚡ Pronta Entrega
+            </button>
+            <button type="button" class="filter-btn" data-filter="encomenda">
+              🎂 Sob Encomenda
+            </button>
+            <button type="button" class="filter-btn" data-filter="gourmet">
+              💎 Linha Gourmet & Finos
+            </button>
+          </div>
+
+          <!-- Trends Grid -->
+          <div class="trends-cards-grid">
+            <!-- Card 1 -->
+            <div class="card trend-card" data-category="viral pronta-entrega">
+              <div>
+                <div class="trend-badge-row">
+                  <span class="chip chip--primary">🔥 Alta em Salvamentos</span>
+                  <span
+                    class="label-sm"
+                    style="color: var(--mc-tertiary); font-weight: 700"
+                    >+340% salvos</span
+                  >
+                </div>
+                <h3 class="headline-md" style="font-size: 18px">
+                  Copo da Felicidade Ninho & Nutella
+                </h3>
+                <p class="body-sm" style="margin-top: 6px">
+                  Camadas intercaladas de brigadeiro de leite em pó, creme de
+                  avelã e pedaços de morango fresco ou brownie. Campeão de
+                  vendas no delivery.
+                </p>
+              </div>
+              <div class="trend-meta-footer">
+                <span class="label-sm" style="color: var(--mc-outline)"
+                  >Margem média: <strong>140%</strong></span
+                >
+                <span class="chip chip--accent" style="font-size: 11px"
+                  >Pronta Entrega</span
+                >
+              </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="card trend-card" data-category="viral gourmet">
+              <div>
+                <div class="trend-badge-row">
+                  <span class="chip chip--secondary">Viral Internacional</span>
+                  <span
+                    class="label-sm"
+                    style="color: var(--mc-tertiary); font-weight: 700"
+                    >Ticket Alto</span
+                  >
+                </div>
+                <h3 class="headline-md" style="font-size: 18px">
+                  Barra Recheada Dubai Pistache
+                </h3>
+                <p class="body-sm" style="margin-top: 6px">
+                  Chocolate nobre recheado com creme de pistache artesanal e
+                  massa folhada knafeh crocante. Forte apelo visual e excelente
+                  margem de lucro.
+                </p>
+              </div>
+              <div class="trend-meta-footer">
+                <span class="label-sm" style="color: var(--mc-outline)"
+                  >Margem média: <strong>180%</strong></span
+                >
+                <span class="chip chip--primary" style="font-size: 11px"
+                  >Gourmet</span
+                >
+              </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="card trend-card" data-category="encomenda viral">
+              <div>
+                <div class="trend-badge-row">
+                  <span class="chip chip--primary">Favorito da Comunidade</span>
+                  <span
+                    class="label-sm"
+                    style="color: var(--mc-tertiary); font-weight: 700"
+                    >Presentes</span
+                  >
+                </div>
+                <h3 class="headline-md" style="font-size: 18px">
+                  Bentô Cake com Frases Cômicas
+                </h3>
+                <p class="body-sm" style="margin-top: 6px">
+                  Minibolos decorados com buttercream e ilustrações Flork com
+                  frases personalizadas. Alta procura para aniversários e
+                  celebrações rápidas.
+                </p>
+              </div>
+              <div class="trend-meta-footer">
+                <span class="label-sm" style="color: var(--mc-outline)"
+                  >Margem média: <strong>210%</strong></span
+                >
+                <span class="chip chip--accent" style="font-size: 11px"
+                  >Sob Encomenda</span
+                >
+              </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="card trend-card" data-category="pronta-entrega gourmet">
+              <div>
+                <div class="trend-badge-row">
+                  <span class="chip chip--accent">Clássico Lucrativo</span>
+                  <span
+                    class="label-sm"
+                    style="color: var(--mc-tertiary); font-weight: 700"
+                    >Giro Rápido</span
+                  >
+                </div>
+                <h3 class="headline-md" style="font-size: 18px">
+                  Fatia Suprema de Brownie Vulcão
+                </h3>
+                <p class="body-sm" style="margin-top: 6px">
+                  Fatia triangular de brownie úmido com cobertura cremosa de
+                  brigadeiro e confeitos crocantes, embalada para consumo
+                  imediato.
+                </p>
+              </div>
+              <div class="trend-meta-footer">
+                <span class="label-sm" style="color: var(--mc-outline)"
+                  >Margem média: <strong>150%</strong></span
+                >
+                <span class="chip chip--success" style="font-size: 11px"
+                  >Pronta Entrega</span
+                >
+              </div>
+            </div>
+
+            <!-- Card 5 -->
+            <div class="card trend-card" data-category="gourmet encomenda">
+              <div>
+                <div class="trend-badge-row">
+                  <span class="chip chip--secondary">Eventos & Casamentos</span>
+                  <span
+                    class="label-sm"
+                    style="color: var(--mc-tertiary); font-weight: 700"
+                    >Alta Escala</span
+                  >
+                </div>
+                <h3 class="headline-md" style="font-size: 18px">
+                  Brigadeiros Belgas & Frutas Vermelhas
+                </h3>
+                <p class="body-sm" style="margin-top: 6px">
+                  Caixas para presentes finos com sabores autorais: limão
+                  siciliano com chocolate branco, frutas vermelhas com rubi e
+                  café expresso.
+                </p>
+              </div>
+              <div class="trend-meta-footer">
+                <span class="label-sm" style="color: var(--mc-outline)"
+                  >Margem média: <strong>160%</strong></span
+                >
+                <span class="chip chip--accent" style="font-size: 11px"
+                  >Sob Encomenda</span
+                >
+              </div>
+            </div>
+
+            <!-- Card 6 -->
+            <div class="card trend-card" data-category="pronta-entrega viral">
+              <div>
+                <div class="trend-badge-row">
+                  <span class="chip chip--primary">Altamente Salvo</span>
+                  <span
+                    class="label-sm"
+                    style="color: var(--mc-tertiary); font-weight: 700"
+                    >Visual Impecável</span
+                  >
+                </div>
+                <h3 class="headline-md" style="font-size: 18px">
+                  Donuts Artesanais Glaciados
+                </h3>
+                <p class="body-sm" style="margin-top: 6px">
+                  Massa fofinha fermentada naturalmente com coberturas
+                  brilhantes de framboesa, pistache e doce de leite argentino.
+                </p>
+              </div>
+              <div class="trend-meta-footer">
+                <span class="label-sm" style="color: var(--mc-outline)"
+                  >Margem média: <strong>175%</strong></span
+                >
+                <span class="chip chip--success" style="font-size: 11px"
+                  >Pronta Entrega</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Geolocation Point-of-Sale Interactive Showcase -->
+          <div class="geo-showcase-grid">
+            <div>
+              <div class="section-tag label-md">
+                LOCALIZAÇÃO DE PONTOS FÍSICOS
+              </div>
+              <h3
+                class="headline-md"
+                style="font-size: 24px; margin-bottom: 12px"
+              >
+                Seus doces mais perto de quem ama confeitaria
+              </h3>
+              <p class="body-md">
+                Muitas confeiteiras produzem em ateliês, lojas de rua ou atendem
+                em pontos físicos estratégicos. Com o recurso de geolocalização
+                do Meu Confeito, você registra seu endereço e disponibilidade em
+                tempo real para que clientes próximos façam pedidos ou comprem
+                pessoalmente.
+              </p>
+              <div
+                style="
+                  margin-top: 16px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 8px;
+                "
+              >
+                <div class="highlight-item">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"
+                    ></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                  <span class="body-sm"
+                    >Visibilidade imediata no raio de alcance dos clientes</span
+                  >
+                </div>
+                <div class="highlight-item">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 14 14"></polyline>
+                  </svg>
+                  <span class="body-sm"
+                    >Indicação de status: "Pronta Entrega" ou "Sob
+                    Encomenda"</span
+                  >
+                </div>
+                <div class="highlight-item">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+                    ></path>
+                  </svg>
+                  <span class="body-sm"
+                    >Contato direto sem taxas intermediárias de
+                    marketplaces</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- Simulated Map Visual Component -->
+            <div class="map-mockup-card">
+              <div class="map-canvas" id="simulatedMap">
+                <!-- Pin 1 -->
+                <div
+                  class="map-pin is-active"
+                  style="top: 35%; left: 30%"
+                  data-id="p1"
+                  title="Ateliê Doce Sabor"
+                >
+                  <div class="map-pin-icon">🍰</div>
+                  <div class="map-pin-tooltip">Ateliê Doce Sabor</div>
+                </div>
+
+                <!-- Pin 2 -->
+                <div
+                  class="map-pin"
+                  style="top: 60%; left: 68%"
+                  data-id="p2"
+                  title="Confeitaria Encanto"
+                >
+                  <div class="map-pin-icon">🧁</div>
+                  <div class="map-pin-tooltip">Confeitaria Encanto</div>
+                </div>
+
+                <!-- Pin 3 -->
+                <div
+                  class="map-pin"
+                  style="top: 75%; left: 35%"
+                  data-id="p3"
+                  title="Lúcia Doces Artesanais"
+                >
+                  <div class="map-pin-icon">🍩</div>
+                  <div class="map-pin-tooltip">Lúcia Doces Artesanais</div>
+                </div>
+              </div>
+
+              <!-- Dynamic Point Details Box -->
+              <div
+                id="selectedPointDetails"
+                style="
+                  background-color: var(--mc-surface-container-lowest);
+                  border-radius: var(--mc-radius-md);
+                  padding: 16px;
+                  margin-top: 16px;
+                  border: 1px solid var(--mc-outline-variant);
+                "
+              >
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    margin-bottom: 8px;
+                  "
+                >
+                  <div>
+                    <h4
+                      style="
+                        font-family: var(--mc-font-headline);
+                        font-size: 16px;
+                        color: var(--mc-espresso-dark);
+                        font-weight: 700;
+                      "
+                    >
+                      Ateliê Doce Sabor
+                    </h4>
+                    <p
+                      style="
+                        font-size: 12px;
+                        color: var(--mc-on-surface-variant);
+                        font-weight: 500;
+                      "
+                    >
+                      Confeiteira: Mariana Silva
+                    </p>
+                  </div>
+                  <span class="chip chip--success" style="font-size: 11px"
+                    >Pronta Entrega Disponível</span
+                  >
+                </div>
+                <p
+                  style="
+                    font-size: 13px;
+                    color: var(--mc-on-surface);
+                    margin-bottom: 6px;
+                  "
+                >
+                  <strong>Especialidades:</strong> Brigadeiros Gourmet & Copos
+                  da Felicidade
+                </p>
+                <p style="font-size: 12px; color: var(--mc-outline)">
+                  📍 Vila Madalena, São Paulo - SP
+                </p>
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-top: 12px;
+                    padding-top: 10px;
+                    border-top: 1px solid var(--mc-surface-container-high);
+                  "
+                >
+                  <span
+                    style="
+                      font-size: 12px;
+                      font-weight: 600;
+                      color: var(--mc-primary);
+                    "
+                    >4.9 ★ (128 avaliações)</span
+                  >
+                  <button
+                    class="btn btn--primary btn--sm"
+                    onclick="
+                      alert(
+                        'Conectando ao perfil da confeiteira no app Meu Confeito!',
+                      )
+                    "
+                  >
+                    Visitar Ponto Físico
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================================
+         Target Audience Section (Público-Alvo)
+         ========================================================================= -->
+      <section
+        class="section-padding"
+        id="publico"
+        style="
+          background-color: var(--mc-surface-container-low);
+          border-top: 1px solid var(--mc-outline-variant);
+          border-bottom: 1px solid var(--mc-outline-variant);
+        "
+      >
+        <div class="container">
+          <div class="section-header section-header--center">
+            <div class="section-tag label-md">PÚBLICO-ALVO</div>
+            <h2 class="headline-lg">
+              Criado para quem vive e respira a confeitaria artesanal
+            </h2>
+            <p class="body-md" style="margin-top: 8px">
+              Apoiando todas as etapas do negócio: desde a compra da
+              matéria-prima até a entrega e cálculo do lucro consolidado.
+            </p>
+          </div>
+
+          <div class="audience-grid">
+            <div class="audience-card">
+              <div class="audience-number">01</div>
+              <h3 class="headline-md" style="font-size: 20px">
+                Confeiteiras Autônomas
+              </h3>
+              <p class="body-sm">
+                Profissionais que produzem em casa ou em espaço próprio e buscam
+                autonomia, clareza sobre seus ganhos reais e organização sem
+                complicação.
+              </p>
+            </div>
+
+            <div class="audience-card">
+              <div class="audience-number">02</div>
+              <h3 class="headline-md" style="font-size: 20px">
+                Ateliês & Pequenos Negócios
+              </h3>
+              <p class="body-sm">
+                Empreendedores que operam com produção sob encomenda para
+                aniversários, casamentos e celebrações com necessidade de
+                padronização rigorosa.
+              </p>
+            </div>
+
+            <div class="audience-card">
+              <div class="audience-number">03</div>
+              <h3 class="headline-md" style="font-size: 20px">
+                Venda Pronta Entrega e Pontos Físicos
+              </h3>
+              <p class="body-sm">
+                Confeiteiras com balcão próprio, feiras ou vitrines que precisam
+                de controle de lote rápido, estoque em dia e atração de clientes
+                locais.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================================
+         Technology Stack & Architecture (CONCEPT.md Specification)
+         ========================================================================= -->
+      <section class="section-padding tech-section" id="tecnologias">
+        <div class="container">
+          <div class="section-header section-header--center">
+            <div class="section-tag label-md">ARQUITETURA & ENGENHARIA</div>
+            <h2 class="headline-lg">
+              Tecnologias Modernas, Robustas e Escaláveis
+            </h2>
+            <p class="body-md" style="margin-top: 8px">
+              O ecossistema Meu Confeito é construído com tecnologias
+              consolidadas na indústria para garantir alta performance,
+              segurança de dados e experiência fluida no celular e desktop.
+            </p>
+          </div>
+
+          <div class="tech-grid">
+            <!-- Expo / React Native -->
+            <div class="card tech-card">
+              <div class="card-icon-box" style="width: 56px; height: 56px">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                  <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                </svg>
+              </div>
+              <div class="tech-badge">Expo & React Native</div>
+              <span class="chip chip--accent" style="font-size: 11px"
+                >Mobile Android + Desktop</span
+              >
+              <p class="tech-card-desc">
+                Interface nativa ágil e responsiva, otimizada prioritariamente
+                para smartphones Android com suporte contínuo a telas Desktop.
+              </p>
+            </div>
+
+            <!-- Express.js -->
+            <div class="card tech-card">
+              <div class="card-icon-box" style="width: 56px; height: 56px">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                  <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                  <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                  <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                </svg>
+              </div>
+              <div class="tech-badge">Express.js</div>
+              <span class="chip chip--secondary" style="font-size: 11px"
+                >Backend RESTful</span
+              >
+              <p class="tech-card-desc">
+                Servidor e API leves e de alta velocidade para sincronização em
+                tempo real de receitas, estoque e pedidos com máxima
+                estabilidade.
+              </p>
+            </div>
+
+            <!-- TypeScript -->
+            <div class="card tech-card">
+              <div class="card-icon-box" style="width: 56px; height: 56px">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="16 18 22 12 16 6"></polyline>
+                  <polyline points="8 6 2 12 8 18"></polyline>
+                </svg>
+              </div>
+              <div class="tech-badge">TypeScript</div>
+              <span class="chip chip--primary" style="font-size: 11px"
+                >Projeto Inteiro (End-to-End)</span
+              >
+              <p class="tech-card-desc">
+                Tipagem estática e segurança em 100% da base de código,
+                minimizando falhas em cálculos matemáticos de receitas e
+                relatórios.
+              </p>
+            </div>
+
+            <!-- PostgreSQL -->
+            <div class="card tech-card">
+              <div class="card-icon-box" style="width: 56px; height: 56px">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                  <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                  <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                </svg>
+              </div>
+              <div class="tech-badge">PostgreSQL</div>
+              <span class="chip chip--success" style="font-size: 11px"
+                >Banco Relacional</span
+              >
+              <p class="tech-card-desc">
+                Armazenamento relacional robusto com integridade transacional
+                para controle de lotes, histórico de compras e análises
+                financeiras.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================================
+         FAQ Section
+         ========================================================================= -->
+      <section
+        class="section-padding"
+        id="faq"
+        style="
+          background-color: var(--mc-surface-container-lowest);
+          border-top: 1px solid var(--mc-outline-variant);
+        "
+      >
+        <div class="container">
+          <div class="section-header section-header--center">
+            <div class="section-tag label-md">PERGUNTAS FREQUENTES</div>
+            <h2 class="headline-lg">Tudo o que você precisa saber</h2>
+          </div>
+
+          <div class="faq-container">
+            <!-- FAQ 1 -->
+            <div class="faq-item is-open">
+              <button class="faq-trigger" aria-expanded="true">
+                <span
+                  >O aplicativo Meu Confeito é realmente 100% gratuito?</span
+                >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              <div class="faq-content">
+                Sim! O objetivo do projeto é democratizar a gestão da
+                confeitaria artesanal autônoma. Todas as funções vitais — como
+                criação de fichas técnicas ilimitadas, cálculo de precificação,
+                controle de estoque e análise de gráficos de lucro — estão
+                disponíveis gratuitamente.
+              </div>
+            </div>
+
+            <!-- FAQ 2 -->
+            <div class="faq-item">
+              <button class="faq-trigger" aria-expanded="false">
+                <span
+                  >Como o cálculo de precificação inteligente me protege de
+                  prejuízos?</span
+                >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              <div class="faq-content">
+                Diferente de métodos simplistas como multiplicar o custo dos
+                ingredientes por 3 (que frequentemente desconsidera custos
+                invisíveis), o Meu Confeito calcula o custo unitário por grama
+                de cada ingrediente, soma os custos fixos/indiretos (energia,
+                gás, desgaste de formas, embalagens) e aplica a margem de lucro
+                líquida que você deseja obter.
+              </div>
+            </div>
+
+            <!-- FAQ 3 -->
+            <div class="faq-item">
+              <button class="faq-trigger" aria-expanded="false">
+                <span
+                  >Como funciona o radar de receitas e tendências virais?</span
+                >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              <div class="faq-content">
+                O Meu Confeito funciona de forma 100% orientada pelos usuários
+                (user-driven), sem dependência de redes sociais externas. O
+                sistema coleta e processa periodicamente dados de uso da própria
+                plataforma — como o volume de receitas salvas, favoritadas e
+                preparadas pela comunidade — para sugerir receitas virais,
+                combinações de recheios e formatos em alta, permitindo que as
+                confeiteiras atendam à demanda real do mercado.
+              </div>
+            </div>
+
+            <!-- FAQ 4 -->
+            <div class="faq-item">
+              <button class="faq-trigger" aria-expanded="false">
+                <span>Em quais dispositivos poderei usar o Meu Confeito?</span>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              <div class="faq-content">
+                O aplicativo foi projetado prioritariamente para dispositivos
+                móveis Android (utilizado pela grande maioria das confeiteiras
+                brasileiras) através do Expo/React Native, e contará também com
+                versão totalmente acessível para computadores Desktop.
+              </div>
+            </div>
+
+            <!-- FAQ 5 -->
+            <div class="faq-item">
+              <button class="faq-trigger" aria-expanded="false">
+                <span
+                  >Como a divulgação de ponto físico e geolocalização ajuda nas
+                  minhas vendas?</span
+                >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              <div class="faq-content">
+                Clientes que buscam sobremesas e doces artesanais nas
+                proximidades podem localizar seu ateliê ou ponto de pronta
+                entrega no mapa, conferir seus produtos disponíveis e entrar em
+                contato direto com você, sem taxas de intermediação de
+                aplicativos de entrega convencionais.
+              </div>
+            </div>
+          </div>
+
+          <!-- Call to Action Banner -->
+          <div class="cta-banner">
+            <h3 class="cta-title">
+              Pronta para transformar a gestão da sua confeitaria?
+            </h3>
+            <p class="cta-desc">
+              Una a sua paixão pela arte doceira à clareza financeira e
+              tecnológica que o seu negócio merece. Sem mensalidades, prático e
+              feito para você.
+            </p>
+            <div
+              style="
+                display: flex;
+                justify-content: center;
+                gap: 16px;
+                flex-wrap: wrap;
+              "
+            >
+              <a href="#calculadora" class="btn btn--secondary btn--lg"
+                >Experimentar Simulador de Custos</a
+              >
+              <a
+                href="#hero"
+                class="btn btn--outline btn--lg"
+                style="color: #ffffff; border-color: rgba(255, 255, 255, 0.4)"
+                >Voltar ao Início</a
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- =========================================================================
+       Footer
+       ========================================================================= -->
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-grid">
+          <!-- Col 1: Brand & Bio -->
+          <div>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 12px;
+              "
+            >
+              <img
+                src="media/Logo-MeuConfeito.png"
+                alt="Meu Confeito"
+                width="40"
+                height="40"
+                style="border-radius: 8px"
+              />
+              <div>
+                <span class="brand-title" style="font-size: 18px"
+                  >MEU CONFEITO</span
+                >
+                <span class="brand-subtitle" style="font-size: 9px"
+                  >Confeitaria Inteligente</span
+                >
+              </div>
+            </div>
+            <p class="body-sm" style="max-width: 320px">
+              Solução tecnológica completa e gratuita para gerenciamento de
+              estoque, padronização de receitas, precificação justa e conexão
+              entre confeiteiras e consumidores.
+            </p>
+          </div>
+
+          <!-- Col 2: Navegação -->
+          <div>
+            <h4 class="footer-col-title">Navegação</h4>
+            <ul class="footer-links">
+              <li><a href="#sobre" class="footer-link">Visão Geral</a></li>
+              <li>
+                <a href="#solucao" class="footer-link">O Desafio & Solução</a>
+              </li>
+              <li>
+                <a href="#diferenciais" class="footer-link">Diferenciais</a>
+              </li>
+              <li>
+                <a href="#calculadora" class="footer-link">Ficha Técnica</a>
+              </li>
+              <li>
+                <a href="#tendencias" class="footer-link">Tendências & Mapa</a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Col 3: Tecnologias -->
+          <div>
+            <h4 class="footer-col-title">Arquitetura</h4>
+            <ul class="footer-links">
+              <li>
+                <a href="#tecnologias" class="footer-link"
+                  >Expo / React Native</a
+                >
+              </li>
+              <li>
+                <a href="#tecnologias" class="footer-link">Express.js API</a>
+              </li>
+              <li><a href="#tecnologias" class="footer-link">TypeScript</a></li>
+              <li><a href="#tecnologias" class="footer-link">PostgreSQL</a></li>
+            </ul>
+          </div>
+
+          <!-- Col 4: Informações do Projeto -->
+          <div>
+            <h4 class="footer-col-title">Propósito</h4>
+            <p class="body-sm">
+              Desenvolvido com carinho para impulsionar a confeitaria artesanal
+              autônoma e transformar talento culinário em negócios prósperos.
+            </p>
+            <div style="margin-top: 12px">
+              <span class="chip chip--success" style="font-size: 11px"
+                >100% Gratuito & Aberto</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <span>© 2026 Meu Confeito. Todos os direitos reservados.</span>
+          <span
+            >Feito com dedicação para confeiteiras e confeiteiros de todo o
+            Brasil.</span
+          >
+        </div>
+      </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+  </body>
+</html>
