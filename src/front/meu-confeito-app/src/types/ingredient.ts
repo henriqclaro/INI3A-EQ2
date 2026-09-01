@@ -11,3 +11,11 @@ export interface RecipeIngredient {
   notes: string;
   ingredient: PartialIngredient;
 }
+
+export interface RecipeIngredientInput {
+  ingredientId: string;
+  baseQuantity: number;
+  measurementUnit: string;
+  notes?: string | null;
+}
+
