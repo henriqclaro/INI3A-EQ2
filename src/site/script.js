@@ -4,7 +4,7 @@
  * trend filters, interactive map preview, and FAQ accordions.
  */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   initMobileNavigation();
   initRecipeCalculator();
   initTrendFilters();
@@ -17,23 +17,23 @@ document.addEventListener('DOMContentLoaded', () => {
  * Mobile Navigation Drawer Toggle
  */
 function initMobileNavigation() {
-  const toggleBtn = document.getElementById('mobileMenuToggle');
-  const drawer = document.getElementById('mobileNavDrawer');
-  const navLinks = drawer ? drawer.querySelectorAll('.nav-link') : [];
+  const toggleBtn = document.getElementById("mobileMenuToggle");
+  const drawer = document.getElementById("mobileNavDrawer");
+  const navLinks = drawer ? drawer.querySelectorAll(".nav-link") : [];
 
   if (!toggleBtn || !drawer) return;
 
   const toggleMenu = () => {
-    const isOpen = drawer.classList.toggle('is-open');
-    toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    const isOpen = drawer.classList.toggle("is-open");
+    toggleBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
   };
 
-  toggleBtn.addEventListener('click', toggleMenu);
+  toggleBtn.addEventListener("click", toggleMenu);
 
-  navLinks.forEach(link => {
-    link.addEventListener('click', () => {
-      drawer.classList.remove('is-open');
-      toggleBtn.setAttribute('aria-expanded', 'false');
+  navLinks.forEach((link) => {
+    link.addEventListener("click", () => {
+      drawer.classList.remove("is-open");
+      toggleBtn.setAttribute("aria-expanded", "false");
     });
   });
 }
@@ -42,60 +42,94 @@ function initMobileNavigation() {
  * Interactive Recipe Cost & Pricing Calculator (Ficha Técnica Interativa)
  */
 function initRecipeCalculator() {
-  const itemsContainer = document.getElementById('calcItemsList');
-  const addIngredientBtn = document.getElementById('addIngredientBtn');
-  const yieldInput = document.getElementById('calcYield');
-  const overheadInput = document.getElementById('calcOverhead');
-  const marginInput = document.getElementById('calcMargin');
+  const itemsContainer = document.getElementById("calcItemsList");
+  const addIngredientBtn = document.getElementById("addIngredientBtn");
+  const yieldInput = document.getElementById("calcYield");
+  const overheadInput = document.getElementById("calcOverhead");
+  const marginInput = document.getElementById("calcMargin");
 
   // Display outputs
-  const totalCostEl = document.getElementById('outTotalCost');
-  const overheadCostEl = document.getElementById('outOverheadCost');
-  const grandTotalEl = document.getElementById('outGrandTotal');
-  const unitCostEl = document.getElementById('outUnitCost');
-  const suggestedPriceEl = document.getElementById('outSuggestedPrice');
-  const profitPerUnitEl = document.getElementById('outProfitPerUnit');
-  const totalBatchProfitEl = document.getElementById('outTotalBatchProfit');
+  const totalCostEl = document.getElementById("outTotalCost");
+  const overheadCostEl = document.getElementById("outOverheadCost");
+  const grandTotalEl = document.getElementById("outGrandTotal");
+  const unitCostEl = document.getElementById("outUnitCost");
+  const suggestedPriceEl = document.getElementById("outSuggestedPrice");
+  const profitPerUnitEl = document.getElementById("outProfitPerUnit");
+  const totalBatchProfitEl = document.getElementById("outTotalBatchProfit");
 
   // Default initial ingredients
   let ingredients = [
-    { name: 'Leite Condensado (395g)', packageCost: 7.50, packageQty: 395, usedQty: 395 },
-    { name: 'Creme de Leite (200g)', packageCost: 4.20, packageQty: 200, usedQty: 200 },
-    { name: 'Cacau em Pó 100% (500g)', packageCost: 28.00, packageQty: 500, usedQty: 50 },
-    { name: 'Manteiga sem Sal (200g)', packageCost: 12.00, packageQty: 200, usedQty: 25 },
-    { name: 'Confeito Belga / Granulado (500g)', packageCost: 35.00, packageQty: 500, usedQty: 100 },
-    { name: 'Embalagens Individuais (25 un)', packageCost: 15.00, packageQty: 25, usedQty: 25 }
+    {
+      name: "Leite Condensado (395g)",
+      packageCost: 7.5,
+      packageQty: 395,
+      usedQty: 395,
+    },
+    {
+      name: "Creme de Leite (200g)",
+      packageCost: 4.2,
+      packageQty: 200,
+      usedQty: 200,
+    },
+    {
+      name: "Cacau em Pó 100% (500g)",
+      packageCost: 28.0,
+      packageQty: 500,
+      usedQty: 50,
+    },
+    {
+      name: "Manteiga sem Sal (200g)",
+      packageCost: 12.0,
+      packageQty: 200,
+      usedQty: 25,
+    },
+    {
+      name: "Confeito Belga / Granulado (500g)",
+      packageCost: 35.0,
+      packageQty: 500,
+      usedQty: 100,
+    },
+    {
+      name: "Embalagens Individuais (25 un)",
+      packageCost: 15.0,
+      packageQty: 25,
+      usedQty: 25,
+    },
   ];
 
   function formatCurrency(val) {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(val);
   }
 
   function renderIngredients() {
     if (!itemsContainer) return;
-    itemsContainer.innerHTML = '';
+    itemsContainer.innerHTML = "";
 
     ingredients.forEach((item, index) => {
-      const row = document.createElement('div');
-      row.className = 'calc-item-row';
-      
-      const itemCost = (item.packageCost / (item.packageQty || 1)) * item.usedQty;
+      const row = document.createElement("div");
+      row.className = "calc-item-row";
+
+      const itemCost =
+        (item.packageCost / (item.packageQty || 1)) * item.usedQty;
 
       row.innerHTML = `
-        <div class="form-group">
+        <div class="form-group form-group--name">
           <label class="form-label">Ingrediente / Insumo</label>
           <input type="text" class="form-input item-name" data-index="${index}" value="${item.name}">
         </div>
-        <div class="form-group">
+        <div class="form-group form-group--cost">
           <label class="form-label">Preço Pacote (R$)</label>
           <input type="number" step="0.01" min="0" class="form-input item-pkg-cost" data-index="${index}" value="${item.packageCost.toFixed(2)}">
         </div>
-        <div class="form-group">
+        <div class="form-group form-group--qty">
           <label class="form-label">Qtd Usada / Total</label>
-          <div style="display:flex; gap:4px; align-items:center;">
-            <input type="number" step="1" min="1" class="form-input item-used-qty" data-index="${index}" value="${item.usedQty}" style="width:50%;">
-            <span style="font-size:12px; color:var(--mc-outline);">/</span>
-            <input type="number" step="1" min="1" class="form-input item-pkg-qty" data-index="${index}" value="${item.packageQty}" style="width:50%;">
+          <div class="calc-qty-input-group">
+            <input type="number" step="1" min="1" class="form-input item-used-qty" data-index="${index}" value="${item.usedQty}">
+            <span class="calc-qty-separator">/</span>
+            <input type="number" step="1" min="1" class="form-input item-pkg-qty" data-index="${index}" value="${item.packageQty}">
           </div>
         </div>
         <button type="button" class="btn-icon-delete" data-index="${index}" title="Remover item" aria-label="Remover item">
@@ -114,39 +148,39 @@ function initRecipeCalculator() {
   }
 
   function attachItemListeners() {
-    itemsContainer.querySelectorAll('.item-name').forEach(input => {
-      input.addEventListener('input', (e) => {
+    itemsContainer.querySelectorAll(".item-name").forEach((input) => {
+      input.addEventListener("input", (e) => {
         const idx = e.target.dataset.index;
         ingredients[idx].name = e.target.value;
       });
     });
 
-    itemsContainer.querySelectorAll('.item-pkg-cost').forEach(input => {
-      input.addEventListener('input', (e) => {
+    itemsContainer.querySelectorAll(".item-pkg-cost").forEach((input) => {
+      input.addEventListener("input", (e) => {
         const idx = e.target.dataset.index;
         ingredients[idx].packageCost = parseFloat(e.target.value) || 0;
         calculateTotals();
       });
     });
 
-    itemsContainer.querySelectorAll('.item-used-qty').forEach(input => {
-      input.addEventListener('input', (e) => {
+    itemsContainer.querySelectorAll(".item-used-qty").forEach((input) => {
+      input.addEventListener("input", (e) => {
         const idx = e.target.dataset.index;
         ingredients[idx].usedQty = parseFloat(e.target.value) || 0;
         calculateTotals();
       });
     });
 
-    itemsContainer.querySelectorAll('.item-pkg-qty').forEach(input => {
-      input.addEventListener('input', (e) => {
+    itemsContainer.querySelectorAll(".item-pkg-qty").forEach((input) => {
+      input.addEventListener("input", (e) => {
         const idx = e.target.dataset.index;
         ingredients[idx].packageQty = parseFloat(e.target.value) || 1;
         calculateTotals();
       });
     });
 
-    itemsContainer.querySelectorAll('.btn-icon-delete').forEach(button => {
-      button.addEventListener('click', (e) => {
+    itemsContainer.querySelectorAll(".btn-icon-delete").forEach((button) => {
+      button.addEventListener("click", (e) => {
         const btn = e.currentTarget;
         const idx = parseInt(btn.dataset.index, 10);
         ingredients.splice(idx, 1);
@@ -158,12 +192,18 @@ function initRecipeCalculator() {
   function calculateTotals() {
     const rawCost = ingredients.reduce((acc, curr) => {
       const unit = curr.packageCost / (curr.packageQty || 1);
-      return acc + (unit * curr.usedQty);
+      return acc + unit * curr.usedQty;
     }, 0);
 
-    const yieldQty = Math.max(1, parseFloat(yieldInput ? yieldInput.value : 25) || 1);
-    const overheadPercent = Math.max(0, parseFloat(overheadInput ? overheadInput.value : 15) || 0) / 100;
-    const marginPercent = Math.max(0, parseFloat(marginInput ? marginInput.value : 100) || 0) / 100;
+    const yieldQty = Math.max(
+      1,
+      parseFloat(yieldInput ? yieldInput.value : 25) || 1,
+    );
+    const overheadPercent =
+      Math.max(0, parseFloat(overheadInput ? overheadInput.value : 15) || 0) /
+      100;
+    const marginPercent =
+      Math.max(0, parseFloat(marginInput ? marginInput.value : 100) || 0) / 100;
 
     const overheadCost = rawCost * overheadPercent;
     const grandTotal = rawCost + overheadCost;
@@ -175,29 +215,33 @@ function initRecipeCalculator() {
     const totalBatchProfit = unitProfit * yieldQty;
 
     if (totalCostEl) totalCostEl.textContent = formatCurrency(rawCost);
-    if (overheadCostEl) overheadCostEl.textContent = formatCurrency(overheadCost);
+    if (overheadCostEl)
+      overheadCostEl.textContent = formatCurrency(overheadCost);
     if (grandTotalEl) grandTotalEl.textContent = formatCurrency(grandTotal);
     if (unitCostEl) unitCostEl.textContent = formatCurrency(unitCost);
-    if (suggestedPriceEl) suggestedPriceEl.textContent = formatCurrency(suggestedUnitPrice);
-    if (profitPerUnitEl) profitPerUnitEl.textContent = formatCurrency(unitProfit);
-    if (totalBatchProfitEl) totalBatchProfitEl.textContent = formatCurrency(totalBatchProfit);
+    if (suggestedPriceEl)
+      suggestedPriceEl.textContent = formatCurrency(suggestedUnitPrice);
+    if (profitPerUnitEl)
+      profitPerUnitEl.textContent = formatCurrency(unitProfit);
+    if (totalBatchProfitEl)
+      totalBatchProfitEl.textContent = formatCurrency(totalBatchProfit);
   }
 
   if (addIngredientBtn) {
-    addIngredientBtn.addEventListener('click', () => {
+    addIngredientBtn.addEventListener("click", () => {
       ingredients.push({
-        name: 'Novo Insumo',
-        packageCost: 10.00,
+        name: "Novo Insumo",
+        packageCost: 10.0,
         packageQty: 1000,
-        usedQty: 100
+        usedQty: 100,
       });
       renderIngredients();
     });
   }
 
-  if (yieldInput) yieldInput.addEventListener('input', calculateTotals);
-  if (overheadInput) overheadInput.addEventListener('input', calculateTotals);
-  if (marginInput) marginInput.addEventListener('input', calculateTotals);
+  if (yieldInput) yieldInput.addEventListener("input", calculateTotals);
+  if (overheadInput) overheadInput.addEventListener("input", calculateTotals);
+  if (marginInput) marginInput.addEventListener("input", calculateTotals);
 
   renderIngredients();
 }
@@ -206,24 +250,28 @@ function initRecipeCalculator() {
  * Trends Filter Bar
  */
 function initTrendFilters() {
-  const filterButtons = document.querySelectorAll('.filter-btn');
-  const trendCards = document.querySelectorAll('.trend-card');
+  const filterButtons = document.querySelectorAll(".filter-btn");
+  const trendCards = document.querySelectorAll(".trend-card");
 
   if (!filterButtons.length || !trendCards.length) return;
 
-  filterButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      filterButtons.forEach(b => b.classList.remove('is-active'));
-      btn.classList.add('is-active');
+  filterButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      filterButtons.forEach((b) => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
 
       const filter = btn.dataset.filter;
 
-      trendCards.forEach(card => {
+      trendCards.forEach((card) => {
         const category = card.dataset.category;
-        if (filter === 'all' || category === filter || category.includes(filter)) {
-          card.style.display = 'flex';
+        if (
+          filter === "all" ||
+          category === filter ||
+          category.includes(filter)
+        ) {
+          card.style.display = "flex";
         } else {
-          card.style.display = 'none';
+          card.style.display = "none";
         }
       });
     });
@@ -234,42 +282,42 @@ function initTrendFilters() {
  * Interactive Geolocation Map Pins
  */
 function initInteractiveMap() {
-  const pins = document.querySelectorAll('.map-pin');
-  const detailsBox = document.getElementById('selectedPointDetails');
+  const pins = document.querySelectorAll(".map-pin");
+  const detailsBox = document.getElementById("selectedPointDetails");
 
   if (!pins.length || !detailsBox) return;
 
   const pointsData = {
-    'p1': {
-      name: 'Ateliê Doce Sabor',
-      baker: 'Mariana Silva',
-      address: 'Vila Madalena, São Paulo - SP',
-      specialty: 'Brigadeiros Gourmet & Copos da Felicidade',
-      status: 'Pronta Entrega Disponível',
-      rating: '4.9 ★ (128 avaliações)'
+    p1: {
+      name: "Ateliê Doce Sabor",
+      baker: "Mariana Silva",
+      address: "Vila Madalena, São Paulo - SP",
+      specialty: "Brigadeiros Gourmet & Copos da Felicidade",
+      status: "Pronta Entrega Disponível",
+      rating: "4.9 ★ (128 avaliações)",
     },
-    'p2': {
-      name: 'Confeitaria Encanto',
-      baker: 'Beatriz Costa',
-      address: 'Pinheiros, São Paulo - SP',
-      specialty: 'Bolo no Pote Vulcão & Bentô Cakes',
-      status: 'Aceitando Encomendas para Hoje',
-      rating: '5.0 ★ (94 avaliações)'
+    p2: {
+      name: "Confeitaria Encanto",
+      baker: "Beatriz Costa",
+      address: "Pinheiros, São Paulo - SP",
+      specialty: "Bolo no Pote Vulcão & Bentô Cakes",
+      status: "Aceitando Encomendas para Hoje",
+      rating: "5.0 ★ (94 avaliações)",
     },
-    'p3': {
-      name: 'Lúcia Doces Artesanais',
-      baker: 'Lúcia Ferreira',
-      address: 'Jardins, São Paulo - SP',
-      specialty: 'Sobremesas Finas & Brownies Recheados',
-      status: 'Pronta Entrega até 18h',
-      rating: '4.8 ★ (76 avaliações)'
-    }
+    p3: {
+      name: "Lúcia Doces Artesanais",
+      baker: "Lúcia Ferreira",
+      address: "Jardins, São Paulo - SP",
+      specialty: "Sobremesas Finas & Brownies Recheados",
+      status: "Pronta Entrega até 18h",
+      rating: "4.8 ★ (76 avaliações)",
+    },
   };
 
-  pins.forEach(pin => {
-    pin.addEventListener('click', () => {
-      pins.forEach(p => p.classList.remove('is-active'));
-      pin.classList.add('is-active');
+  pins.forEach((pin) => {
+    pin.addEventListener("click", () => {
+      pins.forEach((p) => p.classList.remove("is-active"));
+      pin.classList.add("is-active");
 
       const id = pin.dataset.id;
       const data = pointsData[id];
@@ -299,26 +347,26 @@ function initInteractiveMap() {
  * FAQ Accordion
  */
 function initFaqAccordion() {
-  const faqItems = document.querySelectorAll('.faq-item');
+  const faqItems = document.querySelectorAll(".faq-item");
 
-  faqItems.forEach(item => {
-    const trigger = item.querySelector('.faq-trigger');
+  faqItems.forEach((item) => {
+    const trigger = item.querySelector(".faq-trigger");
     if (!trigger) return;
 
-    trigger.addEventListener('click', () => {
-      const isOpen = item.classList.contains('is-open');
+    trigger.addEventListener("click", () => {
+      const isOpen = item.classList.contains("is-open");
 
       // Close all other items for clean single expansion
-      faqItems.forEach(otherItem => {
+      faqItems.forEach((otherItem) => {
         if (otherItem !== item) {
-          otherItem.classList.remove('is-open');
-          const otherTrigger = otherItem.querySelector('.faq-trigger');
-          if (otherTrigger) otherTrigger.setAttribute('aria-expanded', 'false');
+          otherItem.classList.remove("is-open");
+          const otherTrigger = otherItem.querySelector(".faq-trigger");
+          if (otherTrigger) otherTrigger.setAttribute("aria-expanded", "false");
         }
       });
 
-      item.classList.toggle('is-open', !isOpen);
-      trigger.setAttribute('aria-expanded', !isOpen ? 'true' : 'false');
+      item.classList.toggle("is-open", !isOpen);
+      trigger.setAttribute("aria-expanded", !isOpen ? "true" : "false");
     });
   });
 }
@@ -327,21 +375,22 @@ function initFaqAccordion() {
  * Smooth scrolling for navigation anchors
  */
 function initSmoothScroll() {
-  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-      const targetId = this.getAttribute('href');
-      if (targetId === '#' || targetId === '') return;
+  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+    anchor.addEventListener("click", function (e) {
+      const targetId = this.getAttribute("href");
+      if (targetId === "#" || targetId === "") return;
 
       const targetEl = document.querySelector(targetId);
       if (targetEl) {
         e.preventDefault();
         const headerOffset = 85;
         const elementPosition = targetEl.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+        const offsetPosition =
+          elementPosition + window.pageYOffset - headerOffset;
 
         window.scrollTo({
           top: offsetPosition,
-          behavior: 'smooth'
+          behavior: "smooth",
         });
       }
     });
