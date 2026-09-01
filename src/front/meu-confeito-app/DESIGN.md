@@ -7,19 +7,19 @@ colors:
   surface-variant: '#FFFFFF'
   on-surface: '#40242B'
   on-surface-variant: '#F6EDDC'
-  
+
   # Primary (Berry / Dark Pink)
   primary: '#C53557'
   on-primary: '#FFFFFF'
   primary-container: '#C53557'
   on-primary-container: '#FFFFFF'
-  
+
   # Secondary (Glaze / Light Pink)
   secondary: '#FBA8AF'
   on-secondary: '#40242B'
   secondary-container: '#FBA8AF'
   on-secondary-container: '#40242B'
-  
+
   # Neutrals & Accents
   accent-brown: '#6F4137'
   text: '#40242B'
@@ -27,13 +27,13 @@ colors:
   placeholder: '#A9A9A9'
   light-gray: '#D6D6D6'
   white: '#FFFFFF'
-  
+
   # Borders & Outlines
   border: '#40242B'
   border-secondary: '#FBA8AF'
   outline: '#40242B'
   outline-variant: '#D6D6D6'
-  
+
   # Semantic Tags
   tag-product: '#FFA189'
   tag-variety: '#FFF25E'
@@ -129,11 +129,13 @@ This design system utilizes a high-contrast typographic pairing to bridge the ga
 
 **Inter** handles all utilitarian content. It is chosen for its exceptional readability in data-heavy environments like inventory lists and recipe ratios. Use the `label-md` style for category headers to differentiate them from body text through capitalization and letter-spacing.
 
+> **Tech Note (Expo Fonts):** Fonts must be loaded using the Expo Google Fonts packages (`@expo-google-fonts/playfair-display-sc` and `@expo-google-fonts/inter`). Use the `useFonts` hook at the root of the application (e.g., in `_layout.tsx` or `App.tsx`) to ensure they are loaded before rendering text. Use the exact keys provided in the frontmatter above.
+
 ## Responsive Layout & Grid
 
 The layout is built **Mobile-First** with progressive expansion for tablet and desktop viewports:
 
-- **Mobile (< 768px):** 
+- **Mobile (< 768px):**
   - Single-column flow with a fluid width.
   - Outer screen margins: `16px`.
   - Navigation via Bottom Navigation Bar and Bottom Sheets.
@@ -159,13 +161,13 @@ Avoid heavy, dark drop shadows to maintain a tactile, clean aesthetic.
 - All interactive controls (buttons, icon buttons, checkboxes, chips) must have a minimum hit target of `48x48dp` on touch screens.
 - Use visual padding inside the component while ensuring the hit-box complies with accessibility standards.
 
-## Shapes
+## Shapes & Iconography
 
-The shape language is **Rounded**, reflecting the soft, organic nature of dough and baked goods. 
+The shape language is **Rounded**, reflecting the soft, organic nature of dough and baked goods.
 
 - **Elements:** Standard components (Inputs, Buttons) use a `8px` (`rounded.default`) radius.
 - **Large Containers:** Cards and Modals use a `16px` (`rounded.lg`) radius to feel approachable and modern.
-- **Icons:** Icons should utilize a rounded stroke-cap to match the UI's softness.
+- **Icons:** Use `MaterialCommunityIcons` from the `@expo/vector-icons` package. Prioritize icons with a softer appearance to match the UI's tactile softness. Avoid importing custom SVGs for standard UI elements when an equivalent `MaterialCommunityIcons` exists.
 
 ## Components
 
