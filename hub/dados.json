@@ -1,6 +1,6 @@
 {
   "nome": "Meu Confeito",
-  "slogan": "Com amor feito",
+  "slogan": "Feito com amor",
   "ano": 2026,
   "turma": "A",
   "curso": "Técnico em Informática",
@@ -12,7 +12,7 @@
     "Expo",
     "React Native"
   ],
-  "objetivo": "Descreva aqui em um ou dois parágrafos qual problema real o projeto resolve e qual o público-alvo beneficiado.",
+  "objetivo": "Muitas confeiteiras autônomas enfrentam dificuldades para organizar suas vendas, controlar o estoque e gerar relatórios financeiros de forma simples e prática, o que pode prejudicar a gestão do negócio e a tomada de decisões. Um aplicativo e um site desenvolvidos para automatizar e otimizar processos de confeiteiras autônomas, oferecendo ferramentas para a gestão completa do negócio, é a solução oferecida pelo projeto Meu Confeito",
   "video_url": "https://www.youtube.com/watch?v=exemplo-video-comercial",
   "repositorio_url": "https://github.com/henriqclaro/INI3A-EQ2.git",
   "deploy_url": "https://eq.projetoscti.com.br/26-meuconfeito",
