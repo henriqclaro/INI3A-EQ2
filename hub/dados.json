@@ -13,29 +13,19 @@
     "React Native"
   ],
   "objetivo": "Muitas confeiteiras autônomas enfrentam dificuldades para organizar suas vendas, controlar o estoque e gerar relatórios financeiros de forma simples e prática, o que pode prejudicar a gestão do negócio e a tomada de decisões. Um aplicativo e um site desenvolvidos para automatizar e otimizar processos de confeiteiras autônomas, oferecendo ferramentas para a gestão completa do negócio, é a solução oferecida pelo projeto Meu Confeito",
-  "video_url": "https://www.youtube.com/watch?v=exemplo-video-comercial",
+  "video_url": "https://drive.google.com/file/d/1wNAfcTnNhEvD95F6btbVZDtWolUueLgx/view?usp=drive_link",
   "repositorio_url": "https://github.com/henriqclaro/INI3A-EQ2.git",
   "deploy_url": "https://eq.projetoscti.com.br/26-meuconfeito",
   "url_atual": null,
   "autores": [
-    {
-      "nome": "Rodrigo Ribeiro Rodrigues",
-      "email": "rr.rodrigues@unesp.br",
-      "papel": "Product Owner (PO)"
-    },
     {
       "nome": "Ana Clara de Menezes Coldibeli",
       "email": "ana-clara.coldibeli@unesp.br",
       "papel": "Scrum Master"
     },
     {
-      "nome": "Henrique Claro Alvares",
-      "email": "henrique.claro@unesp.br",
-      "papel": "Tech Leader"
-    },
-    {
-      "nome": "Sophia Zechi Ceide",
-      "email": "sophia.ceide@unesp.br",
+      "nome": "Ashley Victoria Rocha de Oliveira",
+      "email": "eshley.r.oliveira@unesp.br",
       "papel": "Desenvolvedor"
     },
     {
@@ -44,8 +34,18 @@
       "papel": "Desenvolvedor"
     },
     {
-      "nome": "Ashley Victoria Rocha de Oliveira",
-      "email": "eshley.r.oliveira@unesp.br",
+      "nome": "Henrique Claro Alvares",
+      "email": "henrique.claro@unesp.br",
+      "papel": "Tech Leader"
+    },
+    {
+      "nome": "Rodrigo Ribeiro Rodrigues",
+      "email": "rr.rodrigues@unesp.br",
+      "papel": "Product Owner (PO)"
+    },
+    {
+      "nome": "Sophia Zechi Ceide",
+      "email": "sophia.ceide@unesp.br",
       "papel": "Desenvolvedor"
     }
   ],
