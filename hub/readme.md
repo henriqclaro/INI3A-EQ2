@@ -28,12 +28,12 @@ Explique aqui detalhadamente a proposta do projeto:
 
 | Integrante           | Papel no Projeto   | E-mail                       |
 | :------------------- | :----------------- | :--------------------------- |
-| **Rodrigo Ribeiro**  | Product Owner (PO) | rr.rodrigues@unesp.br        |
 | **Ana Clara**        | Scrum Master       | ana-clara.coldibeli@unesp.br |
-| **Henrique Claro**   | Tech Leader        | henrique.claro@unesp.br      |
-| **Sophia Ceide**     | Desenvolvedora     | sophia.ceide@unesp.br        |
-| **Giovanna Ribeiro** | Desenvolvedora     | giovanna.r.oliveira@unesp.br |
 | **Ashley Victoria**  | Desenvolvedora     | eshley.r.oliveira@unesp.br   |
+| **Giovanna Ribeiro** | Desenvolvedora     | giovanna.r.oliveira@unesp.br |
+| **Henrique Claro**   | Tech Leader        | henrique.claro@unesp.br      |
+| **Rodrigo Ribeiro**  | Product Owner (PO) | rr.rodrigues@unesp.br        |
+| **Sophia Ceide**     | Desenvolvedora     | sophia.ceide@unesp.br        |
 
 **Orientador(a):** Amanda de Maia Areias
 
