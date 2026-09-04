@@ -1,5 +1,7 @@
-import { PartialRecipe } from '../types';
+import { PartialRecipe, UserInventoryItem } from '../types';
 import { api } from './api';
+
+export { UserInventoryItem };
 
 export interface UserRegisterData {
   name: string;
@@ -45,6 +47,12 @@ export interface UserRecipesResponse {
   };
 }
 
+export interface SelectUserInventoryResponse {
+  data: {
+    userInventories: UserInventoryItem[];
+  };
+}
+
 export const UserService = {
   register: async (data: UserRegisterData) => {
     const response = await api.post<UserRegisterResponse>('/users', data);
@@ -60,6 +68,10 @@ export const UserService = {
   },
   getRecipes: async (userId: string) => {
     const response = await api.get<UserRecipesResponse>(`/users/${userId}/recipes`);
+    return response.data;
+  },
+  getInventory: async (userId: string) => {
+    const response = await api.get<SelectUserInventoryResponse>(`/users/${userId}/inventories`);
     return response.data;
   },
 };

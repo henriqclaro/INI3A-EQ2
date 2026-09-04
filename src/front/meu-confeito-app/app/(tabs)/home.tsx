@@ -46,10 +46,7 @@ export default function HomeScreen() {
           ) : (
             <Text style={styles.emptyText}>Você ainda não possui receitas públicas.</Text>
           )}
-          <CustomButton
-            title="Estoque"
-            onPress={() => router.push('/stock')}
-          />
+          <CustomButton title="Estoque" onPress={() => router.push('/stock' as any)} />
         </ScrollView>
       </View>
     </View>

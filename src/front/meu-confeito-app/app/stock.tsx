@@ -1,57 +1,64 @@
 import { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, View, useWindowDimensions, Text, Modal, Pressable } from 'react-native';
+import {
+  ActivityIndicator,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 
-import { Stack} from 'expo-router';
+import { Stack } from 'expo-router';
 
-import { BackButton, Input, CustomButton } from '@/src/components';
+import { BackButton, CustomButton, Input } from '@/src/components';
+import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { useUserInventory } from '@/src/hooks/useUsers';
+import { UserInventoryItem } from '@/src/services/user';
 import { AppTheme } from '@/src/theme/themes';
 
-export default function SrockScreen() {
+export default function StockScreen() {
   const [search, setSearch] = useState('');
-  const [editingIngredient, setEditingIngredient] = useState<number | null>(null);
+  const [editingIngredient, setEditingIngredient] = useState<string | null>(null);
   const [editQuantity, setEditQuantity] = useState('');
-  const [editMinimum, setEditMinimum] = useState('');
 
   const { theme } = useThemeMode();
   const { width } = useWindowDimensions();
+  const { user } = useAuth();
+  const { inventories, setInventories, isLoading, error } = useUserInventory(user?.id);
 
-  const handleEditIngredient = (ingredient: (typeof ingredients)[number]) => {
-    setEditingIngredient(ingredient.id);
-    setEditQuantity(String(ingredient.quantity));
-    setEditMinimum(String(ingredient.minimum));
+  const handleEditIngredient = (ingredient: UserInventoryItem) => {
+    setEditingIngredient(ingredient.ingredientId);
+    setEditQuantity(String(ingredient.currentQuantity));
   };
 
   const handleSaveIngredient = () => {
-  if (editingIngredient === null) return;
+    if (editingIngredient === null) return;
 
-  const quantity = Number(editQuantity.replace(',', '.'));
-  const minimum = Number(editMinimum.replace(',', '.'));
+    const quantity = Number(editQuantity.replace(',', '.'));
 
-  if (Number.isNaN(quantity) || Number.isNaN(minimum)) {
-    return;
-  }
+    if (Number.isNaN(quantity)) {
+      return;
+    }
 
-  setIngredients((currentIngredients) =>
-      currentIngredients.map((ingredient) =>
-        ingredient.id === editingIngredient
+    setInventories((currentIngredients) =>
+      currentIngredients.map((item) =>
+        item.ingredientId === editingIngredient
           ? {
-              ...ingredient,
-              quantity,
-              minimum,
+              ...item,
+              currentQuantity: quantity,
             }
-          : ingredient
-      )
+          : item,
+      ),
     );
     setEditingIngredient(null);
     setEditQuantity('');
-    setEditMinimum('');
   };
 
   const handleCancelEdit = () => {
     setEditingIngredient(null);
     setEditQuantity('');
-    setEditMinimum('');
   };
 
   const cardWidth = useMemo(() => {
@@ -67,43 +74,29 @@ export default function SrockScreen() {
     return undefined; // full width on mobile
   }, [width]);
 
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const filteredInventories = useMemo(() => {
+    if (!search.trim()) return inventories;
+    const searchLower = search.toLowerCase();
+    return inventories.filter((item) => {
+      const names: string[] = Array.isArray(item.ingredient?.name)
+        ? item.ingredient.name
+        : [item.ingredient?.name || ''];
+      const hasMatchingName = names.some((name: string) =>
+        name.toLowerCase().includes(searchLower),
+      );
+      const hasMatchingCategory = Boolean(
+        item.ingredient?.category?.toLowerCase().includes(searchLower),
+      );
+      return hasMatchingName || hasMatchingCategory;
+    });
+  }, [inventories, search]);
 
-  const [ingredients, setIngredients] = useState([
-    {
-        id: 1,
-        name: 'Farinha de Trigo Branca',
-        quantity: 0.5,
-        unit: 'kg',
-        minimum: 1,
-    },
-    {
-        id: 2,
-        name: 'Açúcar Refinado',
-        quantity: 750,
-        unit: 'g',
-        minimum: 100,
-    },
-    {
-        id: 3,
-        name: 'Chocolate Meio Amargo',
-        quantity: 0,
-        unit: 'g',
-        minimum: 500,
-    },
-    {
-        id: 4,
-        name: 'Farinha Integral',
-        quantity: 1.8,
-        unit: 'kg',
-        minimum: 500,
-    },
-    ]);
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   return (
     <>
       <Stack.Screen options={{ title: 'Estoque' }} />
-      
+
       <View style={styles.container}>
         <BackButton />
         <View style={styles.headerContent}>
@@ -119,112 +112,117 @@ export default function SrockScreen() {
           contentContainerStyle={styles.scrollContainer}
           showsHorizontalScrollIndicator={false}
         >
-          <View style={styles.gridContainer}>
-                {ingredients.map((ingredient) => (
-            <View
-                key={ingredient.id}
-                style={[
-                styles.ingredientCard,
-                cardWidth ? { width: cardWidth } : undefined,
-                ]}
-            >
-                <View style={styles.cardHeader}>
-                <Text style={styles.ingredientName}>
-                    {ingredient.name}
-                </Text>
-                </View>
-
-                <Text style={styles.quantityLabel}>Estoque atual</Text>
-
-                <Text style={styles.quantity}>
-                {ingredient.quantity} {ingredient.unit}
-                </Text>
-
-                <View style={styles.statusContainer}>
-                <View
-                    style={[
-                        styles.statusDot,
-                        ingredient.quantity === 0
-                            ? styles.statusEmpty 
-                            : ingredient.quantity <= ingredient.minimum
-                            ? styles.statusLow
-                            : styles.statusOk,
-                                            ]}
-                />
-
-                <Text style={styles.statusText}>
-                    {ingredient.quantity === 0
-                        ? 'Em falta'
-                        : ingredient.quantity <= ingredient.minimum
-                        ? 'Estoque baixo'
-                        : 'Estoque suficiente'}
-                </Text>
-                </View>
-
-                <Text style={styles.minimum}>
-                Estoque mínimo: {ingredient.minimum} {ingredient.unit}
-                </Text>
-                <br></br>
-                <CustomButton
-                  title="Editar estoque"
-                  onPress={() => handleEditIngredient(ingredient)}
-                  variant="primary"
-                  style={styles.editButton}
-                />
-
-                
-
+          {isLoading ? (
+            <View style={styles.feedbackContainer}>
+              <ActivityIndicator size="large" color={theme.colors.primary} />
+              <Text style={styles.feedbackText}>Carregando estoque...</Text>
             </View>
-            ))}
+          ) : error ? (
+            <View style={styles.feedbackContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : filteredInventories.length === 0 ? (
+            <View style={styles.feedbackContainer}>
+              <Text style={styles.emptyText}>
+                {search.trim()
+                  ? 'Nenhum ingrediente encontrado para a busca.'
+                  : 'Nenhum ingrediente cadastrado no estoque.'}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.gridContainer}>
+              {filteredInventories.map((item) => {
+                const ingredientName = Array.isArray(item.ingredient?.name)
+                  ? item.ingredient.name.join(' / ')
+                  : item.ingredient?.name || 'Ingrediente';
+                const isOutOfStock = Number(item.currentQuantity) <= 0;
 
-            <Modal
-              visible={editingIngredient !== null}
-              transparent
-              animationType="fade"
-              onRequestClose={handleCancelEdit}
-            >
-              <View style={styles.modalOverlay}>
-                <View style={styles.modalContainer}>
+                return (
+                  <View
+                    key={item.ingredientId}
+                    style={[styles.ingredientCard, cardWidth ? { width: cardWidth } : undefined]}
+                  >
+                    <View style={styles.cardHeader}>
+                      <Text style={styles.ingredientName}>{ingredientName}</Text>
+                      {item.ingredient?.category ? (
+                        <Text style={styles.categoryText}>{item.ingredient.category}</Text>
+                      ) : null}
+                    </View>
 
-                  <Text style={styles.modalTitle}>
-                    Editar estoque
-                  </Text>
+                    <Text style={styles.quantityLabel}>Estoque atual</Text>
 
-                  <Text style={styles.editTitle}>Quantidade: </Text>
-                  <Input
-                    value={editQuantity}
-                    onChangeText={setEditQuantity}
-                    placeholder="Quantidade"
-                  />
+                    <Text style={styles.quantity}>
+                      {item.currentQuantity} {item.measurementUnit}
+                    </Text>
 
-                  <Text style={styles.editTitle}>Estoque Mínimo: </Text>
-                  <Input
-                    value={editMinimum}
-                    onChangeText={setEditMinimum}
-                    placeholder="Estoque mínimo"
-                  />
+                    <View style={styles.statusContainer}>
+                      <View
+                        style={[
+                          styles.statusDot,
+                          isOutOfStock ? styles.statusEmpty : styles.statusOk,
+                        ]}
+                      />
 
-                  <View style={styles.modalButtons}>
+                      <Text style={styles.statusText}>
+                        {isOutOfStock ? 'Em falta' : 'Estoque suficiente'}
+                      </Text>
+                    </View>
+
+                    {Number(item.packagePrice) > 0 && (
+                      <Text style={styles.packageInfo}>
+                        Pacote: {item.packageSize} {item.measurementUnit} - R${' '}
+                        {Number(item.packagePrice).toFixed(2)}
+                      </Text>
+                    )}
+
                     <CustomButton
-                      title="Cancelar"
-                      variant="neutral"
-                      onPress={handleCancelEdit}
-                      style={styles.modalButton}
-                    />
-
-                    <CustomButton
-                      title="Salvar"
+                      title="Editar estoque"
+                      onPress={() => handleEditIngredient(item)}
                       variant="primary"
-                      onPress={handleSaveIngredient}
-                      style={styles.modalButton}
+                      style={styles.editButton}
                     />
                   </View>
+                );
+              })}
+            </View>
+          )}
 
-    </View>
-  </View>
-</Modal>
+          <Modal
+            visible={editingIngredient !== null}
+            transparent
+            animationType="fade"
+            onRequestClose={handleCancelEdit}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContainer}>
+                <Text style={styles.modalTitle}>Editar estoque</Text>
 
-          </View>
+                <Text style={styles.editTitle}>Quantidade: </Text>
+                <Input
+                  value={editQuantity}
+                  onChangeText={setEditQuantity}
+                  placeholder="Quantidade"
+                  keyboardType="numeric"
+                />
+
+                <View style={styles.modalButtons}>
+                  <CustomButton
+                    title="Cancelar"
+                    variant="neutral"
+                    onPress={handleCancelEdit}
+                    style={styles.modalButton}
+                  />
+
+                  <CustomButton
+                    title="Salvar"
+                    variant="primary"
+                    onPress={handleSaveIngredient}
+                    style={styles.modalButton}
+                  />
+                </View>
+              </View>
+            </View>
+          </Modal>
         </ScrollView>
       </View>
     </>
@@ -264,116 +262,149 @@ const createStyles = (theme: AppTheme) =>
       maxWidth: 1200,
     },
     ingredientCard: {
-        backgroundColor: theme.colors.secondaryText,
-        borderRadius: 12,
-        padding: 18,
-        minHeight: 170,
-        maxWidth: 400,
-        borderWidth: 1,
-        borderColor: theme.colors.primary,
-        },
+      backgroundColor: theme.colors.secondaryText,
+      borderRadius: 12,
+      padding: 18,
+      minHeight: 170,
+      maxWidth: 400,
+      borderWidth: 1,
+      borderColor: theme.colors.primary,
+    },
 
-        cardHeader: {
-        marginBottom: 16,
-        },
+    cardHeader: {
+      marginBottom: 16,
+    },
 
-        ingredientName: {
-        fontSize: 20,
-        fontWeight: '600',
-        color: theme.colors.text,
-        },
+    ingredientName: {
+      fontSize: 20,
+      fontWeight: '600',
+      color: theme.colors.text,
+    },
 
-        quantityLabel: {
-        fontSize: 18,
-        color: theme.colors.text,
-        marginBottom: 4,
-        },
+    categoryText: {
+      fontSize: 14,
+      color: theme.colors.primary,
+      marginTop: 2,
+    },
 
-        quantity: {
-        fontSize: 26,
-        fontWeight: '700',
-        color: theme.colors.text,
-        marginBottom: 14,
-        },
+    quantityLabel: {
+      fontSize: 18,
+      color: theme.colors.text,
+      marginBottom: 4,
+    },
 
-        statusContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 10,
-        },
+    quantity: {
+      fontSize: 26,
+      fontWeight: '700',
+      color: theme.colors.text,
+      marginBottom: 14,
+    },
 
-        statusDot: {
-        width: 9,
-        height: 9,
-        borderRadius: 5,
-        marginRight: 7,
-        },
+    statusContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 10,
+    },
 
-        statusOk: {
-        backgroundColor: theme.colors.secondary,
-        },
+    statusDot: {
+      width: 9,
+      height: 9,
+      borderRadius: 5,
+      marginRight: 7,
+    },
 
-        statusLow: {
-        backgroundColor: theme.colors.primary,
-        },
+    statusOk: {
+      backgroundColor: theme.colors.secondary,
+    },
 
-        statusEmpty: {
-        backgroundColor: theme.colors.border,
-        },
+    statusLow: {
+      backgroundColor: theme.colors.primary,
+    },
 
-        statusText: {
-        fontSize: 16,
-        color: theme.colors.text,
-        },
+    statusEmpty: {
+      backgroundColor: theme.colors.border,
+    },
 
-        minimum: {
-        fontSize: 14,
-        color: theme.colors.text,
-        },
+    statusText: {
+      fontSize: 16,
+      color: theme.colors.text,
+    },
 
-        modalOverlay: {
-          flex: 1,
-          backgroundColor: theme.colors.text,
-          justifyContent: 'center',
-          alignItems: 'center',
-        },
+    packageInfo: {
+      fontSize: 14,
+      color: theme.colors.text,
+      marginBottom: 12,
+    },
 
-        modalContainer: {
-          width: '90%',
-          maxWidth: 500,
-          backgroundColor: theme.colors.background,
-          borderRadius: 16,
-          padding: 20,
-        },
+    feedbackContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 40,
+    },
 
-        modalTitle: {
-          fontSize: 22,
-          fontWeight: '700',
-          color: theme.colors.text,
-          marginBottom: 20,
-        },
+    feedbackText: {
+      marginTop: 12,
+      fontSize: 16,
+      color: theme.colors.text,
+    },
 
-        editTitle: {
-          fontSize: 18,
-          color: theme.colors.text,
-        },
+    errorText: {
+      fontSize: 16,
+      color: theme.colors.primary,
+      textAlign: 'center',
+    },
 
-        modalButtons: {
-          flexDirection: 'row',
-          justifyContent: 'center',
-          gap: 10,
-        },
+    emptyText: {
+      fontSize: 16,
+      color: theme.colors.text,
+      textAlign: 'center',
+      fontStyle: 'italic',
+    },
 
-        modalButton: {
-          flex: 1,
-          width: undefined,
-          margin: 0,
-        },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: theme.colors.backdrop,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
 
-        editButton: {
-          width: '100%',
-          margin: 0,
-        },
+    modalContainer: {
+      width: '90%',
+      maxWidth: 500,
+      backgroundColor: theme.colors.background,
+      borderRadius: 16,
+      padding: 20,
+    },
 
-},
-);
+    modalTitle: {
+      fontSize: 22,
+      fontWeight: '700',
+      color: theme.colors.text,
+      marginBottom: 20,
+    },
+
+    editTitle: {
+      fontSize: 18,
+      color: theme.colors.text,
+      marginBottom: 8,
+    },
+
+    modalButtons: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      gap: 10,
+      marginTop: 16,
+    },
+
+    modalButton: {
+      flex: 1,
+      width: undefined,
+      margin: 0,
+    },
+
+    editButton: {
+      width: '100%',
+      margin: 0,
+      marginTop: 8,
+    },
+  });

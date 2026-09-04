@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
-import { UserEditData, UserRegisterData, UserService } from '../services/user';
+import { UserEditData, UserInventoryItem, UserRegisterData, UserService } from '../services/user';
 
 export function useUserRegister() {
   const [isLoading, setIsLoading] = useState(false);
@@ -44,4 +44,42 @@ export function useUserEdit() {
   };
 
   return { editUser, isLoading, error };
+}
+
+export function useUserInventory(userId: string | undefined) {
+  const [inventories, setInventories] = useState<UserInventoryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchUserInventory = useCallback(async () => {
+    if (!userId) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      const res = await UserService.getInventory(userId);
+      setInventories(res.data.userInventories);
+    } catch (err) {
+      console.error('Error fetching user inventory: ', err);
+      setError('Erro ao carregar estoque.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    fetchUserInventory();
+  }, [fetchUserInventory]);
+
+  return {
+    inventories,
+    userInventories: inventories,
+    isLoading,
+    error,
+    refetch: fetchUserInventory,
+    setInventories,
+  };
 }
