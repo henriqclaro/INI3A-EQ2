@@ -20,8 +20,7 @@
         steps:
           - name: 📡 Enviar Webhook para a Galeria de Projetos
             run: |
-              echo "Disparando sincronização para o repositório: ${{ github.repository }} (Branch: ${{ github.
-  ref_name }})"
+              echo "Disparando sincronização para o repositório: ${{ github.repository }} (Branch: ${{ github.ref_name }})"
 
               RESPONSE=$(curl -s -w "\n%{http_code}" -X POST https://galeria.projetoscti.com.br/api/ingestion \
                 -H "Content-Type: application/json" \
