@@ -24,6 +24,7 @@ export const BackButton = () => {
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     button: {
+      position: 'absolute',
       top: 20,
       left: 10,
       zIndex: 10,

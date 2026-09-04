@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { router } from 'expo-router';
 
-import { RecipeSmallView } from '@/src/components';
+import { CustomButton, RecipeSmallView } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useUserRecipes } from '@/src/hooks/useRecipes';
@@ -46,6 +46,10 @@ export default function HomeScreen() {
           ) : (
             <Text style={styles.emptyText}>Você ainda não possui receitas públicas.</Text>
           )}
+          <CustomButton
+            title="Estoque"
+            onPress={() => router.push('/stock')}
+          />
         </ScrollView>
       </View>
     </View>
