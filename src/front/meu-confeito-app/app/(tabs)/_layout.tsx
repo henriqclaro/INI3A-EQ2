@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { CommonActions } from '@react-navigation/native';
+import { CommonActions } from "expo-router/react-navigation";
 import { BottomNavigation } from 'react-native-paper';
 
 // import { CustomHeader } from '@/src/components';
@@ -61,7 +61,9 @@ export default function TabsLayout() {
         name="home"
         options={{
           title: 'Início',
-          tabBarIcon: ({ color }) => <MaterialCommunityIcons name="home-outline" color={color} size={26} />,
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="home-outline" color={color} size={26} />
+          ),
         }}
       />
       <Tabs.Screen
