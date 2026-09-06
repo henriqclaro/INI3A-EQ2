@@ -139,12 +139,18 @@ export default function CreateRecipeScreen() {
 
     const parsedYield = parseFloat(baseYield);
     if (!baseYield || isNaN(parsedYield) || parsedYield <= 0) {
-      Alert.alert('Campo Obrigatório', 'Por favor, informe um rendimento base válido maior que zero.');
+      Alert.alert(
+        'Campo Obrigatório',
+        'Por favor, informe um rendimento base válido maior que zero.',
+      );
       return;
     }
 
     if (!yieldUnit.trim()) {
-      Alert.alert('Campo Obrigatório', 'Por favor, informe a unidade de rendimento (ex: porções, unidades).');
+      Alert.alert(
+        'Campo Obrigatório',
+        'Por favor, informe a unidade de rendimento (ex: porções, unidades).',
+      );
       return;
     }
 
@@ -155,10 +161,7 @@ export default function CreateRecipeScreen() {
       const parsedQty = parseFloat(item.baseQuantity);
 
       if (!item.ingredientId) {
-        Alert.alert(
-          'Ingrediente Inválido',
-          `Selecione o ingrediente #${i + 1} da lista.`,
-        );
+        Alert.alert('Ingrediente Inválido', `Selecione o ingrediente #${i + 1} da lista.`);
         return;
       }
 
@@ -265,11 +268,7 @@ export default function CreateRecipeScreen() {
 
           {/* Imagem de Capa */}
           {coverUrl.trim() ? (
-            <Image
-              source={{ uri: coverUrl }}
-              style={styles.imagePreview}
-              contentFit="cover"
-            />
+            <Image source={{ uri: coverUrl }} style={styles.imagePreview} contentFit="cover" />
           ) : null}
 
           {/* Card: Dados Básicos */}
@@ -402,7 +401,9 @@ export default function CreateRecipeScreen() {
           <View style={styles.box}>
             <View style={styles.boxHeaderRow}>
               <Text style={styles.secondaryTitle}>Ingredientes *</Text>
-              {isLoadingIngredients && <ActivityIndicator size="small" color={theme.colors.primary} />}
+              {isLoadingIngredients && (
+                <ActivityIndicator size="small" color={theme.colors.primary} />
+              )}
             </View>
 
             {ingredients.map((item, index) => (
@@ -497,10 +498,10 @@ export default function CreateRecipeScreen() {
               </View>
             ))}
 
-            <TouchableOpacity style={styles.addBtn} onPress={handleAddIngredient}>
+            <CustomButton variant="dashed" style={styles.addBtn} onPress={handleAddIngredient}>
               <MaterialCommunityIcons name="plus" size={20} color={theme.colors.primary} />
               <Text style={styles.addBtnText}>Adicionar Ingrediente</Text>
-            </TouchableOpacity>
+            </CustomButton>
           </View>
 
           {/* Card: Modo de Preparo */}
@@ -543,10 +544,10 @@ export default function CreateRecipeScreen() {
               </View>
             ))}
 
-            <TouchableOpacity style={styles.addBtn} onPress={handleAddStep}>
+            <CustomButton variant="dashed" style={styles.addBtn} onPress={handleAddStep}>
               <MaterialCommunityIcons name="plus" size={20} color={theme.colors.primary} />
               <Text style={styles.addBtnText}>Adicionar Etapa</Text>
-            </TouchableOpacity>
+            </CustomButton>
           </View>
 
           {/* Botão de Salvar Receita */}
@@ -700,9 +701,6 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       paddingVertical: 12,
       borderRadius: 8,
       borderWidth: 1.5,
-      borderStyle: 'dashed',
-      borderColor: theme.colors.primary,
-      backgroundColor: theme.colors.pitchBackground,
       marginTop: 6,
       gap: 6,
     },

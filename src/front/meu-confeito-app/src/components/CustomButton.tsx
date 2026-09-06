@@ -16,7 +16,7 @@ interface CustomButtonProps {
   onPress?: (event: GestureResponderEvent) => void | Promise<void>;
   children?: ReactNode;
   style?: StyleProp<ViewStyle>;
-  variant?: 'primary' | 'secondary' | 'neutral';
+  variant?: 'primary' | 'secondary' | 'neutral' | 'dashed';
 }
 
 export const CustomButton = ({
@@ -32,13 +32,13 @@ export const CustomButton = ({
 
   return (
     <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
-      <Text style={styles.btnText}>{title}</Text>
+      {title ? <Text style={styles.btnText}>{title}</Text> : null}
       {children}
     </TouchableOpacity>
   );
 };
 
-const createStyles = (theme: AppTheme, variant: 'primary' | 'secondary' | 'neutral') =>
+const createStyles = (theme: AppTheme, variant: 'primary' | 'secondary' | 'neutral' | 'dashed') =>
   StyleSheet.create({
     button: {
       width: 275,
@@ -48,8 +48,11 @@ const createStyles = (theme: AppTheme, variant: 'primary' | 'secondary' | 'neutr
           ? theme.colors.primary
           : variant === 'secondary'
             ? theme.colors.secondary
-            : theme.colors.background,
-      borderWidth: 1,
+            : variant === 'dashed'
+              ? theme.colors.pitchBackground
+              : theme.colors.background,
+      borderWidth: 1.5,
+      borderStyle: variant === 'dashed' ? 'dashed' : 'solid',
       borderColor: variant === 'secondary' ? theme.colors.secondary : theme.colors.primary,
       borderRadius: 12,
       paddingVertical: 12,
@@ -59,7 +62,7 @@ const createStyles = (theme: AppTheme, variant: 'primary' | 'secondary' | 'neutr
     },
     btnText: {
       fontSize: 18,
-      fontWeight: 600,
+      fontWeight: '600',
       color:
         variant === 'primary'
           ? theme.colors.secondaryText

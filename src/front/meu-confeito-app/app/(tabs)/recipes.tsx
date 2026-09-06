@@ -40,7 +40,10 @@ export default function RecipesScreen() {
       >
         <View style={styles.gridContainer}>
           {recipes.map((recipe) => (
-            <View key={recipe.id} style={[styles.cardWrapper, cardWidth ? { width: cardWidth } : null]}>
+            <View
+              key={recipe.id}
+              style={[styles.cardWrapper, cardWidth ? { width: cardWidth } : null]}
+            >
               <RecipeView
                 title={recipe.title}
                 coverUrl={recipe.coverUrl}
