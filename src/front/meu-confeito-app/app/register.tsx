@@ -66,8 +66,7 @@ export default function RegisterScreen() {
   const isEmailValid = checkEmailValid(email);
   const isPasswordValid = checkPasswordValid(password);
   const isPassVefValid = passVef.length > 0 && passVef === password;
-  const isPhoneValid =
-    role === 'CUSTOMER' || (phone.trim().length > 0 && E164_REGEX.test(toE164(phone)));
+  const isPhoneValid = role === 'CUSTOMER' || !phone.trim() || E164_REGEX.test(toE164(phone));
 
   const getNameError = () => {
     if (!touched.name) return '';
@@ -98,8 +97,7 @@ export default function RegisterScreen() {
   };
 
   const getPhoneError = () => {
-    if (role !== 'BAKER' || !touched.phone) return '';
-    if (!phone.trim()) return 'Telefone é obrigatório para confeiteiras.';
+    if (role !== 'BAKER' || !touched.phone || !phone.trim()) return '';
     if (!E164_REGEX.test(toE164(phone))) {
       return 'Telefone incompleto ou inválido. Ex: (11) 99999-9999.';
     }
@@ -124,13 +122,7 @@ export default function RegisterScreen() {
     const trimmedName = name.trim();
     const trimmedEmail = email.trim().toLowerCase();
 
-    if (
-      !trimmedName ||
-      !trimmedEmail ||
-      !password ||
-      !passVef ||
-      (role === 'BAKER' && !phone.trim())
-    ) {
+    if (!trimmedName || !trimmedEmail || !password || !passVef) {
       Alert.alert('Preencha os campos', 'Por favor, preencha todos os campos necessários.');
       return;
     }
@@ -156,7 +148,7 @@ export default function RegisterScreen() {
     }
 
     let formattedPhone: string | null = null;
-    if (role === 'BAKER') {
+    if (role === 'BAKER' && phone.trim()) {
       formattedPhone = toE164(phone);
       if (!E164_REGEX.test(formattedPhone)) {
         Alert.alert(
@@ -489,10 +481,8 @@ export default function RegisterScreen() {
 
                   <View style={styles.fieldWrapper}>
                     <View style={styles.labelRow}>
-                      <Text style={styles.label}>
-                        Telefone / WhatsApp <Text style={styles.required}>*</Text>
-                      </Text>
-                      {touched.phone && isPhoneValid && (
+                      <Text style={styles.label}>Telefone / WhatsApp</Text>
+                      {touched.phone && phone.trim().length > 0 && isPhoneValid && (
                         <MaterialCommunityIcons
                           name="check-circle-outline"
                           size={16}
@@ -509,7 +499,10 @@ export default function RegisterScreen() {
                       containerStyle={[
                         styles.inputContainer,
                         !!phoneError && styles.inputError,
-                        touched.phone && isPhoneValid && styles.inputSuccess,
+                        touched.phone &&
+                          phone.trim().length > 0 &&
+                          isPhoneValid &&
+                          styles.inputSuccess,
                       ]}
                       style={styles.inputText}
                       placeholderTextColor={theme.colors.placeholder}
@@ -526,7 +519,9 @@ export default function RegisterScreen() {
                           <Text style={styles.errorText}>{phoneError}</Text>
                         </>
                       ) : (
-                        <Text style={styles.helperText}>Formato com DDD: (XX) 9XXXX-XXXX</Text>
+                        <Text style={styles.helperText}>
+                          Opcional. Formato com DDD: (XX) 9XXXX-XXXX
+                        </Text>
                       )}
                     </View>
                   </View>

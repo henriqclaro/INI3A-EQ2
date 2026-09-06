@@ -68,6 +68,13 @@ export function isPasswordValid(password: string): boolean {
   return password.length >= 8;
 }
 
+/**
+ * Validates whether a phone number string is valid.
+ * Phone is optional: returns true if empty.
+ * If provided, must match E.164 after normalization.
+ */
 export function isPhoneValid(phone: string): boolean {
-  return phone.trim().length > 0 && E164_REGEX.test(toE164(phone));
+  const trimmed = phone.trim();
+  if (!trimmed) return true;
+  return E164_REGEX.test(toE164(trimmed));
 }

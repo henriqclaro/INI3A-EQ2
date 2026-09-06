@@ -23,7 +23,7 @@ interface AuthContextData {
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoadingStorage, setIsLoadingStorage] = useState(true);
 
   useEffect(() => {
@@ -75,8 +75,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function updateUser(updatedData: Partial<UserProfile>) {
-    if (!user) return;
-    const newUser = { ...user, ...updatedData };
+    // Filter out undefined keys so partial updates don't overwrite existing user data
+    const cleanUpdates: Partial<UserProfile> = {};
+    for (const [key, value] of Object.entries(updatedData)) {
+      if (value !== undefined) {
+        (cleanUpdates as any)[key] = value;
+      }
+    }
+
+    let currentUser = user;
+    if (!currentUser) {
+      const stored = await Storage.getItem('user_profile');
+      if (stored) {
+        try {
+          currentUser = JSON.parse(stored);
+        } catch (e) {
+          console.error('Error parsing stored user profile:', e);
+        }
+      }
+    }
+
+    if (!currentUser) return;
+
+    const newUser: UserProfile = { ...currentUser, ...cleanUpdates };
     await Storage.setItem('user_profile', JSON.stringify(newUser));
     setUser(newUser);
   }

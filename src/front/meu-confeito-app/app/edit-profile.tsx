@@ -19,6 +19,7 @@ import { CustomButton, Input } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useUserEdit } from '@/src/hooks/useUsers';
+import { UserEditData } from '@/src/services/user';
 import { AppTheme } from '@/src/theme/themes';
 import {
   E164_REGEX,
@@ -105,20 +106,29 @@ export default function EditProfileScreen() {
       return;
     }
 
-    const data = {
-      name: trimmedName !== user?.name ? trimmedName : undefined,
-      email: trimmedEmail !== user?.email ? trimmedEmail : undefined,
-      phone: formattedPhone !== user?.phone ? formattedPhone : undefined,
-    };
+    const data: UserEditData = {};
+    if (trimmedName !== user?.name) {
+      data.name = trimmedName;
+    }
+    if (trimmedEmail !== user?.email) {
+      data.email = trimmedEmail;
+    }
+    if (formattedPhone !== (user?.phone ?? null)) {
+      data.phone = formattedPhone;
+    }
 
-    if (data.name === undefined && data.email === undefined && data.phone === undefined) {
+    if (Object.keys(data).length === 0) {
       Alert.alert('Nenhuma alteração', 'Nenhuma alteração foi realizada.');
       return;
     }
 
     try {
-      await editUser(data, user!.id);
-      await updateUser(data);
+      const response = await editUser(data, user!.id);
+      if (response?.data?.user) {
+        await updateUser(response.data.user);
+      } else {
+        await updateUser(data);
+      }
 
       Alert.alert('Perfil atualizado', 'Seus dados foram atualizados com sucesso.', [
         {
@@ -310,7 +320,7 @@ export default function EditProfileScreen() {
                     <Text style={styles.errorText}>{phoneError}</Text>
                   </>
                 ) : (
-                  <Text style={styles.helperText}>Formato com DDD: (XX) 9XXXX-XXXX</Text>
+                  <Text style={styles.helperText}>Opcional. Formato com DDD: (XX) 9XXXX-XXXX</Text>
                 )}
               </View>
             </View>
