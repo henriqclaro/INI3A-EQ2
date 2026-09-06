@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import {
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -253,11 +255,18 @@ export default function CreateRecipeScreen() {
     <>
       <Stack.Screen options={{ title: 'Cadastrar Receita' }} />
 
-      <View style={styles.container}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+      >
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          automaticallyAdjustKeyboardInsets
         >
           {/* <BackButton /> */}
 
@@ -564,7 +573,7 @@ export default function CreateRecipeScreen() {
             )}
           </View>
         </ScrollView>
-      </View>
+      </KeyboardAvoidingView>
     </>
   );
 }
@@ -581,7 +590,7 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
     scrollContent: {
       paddingHorizontal: 20,
       paddingTop: 16,
-      paddingBottom: 60,
+      paddingBottom: 100,
       maxWidth: 700,
       alignSelf: 'center',
       width: '100%',

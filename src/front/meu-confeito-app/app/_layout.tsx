@@ -18,7 +18,8 @@ function RootNavigation() {
       return;
     }
 
-    const inAuthScreen = segments[0] === 'login' || segments[0] === undefined;
+    const inAuthScreen =
+      segments[0] === 'login' || segments[0] === 'register' || segments[0] === undefined;
 
     if (!user && !inAuthScreen) {
       router.replace('/login');

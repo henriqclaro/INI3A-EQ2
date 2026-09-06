@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -111,6 +113,8 @@ export default function StockScreen() {
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           showsHorizontalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          automaticallyAdjustKeyboardInsets
         >
           {isLoading ? (
             <View style={styles.feedbackContainer}>
@@ -194,33 +198,38 @@ export default function StockScreen() {
             onRequestClose={handleCancelEdit}
           >
             <View style={styles.modalOverlay}>
-              <View style={styles.modalContainer}>
-                <Text style={styles.modalTitle}>Editar estoque</Text>
+              <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                style={styles.modalAvoidContainer}
+              >
+                <View style={styles.modalContainer}>
+                  <Text style={styles.modalTitle}>Editar estoque</Text>
 
-                <Text style={styles.editTitle}>Quantidade: </Text>
-                <Input
-                  value={editQuantity}
-                  onChangeText={setEditQuantity}
-                  placeholder="Quantidade"
-                  keyboardType="numeric"
-                />
-
-                <View style={styles.modalButtons}>
-                  <CustomButton
-                    title="Cancelar"
-                    variant="neutral"
-                    onPress={handleCancelEdit}
-                    style={styles.modalButton}
+                  <Text style={styles.editTitle}>Quantidade: </Text>
+                  <Input
+                    value={editQuantity}
+                    onChangeText={setEditQuantity}
+                    placeholder="Quantidade"
+                    keyboardType="numeric"
                   />
 
-                  <CustomButton
-                    title="Salvar"
-                    variant="primary"
-                    onPress={handleSaveIngredient}
-                    style={styles.modalButton}
-                  />
+                  <View style={styles.modalButtons}>
+                    <CustomButton
+                      title="Cancelar"
+                      variant="neutral"
+                      onPress={handleCancelEdit}
+                      style={styles.modalButton}
+                    />
+
+                    <CustomButton
+                      title="Salvar"
+                      variant="primary"
+                      onPress={handleSaveIngredient}
+                      style={styles.modalButton}
+                    />
+                  </View>
                 </View>
-              </View>
+              </KeyboardAvoidingView>
             </View>
           </Modal>
         </ScrollView>
@@ -368,6 +377,12 @@ const createStyles = (theme: AppTheme) =>
       backgroundColor: theme.colors.backdrop,
       justifyContent: 'center',
       alignItems: 'center',
+    },
+
+    modalAvoidContainer: {
+      width: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
 
     modalContainer: {

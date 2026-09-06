@@ -14,6 +14,7 @@ export interface UserRegisterData {
 export interface UserEditData {
   name?: string | undefined;
   email?: string | undefined;
+  phone?: string | null | undefined;
 }
 
 export interface UserEditResponse {

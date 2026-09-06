@@ -3,10 +3,6 @@ import { ReactNode, createContext, useContext, useEffect, useState } from 'react
 import { AuthService, LogInData, LogInResponse } from '../services/auth';
 import { Storage } from '../utils/storage';
 
-/*
-// IMPLEMENTAR LÓGICA DE ATUALIZAÇÃO DEPOIS
-*/
-
 interface UserProfile {
   id: string;
   name: string;
@@ -21,6 +17,7 @@ interface AuthContextData {
   isLoadingStorage: boolean;
   signIn: (data: LogInData) => Promise<void>;
   signOut: () => Promise<void>;
+  updateUser: (updatedUser: Partial<UserProfile>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -77,8 +74,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }
 
+  async function updateUser(updatedData: Partial<UserProfile>) {
+    if (!user) return;
+    const newUser = { ...user, ...updatedData };
+    await Storage.setItem('user_profile', JSON.stringify(newUser));
+    setUser(newUser);
+  }
+
   return (
-    <AuthContext.Provider value={{ user, isLoadingStorage, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, isLoadingStorage, signIn, signOut, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

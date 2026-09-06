@@ -12,6 +12,7 @@ export const colors = {
   colorOrange: '#FFA189',
   colorYellow: '#FFF25E',
   colorCiano: '#8DFBFF',
+  colorGreen: '#388E3C',
 };
 export const lightTheme = {
   ...MD3LightTheme,
@@ -27,6 +28,7 @@ export const lightTheme = {
     pitchBackground: colors.colorWhite,
     lightGray: colors.colorLightGray,
     placeholder: colors.colorGray,
+    success: colors.colorGreen,
 
     // Barra de Navegação
     secondaryContainer: colors.colorLightPink, // Pílula

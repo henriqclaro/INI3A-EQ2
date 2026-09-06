@@ -33,11 +33,25 @@ export default function WelcomeScreen() {
               projetar suas vendas e armazenar suas receitas.
             </Text>
 
-            <Link href="/register" asChild>
+            {/* This should send the 'BAKER' role*/}
+            <Link
+              href={{
+                pathname: '/register',
+                params: { role: 'BAKER' },
+              }}
+              asChild
+            >
               <CustomButton title="Cadastrar como Confeiteira" variant="primary" />
             </Link>
 
-            <Link href="/register" asChild>
+            {/* This should send the 'CUSTOMER' role*/}
+            <Link
+              href={{
+                pathname: '/register',
+                params: { role: 'CUSTOMER' },
+              }}
+              asChild
+            >
               <CustomButton title="Cadastrar como Cliente" variant="secondary" />
             </Link>
 
