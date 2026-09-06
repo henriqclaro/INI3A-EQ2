@@ -1,6 +1,5 @@
 /**
- * BackButton component is commented out in favor of the header back action.
- * Header components now handle back navigation directly.
+ * O componente foi completamente comentado para favorecer o back navigation do header
  */
 /*
 import { useMemo } from 'react';
