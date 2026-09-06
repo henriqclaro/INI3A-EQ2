@@ -21,7 +21,6 @@ import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useUserEdit } from '@/src/hooks/useUsers';
 import { AppTheme } from '@/src/theme/themes';
 import {
-  COLOR_SUCCESS,
   E164_REGEX,
   formatPhoneInput,
   isEmailValid,
@@ -190,7 +189,7 @@ export default function EditProfileScreen() {
                   <MaterialCommunityIcons
                     name="check-circle-outline"
                     size={16}
-                    color={COLOR_SUCCESS}
+                    color={theme.colors.success}
                   />
                 )}
               </View>
@@ -236,7 +235,7 @@ export default function EditProfileScreen() {
                   <MaterialCommunityIcons
                     name="check-circle-outline"
                     size={16}
-                    color={COLOR_SUCCESS}
+                    color={theme.colors.success}
                   />
                 )}
               </View>
@@ -281,7 +280,7 @@ export default function EditProfileScreen() {
                   <MaterialCommunityIcons
                     name="check-circle-outline"
                     size={16}
-                    color={COLOR_SUCCESS}
+                    color={theme.colors.success}
                   />
                 )}
               </View>
@@ -357,12 +356,7 @@ const createStyles = (theme: AppTheme) =>
       borderRadius: 16,
       padding: 20,
       borderWidth: 1,
-      borderColor: theme.colors.lightGray,
-      elevation: 2,
-      shadowColor: theme.colors.text,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.06,
-      shadowRadius: 10,
+      borderColor: theme.colors.secBorder,
       gap: 14,
     },
     avatarContainer: {
@@ -429,7 +423,7 @@ const createStyles = (theme: AppTheme) =>
       borderWidth: 1.5,
     },
     inputSuccess: {
-      borderColor: COLOR_SUCCESS,
+      borderColor: theme.colors.success,
     },
     inputText: {
       fontSize: 15,

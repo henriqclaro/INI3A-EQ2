@@ -14,6 +14,9 @@ export const colors = {
   colorCiano: '#8DFBFF',
   colorGreen: '#388E3C',
 };
+
+export const COLOR_SUCCESS = colors.colorGreen;
+
 export const lightTheme = {
   ...MD3LightTheme,
   colors: {

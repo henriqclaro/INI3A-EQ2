@@ -107,9 +107,18 @@ export default function LogInScreen() {
 
             {/* Email input field */}
             <View style={styles.fieldWrapper}>
-              <Text style={styles.label}>
-                E-mail <Text style={styles.required}>*</Text>
-              </Text>
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>
+                  E-mail <Text style={styles.required}>*</Text>
+                </Text>
+                {touched.email && isEmailFormatValid && (
+                  <MaterialCommunityIcons
+                    name="check-circle-outline"
+                    size={16}
+                    color={theme.colors.success}
+                  />
+                )}
+              </View>
               <Input
                 value={email}
                 placeholder="exemplo@email.com"
@@ -118,7 +127,11 @@ export default function LogInScreen() {
                 autoCorrect={false}
                 onChangeText={setEmail}
                 onBlur={() => setTouched((prev) => ({ ...prev, email: true }))}
-                containerStyle={[styles.inputContainer, !!emailError && styles.inputError]}
+                containerStyle={[
+                  styles.inputContainer,
+                  !!emailError && styles.inputError,
+                  touched.email && !emailError && isEmailFormatValid && styles.inputSuccess,
+                ]}
                 style={styles.inputText}
                 placeholderTextColor={theme.colors.placeholder}
               />
@@ -141,9 +154,18 @@ export default function LogInScreen() {
 
             {/* Password input field */}
             <View style={styles.fieldWrapper}>
-              <Text style={styles.label}>
-                Senha <Text style={styles.required}>*</Text>
-              </Text>
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>
+                  Senha <Text style={styles.required}>*</Text>
+                </Text>
+                {touched.password && !passwordError && password.length >= 8 && (
+                  <MaterialCommunityIcons
+                    name="check-circle-outline"
+                    size={16}
+                    color={theme.colors.success}
+                  />
+                )}
+              </View>
               <Input
                 value={password}
                 placeholder="Digite sua senha"
@@ -151,7 +173,11 @@ export default function LogInScreen() {
                 autoCapitalize="none"
                 onChangeText={setPassword}
                 onBlur={() => setTouched((prev) => ({ ...prev, password: true }))}
-                containerStyle={[styles.inputContainer, !!passwordError && styles.inputError]}
+                containerStyle={[
+                  styles.inputContainer,
+                  !!passwordError && styles.inputError,
+                  touched.password && !passwordError && password.length >= 8 && styles.inputSuccess,
+                ]}
                 style={[styles.inputText, styles.passwordInput]}
                 placeholderTextColor={theme.colors.placeholder}
               />
@@ -229,12 +255,7 @@ const createStyles = (theme: AppTheme) =>
       borderRadius: 16,
       padding: 24,
       borderWidth: 1,
-      borderColor: theme.colors.lightGray,
-      elevation: 2,
-      shadowColor: theme.colors.text,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.06,
-      shadowRadius: 10,
+      borderColor: theme.colors.secBorder,
       gap: 16,
     },
     headerArea: {
@@ -259,11 +280,16 @@ const createStyles = (theme: AppTheme) =>
     fieldWrapper: {
       width: '100%',
     },
+    labelRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 2,
+    },
     label: {
       fontSize: 13,
       fontWeight: '600',
       color: theme.colors.text,
-      marginBottom: 2,
     },
     required: {
       color: theme.colors.primary,
@@ -283,6 +309,9 @@ const createStyles = (theme: AppTheme) =>
     inputError: {
       borderColor: theme.colors.primary,
       borderWidth: 1.5,
+    },
+    inputSuccess: {
+      borderColor: theme.colors.success,
     },
     inputText: {
       fontSize: 15,

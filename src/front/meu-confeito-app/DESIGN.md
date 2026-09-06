@@ -115,7 +115,7 @@ The palette is inspired by confectionery ingredients and warm artisan baking ton
 - **Surface & Background (Light Yellow / Parchment - `#F6EDDC`):** Acts as the canvas for the entire application, reducing the harshness of pure white and providing an artisanal, organic warmth.
 - **On-Surface / Text (Marsala / Espresso - `#40242B`):** All primary text, standard borders, and key iconography use this deep wine tone to ensure high legibility with softer contrast than pure black.
 - **Accent (Warm Brown - `#6F4137`):** Complementary artisanal tone for tertiary badges, depth layers, or subtle emphasis.
-- **Containers & Pitch Background (Pure White - `#FFFFFF`):** Used inside cards, text input fields, and elevated panels (`pitchBackground`) for clean contrast against the cream background.
+- **Containers (Pure White - `#FFFFFF`):** Used inside flat outlined cards, text inputs, and surface panels for crisp contrast against the cream background. Never use elevation or shadows on standard containers.
 - **Tags & Statuses:**
   - **Product (`#FFA189`):** Soft warm orange for product categories.
   - **Variety (`#FFF25E`):** Soft yellow for recipes, variations, and types.
@@ -146,15 +146,21 @@ The layout is built **Mobile-First** with progressive expansion for tablet and d
   - Navigation transitions to a persistent Sidebar or Top Bar.
   - Modals replace Bottom Sheets; lists adopt split-pane / Master-Detail structures.
 
-## Elevation & Cross-Platform Depth
+## Elevation & Depth (Flat-First Policy)
 
-Avoid heavy, dark drop shadows to maintain a tactile, clean aesthetic.
+The visual system is strictly **Flat and Border-First**. Drop shadows and native elevation are explicitly forbidden on cards, list items, navigation bars, headers, inputs, and standard buttons. Visual separation must rely 100% on 1px borders and background contrast.
 
-- **Borders & Tonal Elevation:** Prefer a 1px border (`#40242B` for structured cards or `#D6D6D6` / `#FBA8AF` for subtle dividers) with `#FFFFFF` or `#F6EDDC` container backgrounds.
-- **Floating Actions & Modals (Cross-Platform):**
-  - **Android:** Use `elevation: 2` to `elevation: 4`.
-  - **iOS:** Use `shadowColor: '#40242B'`, `shadowOffset: { width: 0, height: 4 }`, `shadowOpacity: 0.08`, `shadowRadius: 12`.
-  - **Web:** Use `box-shadow: 0px 4px 12px rgba(64, 36, 43, 0.08)`.
+- **Default State (Zero Elevation):**
+  - Android: `elevation: 0`
+  - iOS: `shadowOpacity: 0`, `shadowRadius: 0`
+  - Web: `box-shadow: none`
+  - Stroke: `borderWidth: 1`, `borderColor: '#40242B'` (or `#D6D6D6` / `#FBA8AF` for subtle dividers)
+
+- **The Sole Exception — Floating Action Buttons (FAB):**
+  Elevation is reserved exclusively for primary floating action triggers (e.g., floating "Add Item", "New Recipe" action buttons) that sit on a distinct z-index layer above scrollable content:
+  - Android: `elevation: 4`
+  - iOS: `shadowColor: '#40242B'`, `shadowOffset: { width: 0, height: 4 }`, `shadowOpacity: 0.12`, `shadowRadius: 8`
+  - Web: `box-shadow: 0px 4px 12px rgba(64, 36, 43, 0.12)`
 
 ## Touch & Interaction Targets
 
@@ -174,6 +180,7 @@ The shape language is **Rounded**, reflecting the soft, organic nature of dough 
 - **Buttons:** Primary buttons use a solid Primary background (`#C53557`) with White text (`#FFFFFF`). Secondary buttons use a Secondary background (`#FBA8AF`) with Marsala text (`#40242B`). Text is centered and uses `label-md` weight.
 - **Chips & Tags:** Used for order statuses and item tags (Product `#FFA189`, Variety `#FFF25E`, Attribute `#8DFBFF`). These should have a full pill border-radius (`9999px`) with dark Marsala text (`#40242B`).
 - **Input Fields:** Pure white background (`#FFFFFF`) with a 1px Marsala border (`#40242B`) or light outline (`#D6D6D6`). Placeholder text uses `#A9A9A9` and labels use `#40242B` in `label-sm`.
+- **Floating Action Buttons (FAB):** Circular or pill-shaped, fixed/floating over content. Uses Primary (`#C53557`) or Secondary (`#FBA8AF`) color with the elevation tokens defined in the _Elevation & Depth_ section.
 - **Cards:** Pure white (`#FFFFFF`) or cream (`#F6EDDC`) containers with a subtle 1px border (`#40242B` / `#D6D6D6`). Group recipe details or inventory metrics without heavy drop shadows.
 - **Lists:** Ingredient and inventory lists should use `body-md` for items and `body-sm` for quantities, with `#D6D6D6` or `#FBA8AF` horizontal dividers between rows.
 - **Checkboxes & Radios:** Should feel tactile and use Primary (`#C53557`) for the active/checked state.

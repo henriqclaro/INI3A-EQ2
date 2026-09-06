@@ -1,6 +1,5 @@
 export const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 export const E164_REGEX = /^\+[1-9]\d{6,14}$/;
-export const COLOR_SUCCESS = '#388E3C';
 
 /**
  * Formats a phone number for display in the UI as the user types,
