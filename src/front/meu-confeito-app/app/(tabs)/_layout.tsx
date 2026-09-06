@@ -1,10 +1,10 @@
 import { Tabs } from 'expo-router';
+import { CommonActions } from 'expo-router/react-navigation';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { CommonActions } from "expo-router/react-navigation";
 import { BottomNavigation } from 'react-native-paper';
 
-// import { CustomHeader } from '@/src/components';
+import { CustomHeader } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 
 export default function TabsLayout() {
@@ -13,8 +13,8 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: false,
-        // header: (props) => <CustomHeader {...props} />,
+        headerShown: true,
+        header: (props) => <CustomHeader {...props} />,
       }}
       tabBar={({ navigation, state, descriptors, insets }) => (
         <BottomNavigation.Bar

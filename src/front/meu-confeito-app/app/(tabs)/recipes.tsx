@@ -73,11 +73,13 @@ const createStyles = (theme: AppTheme) =>
       flex: 1,
       backgroundColor: theme.colors.background,
       alignItems: 'center',
-      paddingTop: 80,
+      paddingTop: 8,
     },
     scrollContainer: {
       alignItems: 'center',
-      padding: 20,
+      paddingHorizontal: 20,
+      paddingTop: 12,
+      paddingBottom: 80,
       width: '100%',
     },
     gridContainer: {

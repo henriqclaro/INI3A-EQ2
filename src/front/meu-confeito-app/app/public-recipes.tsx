@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native'
 
 import { Stack, router } from 'expo-router';
 
-import { BackButton, Input, RecipeView } from '@/src/components';
+import { Input, RecipeView } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useManyRecipes } from '@/src/hooks/useRecipes';
 import { AppTheme } from '@/src/theme/themes';
@@ -35,7 +35,7 @@ export default function PublicRecipesScreen() {
       <Stack.Screen options={{ title: 'Receitas Públicas' }} />
 
       <View style={styles.container}>
-        <BackButton />
+        {/* <BackButton /> */}
         <View style={styles.headerContent}>
           <Input
             value={search}
@@ -51,7 +51,10 @@ export default function PublicRecipesScreen() {
         >
           <View style={styles.gridContainer}>
             {recipes.map((recipe) => (
-              <View key={recipe.id} style={[styles.cardWrapper, cardWidth ? { width: cardWidth } : null]}>
+              <View
+                key={recipe.id}
+                style={[styles.cardWrapper, cardWidth ? { width: cardWidth } : null]}
+              >
                 <RecipeView
                   title={recipe.title}
                   coverUrl={recipe.coverUrl}
@@ -76,7 +79,7 @@ const createStyles = (theme: AppTheme) =>
       flex: 1,
       backgroundColor: theme.colors.background,
       alignItems: 'center',
-      paddingTop: 80,
+      paddingTop: 12,
     },
     headerContent: {
       width: '100%',
@@ -87,11 +90,13 @@ const createStyles = (theme: AppTheme) =>
     searchInput: {
       width: '100%',
       maxWidth: 500,
-      margin: 12,
+      marginVertical: 8,
     },
     scrollContainer: {
       alignItems: 'center',
-      padding: 20,
+      paddingHorizontal: 20,
+      paddingTop: 8,
+      paddingBottom: 40,
       width: '100%',
     },
     gridContainer: {

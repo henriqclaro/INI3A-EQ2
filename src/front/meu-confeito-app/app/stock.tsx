@@ -11,7 +11,7 @@ import {
 
 import { Stack } from 'expo-router';
 
-import { BackButton, CustomButton, Input } from '@/src/components';
+import { CustomButton, Input } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useUserInventory } from '@/src/hooks/useUsers';
@@ -98,7 +98,7 @@ export default function StockScreen() {
       <Stack.Screen options={{ title: 'Estoque' }} />
 
       <View style={styles.container}>
-        <BackButton />
+        {/* <BackButton /> */}
         <View style={styles.headerContent}>
           <Input
             value={search}
@@ -235,7 +235,7 @@ const createStyles = (theme: AppTheme) =>
       flex: 1,
       backgroundColor: theme.colors.background,
       alignItems: 'center',
-      paddingTop: 80,
+      paddingTop: 12,
     },
     headerContent: {
       width: '100%',
@@ -246,11 +246,13 @@ const createStyles = (theme: AppTheme) =>
     searchInput: {
       width: '100%',
       maxWidth: 500,
-      margin: 12,
+      marginVertical: 8,
     },
     scrollContainer: {
       alignItems: 'center',
-      padding: 20,
+      paddingHorizontal: 20,
+      paddingTop: 8,
+      paddingBottom: 40,
       width: '100%',
     },
     gridContainer: {

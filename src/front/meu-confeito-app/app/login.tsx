@@ -6,7 +6,7 @@ import { Link, Stack, router } from 'expo-router';
 
 import { ActivityIndicator } from 'react-native-paper';
 
-import { BackButton, CustomButton, Input } from '@/src/components';
+import { CustomButton, Input } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
@@ -51,7 +51,7 @@ export default function LogInScreen() {
       <Stack.Screen options={{ title: 'Login' }} />
 
       <View style={styles.container}>
-        <BackButton />
+        {/* <BackButton /> */}
         <Text style={styles.mainText}>Digite seus dados:</Text>
         <Input
           value={email}
@@ -88,14 +88,15 @@ const createStyles = (theme: AppTheme) =>
       flex: 1,
       backgroundColor: theme.colors.background,
       alignItems: 'center',
+      paddingHorizontal: 20,
+      paddingTop: 16,
     },
     mainText: {
       color: theme.colors.text,
       textAlign: 'center',
-      marginTop: 20,
-      marginBottom: 1,
-      padding: 60,
-      fontSize: 28,
+      marginTop: 16,
+      marginBottom: 24,
+      fontSize: 24,
       fontWeight: 'bold',
       fontFamily: 'Playfair Display SC',
     },

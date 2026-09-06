@@ -4,7 +4,7 @@ import { Alert, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Stack, router } from 'expo-router';
 
-import { BackButton, CustomButton, Input } from '@/src/components';
+import { CustomButton, Input } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useUserEdit } from '@/src/hooks/useUsers';
@@ -41,7 +41,7 @@ export default function EditProfileScreen() {
       <Stack.Screen options={{ title: 'Editar Perfil' }} />
 
       <View style={styles.container}>
-        <BackButton />
+        {/* <BackButton /> */}
         {user?.pfpUrl ? (
           <Image
             source={{ uri: user?.pfpUrl }}
@@ -81,16 +81,23 @@ const createStyles = (theme: AppTheme) =>
       flex: 1,
       backgroundColor: theme.colors.background,
       alignItems: 'center',
+      paddingHorizontal: 20,
+      paddingTop: 20,
+      gap: 12,
     },
     image: {
       backgroundColor: theme.colors.placeholder,
-      width: 200,
-      height: 200,
-      borderRadius: 100,
-      margin: 10,
+      width: 140,
+      height: 140,
+      borderRadius: 70,
+      borderWidth: 3,
+      borderColor: theme.colors.primary,
+      marginBottom: 10,
     },
     btnSave: {
       position: 'absolute',
-      bottom: 20,
+      bottom: 24,
+      width: '100%',
+      maxWidth: 400,
     },
   });

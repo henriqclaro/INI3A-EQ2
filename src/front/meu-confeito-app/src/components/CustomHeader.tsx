@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { router } from 'expo-router';
 
@@ -11,18 +11,13 @@ import { AppTheme } from '../theme/themes';
 export interface CustomHeaderProps {
   route?: {
     name: string;
-  };
-  options?: {
-    title?: string;
     [key: string]: any;
   };
-  navigation?: {
-    canGoBack?: () => boolean;
-    goBack?: () => void;
-    [key: string]: any;
-  };
+  options?: any;
+  navigation?: any;
   back?: {
     title?: string;
+    [key: string]: any;
   };
 }
 
@@ -31,16 +26,53 @@ export const CustomHeader = ({ navigation, route, options, back }: CustomHeaderP
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
-  const title = options?.title ?? route?.name ?? '';
+  const title =
+    typeof options?.headerTitle === 'string'
+      ? options.headerTitle
+      : (options?.title ?? route?.name ?? '');
 
-  const shouldShowBackAction = Boolean(back || navigation?.canGoBack?.());
+  const isBackDisabled = options?.headerBackVisible === false;
+  const isBackForced = options?.headerBackVisible === true;
+  const canGoBack = Boolean(back);
+  const shouldShowBackAction = !isBackDisabled && (canGoBack || isBackForced);
+
+  const handleBack = () => {
+    if (navigation?.canGoBack?.()) {
+      navigation?.goBack?.();
+    } else if (router.canGoBack()) {
+      router.back();
+    } else if (route?.name === 'login' || route?.name === 'register') {
+      router.replace('/');
+    } else {
+      router.replace('/(tabs)/home');
+    }
+  };
+
+  const backColor = options?.headerTintColor ?? theme.colors.text;
 
   return (
-    <Appbar.Header elevated style={styles.header}>
+    <Appbar.Header mode="small" elevated={false} style={[styles.header, options?.headerStyle]}>
       {shouldShowBackAction && (
-        <Appbar.BackAction onPress={() => (navigation ? navigation?.goBack?.() : router.back())} />
+        <Appbar.BackAction
+          color={backColor}
+          size={24}
+          onPress={handleBack}
+          style={styles.backAction}
+        />
       )}
-      <Appbar.Content title={title} style={styles.headerTitle} titleStyle={styles.headerText} />
+      <Appbar.Content
+        title={title}
+        style={[
+          styles.headerTitleContainer,
+          !shouldShowBackAction && styles.headerTitleContainerNoBack,
+        ]}
+        titleStyle={[styles.headerText, options?.headerTitleStyle]}
+      />
+      {options?.headerRight && (
+        <View style={styles.headerRight}>
+          {options.headerRight({ canGoBack: shouldShowBackAction })}
+        </View>
+      )}
     </Appbar.Header>
   );
 };
@@ -49,12 +81,34 @@ const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     header: {
       backgroundColor: theme.colors.background,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.lightGray,
+      height: 64,
+      justifyContent: 'center',
     },
-    headerTitle: {
-      alignItems: 'center',
+    backAction: {
+      marginLeft: 4,
+      marginRight: 0,
+    },
+    headerTitleContainer: {
+      alignItems: 'flex-start',
+      justifyContent: 'center',
+      marginLeft: 4,
+    },
+    headerTitleContainerNoBack: {
+      marginLeft: 12,
     },
     headerText: {
-      fontSize: 32,
+      fontSize: 28,
+      lineHeight: 34,
+      fontFamily: 'Playfair Display SC',
+      fontWeight: 'bold',
       color: theme.colors.primary,
+      textAlign: 'left',
+    },
+    headerRight: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginRight: 8,
     },
   });

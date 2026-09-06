@@ -13,7 +13,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 
 import { Picker } from '@react-native-picker/picker';
 
-import { BackButton } from '@/src/components';
+// import { BackButton } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useSingleRecipe } from '@/src/hooks/useRecipes';
 import { AppTheme } from '@/src/theme/themes';
@@ -41,7 +41,7 @@ export default function RecipeScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <BackButton />
+          {/* <BackButton /> */}
 
           {recipe?.coverUrl ? (
             <Image source={{ uri: recipe.coverUrl }} style={styles.image} contentFit="cover" />
@@ -224,7 +224,7 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
     },
     scrollContent: {
       paddingHorizontal: 20,
-      paddingTop: 40,
+      paddingTop: 16,
       paddingBottom: 60,
     },
     image: {
@@ -233,7 +233,7 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       alignSelf: 'center',
       borderRadius: 16,
       marginBottom: 20,
-      marginTop: 15,
+      marginTop: 4,
     },
     mode: {
       flexDirection: isSmallScreen ? 'column' : 'row',

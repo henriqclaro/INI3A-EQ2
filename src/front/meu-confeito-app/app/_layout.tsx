@@ -49,13 +49,19 @@ function RootLayoutContent() {
         <Stack
           screenOptions={{
             headerShown: true,
-
             header: (props) => <CustomHeader {...props} />,
           }}
         >
           <RootNavigation />
-          <Stack.Screen name="index" />
+          <Stack.Screen name="index" options={{ title: 'Bem-Vindo' }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="login" options={{ title: 'Login' }} />
+          <Stack.Screen name="register" options={{ title: 'Cadastro' }} />
+          <Stack.Screen name="single-recipe" options={{ title: 'Receita' }} />
+          <Stack.Screen name="public-recipes" options={{ title: 'Receitas Públicas' }} />
+          <Stack.Screen name="stock" options={{ title: 'Estoque' }} />
+          <Stack.Screen name="create-recipe" options={{ title: 'Cadastrar Receita' }} />
+          <Stack.Screen name="edit-profile" options={{ title: 'Editar Perfil' }} />
         </Stack>
       </PaperProvider>
     </AuthProvider>

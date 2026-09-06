@@ -12,7 +12,7 @@ export const colors = {
   colorOrange: '#FFA189',
   colorYellow: '#FFF25E',
   colorCiano: '#8DFBFF',
-}
+};
 export const lightTheme = {
   ...MD3LightTheme,
   colors: {

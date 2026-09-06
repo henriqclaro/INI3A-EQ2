@@ -17,7 +17,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Picker } from '@react-native-picker/picker';
 import { ActivityIndicator } from 'react-native-paper';
 
-import { BackButton, CustomButton } from '@/src/components';
+import { CustomButton } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useIngredients } from '@/src/hooks/useIngredients';
@@ -259,7 +259,7 @@ export default function CreateRecipeScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <BackButton />
+          {/* <BackButton /> */}
 
           <Text style={styles.primaryTitle}>Nova Receita</Text>
           <Text style={styles.subtitle}>
@@ -580,7 +580,7 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
     },
     scrollContent: {
       paddingHorizontal: 20,
-      paddingTop: 40,
+      paddingTop: 16,
       paddingBottom: 60,
       maxWidth: 700,
       alignSelf: 'center',
@@ -592,7 +592,7 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       fontSize: 26,
       fontWeight: 'bold',
       marginBottom: 6,
-      marginTop: 10,
+      marginTop: 4,
     },
     subtitle: {
       fontSize: 15,

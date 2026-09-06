@@ -146,13 +146,13 @@ const createStyles = (theme: AppTheme) =>
       flex: 1,
       backgroundColor: theme.colors.background,
       alignItems: 'center',
-      paddingTop: 20,
+      paddingTop: 8,
     },
     scrollContainer: {
       flexGrow: 1,
       alignItems: 'center',
       justifyContent: 'flex-start',
-      paddingTop: 12,
+      paddingTop: 8,
       paddingBottom: 40,
     },
     formContainer: {

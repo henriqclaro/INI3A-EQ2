@@ -71,12 +71,12 @@ export const RecipeView = ({
 
         {prepTimeMinutes > 0 && (
           <View style={styles.timeBadge}>
-            <MaterialCommunityIcons 
-              name="timer-check-outline" 
-              size={20} 
-              color={theme.colors.text} 
+            <MaterialCommunityIcons
+              name="timer-check-outline"
+              size={20}
+              color={theme.colors.text}
             />
-            <Text >{prepTimeMinutes}min</Text>
+            <Text>{prepTimeMinutes}min</Text>
           </View>
         )}
       </View>

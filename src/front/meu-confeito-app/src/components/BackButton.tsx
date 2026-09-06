@@ -1,3 +1,8 @@
+/**
+ * BackButton component is commented out in favor of the header back action.
+ * Header components now handle back navigation directly.
+ */
+/*
 import { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 
@@ -30,3 +35,6 @@ const createStyles = (theme: AppTheme) =>
       zIndex: 10,
     },
   });
+*/
+
+export const BackButton = () => null;
