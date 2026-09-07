@@ -139,4 +139,34 @@ export class UserController {
       'User Inventory selected successfully',
     ).send();
   }
+
+  async saveRecipe(
+    req: Request<UserDTO.RequestParams, unknown, UserDTO.SaveRecipeRequest>,
+    res: Response<ApiResponse<UserDTO.SaveRecipeResponse>>,
+  ) {
+    const context = this.extractProps(req);
+
+    const userId = req.params.id;
+
+    const responseData: UserDTO.SaveRecipeResponse = await this.userService.saveRecipe(
+      context,
+      userId,
+      req.body,
+    );
+
+    return new CreatedResponse(res, responseData, 'Recipe saved successfully').send();
+  }
+
+  async removeSaveRecipe(
+    req: Request<UserDTO.RequestParams, unknown, UserDTO.RemoveSaveRecipeRequest>,
+    res: Response<ApiResponse>,
+  ) {
+    const context = this.extractProps(req);
+
+    const userId = req.params.id;
+
+    await this.userService.removeSaveRecipe(context, userId, req.body);
+
+    return new NoContentResponse(res, 'Saved recipe removed successfully').send();
+  }
 }

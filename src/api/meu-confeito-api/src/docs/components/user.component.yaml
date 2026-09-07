@@ -145,6 +145,21 @@ components:
               savedAt:
                 type: string
                 format: date-time
+    UserSaveRecipeResponse:
+      type: object
+      properties:
+        userSavedRecipe:
+          type: object
+          properties:
+            userId:
+              type: string
+              format: uuid
+            recipeId:
+              type: string
+              format: uuid
+            savedAt:
+              type: string
+              format: date-time
     UserInventorySelectResponse:
       type: object
       properties:

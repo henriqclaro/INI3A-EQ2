@@ -123,4 +123,15 @@ export namespace UserDTO {
       };
     }[];
   }
+
+  export type SaveRecipeRequest = z.infer<typeof user.saveRecipeSchema>;
+  export interface SaveRecipeResponse {
+    userSavedRecipe: {
+      userId: string;
+      recipeId: string;
+      savedAt: Date;
+    };
+  }
+
+  export type RemoveSaveRecipeRequest = z.infer<typeof user.removeSaveRecipeSchema>;
 }

@@ -409,4 +409,116 @@ export class UserService {
 
     return { userInventories };
   }
+
+  async saveRecipe(context: RequestContext, id: string, data: UserDTO.SaveRecipeRequest) {
+    this.checkPermission(context, id);
+
+    const user = await prisma.user.findUnique({
+      where: { id: id },
+      select: { isActive: true },
+    });
+
+    this.checkUser(user);
+
+    const recipe = await prisma.recipe.findUnique({
+      where: { id: data.recipeId },
+      select: { id: true, status: true, userId: true },
+    });
+
+    if (!recipe || recipe.status === 'SUSPENDED') {
+      throw new NotFoundError('Recipe not found', 'RESOURCE_NOT_FOUND');
+    }
+
+    if (recipe.status !== 'PUBLISHED' && recipe.userId !== id && context.userRole !== 'ADMIN') {
+      throw new NotFoundError('Recipe not found', 'RESOURCE_NOT_FOUND');
+    }
+
+    const alreadySaved = await prisma.userSavedRecipe.findUnique({
+      where: {
+        userId_recipeId: {
+          userId: id,
+          recipeId: data.recipeId,
+        },
+      },
+    });
+
+    if (alreadySaved) {
+      throw new ConflictError('Recipe already saved', 'RESOURCE_ALREADY_EXISTS');
+    }
+
+    const userSavedRecipe = await prisma.$transaction(async (tx) => {
+      const saved = await tx.userSavedRecipe.create({
+        data: {
+          userId: id,
+          recipeId: data.recipeId,
+        },
+        select: {
+          userId: true,
+          recipeId: true,
+          savedAt: true,
+        },
+      });
+
+      await tx.recipe.update({
+        where: { id: data.recipeId },
+        data: {
+          totalSaves: {
+            increment: 1,
+          },
+        },
+      });
+
+      return saved;
+    });
+
+    return { userSavedRecipe };
+  }
+
+  async removeSaveRecipe(
+    context: RequestContext,
+    id: string,
+    data: UserDTO.RemoveSaveRecipeRequest,
+  ) {
+    this.checkPermission(context, id);
+
+    const user = await prisma.user.findUnique({
+      where: { id: id },
+      select: { isActive: true },
+    });
+
+    this.checkUser(user);
+
+    const saved = await prisma.userSavedRecipe.findUnique({
+      where: {
+        userId_recipeId: {
+          userId: id,
+          recipeId: data.recipeId,
+        },
+      },
+    });
+
+    if (!saved) {
+      throw new NotFoundError('Saved recipe not found', 'RESOURCE_NOT_FOUND');
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.userSavedRecipe.delete({
+        where: {
+          userId_recipeId: {
+            userId: id,
+            recipeId: data.recipeId,
+          },
+        },
+      });
+
+      await tx.recipe.update({
+        where: { id: data.recipeId },
+        data: {
+          totalSaves: {
+            decrement: 1,
+          },
+        },
+      });
+    });
+  }
 }

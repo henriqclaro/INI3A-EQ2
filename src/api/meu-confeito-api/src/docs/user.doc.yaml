@@ -141,6 +141,64 @@ paths:
                 $ref: '#/components/schemas/UserSavesSelectResponse'
         '403':
           description: Ação negada por falta de privilégios
+    post:
+      summary: Salva uma receita para o usuário
+      tags:
+        - Usuários
+        - Receitas
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UserParamsSchema'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSaveRecipeSchema'
+      responses:
+        '201':
+          description: Receita salva com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSaveRecipeResponse'
+        '400':
+          description: Erro na validação dos dados
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Receita ou usuário não encontrado
+        '409':
+          description: Receita já salva pelo usuário
+    delete:
+      summary: Remove uma receita salva do usuário
+      tags:
+        - Usuários
+        - Receitas
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UserParamsSchema'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRemoveSaveRecipeSchema'
+      responses:
+        '204':
+          description: Receita salva removida com sucesso
+        '400':
+          description: Erro na validação dos dados
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Receita salva ou usuário não encontrado
   /users/{id}/inventories:
     post:
       summary: Cadastra um novo item no estoque do usuário

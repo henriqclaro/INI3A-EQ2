@@ -42,3 +42,11 @@ export const inventoryRegisterSchema = z.object({
     .optional(),
   costUnit: z.number('Cost per unit must be a number').optional(),
 });
+
+export const saveRecipeSchema = z.object({
+  recipeId: z.uuid('Invalid UUID for recipe ID'),
+});
+
+export const removeSaveRecipeSchema = z.object({
+  recipeId: z.uuid('Invalid UUID for recipe ID'),
+});
