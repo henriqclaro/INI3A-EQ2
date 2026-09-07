@@ -12,3 +12,9 @@ export {
   StockSummaryBanner,
   type StockOperationType,
 } from '@/src/components/stock';
+export { TagSelector, type TagSelectorProps } from '@/src/components/TagSelector';
+export {
+  RecipeForm,
+  type RecipeFormProps,
+  type RecipeFormSubmitData,
+} from '@/src/components/RecipeForm';

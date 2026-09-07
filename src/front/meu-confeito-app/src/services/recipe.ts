@@ -3,6 +3,7 @@ import {
   PartialRecipe,
   RecipeRegisterInput,
   RecipeRegisterResponseData,
+  RecipeUpdateInput,
   UpdateRecipeVisibilityInput,
   UpdateRecipeVisibilityResponseData,
 } from '../types/recipe';
@@ -59,6 +60,10 @@ export const RecipeService = {
       `/recipes/${recipeId}/visibility`,
       data,
     );
+    return response.data;
+  },
+  update: async (recipeId: string, data: RecipeUpdateInput) => {
+    const response = await api.patch<RecipeResponse>(`/recipes/${recipeId}`, data);
     return response.data;
   },
 };

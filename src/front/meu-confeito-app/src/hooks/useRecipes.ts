@@ -7,6 +7,7 @@ import {
   FullRecipe,
   RecipeRegisterInput,
   RecipeStatus,
+  RecipeUpdateInput,
   UpdateRecipeVisibilityInput,
 } from '../types/recipe';
 
@@ -250,4 +251,26 @@ export function useRecipeVisibility() {
   };
 
   return { updateVisibility, isLoading, error };
+}
+
+export function useRecipeUpdate() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const updateRecipe = async (recipeId: string, data: RecipeUpdateInput) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await RecipeService.update(recipeId, data);
+      return response;
+    } catch (err) {
+      console.error('Error during recipe update: ', err);
+      setError('Erro ao atualizar receita.');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { updateRecipe, isLoading, error };
 }

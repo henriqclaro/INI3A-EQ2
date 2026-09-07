@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 
 import { Image } from 'expo-image';
-import { Stack, router, useLocalSearchParams } from 'expo-router';
+import { Stack, router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
@@ -26,9 +26,15 @@ export default function RecipeScreen() {
   const { user } = useAuth();
   const { width } = useWindowDimensions();
   const { recipeId } = useLocalSearchParams() as { recipeId: string };
-  const { recipe, isLoading, updateVisibility, isUpdatingVisibility } = useSingleRecipe(
+  const { recipe, isLoading, updateVisibility, isUpdatingVisibility, refetch } = useSingleRecipe(
     recipeId,
     user?.id,
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch]),
   );
 
   const isDesktop = width >= 768;
@@ -145,12 +151,13 @@ export default function RecipeScreen() {
   const handleToggleVisibility = async (newStatus: RecipeStatus) => {
     try {
       await updateVisibility(newStatus);
-      Alert.alert(
-        'Status Atualizado',
+      const statusMessage =
         newStatus === 'PUBLISHED'
           ? 'Sua receita agora está publicada na comunidade!'
-          : 'Sua receita agora está como rascunho.',
-      );
+          : newStatus === 'ARCHIVED'
+            ? 'Sua receita foi arquivada com sucesso.'
+            : 'Sua receita agora está como rascunho.';
+      Alert.alert('Status Atualizado', statusMessage);
     } catch (err: unknown) {
       const apiErr = err as {
         response?: { data?: { code?: string; message?: string } };
@@ -176,6 +183,35 @@ export default function RecipeScreen() {
         Alert.alert('Erro', msg);
       }
     }
+  };
+
+  const handleArchiveRecipe = () => {
+    Alert.alert(
+      'Arquivar Receita',
+      'Tem certeza de que deseja arquivar esta receita? Ela não ficará visível publicamente na comunidade.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Arquivar',
+          style: 'destructive',
+          onPress: () => handleToggleVisibility('ARCHIVED'),
+        },
+      ],
+    );
+  };
+
+  const handleUnarchiveRecipe = () => {
+    Alert.alert(
+      'Restaurar Receita',
+      'Deseja reativar esta receita? Ela voltará para o status de Rascunho.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Restaurar',
+          onPress: () => handleToggleVisibility('DRAFT'),
+        },
+      ],
+    );
   };
 
   const getStatusBadge = (status?: string) => {
@@ -209,7 +245,34 @@ export default function RecipeScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: recipe?.title || 'Receita' }} />
+      <Stack.Screen
+        options={{
+          title: recipe?.title || 'Receita',
+          headerRight:
+            isOwner && recipe
+              ? () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      router.push({
+                        pathname: '/edit-recipe',
+                        params: { recipeId: recipe.id },
+                      })
+                    }
+                    style={styles.headerEditBtn}
+                    accessibilityRole="button"
+                    accessibilityLabel="Editar receita"
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  >
+                    <MaterialCommunityIcons
+                      name="pencil-outline"
+                      size={22}
+                      color={theme.colors.primary}
+                    />
+                  </TouchableOpacity>
+                )
+              : undefined,
+        }}
+      />
 
       <View style={styles.container}>
         {isLoading ? (
@@ -284,45 +347,6 @@ export default function RecipeScreen() {
                   </View>
                 </View>
 
-                {/* Owner Visibility Controls */}
-                {isOwner && (
-                  <View style={styles.visibilityActions}>
-                    {recipe.status === 'PUBLISHED' ? (
-                      <TouchableOpacity
-                        style={styles.visibilityBtnDraft}
-                        onPress={() => handleToggleVisibility('DRAFT')}
-                        disabled={isUpdatingVisibility}
-                        activeOpacity={0.85}
-                        accessibilityRole="button"
-                        accessibilityLabel="Mudar receita para rascunho"
-                      >
-                        <MaterialCommunityIcons
-                          name="lock-outline"
-                          size={16}
-                          color={theme.colors.text}
-                        />
-                        <Text style={styles.visibilityBtnTextDraft}>Tornar Rascunho</Text>
-                      </TouchableOpacity>
-                    ) : (
-                      <TouchableOpacity
-                        style={styles.visibilityBtnPublish}
-                        onPress={() => handleToggleVisibility('PUBLISHED')}
-                        disabled={isUpdatingVisibility}
-                        activeOpacity={0.85}
-                        accessibilityRole="button"
-                        accessibilityLabel="Publicar receita na comunidade"
-                      >
-                        <MaterialCommunityIcons
-                          name="earth"
-                          size={16}
-                          color={theme.colors.secondaryText}
-                        />
-                        <Text style={styles.visibilityBtnTextPublish}>Publicar Receita</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                )}
-
                 <View style={styles.metaRow}>
                   {Boolean(recipe.baseYield) && (
                     <View style={styles.metaBadge}>
@@ -362,6 +386,118 @@ export default function RecipeScreen() {
                   </View>
                 )}
               </View>
+
+              {/* Owner Action Panel */}
+              {isOwner && (
+                <View style={styles.ownerControlCard}>
+                  <View style={styles.ownerControlHeader}>
+                    <View style={styles.ownerControlTitleGroup}>
+                      <MaterialCommunityIcons
+                        name="cog-outline"
+                        size={18}
+                        color={theme.colors.primary}
+                      />
+                      <Text style={styles.ownerControlTitle}>Painel da Receita</Text>
+                    </View>
+                    {isUpdatingVisibility && (
+                      <ActivityIndicator size="small" color={theme.colors.primary} />
+                    )}
+                  </View>
+
+                  <View style={styles.ownerActionButtons}>
+                    {/* Botão Editar */}
+                    <TouchableOpacity
+                      style={styles.btnActionEdit}
+                      onPress={() =>
+                        router.push({
+                          pathname: '/edit-recipe',
+                          params: { recipeId: recipe.id },
+                        })
+                      }
+                      activeOpacity={0.8}
+                      accessibilityRole="button"
+                      accessibilityLabel="Editar informações da receita"
+                    >
+                      <MaterialCommunityIcons
+                        name="pencil-outline"
+                        size={18}
+                        color={theme.colors.primary}
+                      />
+                      <Text style={styles.btnActionTextEdit}>Editar</Text>
+                    </TouchableOpacity>
+
+                    {/* Botão Publicar / Despublicar */}
+                    {recipe.status === 'PUBLISHED' ? (
+                      <TouchableOpacity
+                        style={styles.btnActionDraft}
+                        onPress={() => handleToggleVisibility('DRAFT')}
+                        disabled={isUpdatingVisibility}
+                        activeOpacity={0.8}
+                        accessibilityRole="button"
+                        accessibilityLabel="Mudar receita para rascunho"
+                      >
+                        <MaterialCommunityIcons
+                          name="lock-outline"
+                          size={18}
+                          color={theme.colors.text}
+                        />
+                        <Text style={styles.btnActionTextDraft}>Despublicar</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity
+                        style={styles.btnActionPublish}
+                        onPress={() => handleToggleVisibility('PUBLISHED')}
+                        disabled={isUpdatingVisibility}
+                        activeOpacity={0.8}
+                        accessibilityRole="button"
+                        accessibilityLabel="Publicar receita na comunidade"
+                      >
+                        <MaterialCommunityIcons
+                          name="earth"
+                          size={18}
+                          color={theme.colors.secondaryText}
+                        />
+                        <Text style={styles.btnActionTextPublish}>Publicar</Text>
+                      </TouchableOpacity>
+                    )}
+
+                    {/* Botão Arquivar / Restaurar */}
+                    {recipe.status === 'ARCHIVED' ? (
+                      <TouchableOpacity
+                        style={styles.btnActionUnarchive}
+                        onPress={handleUnarchiveRecipe}
+                        disabled={isUpdatingVisibility}
+                        activeOpacity={0.8}
+                        accessibilityRole="button"
+                        accessibilityLabel="Restaurar receita arquivada"
+                      >
+                        <MaterialCommunityIcons
+                          name="archive-arrow-up-outline"
+                          size={18}
+                          color={theme.colors.primary}
+                        />
+                        <Text style={styles.btnActionTextUnarchive}>Restaurar</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity
+                        style={styles.btnActionArchive}
+                        onPress={handleArchiveRecipe}
+                        disabled={isUpdatingVisibility}
+                        activeOpacity={0.8}
+                        accessibilityRole="button"
+                        accessibilityLabel="Arquivar receita"
+                      >
+                        <MaterialCommunityIcons
+                          name="archive-arrow-down-outline"
+                          size={18}
+                          color={theme.colors.text}
+                        />
+                        <Text style={styles.btnActionTextArchive}>Arquivar</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </View>
+              )}
 
               {/* Segmented Mode Switcher */}
               <View style={styles.segmentedControl}>
@@ -829,41 +965,132 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       fontSize: 12,
       fontWeight: '700',
     },
-    visibilityActions: {
-      flexDirection: 'row',
-      marginTop: 2,
-    },
-    visibilityBtnPublish: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: theme.colors.primary,
-      paddingHorizontal: 16,
+    headerEditBtn: {
+      minWidth: 48,
       minHeight: 48,
-      borderRadius: 8,
-      gap: 8,
-    },
-    visibilityBtnTextPublish: {
-      color: theme.colors.secondaryText,
-      fontFamily: 'Inter',
-      fontSize: 13,
-      fontWeight: '600',
-    },
-    visibilityBtnDraft: {
-      flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'center',
+      padding: 8,
+    },
+    ownerControlCard: {
       backgroundColor: theme.colors.pitchBackground,
+      borderRadius: 14,
       borderWidth: 1,
       borderColor: theme.colors.secBorder,
-      paddingHorizontal: 16,
-      minHeight: 48,
-      borderRadius: 8,
+      padding: 14,
+      marginBottom: 20,
+      gap: 12,
+    },
+    ownerControlHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    ownerControlTitleGroup: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    ownerControlTitle: {
+      fontFamily: 'Inter',
+      fontSize: 14,
+      fontWeight: 'bold',
+      color: theme.colors.primary,
+    },
+    ownerActionButtons: {
+      flexDirection: isSmallScreen ? 'column' : 'row',
       gap: 8,
     },
-    visibilityBtnTextDraft: {
-      color: theme.colors.text,
+    btnActionEdit: {
+      flex: 1,
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.background,
+      borderWidth: 1,
+      borderColor: theme.colors.primary,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      gap: 6,
+    },
+    btnActionTextEdit: {
       fontFamily: 'Inter',
       fontSize: 13,
       fontWeight: '600',
+      color: theme.colors.primary,
+    },
+    btnActionPublish: {
+      flex: 1.2,
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.primary,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      gap: 6,
+    },
+    btnActionTextPublish: {
+      fontFamily: 'Inter',
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.secondaryText,
+    },
+    btnActionDraft: {
+      flex: 1.2,
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.background,
+      borderWidth: 1,
+      borderColor: theme.colors.secBorder,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      gap: 6,
+    },
+    btnActionTextDraft: {
+      fontFamily: 'Inter',
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.text,
+    },
+    btnActionArchive: {
+      flex: 1,
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.background,
+      borderWidth: 1,
+      borderColor: theme.colors.lightGray,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      gap: 6,
+    },
+    btnActionTextArchive: {
+      fontFamily: 'Inter',
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.text,
+    },
+    btnActionUnarchive: {
+      flex: 1,
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.secondary,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      gap: 6,
+    },
+    btnActionTextUnarchive: {
+      fontFamily: 'Inter',
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.primary,
     },
     metaRow: {
       flexDirection: 'row',

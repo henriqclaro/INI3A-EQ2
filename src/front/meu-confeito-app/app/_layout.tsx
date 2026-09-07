@@ -63,6 +63,7 @@ function RootLayoutContent() {
           <Stack.Screen name="stock" options={{ title: 'Estoque' }} />
           <Stack.Screen name="register-stock" options={{ title: 'Cadastrar no Estoque' }} />
           <Stack.Screen name="create-recipe" options={{ title: 'Cadastrar Receita' }} />
+          <Stack.Screen name="edit-recipe" options={{ title: 'Editar Receita' }} />
           <Stack.Screen name="edit-profile" options={{ title: 'Editar Perfil' }} />
         </Stack>
       </PaperProvider>

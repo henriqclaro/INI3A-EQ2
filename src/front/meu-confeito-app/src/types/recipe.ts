@@ -91,6 +91,9 @@ export interface FullRecipe {
   items: RecipeItem[];
   /** Backward-compatibility alias for screens/components previously using ingredients */
   ingredients?: RecipeIngredient[] | RecipeItem[];
+  tags?: {
+    tag: PartialTag;
+  }[];
 }
 
 export interface RecipeRegisterInput {
@@ -107,6 +110,22 @@ export interface RecipeRegisterInput {
   hourlyLabor?: number;
   packagingCost?: number;
   items: RecipeItemInput[];
+  tagIds?: number[];
+}
+
+export interface RecipeUpdateInput {
+  title?: string;
+  coverUrl?: string | null;
+  instructions?: Record<string, unknown>;
+  baseYield?: number;
+  yieldUnit?: StandardUnit;
+  profitMargin?: number;
+  overhead?: number;
+  prepTimeMinutes?: number;
+  hourlyLabor?: number;
+  packagingCost?: number;
+  items?: RecipeItemInput[];
+  tagIds?: number[];
 }
 
 export interface RecipeRegisterResponseData {

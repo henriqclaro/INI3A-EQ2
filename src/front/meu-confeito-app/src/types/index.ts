@@ -6,11 +6,12 @@ export {
   RecipeRegisterInput,
   RecipeRegisterResponseData,
   RecipeStatus,
+  RecipeUpdateInput,
   StandardUnit,
   UpdateRecipeVisibilityInput,
   UpdateRecipeVisibilityResponseData,
 } from './recipe';
-export { PartialTag } from './tag';
+export { PartialTag, Tag, TagType } from './tag';
 export { PartialIngredient, RecipeIngredient, RecipeIngredientInput } from './ingredient';
 export {
   AdjustmentRequest,
