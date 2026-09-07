@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
   useWindowDimensions,
 } from 'react-native';
@@ -17,183 +18,243 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Picker } from '@react-native-picker/picker';
 import { ActivityIndicator } from 'react-native-paper';
 
-import { CustomButton, Input } from '@/src/components';
-import { COMMON_UNITS } from '@/src/constants/common-units';
-import { useAuth } from '@/src/contexts/AuthContext';
+import { CustomButton, Input, StockCard } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useIngredients } from '@/src/hooks/useIngredients';
-import { useUserInventory, useUserInventoryRegister } from '@/src/hooks/useUsers';
-import { RegisterUserInventoryData } from '@/src/services/user';
+import { useInventory } from '@/src/hooks/useInventory';
 import { AppTheme } from '@/src/theme/themes';
+import { InventoryItem } from '@/src/types/inventory';
+import { formatCurrency, formatQuantity } from '@/src/utils/formatters';
+
+type EntryMode = 'purchase' | 'adjustment';
 
 export default function RegisterStockScreen() {
   const { theme } = useThemeMode();
-  const { user } = useAuth();
   const { width } = useWindowDimensions();
-  const isSmallScreen = width < 400;
+  const isMobile = width < 768;
 
   const { ingredients: availableIngredients, isLoading: isLoadingIngredients } = useIngredients();
-  const { inventories, refetch: refetchInventory } = useUserInventory(user?.id);
-  const { registerInventory, isLoading: isSubmitting } = useUserInventoryRegister();
+  const { inventory, registerPurchase, registerAdjustment } = useInventory();
 
+  // Mode: purchase (with cost & avg calculation) or initial adjustment (only balance)
+  const [entryMode, setEntryMode] = useState<EntryMode>('purchase');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Form Fields
   const [ingredientSearch, setIngredientSearch] = useState('');
-  const [ingredientId, setIngredientId] = useState('');
-  const [measurementUnit, setMeasurementUnit] = useState('g');
-  const [currentQuantity, setCurrentQuantity] = useState('');
-  const [packagePrice, setPackagePrice] = useState('');
+  const [selectedIngredientId, setSelectedIngredientId] = useState('');
+  const [quantityInput, setQuantityInput] = useState('');
+  const [totalCostInput, setTotalCostInput] = useState('');
+  const [expirationDateInput, setExpirationDateInput] = useState('');
+  const [notesInput, setNotesInput] = useState('');
+
+  // Package calculation helper
+  const [isPackageHelperEnabled, setIsPackageHelperEnabled] = useState(false);
+  const [packageCount, setPackageCount] = useState('1');
   const [packageSize, setPackageSize] = useState('');
 
-  const [touched, setTouched] = useState({
-    ingredientId: false,
-    measurementUnit: false,
-    currentQuantity: false,
-    packagePrice: false,
-    packageSize: false,
-  });
-
-  const styles = useMemo(() => createStyles(theme, isSmallScreen), [theme, isSmallScreen]);
+  const [hasTouchedIngredient, setHasTouchedIngredient] = useState(false);
 
   // Find the selected ingredient object
   const selectedIngredient = useMemo(() => {
-    return availableIngredients.find((ing) => ing.id === ingredientId) || null;
-  }, [availableIngredients, ingredientId]);
+    return (
+      availableIngredients.find((ing) => String(ing.id) === String(selectedIngredientId)) || null
+    );
+  }, [availableIngredients, selectedIngredientId]);
+
+  const baseUnit = selectedIngredient?.baseUnit || 'un';
 
   // Check if ingredient already exists in current user inventory
-  const isAlreadyInStock = useMemo(() => {
-    if (!ingredientId) return false;
-    return inventories.some((item) => item.ingredientId === ingredientId);
-  }, [inventories, ingredientId]);
+  const existingStockItem = useMemo(() => {
+    if (!selectedIngredientId) return null;
+    return (
+      inventory.find((item) => String(item.ingredientId) === String(selectedIngredientId)) || null
+    );
+  }, [inventory, selectedIngredientId]);
+
+  const isAlreadyInStock = Boolean(existingStockItem);
 
   // Filter available ingredients for the dropdown
   const filteredAvailableIngredients = useMemo(() => {
     if (!ingredientSearch.trim()) return availableIngredients;
     const searchLower = ingredientSearch.toLowerCase();
     return availableIngredients.filter((ing) => {
-      const names = Array.isArray(ing.name) ? ing.name : [ing.name];
-      const hasMatchingName = names.some((n) => n.toLowerCase().includes(searchLower));
+      const hasMatchingName = Boolean(ing.name?.toLowerCase().includes(searchLower));
       const hasMatchingCategory = Boolean(ing.category?.toLowerCase().includes(searchLower));
       return hasMatchingName || hasMatchingCategory;
     });
   }, [availableIngredients, ingredientSearch]);
 
-  // Calculations for unit cost
-  const calculatedCostUnit = useMemo(() => {
-    const price = parseFloat(packagePrice.replace(',', '.'));
-    const size = parseFloat(packageSize.replace(',', '.'));
+  // Sync package helper with quantityInput
+  const handlePackageValuesChange = (newCountStr: string, newSizeStr: string) => {
+    const count = parseFloat(newCountStr.replace(',', '.')) || 0;
+    const size = parseFloat(newSizeStr.replace(',', '.')) || 0;
 
-    if (!isNaN(price) && price > 0 && !isNaN(size) && size > 0) {
-      return price / size;
+    if (count > 0 && size > 0) {
+      setQuantityInput(String(count * size));
     }
-    return 0;
-  }, [packagePrice, packageSize]);
+  };
+
+  // Parsed numerical values
+  const parsedQuantity = parseFloat(quantityInput.replace(',', '.')) || 0;
+  const parsedCost = parseFloat(totalCostInput.replace(',', '.')) || 0;
+
+  // Calculated unit cost preview
+  const calculatedUnitCost = parsedQuantity > 0 && parsedCost > 0 ? parsedCost / parsedQuantity : 0;
 
   // Validation
   const ingredientError = useMemo(() => {
-    if (!touched.ingredientId) return '';
-    if (!ingredientId) return 'Selecione um ingrediente da lista.';
-    if (isAlreadyInStock) return 'Este ingrediente já está cadastrado no seu estoque.';
+    if (!hasTouchedIngredient) return '';
+    if (!selectedIngredientId) return 'Selecione um ingrediente da lista.';
     return '';
-  }, [ingredientId, isAlreadyInStock, touched.ingredientId]);
+  }, [hasTouchedIngredient, selectedIngredientId]);
 
-  const packageSizeError = useMemo(() => {
-    if (!packageSize.trim()) return '';
-    const size = parseFloat(packageSize.replace(',', '.'));
-    if (isNaN(size) || size <= 0) return 'O tamanho da embalagem deve ser maior que zero.';
-    return '';
-  }, [packageSize]);
+  // Mock item for live preview card
+  const previewItem: InventoryItem | null = useMemo(() => {
+    if (!selectedIngredient) return null;
 
-  const handleRegister = async () => {
-    setTouched({
-      ingredientId: true,
-      measurementUnit: true,
-      currentQuantity: true,
-      packagePrice: true,
-      packageSize: true,
-    });
+    const currentQty = existingStockItem ? Number(existingStockItem.currentQuantity) : 0;
+    const currentCost = existingStockItem ? Number(existingStockItem.costPerBaseUnit) : 0;
 
-    if (!user?.id) {
-      Alert.alert('Erro', 'Usuário não autenticado. Faça login para continuar.');
-      return;
+    let finalQty = parsedQuantity;
+    let finalCost = calculatedUnitCost;
+
+    if (entryMode === 'purchase') {
+      if (existingStockItem && currentQty > 0) {
+        finalQty = currentQty + parsedQuantity;
+        finalCost = (currentQty * currentCost + parsedCost) / (finalQty > 0 ? finalQty : 1);
+      } else {
+        finalQty = parsedQuantity;
+        finalCost = calculatedUnitCost;
+      }
+    } else {
+      finalQty = parsedQuantity;
+      finalCost = currentCost;
     }
 
-    if (!ingredientId) {
-      Alert.alert('Campo Obrigatório', 'Selecione um ingrediente para cadastrar no estoque.');
-      return;
-    }
-
-    if (isAlreadyInStock) {
-      Alert.alert(
-        'Ingrediente Já Cadastrado',
-        'Este ingrediente já consta no seu estoque. Para alterar as quantidades ou embalagem, edite o item na tela de Estoque.',
-      );
-      return;
-    }
-
-    const parsedQty = currentQuantity.trim() ? parseFloat(currentQuantity.replace(',', '.')) : 0;
-    if (isNaN(parsedQty) || parsedQty < 0) {
-      Alert.alert('Quantidade Inválida', 'A quantidade em estoque deve ser um número válido.');
-      return;
-    }
-
-    const parsedPrice = packagePrice.trim()
-      ? parseFloat(packagePrice.replace(',', '.'))
-      : undefined;
-    if (parsedPrice !== undefined && (isNaN(parsedPrice) || parsedPrice < 0)) {
-      Alert.alert('Preço Inválido', 'O preço da embalagem deve ser um valor positivo.');
-      return;
-    }
-
-    const parsedSize = packageSize.trim() ? parseFloat(packageSize.replace(',', '.')) : undefined;
-    if (parsedSize !== undefined && (isNaN(parsedSize) || parsedSize <= 0)) {
-      Alert.alert('Tamanho Inválido', 'O tamanho da embalagem deve ser maior que zero.');
-      return;
-    }
-
-    const payload: RegisterUserInventoryData = {
-      ingredientId,
-      measurementUnit,
-      currentQuantity: parsedQty,
-      ...(parsedPrice !== undefined && { packagePrice: parsedPrice }),
-      ...(parsedSize !== undefined && { packageSize: parsedSize }),
-      ...(calculatedCostUnit > 0 && { costUnit: calculatedCostUnit }),
+    return {
+      ingredientId: Number(selectedIngredient.id),
+      currentQuantity: finalQty,
+      costPerBaseUnit: finalCost,
+      expirationDate: expirationDateInput.trim() || null,
+      lastUpdated: new Date(),
+      ingredient: {
+        id: Number(selectedIngredient.id),
+        name: selectedIngredient.name,
+        slug: selectedIngredient.slug || '',
+        category: selectedIngredient.category,
+        baseDimension: selectedIngredient.baseDimension || 'MASS',
+        baseUnit: selectedIngredient.baseUnit || 'un',
+        description: selectedIngredient.description || null,
+      },
     };
+  }, [
+    selectedIngredient,
+    existingStockItem,
+    parsedQuantity,
+    calculatedUnitCost,
+    entryMode,
+    parsedCost,
+    expirationDateInput,
+  ]);
+
+  const handleSubmit = async () => {
+    setHasTouchedIngredient(true);
+
+    if (!selectedIngredientId) {
+      Alert.alert('Campo Obrigatório', 'Selecione um ingrediente da lista para continuar.');
+      return;
+    }
+
+    if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
+      Alert.alert('Quantidade Inválida', 'A quantidade deve ser um valor numérico maior que zero.');
+      return;
+    }
+
+    // Format optional expiration date
+    let formattedExpDate: string | undefined = undefined;
+    if (expirationDateInput.trim()) {
+      const cleaned = expirationDateInput.trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(cleaned)) {
+        formattedExpDate = cleaned;
+      } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(cleaned)) {
+        const [d, m, y] = cleaned.split('/');
+        formattedExpDate = `${y}-${m}-${d}`;
+      } else {
+        Alert.alert(
+          'Data Inválida',
+          'A data de validade deve estar no formato DD/MM/AAAA ou AAAA-MM-DD.',
+        );
+        return;
+      }
+    }
 
     try {
-      await registerInventory(user.id, payload);
-      await refetchInventory();
+      setIsSubmitting(true);
 
-      Alert.alert('Sucesso!', 'Ingrediente adicionado ao estoque com sucesso.', [
-        {
-          text: 'Ver Estoque',
-          onPress: () => {
-            if (router.canGoBack()) {
-              router.back();
-            } else {
-              router.replace('/stock');
-            }
+      if (entryMode === 'purchase') {
+        if (isNaN(parsedCost) || parsedCost <= 0) {
+          Alert.alert(
+            'Custo Inválido',
+            'Informe o custo total pago nesta compra para cálculo do custo unitário.',
+          );
+          setIsSubmitting(false);
+          return;
+        }
+
+        await registerPurchase({
+          ingredientId: Number(selectedIngredientId),
+          quantity: parsedQuantity,
+          totalCost: parsedCost,
+          expirationDate: formattedExpDate,
+        });
+
+        Alert.alert('Sucesso!', 'Entrada de compra registrada com sucesso!', [
+          {
+            text: 'Ver Estoque',
+            onPress: () => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace('/stock');
+              }
+            },
           },
-        },
-      ]);
+        ]);
+      } else {
+        // Adjustment mode
+        await registerAdjustment({
+          ingredientId: Number(selectedIngredientId),
+          realQuantity: parsedQuantity,
+          notes: notesInput.trim() || undefined,
+        });
+
+        Alert.alert('Sucesso!', 'Saldo de estoque ajustado com sucesso!', [
+          {
+            text: 'Ver Estoque',
+            onPress: () => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace('/stock');
+              }
+            },
+          },
+        ]);
+      }
     } catch (err: unknown) {
       const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
       const msg =
         apiErr?.response?.data?.message ||
         apiErr?.message ||
-        'Não foi possível adicionar o ingrediente ao estoque. Tente novamente.';
-      Alert.alert('Erro ao cadastrar', msg);
+        'Não foi possível registrar o item no estoque. Tente novamente.';
+      Alert.alert('Erro ao registrar', msg);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const parsedCurrentQty = currentQuantity.trim()
-    ? parseFloat(currentQuantity.replace(',', '.'))
-    : 0;
-  const isPreviewOutOfStock = isNaN(parsedCurrentQty) || parsedCurrentQty <= 0;
-
-  const ingredientDisplayName = selectedIngredient
-    ? Array.isArray(selectedIngredient.name)
-      ? selectedIngredient.name.join(' / ')
-      : String(selectedIngredient.name)
-    : 'Nome do Ingrediente';
+  const styles = useMemo(() => createStyles(theme, isMobile), [theme, isMobile]);
 
   return (
     <>
@@ -202,33 +263,69 @@ export default function RegisterStockScreen() {
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-          automaticallyAdjustKeyboardInsets
         >
-          {/* Main Card */}
           <View style={styles.card}>
             {/* Header section */}
             <View style={styles.headerArea}>
               <View style={styles.headerIconContainer}>
                 <MaterialCommunityIcons
                   name="package-variant-closed-plus"
-                  size={32}
+                  size={30}
                   color={theme.colors.primary}
                 />
               </View>
-              <Text style={styles.headline}>Novo Item de Estoque</Text>
+              <Text style={styles.headline}>Entrada no Estoque</Text>
               <Text style={styles.subheadline}>
-                Cadastre os insumos que você utiliza na cozinha para controlar quantidades e custos.
+                Cadastre a compra ou o saldo inicial dos insumos que você utiliza na cozinha.
               </Text>
             </View>
 
-            {/* Fieldset: Ingrediente */}
+            {/* Entry Mode Selector */}
+            <View style={styles.modeTabs}>
+              <TouchableOpacity
+                style={[styles.modeTab, entryMode === 'purchase' && styles.modeTabActive]}
+                onPress={() => setEntryMode('purchase')}
+                activeOpacity={0.8}
+              >
+                <MaterialCommunityIcons
+                  name="cart-plus"
+                  size={18}
+                  color={entryMode === 'purchase' ? theme.colors.primary : theme.colors.text}
+                />
+                <Text
+                  style={[styles.modeTabText, entryMode === 'purchase' && styles.modeTabTextActive]}
+                >
+                  Registrar Compra
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modeTab, entryMode === 'adjustment' && styles.modeTabActive]}
+                onPress={() => setEntryMode('adjustment')}
+                activeOpacity={0.8}
+              >
+                <MaterialCommunityIcons
+                  name="tune-variant"
+                  size={18}
+                  color={entryMode === 'adjustment' ? theme.colors.primary : theme.colors.text}
+                />
+                <Text
+                  style={[
+                    styles.modeTabText,
+                    entryMode === 'adjustment' && styles.modeTabTextActive,
+                  ]}
+                >
+                  Ajuste de Saldo
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Section 1: Insumo / Ingrediente */}
             <View style={styles.fieldset}>
               <View style={styles.fieldsetHeader}>
                 <MaterialCommunityIcons
@@ -236,17 +333,26 @@ export default function RegisterStockScreen() {
                   size={20}
                   color={theme.colors.primary}
                 />
-                <Text style={styles.fieldsetSectionTitle}>Ingrediente</Text>
+                <Text style={styles.fieldsetSectionTitle}>1. Seleção do Insumo</Text>
               </View>
 
-              {/* Filter / Search available ingredients */}
+              {/* Filter / Search input */}
               <View style={styles.fieldWrapper}>
-                <Text style={styles.label}>Filtrar Ingrediente</Text>
+                <Text style={styles.label}>Filtrar Insumo</Text>
                 <Input
                   value={ingredientSearch}
                   onChangeText={setIngredientSearch}
-                  placeholder="Digite para buscar..."
+                  placeholder="Digite para filtrar a lista..."
+                  isClearable
+                  onClear={() => setIngredientSearch('')}
                   containerStyle={styles.filterInput}
+                  leftIcon={
+                    <MaterialCommunityIcons
+                      name="magnify"
+                      size={18}
+                      color={theme.colors.placeholder}
+                    />
+                  }
                 />
               </View>
 
@@ -254,7 +360,7 @@ export default function RegisterStockScreen() {
               <View style={styles.fieldWrapper}>
                 <View style={styles.labelRow}>
                   <Text style={styles.label}>
-                    Ingrediente <Text style={styles.required}>*</Text>
+                    Insumo <Text style={styles.required}>*</Text>
                   </Text>
                   {isLoadingIngredients && (
                     <ActivityIndicator size="small" color={theme.colors.primary} />
@@ -264,32 +370,31 @@ export default function RegisterStockScreen() {
                 <View
                   style={[
                     styles.pickerWrapper,
-                    !!ingredientError && styles.pickerError,
-                    !!ingredientId && !ingredientError && styles.pickerSuccess,
+                    Boolean(ingredientError) && styles.pickerError,
+                    Boolean(selectedIngredientId && !ingredientError) && styles.pickerSuccess,
                   ]}
                 >
                   <Picker
-                    selectedValue={ingredientId}
+                    selectedValue={selectedIngredientId}
                     onValueChange={(val) => {
-                      setIngredientId(val);
-                      setTouched((prev) => ({ ...prev, ingredientId: true }));
+                      setSelectedIngredientId(String(val));
+                      setHasTouchedIngredient(true);
                     }}
                     style={styles.picker}
                     dropdownIconColor={theme.colors.text}
                   >
-                    <Picker.Item label="Selecione um ingrediente..." value="" />
+                    <Picker.Item label="Selecione um insumo..." value="" />
                     {filteredAvailableIngredients.map((ing) => {
-                      const ingName = Array.isArray(ing.name)
-                        ? ing.name.join(' / ')
-                        : String(ing.name);
-                      const inStockTag = inventories.some((i) => i.ingredientId === ing.id)
-                        ? ' (Já no estoque)'
+                      const inStockTag = inventory.some(
+                        (i) => String(i.ingredientId) === String(ing.id),
+                      )
+                        ? ' (Já cadastrado)'
                         : '';
                       return (
                         <Picker.Item
                           key={ing.id}
-                          label={`${ingName} [${ing.category}]${inStockTag}`}
-                          value={ing.id}
+                          label={`${ing.name} [${ing.category}] (${ing.baseUnit || 'un'})${inStockTag}`}
+                          value={String(ing.id)}
                         />
                       );
                     })}
@@ -302,7 +407,6 @@ export default function RegisterStockScreen() {
                       name="alert-circle-outline"
                       size={14}
                       color={theme.colors.primary}
-                      style={styles.helperIcon}
                     />
                     <Text style={styles.errorText}>{ingredientError}</Text>
                   </View>
@@ -311,197 +415,234 @@ export default function RegisterStockScreen() {
                     <View style={styles.categoryChip}>
                       <Text style={styles.categoryChipText}>{selectedIngredient.category}</Text>
                     </View>
+                    <View style={styles.unitChip}>
+                      <Text style={styles.unitChipText}>Unidade Base: {baseUnit}</Text>
+                    </View>
                   </View>
                 ) : null}
-              </View>
 
-              {/* Measurement Unit */}
-              <View style={styles.fieldWrapper}>
-                <Text style={styles.label}>
-                  Unidade de Medida <Text style={styles.required}>*</Text>
-                </Text>
-                <View style={styles.pickerWrapper}>
-                  <Picker
-                    selectedValue={measurementUnit}
-                    onValueChange={(val) => setMeasurementUnit(val)}
-                    style={styles.picker}
-                    dropdownIconColor={theme.colors.text}
-                  >
-                    {COMMON_UNITS.map((u) => (
-                      <Picker.Item key={u.value} label={u.label} value={u.value} />
-                    ))}
-                  </Picker>
-                </View>
-                <Text style={styles.helperText}>
-                  Unidade base para controle das receitas (ex: gramas, mililitros, unidades).
-                </Text>
+                {/* Existing Stock Alert */}
+                {isAlreadyInStock && existingStockItem && (
+                  <View style={styles.existingStockBanner}>
+                    <MaterialCommunityIcons
+                      name="information-outline"
+                      size={18}
+                      color={theme.colors.primary}
+                    />
+                    <View style={styles.existingStockTextContainer}>
+                      <Text style={styles.existingStockTitle}>Item já possui estoque:</Text>
+                      <Text style={styles.existingStockDetail}>
+                        Saldo atual: {formatQuantity(existingStockItem.currentQuantity, baseUnit)} |
+                        Custo médio:{' '}
+                        {formatCurrency(Number(existingStockItem.costPerBaseUnit) || 0)} /{' '}
+                        {baseUnit}
+                      </Text>
+                    </View>
+                  </View>
+                )}
               </View>
             </View>
 
-            {/* Fieldset: Quantidade em Estoque */}
+            {/* Section 2: Quantidade e Custo */}
             <View style={styles.fieldset}>
               <View style={styles.fieldsetHeader}>
-                <MaterialCommunityIcons name="scale" size={20} color={theme.colors.primary} />
-                <Text style={styles.fieldsetSectionTitle}>Quantidade Atual</Text>
+                <MaterialCommunityIcons
+                  name="scale-balance"
+                  size={20}
+                  color={theme.colors.primary}
+                />
+                <Text style={styles.fieldsetSectionTitle}>
+                  {entryMode === 'purchase' ? '2. Dados da Compra' : '2. Quantidade Física Real'}
+                </Text>
               </View>
 
+              {/* Package Helper Toggle */}
+              {entryMode === 'purchase' && (
+                <TouchableOpacity
+                  style={styles.packageHelperToggle}
+                  onPress={() => setIsPackageHelperEnabled(!isPackageHelperEnabled)}
+                  activeOpacity={0.8}
+                >
+                  <MaterialCommunityIcons
+                    name={isPackageHelperEnabled ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                    size={20}
+                    color={theme.colors.primary}
+                  />
+                  <Text style={styles.packageHelperToggleText}>
+                    Calcular quantidade por pacotes / fardos
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              {/* Package Helper Inputs */}
+              {entryMode === 'purchase' && isPackageHelperEnabled && (
+                <View style={styles.rowTwoCols}>
+                  <View style={[styles.fieldWrapper, styles.colFlex]}>
+                    <Text style={styles.label}>Nº de Pacotes</Text>
+                    <TextInput
+                      style={styles.singleInput}
+                      value={packageCount}
+                      onChangeText={(val) => {
+                        setPackageCount(val);
+                        handlePackageValuesChange(val, packageSize);
+                      }}
+                      placeholder="Ex: 2"
+                      placeholderTextColor={theme.colors.placeholder}
+                      keyboardType="numeric"
+                    />
+                  </View>
+
+                  <View style={[styles.fieldWrapper, styles.colFlex]}>
+                    <Text style={styles.label}>Tamanho por Pacote ({baseUnit})</Text>
+                    <View style={styles.inputWithSuffix}>
+                      <TextInput
+                        style={styles.textInputFlex}
+                        value={packageSize}
+                        onChangeText={(val) => {
+                          setPackageSize(val);
+                          handlePackageValuesChange(packageCount, val);
+                        }}
+                        placeholder="Ex: 500"
+                        placeholderTextColor={theme.colors.placeholder}
+                        keyboardType="numeric"
+                      />
+                      <View style={styles.suffixBadge}>
+                        <Text style={styles.suffixText}>{baseUnit}</Text>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              )}
+
+              {/* Quantity Input */}
               <View style={styles.fieldWrapper}>
-                <Text style={styles.label}>Estoque Físico Disponível</Text>
+                <Text style={styles.label}>
+                  {entryMode === 'purchase'
+                    ? `Quantidade Comprada (${baseUnit}) *`
+                    : `Saldo Físico Real (${baseUnit}) *`}
+                </Text>
                 <View style={styles.inputWithSuffix}>
                   <TextInput
                     style={styles.textInputFlex}
-                    value={currentQuantity}
-                    onChangeText={setCurrentQuantity}
+                    value={quantityInput}
+                    onChangeText={setQuantityInput}
                     placeholder="0"
                     placeholderTextColor={theme.colors.placeholder}
                     keyboardType="numeric"
                   />
                   <View style={styles.suffixBadge}>
-                    <Text style={styles.suffixText}>{measurementUnit}</Text>
+                    <Text style={styles.suffixText}>{baseUnit}</Text>
                   </View>
                 </View>
                 <Text style={styles.helperText}>
-                  Quantidade que você tem agora na despensa. Deixe 0 ou em branco se estiver em
-                  falta.
+                  {entryMode === 'purchase'
+                    ? `Total de insumo adicionado ao estoque em ${baseUnit}.`
+                    : `Contagem real de insumo disponível na cozinha em ${baseUnit}.`}
                 </Text>
               </View>
-            </View>
 
-            {/* Fieldset: Embalagem e Custo de Compra */}
-            <View style={styles.fieldset}>
-              <View style={styles.fieldsetHeader}>
-                <MaterialCommunityIcons
-                  name="currency-usd"
-                  size={20}
-                  color={theme.colors.primary}
-                />
-                <Text style={styles.fieldsetSectionTitle}>Embalagem e Custo</Text>
-              </View>
-
-              <View style={styles.rowTwoCols}>
-                <View style={[styles.fieldWrapper, styles.colFlex]}>
-                  <Text style={styles.label}>Preço da Embalagem (R$)</Text>
+              {/* Cost Input (Purchase Mode) */}
+              {entryMode === 'purchase' && (
+                <View style={styles.fieldWrapper}>
+                  <Text style={styles.label}>
+                    Valor Total Pago (R$) <Text style={styles.required}>*</Text>
+                  </Text>
                   <View style={styles.inputWithPrefix}>
                     <Text style={styles.prefixText}>R$</Text>
                     <TextInput
                       style={styles.textInputFlex}
-                      value={packagePrice}
-                      onChangeText={setPackagePrice}
+                      value={totalCostInput}
+                      onChangeText={setTotalCostInput}
                       placeholder="0,00"
                       placeholderTextColor={theme.colors.placeholder}
                       keyboardType="numeric"
                     />
                   </View>
-                  <Text style={styles.helperText}>Valor pago pelo pacote</Text>
+                  <Text style={styles.helperText}>
+                    Valor total pago nesta compra (utilizado para calcular o custo unitário médio
+                    ponderado).
+                  </Text>
                 </View>
+              )}
 
-                <View style={[styles.fieldWrapper, styles.colFlex]}>
-                  <Text style={styles.label}>Tamanho da Embalagem</Text>
-                  <View style={styles.inputWithSuffix}>
-                    <TextInput
-                      style={styles.textInputFlex}
-                      value={packageSize}
-                      onChangeText={setPackageSize}
-                      placeholder="1"
-                      placeholderTextColor={theme.colors.placeholder}
-                      keyboardType="numeric"
+              {/* Unit Cost Preview Box */}
+              {entryMode === 'purchase' && (
+                <View style={styles.costSummaryBox}>
+                  <View style={styles.costSummaryHeader}>
+                    <MaterialCommunityIcons
+                      name="calculator-variant-outline"
+                      size={18}
+                      color={theme.colors.primary}
                     />
-                    <View style={styles.suffixBadge}>
-                      <Text style={styles.suffixText}>{measurementUnit}</Text>
-                    </View>
+                    <Text style={styles.costSummaryTitle}>Custo por Unidade Base ({baseUnit})</Text>
                   </View>
-                  {packageSizeError ? (
-                    <Text style={styles.errorText}>{packageSizeError}</Text>
-                  ) : (
-                    <Text style={styles.helperText}>Peso ou volume do pacote</Text>
-                  )}
+                  <Text style={styles.costSummaryValue}>
+                    {calculatedUnitCost > 0
+                      ? `${formatCurrency(calculatedUnitCost)} / ${baseUnit}`
+                      : 'R$ 0,00'}
+                  </Text>
+                  <Text style={styles.costSummaryExplainer}>
+                    {calculatedUnitCost > 0
+                      ? `Calculado a partir de ${formatCurrency(parsedCost)} para ${formatQuantity(parsedQuantity, baseUnit)}.`
+                      : 'Preencha a quantidade e o valor total para visualizar o custo unitário.'}
+                  </Text>
                 </View>
-              </View>
+              )}
 
-              {/* Auto Calculated Cost Unit Box */}
-              <View style={styles.costSummaryBox}>
-                <View style={styles.costSummaryHeader}>
-                  <MaterialCommunityIcons
-                    name="calculator-variant-outline"
-                    size={18}
-                    color={theme.colors.primary}
+              {/* Expiration Date (Purchase Mode) */}
+              {entryMode === 'purchase' && (
+                <View style={styles.fieldWrapper}>
+                  <Text style={styles.label}>Data de Validade (Opcional)</Text>
+                  <TextInput
+                    style={styles.singleInput}
+                    value={expirationDateInput}
+                    onChangeText={setExpirationDateInput}
+                    placeholder="DD/MM/AAAA ou AAAA-MM-DD"
+                    placeholderTextColor={theme.colors.placeholder}
                   />
-                  <Text style={styles.costSummaryTitle}>Custo por Unidade Base</Text>
+                  <Text style={styles.helperText}>
+                    Se informada, você receberá avisos automáticos na tela de Estoque antes do
+                    vencimento.
+                  </Text>
                 </View>
-                <Text style={styles.costSummaryValue}>
-                  R${' '}
-                  {calculatedCostUnit > 0
-                    ? calculatedCostUnit.toLocaleString('pt-BR', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 4,
-                      })
-                    : '0,00'}{' '}
-                  <Text style={styles.costSummaryUnit}>/ {measurementUnit}</Text>
-                </Text>
-                <Text style={styles.costSummaryExplainer}>
-                  {calculatedCostUnit > 0
-                    ? `Calculado a partir de R$ ${packagePrice || '0'} para ${packageSize || '1'} ${measurementUnit}. Utilizado automaticamente no cálculo do custo das receitas.`
-                    : 'Preencha o preço e tamanho do pacote para o cálculo automático de custo.'}
-                </Text>
-              </View>
+              )}
+
+              {/* Notes (Adjustment Mode) */}
+              {entryMode === 'adjustment' && (
+                <View style={styles.fieldWrapper}>
+                  <Text style={styles.label}>Observações / Motivo (Opcional)</Text>
+                  <TextInput
+                    style={styles.textArea}
+                    value={notesInput}
+                    onChangeText={setNotesInput}
+                    placeholder="Ex: Contagem inicial de estoque, acerto de inventário..."
+                    placeholderTextColor={theme.colors.placeholder}
+                    maxLength={255}
+                    multiline
+                  />
+                </View>
+              )}
             </View>
 
-            {/* Live Preview Section (Matching stock.tsx) */}
-            <View style={styles.previewSection}>
-              <View style={styles.previewHeaderRow}>
-                <MaterialCommunityIcons name="eye-outline" size={18} color={theme.colors.text} />
-                <Text style={styles.previewSectionTitle}>Prévia no Estoque</Text>
-              </View>
-              <Text style={styles.previewSubtitle}>
-                Veja como este item será exibido no seu painel de estoque:
-              </Text>
-
-              <View style={styles.previewCard}>
-                <View style={styles.previewCardHeader}>
-                  <Text style={styles.previewIngredientName} numberOfLines={1}>
-                    {ingredientDisplayName.toUpperCase()}
-                  </Text>
-                  {selectedIngredient?.category && (
-                    <Text style={styles.previewCategoryText}>{selectedIngredient.category}</Text>
-                  )}
+            {/* Live Preview Section */}
+            {previewItem && (
+              <View style={styles.previewSection}>
+                <View style={styles.previewHeaderRow}>
+                  <MaterialCommunityIcons name="eye-outline" size={18} color={theme.colors.text} />
+                  <Text style={styles.previewSectionTitle}>Prévia no Estoque</Text>
                 </View>
-
-                <Text style={styles.previewQuantityLabel}>Estoque atual</Text>
-                <Text style={styles.previewQuantity}>
-                  {parsedCurrentQty} {measurementUnit}
+                <Text style={styles.previewSubtitle}>
+                  Como o insumo será apresentado no seu painel:
                 </Text>
 
-                <View style={styles.previewStatusRow}>
-                  <View
-                    style={[
-                      styles.previewStatusDot,
-                      isPreviewOutOfStock ? styles.previewStatusEmpty : styles.previewStatusOk,
-                    ]}
-                  />
-                  <Text style={styles.previewStatusText}>
-                    {isPreviewOutOfStock ? 'Em falta' : 'Estoque suficiente'}
-                  </Text>
-                </View>
-
-                {parseFloat(packagePrice) > 0 && (
-                  <Text style={styles.previewPackageInfo}>
-                    Pacote: {packageSize || '1'} {measurementUnit} - R${' '}
-                    {parseFloat(packagePrice.replace(',', '.')).toFixed(2)}
-                  </Text>
-                )}
-
-                {calculatedCostUnit > 0 && (
-                  <Text style={styles.previewCostInfo}>
-                    Custo base: R${' '}
-                    {calculatedCostUnit.toLocaleString('pt-BR', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 4,
-                    })}{' '}
-                    / {measurementUnit}
-                  </Text>
-                )}
+                <StockCard
+                  item={previewItem}
+                  onAdjust={() => {}}
+                  onPurchase={() => {}}
+                  onWaste={() => {}}
+                />
               </View>
-            </View>
+            )}
 
             {/* Action Buttons */}
             <View style={styles.actionButtonsContainer}>
@@ -509,9 +650,13 @@ export default function RegisterStockScreen() {
                 <ActivityIndicator size="large" color={theme.colors.primary} />
               ) : (
                 <CustomButton
-                  title="Cadastrar no Estoque"
+                  title={
+                    entryMode === 'purchase'
+                      ? 'Salvar Compra no Estoque'
+                      : 'Salvar Ajuste de Estoque'
+                  }
                   variant="primary"
-                  onPress={handleRegister}
+                  onPress={handleSubmit}
                   style={styles.btnSubmit}
                 />
               )}
@@ -530,7 +675,7 @@ export default function RegisterStockScreen() {
   );
 }
 
-const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
+const createStyles = (theme: AppTheme, isMobile: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -539,57 +684,90 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
     scrollContainer: {
       flexGrow: 1,
       alignItems: 'center',
-      paddingHorizontal: 16,
-      paddingTop: 20,
+      paddingHorizontal: isMobile ? 16 : 24,
+      paddingTop: 16,
       paddingBottom: 80,
     },
     card: {
       width: '100%',
-      maxWidth: 580,
+      maxWidth: 620,
       backgroundColor: theme.colors.pitchBackground,
       borderRadius: 16,
-      padding: isSmallScreen ? 16 : 24,
+      padding: isMobile ? 16 : 24,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      gap: 20,
+      borderColor: theme.colors.outlineVariant,
+      gap: 18,
     },
     headerArea: {
       alignItems: 'center',
-      marginBottom: 4,
+      marginBottom: 2,
     },
     headerIconContainer: {
-      width: 56,
-      height: 56,
-      borderRadius: 28,
+      width: 52,
+      height: 52,
+      borderRadius: 26,
       backgroundColor: theme.colors.background,
       alignItems: 'center',
       justifyContent: 'center',
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
       marginBottom: 10,
     },
     headline: {
       fontFamily: 'Playfair Display SC',
-      fontSize: 24,
+      fontSize: 22,
       fontWeight: 'bold',
       color: theme.colors.text,
       textAlign: 'center',
-      marginBottom: 6,
+      marginBottom: 4,
     },
     subheadline: {
-      fontSize: 14,
+      fontFamily: 'Inter',
+      fontSize: 13,
       color: theme.colors.text,
       opacity: 0.8,
       textAlign: 'center',
-      lineHeight: 20,
+      lineHeight: 18,
       paddingHorizontal: 8,
+    },
+    modeTabs: {
+      flexDirection: 'row',
+      backgroundColor: theme.colors.background,
+      borderRadius: 10,
+      padding: 4,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+    },
+    modeTab: {
+      flex: 1,
+      height: 42,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 8,
+      gap: 8,
+    },
+    modeTabActive: {
+      backgroundColor: theme.colors.pitchBackground,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+    },
+    modeTabText: {
+      fontFamily: 'Inter',
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.text,
+    },
+    modeTabTextActive: {
+      color: theme.colors.primary,
+      fontWeight: '700',
     },
     fieldset: {
       width: '100%',
       backgroundColor: theme.colors.pitchBackground,
       borderRadius: 12,
       borderWidth: 1,
-      borderColor: theme.colors.lightGray,
+      borderColor: theme.colors.outlineVariant,
       padding: 16,
       gap: 14,
     },
@@ -598,13 +776,13 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       alignItems: 'center',
       gap: 8,
       borderBottomWidth: 1,
-      borderBottomColor: theme.colors.secBorder,
+      borderBottomColor: theme.colors.outlineVariant,
       paddingBottom: 8,
     },
     fieldsetSectionTitle: {
       fontFamily: 'Playfair Display SC',
-      fontSize: 16,
-      fontWeight: 'bold',
+      fontSize: 15,
+      fontWeight: '700',
       color: theme.colors.text,
     },
     fieldWrapper: {
@@ -617,6 +795,7 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       marginBottom: 4,
     },
     label: {
+      fontFamily: 'Inter',
       fontSize: 13,
       fontWeight: '600',
       color: theme.colors.text,
@@ -627,11 +806,11 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
     },
     filterInput: {
       width: '100%',
-      height: 44,
+      height: 46,
       margin: 0,
       borderRadius: 8,
       borderWidth: 1,
-      borderColor: theme.colors.lightGray,
+      borderColor: theme.colors.outlineVariant,
       backgroundColor: theme.colors.pitchBackground,
     },
     pickerWrapper: {
@@ -639,7 +818,7 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       height: 50,
       borderRadius: 8,
       borderWidth: 1,
-      borderColor: theme.colors.lightGray,
+      borderColor: theme.colors.outlineVariant,
       backgroundColor: theme.colors.pitchBackground,
       justifyContent: 'center',
       overflow: 'hidden',
@@ -657,6 +836,7 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
     },
     tagRow: {
       flexDirection: 'row',
+      gap: 8,
       marginTop: 6,
     },
     categoryChip: {
@@ -668,34 +848,87 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       borderRadius: 9999,
     },
     categoryChipText: {
+      fontFamily: 'Inter',
       fontSize: 11,
       fontWeight: '600',
       color: theme.colors.text,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
     },
+    unitChip: {
+      backgroundColor: theme.colors.background,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: 9999,
+    },
+    unitChipText: {
+      fontFamily: 'Inter',
+      fontSize: 11,
+      fontWeight: '600',
+      color: theme.colors.text,
+    },
+    existingStockBanner: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 8,
+      backgroundColor: theme.colors.background,
+      borderWidth: 1,
+      borderColor: theme.colors.secBorder,
+      borderRadius: 8,
+      padding: 10,
+      marginTop: 8,
+    },
+    existingStockTextContainer: {
+      flex: 1,
+    },
+    existingStockTitle: {
+      fontFamily: 'Inter',
+      fontSize: 12,
+      fontWeight: '700',
+      color: theme.colors.text,
+    },
+    existingStockDetail: {
+      fontFamily: 'Inter',
+      fontSize: 11,
+      color: theme.colors.text,
+      opacity: 0.8,
+      marginTop: 2,
+    },
     helperRow: {
       flexDirection: 'row',
       alignItems: 'center',
       marginTop: 4,
-    },
-    helperIcon: {
-      marginRight: 4,
+      gap: 4,
     },
     helperText: {
+      fontFamily: 'Inter',
       fontSize: 11,
       color: theme.colors.placeholder,
       marginTop: 4,
       lineHeight: 15,
     },
     errorText: {
+      fontFamily: 'Inter',
       fontSize: 11,
       color: theme.colors.primary,
       fontWeight: '500',
-      marginTop: 4,
+    },
+    packageHelperToggle: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      paddingVertical: 4,
+    },
+    packageHelperToggleText: {
+      fontFamily: 'Inter',
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.text,
     },
     rowTwoCols: {
-      flexDirection: isSmallScreen ? 'column' : 'row',
+      flexDirection: isMobile ? 'column' : 'row',
       gap: 12,
       width: '100%',
     },
@@ -707,7 +940,7 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       alignItems: 'center',
       height: 48,
       borderWidth: 1,
-      borderColor: theme.colors.lightGray,
+      borderColor: theme.colors.outlineVariant,
       borderRadius: 8,
       backgroundColor: theme.colors.pitchBackground,
       overflow: 'hidden',
@@ -717,13 +950,24 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       alignItems: 'center',
       height: 48,
       borderWidth: 1,
-      borderColor: theme.colors.lightGray,
+      borderColor: theme.colors.outlineVariant,
       borderRadius: 8,
       backgroundColor: theme.colors.pitchBackground,
       paddingLeft: 12,
       overflow: 'hidden',
     },
+    singleInput: {
+      height: 48,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: 8,
+      backgroundColor: theme.colors.pitchBackground,
+      paddingHorizontal: 12,
+      fontSize: 15,
+      color: theme.colors.text,
+    },
     prefixText: {
+      fontFamily: 'Inter',
       fontSize: 14,
       fontWeight: '600',
       color: theme.colors.placeholder,
@@ -743,21 +987,32 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       justifyContent: 'center',
       alignItems: 'center',
       borderLeftWidth: 1,
-      borderLeftColor: theme.colors.lightGray,
+      borderLeftColor: theme.colors.outlineVariant,
     },
     suffixText: {
+      fontFamily: 'Inter',
       fontSize: 12,
       fontWeight: '700',
       color: theme.colors.text,
+    },
+    textArea: {
+      minHeight: 70,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: 8,
+      backgroundColor: theme.colors.pitchBackground,
+      padding: 10,
+      fontSize: 14,
+      color: theme.colors.text,
+      textAlignVertical: 'top',
     },
     costSummaryBox: {
       backgroundColor: theme.colors.background,
       borderRadius: 8,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
       padding: 12,
       gap: 4,
-      marginTop: 4,
     },
     costSummaryHeader: {
       flexDirection: 'row',
@@ -765,6 +1020,7 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       gap: 6,
     },
     costSummaryTitle: {
+      fontFamily: 'Inter',
       fontSize: 12,
       fontWeight: '700',
       color: theme.colors.text,
@@ -772,17 +1028,14 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       letterSpacing: 0.5,
     },
     costSummaryValue: {
-      fontSize: 20,
+      fontFamily: 'Inter',
+      fontSize: 18,
       fontWeight: 'bold',
       color: theme.colors.primary,
       marginVertical: 2,
     },
-    costSummaryUnit: {
-      fontSize: 14,
-      fontWeight: '500',
-      color: theme.colors.text,
-    },
     costSummaryExplainer: {
+      fontFamily: 'Inter',
       fontSize: 11,
       color: theme.colors.text,
       opacity: 0.75,
@@ -793,8 +1046,8 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       backgroundColor: theme.colors.background,
       borderRadius: 12,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      padding: 16,
+      borderColor: theme.colors.outlineVariant,
+      padding: 14,
       gap: 10,
     },
     previewHeaderRow: {
@@ -811,83 +1064,16 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       letterSpacing: 0.5,
     },
     previewSubtitle: {
+      fontFamily: 'Inter',
       fontSize: 12,
       color: theme.colors.text,
       opacity: 0.7,
-    },
-    previewCard: {
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 12,
-      padding: 16,
-      borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      gap: 6,
-    },
-    previewCardHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.secBorder,
-      paddingBottom: 6,
-    },
-    previewIngredientName: {
-      fontSize: 16,
-      fontWeight: 'bold',
-      color: theme.colors.text,
-      flex: 1,
-      marginRight: 8,
-    },
-    previewCategoryText: {
-      fontSize: 12,
-      fontWeight: 'bold',
-      color: theme.colors.primary,
-    },
-    previewQuantityLabel: {
-      fontSize: 12,
-      color: theme.colors.text,
-      marginTop: 2,
-    },
-    previewQuantity: {
-      fontSize: 22,
-      fontWeight: 'bold',
-      color: theme.colors.primary,
-    },
-    previewStatusRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-      marginTop: 2,
-    },
-    previewStatusDot: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-    },
-    previewStatusOk: {
-      backgroundColor: theme.colors.success,
-    },
-    previewStatusEmpty: {
-      backgroundColor: theme.colors.primary,
-    },
-    previewStatusText: {
-      fontSize: 12,
-      color: theme.colors.text,
-    },
-    previewPackageInfo: {
-      fontSize: 12,
-      color: theme.colors.placeholder,
-      marginTop: 4,
-    },
-    previewCostInfo: {
-      fontSize: 12,
-      color: theme.colors.text,
-      fontWeight: '600',
+      marginBottom: 4,
     },
     actionButtonsContainer: {
       width: '100%',
       gap: 10,
-      marginTop: 6,
+      marginTop: 4,
     },
     btnSubmit: {
       width: '100%',

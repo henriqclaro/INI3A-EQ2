@@ -88,15 +88,29 @@ export const UserService = {
     const response = await api.get<UserRecipesResponse>(`/users/${userId}/recipes`);
     return response.data;
   },
-  getInventory: async (userId: string) => {
-    const response = await api.get<SelectUserInventoryResponse>(`/users/${userId}/inventories`);
-    return response.data;
+  getInventory: async (_userId?: string) => {
+    const response = await api.get<{ data: { inventory: UserInventoryItem[] } }>('/inventory');
+    return {
+      data: {
+        userInventories: response.data.data?.inventory ?? [],
+      },
+    };
   },
-  registerInventory: async (userId: string, data: RegisterUserInventoryData) => {
-    const response = await api.post<RegisterUserInventoryResponse>(
-      `/users/${userId}/inventories`,
-      data,
+  registerInventory: async (_userId: string, data: RegisterUserInventoryData) => {
+    const quantity = data.currentQuantity ?? data.packageSize ?? 1;
+    const totalCost = data.packagePrice ?? (data.costUnit ? data.costUnit * quantity : 0);
+    const response = await api.post<{ data: { inventory: UserInventoryItem } }>(
+      '/inventory/purchases',
+      {
+        ingredientId: Number(data.ingredientId),
+        quantity,
+        totalCost,
+      },
     );
-    return response.data;
+    return {
+      data: {
+        userInventory: response.data.data.inventory,
+      },
+    };
   },
 };

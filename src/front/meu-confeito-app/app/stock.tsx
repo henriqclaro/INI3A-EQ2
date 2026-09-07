@@ -1,461 +1,546 @@
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
   useWindowDimensions,
 } from 'react-native';
 
 import { Stack, router } from 'expo-router';
 
-import { CustomButton, Input } from '@/src/components';
-import { useAuth } from '@/src/contexts/AuthContext';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+
+import {
+  CustomButton,
+  Input,
+  StockCard,
+  StockOperationModal,
+  StockOperationType,
+  StockSummaryBanner,
+} from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
-import { useUserInventory } from '@/src/hooks/useUsers';
-import { UserInventoryItem } from '@/src/services/user';
+import { useInventory } from '@/src/hooks/useInventory';
 import { AppTheme } from '@/src/theme/themes';
+import { InventoryItem } from '@/src/types/inventory';
+import { isExpiringSoon } from '@/src/utils/formatters';
+
+type FilterType = 'all' | 'in_stock' | 'out_of_stock' | 'expiring';
 
 export default function StockScreen() {
-  const [search, setSearch] = useState('');
-  const [editingIngredient, setEditingIngredient] = useState<string | null>(null);
-  const [editQuantity, setEditQuantity] = useState('');
-
   const { theme } = useThemeMode();
   const { width } = useWindowDimensions();
-  const { user } = useAuth();
-  const { inventories, setInventories, isLoading, error } = useUserInventory(user?.id);
 
-  const handleEditIngredient = (ingredient: UserInventoryItem) => {
-    setEditingIngredient(ingredient.ingredientId);
-    setEditQuantity(String(ingredient.currentQuantity));
-  };
+  const {
+    inventory,
+    isLoading,
+    error,
+    refetch,
+    registerAdjustment,
+    registerPurchase,
+    registerWaste,
+  } = useInventory();
 
-  const handleSaveIngredient = () => {
-    if (editingIngredient === null) return;
+  // Search & Filter state
+  const [search, setSearch] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
 
-    const quantity = Number(editQuantity.replace(',', '.'));
+  // Operation Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+  const [modalMode, setModalMode] = useState<StockOperationType>('adjust');
 
-    if (Number.isNaN(quantity)) {
-      return;
-    }
+  const isMobile = width < 768;
 
-    setInventories((currentIngredients) =>
-      currentIngredients.map((item) =>
-        item.ingredientId === editingIngredient
-          ? {
-              ...item,
-              currentQuantity: quantity,
-            }
-          : item,
-      ),
-    );
-    setEditingIngredient(null);
-    setEditQuantity('');
-  };
-
-  const handleCancelEdit = () => {
-    setEditingIngredient(null);
-    setEditQuantity('');
-  };
-
+  // Responsive card width calculation for tablet/desktop
   const cardWidth = useMemo(() => {
     if (width >= 1200) {
-      return (1200 - 40 - 45) / 4; // 4 columns on large desktop
+      return (1200 - 48 - 48) / 3; // 3 columns on wide desktop
     }
-    if (width >= 900) {
-      return (width - 40 - 30) / 3; // 3 columns on tablet / small desktop
+    if (width >= 768) {
+      return (width - 48 - 24) / 2; // 2 columns on tablet
     }
-    if (width >= 600) {
-      return (width - 40 - 15) / 2; // 2 columns on tablets
-    }
-    return undefined; // full width on mobile
+    return undefined; // Full width fluid on mobile
   }, [width]);
 
-  const filteredInventories = useMemo(() => {
-    if (!search.trim()) return inventories;
-    const searchLower = search.toLowerCase();
-    return inventories.filter((item) => {
-      const names: string[] = Array.isArray(item.ingredient?.name)
-        ? item.ingredient.name
-        : [item.ingredient?.name || ''];
-      const hasMatchingName = names.some((name: string) =>
-        name.toLowerCase().includes(searchLower),
-      );
-      const hasMatchingCategory = Boolean(
-        item.ingredient?.category?.toLowerCase().includes(searchLower),
-      );
-      return hasMatchingName || hasMatchingCategory;
-    });
-  }, [inventories, search]);
+  // Calculations for summary metrics
+  const summaryMetrics = useMemo(() => {
+    let totalValue = 0;
+    let outOfStockCount = 0;
+    let expiringSoonCount = 0;
 
-  const styles = useMemo(() => createStyles(theme), [theme]);
+    inventory.forEach((item) => {
+      const qty = Number(item.currentQuantity) || 0;
+      const unitCost = Number(item.costPerBaseUnit) || 0;
+      totalValue += qty * unitCost;
+
+      if (qty <= 0) {
+        outOfStockCount += 1;
+      }
+
+      if (isExpiringSoon(item.expirationDate)) {
+        expiringSoonCount += 1;
+      }
+    });
+
+    return {
+      totalItems: inventory.length,
+      totalStockValue: totalValue,
+      outOfStockCount,
+      expiringSoonCount,
+    };
+  }, [inventory]);
+
+  // Filtered inventory list
+  const filteredInventory = useMemo(() => {
+    let list = inventory;
+
+    // Apply category / name search
+    if (search.trim()) {
+      const searchLower = search.toLowerCase();
+      list = list.filter((item) => {
+        const hasMatchingName = Boolean(item.ingredient?.name?.toLowerCase().includes(searchLower));
+        const hasMatchingCategory = Boolean(
+          item.ingredient?.category?.toLowerCase().includes(searchLower),
+        );
+        return hasMatchingName || hasMatchingCategory;
+      });
+    }
+
+    // Apply status filter pill
+    if (selectedFilter === 'in_stock') {
+      list = list.filter((item) => (Number(item.currentQuantity) || 0) > 0);
+    } else if (selectedFilter === 'out_of_stock') {
+      list = list.filter((item) => (Number(item.currentQuantity) || 0) <= 0);
+    } else if (selectedFilter === 'expiring') {
+      list = list.filter((item) => isExpiringSoon(item.expirationDate));
+    }
+
+    return list;
+  }, [inventory, search, selectedFilter]);
+
+  // Actions
+  const handleOpenAdjust = (item: InventoryItem) => {
+    setSelectedItem(item);
+    setModalMode('adjust');
+    setIsModalOpen(true);
+  };
+
+  const handleOpenPurchase = (item: InventoryItem) => {
+    setSelectedItem(item);
+    setModalMode('purchase');
+    setIsModalOpen(true);
+  };
+
+  const handleOpenWaste = (item: InventoryItem) => {
+    setSelectedItem(item);
+    setModalMode('waste');
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedItem(null);
+  };
+
+  const styles = useMemo(() => createStyles(theme, isMobile), [theme, isMobile]);
 
   return (
     <>
       <Stack.Screen options={{ title: 'Estoque' }} />
 
       <View style={styles.container}>
-        {/* <BackButton /> */}
-        <View style={styles.headerContent}>
-          <View style={styles.searchAndActionRow}>
-            <Input
-              value={search}
-              placeholder="Buscar Ingrediente..."
-              onChangeText={setSearch}
-              containerStyle={styles.searchInput}
-            />
-            <CustomButton
-              title="+ Adicionar"
-              variant="primary"
-              onPress={() => router.push('/register-stock' as any)}
-              style={styles.addStockButton}
-            />
-          </View>
-        </View>
-
         <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
-          automaticallyAdjustKeyboardInsets
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={refetch}
+              tintColor={theme.colors.primary}
+              colors={[theme.colors.primary]}
+            />
+          }
         >
-          {isLoading ? (
-            <View style={styles.feedbackContainer}>
-              <ActivityIndicator size="large" color={theme.colors.primary} />
-              <Text style={styles.feedbackText}>Carregando estoque...</Text>
-            </View>
-          ) : error ? (
-            <View style={styles.feedbackContainer}>
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
-          ) : filteredInventories.length === 0 ? (
-            <View style={styles.feedbackContainer}>
-              <Text style={styles.emptyText}>
-                {search.trim()
-                  ? 'Nenhum ingrediente encontrado para a busca.'
-                  : 'Nenhum ingrediente cadastrado no estoque.'}
-              </Text>
-              {!search.trim() && (
+          <View style={styles.innerContainer}>
+            {/* Header Title Section */}
+            <View style={styles.headerSection}>
+              <View>
+                <Text style={styles.pageTitle}>Controle de Estoque</Text>
+                <Text style={styles.pageSubtitle}>
+                  Monitore insumos, controle custos médios e registre movimentações.
+                </Text>
+              </View>
+
+              {/* Desktop direct action button */}
+              {!isMobile && (
                 <CustomButton
-                  title="Cadastrar Primeiro Ingrediente"
-                  variant="dashed"
-                  onPress={() => router.push('/register-stock' as any)}
-                  style={styles.emptyButton}
+                  title="+ Novo Insumo"
+                  variant="primary"
+                  onPress={() => router.push('/register-stock')}
+                  style={styles.desktopAddButton}
                 />
               )}
             </View>
-          ) : (
-            <View style={styles.gridContainer}>
-              {filteredInventories.map((item) => {
-                const ingredientName = Array.isArray(item.ingredient?.name)
-                  ? item.ingredient.name.join(' / ')
-                  : item.ingredient?.name || 'Ingrediente';
-                const isOutOfStock = Number(item.currentQuantity) <= 0;
 
-                return (
-                  <View
-                    key={item.ingredientId}
-                    style={[styles.ingredientCard, cardWidth ? { width: cardWidth } : undefined]}
-                  >
-                    <View style={styles.cardHeader}>
-                      <Text style={styles.ingredientName}>{ingredientName}</Text>
-                      {item.ingredient?.category ? (
-                        <Text style={styles.categoryText}>{item.ingredient.category}</Text>
-                      ) : null}
-                    </View>
+            {/* Inventory Valuation & Health Metrics */}
+            <StockSummaryBanner
+              totalItems={summaryMetrics.totalItems}
+              totalStockValue={summaryMetrics.totalStockValue}
+              outOfStockCount={summaryMetrics.outOfStockCount}
+              expiringSoonCount={summaryMetrics.expiringSoonCount}
+            />
 
-                    <Text style={styles.quantityLabel}>Estoque atual</Text>
-
-                    <Text style={styles.quantity}>
-                      {item.currentQuantity} {item.measurementUnit}
-                    </Text>
-
-                    <View style={styles.statusContainer}>
-                      <View
-                        style={[
-                          styles.statusDot,
-                          isOutOfStock ? styles.statusEmpty : styles.statusOk,
-                        ]}
-                      />
-
-                      <Text style={styles.statusText}>
-                        {isOutOfStock ? 'Em falta' : 'Estoque suficiente'}
-                      </Text>
-                    </View>
-
-                    {Number(item.packagePrice) > 0 && (
-                      <Text style={styles.packageInfo}>
-                        Pacote: {item.packageSize} {item.measurementUnit} - R${' '}
-                        {Number(item.packagePrice).toFixed(2)}
-                      </Text>
-                    )}
-
-                    <CustomButton
-                      title="Editar estoque"
-                      onPress={() => handleEditIngredient(item)}
-                      variant="primary"
-                      style={styles.editButton}
-                    />
-                  </View>
-                );
-              })}
-            </View>
-          )}
-
-          <Modal
-            visible={editingIngredient !== null}
-            transparent
-            animationType="fade"
-            onRequestClose={handleCancelEdit}
-          >
-            <View style={styles.modalOverlay}>
-              <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                style={styles.modalAvoidContainer}
-              >
-                <View style={styles.modalContainer}>
-                  <Text style={styles.modalTitle}>Editar estoque</Text>
-
-                  <Text style={styles.editTitle}>Quantidade: </Text>
-                  <Input
-                    value={editQuantity}
-                    onChangeText={setEditQuantity}
-                    placeholder="Quantidade"
-                    keyboardType="numeric"
+            {/* Search Bar */}
+            <View style={styles.searchRow}>
+              <Input
+                value={search}
+                placeholder="Buscar insumo ou categoria..."
+                onChangeText={setSearch}
+                isClearable
+                onClear={() => setSearch('')}
+                containerStyle={styles.searchInput}
+                leftIcon={
+                  <MaterialCommunityIcons
+                    name="magnify"
+                    size={20}
+                    color={theme.colors.placeholder}
                   />
-
-                  <View style={styles.modalButtons}>
-                    <CustomButton
-                      title="Cancelar"
-                      variant="neutral"
-                      onPress={handleCancelEdit}
-                      style={styles.modalButton}
-                    />
-
-                    <CustomButton
-                      title="Salvar"
-                      variant="primary"
-                      onPress={handleSaveIngredient}
-                      style={styles.modalButton}
-                    />
-                  </View>
-                </View>
-              </KeyboardAvoidingView>
+                }
+              />
             </View>
-          </Modal>
+
+            {/* Filter Pills */}
+            <View style={styles.filterPillsRow}>
+              <TouchableOpacity
+                style={[styles.filterPill, selectedFilter === 'all' && styles.filterPillActive]}
+                onPress={() => setSelectedFilter('all')}
+                activeOpacity={0.8}
+              >
+                <Text
+                  style={[
+                    styles.filterPillText,
+                    selectedFilter === 'all' && styles.filterPillTextActive,
+                  ]}
+                >
+                  Todos ({inventory.length})
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.filterPill,
+                  selectedFilter === 'in_stock' && styles.filterPillActive,
+                ]}
+                onPress={() => setSelectedFilter('in_stock')}
+                activeOpacity={0.8}
+              >
+                <Text
+                  style={[
+                    styles.filterPillText,
+                    selectedFilter === 'in_stock' && styles.filterPillTextActive,
+                  ]}
+                >
+                  Em estoque
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.filterPill,
+                  selectedFilter === 'out_of_stock' && styles.filterPillActive,
+                ]}
+                onPress={() => setSelectedFilter('out_of_stock')}
+                activeOpacity={0.8}
+              >
+                <Text
+                  style={[
+                    styles.filterPillText,
+                    selectedFilter === 'out_of_stock' && styles.filterPillTextActive,
+                  ]}
+                >
+                  Em falta ({summaryMetrics.outOfStockCount})
+                </Text>
+              </TouchableOpacity>
+
+              {summaryMetrics.expiringSoonCount > 0 && (
+                <TouchableOpacity
+                  style={[
+                    styles.filterPill,
+                    selectedFilter === 'expiring' && styles.filterPillActive,
+                  ]}
+                  onPress={() => setSelectedFilter('expiring')}
+                  activeOpacity={0.8}
+                >
+                  <Text
+                    style={[
+                      styles.filterPillText,
+                      selectedFilter === 'expiring' && styles.filterPillTextActive,
+                    ]}
+                  >
+                    Vencendo ({summaryMetrics.expiringSoonCount})
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* List / Grid Content */}
+            {isLoading && inventory.length === 0 ? (
+              <View style={styles.feedbackContainer}>
+                <ActivityIndicator size="large" color={theme.colors.primary} />
+                <Text style={styles.feedbackText}>Carregando estoque...</Text>
+              </View>
+            ) : error && inventory.length === 0 ? (
+              <View style={styles.feedbackContainer}>
+                <MaterialCommunityIcons
+                  name="alert-circle-outline"
+                  size={40}
+                  color={theme.colors.primary}
+                />
+                <Text style={styles.errorText}>{error}</Text>
+                <CustomButton
+                  title="Tentar Novamente"
+                  variant="secondary"
+                  onPress={refetch}
+                  style={styles.retryButton}
+                />
+              </View>
+            ) : filteredInventory.length === 0 ? (
+              <View style={styles.feedbackContainer}>
+                <MaterialCommunityIcons
+                  name="package-variant"
+                  size={48}
+                  color={theme.colors.placeholder}
+                />
+                <Text style={styles.emptyTitle}>
+                  {search.trim() || selectedFilter !== 'all'
+                    ? 'Nenhum insumo encontrado'
+                    : 'Estoque vazio'}
+                </Text>
+                <Text style={styles.emptySubtitle}>
+                  {search.trim() || selectedFilter !== 'all'
+                    ? 'Tente ajustar os filtros ou o termo de busca.'
+                    : 'Cadastre os insumos e ingredientes que você usa nas suas receitas.'}
+                </Text>
+                {!search.trim() && selectedFilter === 'all' && (
+                  <CustomButton
+                    title="+ Cadastrar Primeiro Insumo"
+                    variant="primary"
+                    onPress={() => router.push('/register-stock')}
+                    style={styles.emptyButton}
+                  />
+                )}
+              </View>
+            ) : (
+              <View style={styles.cardsGrid}>
+                {filteredInventory.map((item) => (
+                  <StockCard
+                    key={item.ingredientId}
+                    item={item}
+                    cardWidth={cardWidth}
+                    onAdjust={handleOpenAdjust}
+                    onPurchase={handleOpenPurchase}
+                    onWaste={handleOpenWaste}
+                  />
+                ))}
+              </View>
+            )}
+          </View>
         </ScrollView>
+
+        {/* Floating Action Button (Reserved Elevation strictly per DESIGN.md) */}
+        {isMobile && (
+          <TouchableOpacity
+            style={styles.mobileFab}
+            onPress={() => router.push('/register-stock')}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel="Cadastrar novo insumo no estoque"
+          >
+            <MaterialCommunityIcons name="plus" size={28} color={theme.colors.secondaryText} />
+          </TouchableOpacity>
+        )}
+
+        {/* Modal for adjusting, purchasing, or recording waste */}
+        <StockOperationModal
+          isOpen={isModalOpen}
+          item={selectedItem}
+          initialMode={modalMode}
+          onClose={handleCloseModal}
+          onRegisterAdjustment={registerAdjustment}
+          onRegisterPurchase={registerPurchase}
+          onRegisterWaste={registerWaste}
+        />
       </View>
     </>
   );
 }
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = (theme: AppTheme, isMobile: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
-      alignItems: 'center',
-      paddingTop: 12,
     },
-    headerContent: {
+    scrollContent: {
+      flexGrow: 1,
+      alignItems: 'center',
+      paddingHorizontal: isMobile ? 16 : 24,
+      paddingTop: 16,
+      paddingBottom: 96,
+    },
+    innerContainer: {
       width: '100%',
       maxWidth: 1200,
-      alignItems: 'center',
-      paddingHorizontal: 20,
+      gap: 12,
     },
-    searchAndActionRow: {
-      width: '100%',
-      maxWidth: 640,
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-      marginVertical: 8,
+    headerSection: {
+      flexDirection: isMobile ? 'column' : 'row',
+      justifyContent: 'space-between',
+      alignItems: isMobile ? 'flex-start' : 'center',
+      marginBottom: 8,
+      gap: 12,
     },
-    searchInput: {
-      flex: 1,
-      margin: 0,
-    },
-    addStockButton: {
-      height: 48,
-      margin: 0,
-      borderRadius: 8,
-      paddingHorizontal: 16,
-    },
-    emptyButton: {
-      marginTop: 14,
-      borderRadius: 8,
-      paddingHorizontal: 20,
-    },
-    scrollContainer: {
-      alignItems: 'center',
-      paddingHorizontal: 20,
-      paddingTop: 8,
-      paddingBottom: 40,
-      width: '100%',
-    },
-    gridContainer: {
-      flexDirection: 'column',
-      flexWrap: 'wrap',
-      gap: 15,
-      justifyContent: 'center',
-      width: '100%',
-      maxWidth: 1200,
-    },
-    ingredientCard: {
-      backgroundColor: theme.colors.secondaryText,
-      borderRadius: 12,
-      padding: 18,
-      minHeight: 170,
-      maxWidth: 400,
-      borderWidth: 1,
-      borderColor: theme.colors.primary,
-    },
-
-    cardHeader: {
-      marginBottom: 16,
-    },
-
-    ingredientName: {
-      fontSize: 20,
-      fontWeight: '600',
-      color: theme.colors.text,
-    },
-
-    categoryText: {
-      fontSize: 14,
-      color: theme.colors.primary,
-      marginTop: 2,
-    },
-
-    quantityLabel: {
-      fontSize: 18,
+    pageTitle: {
+      fontFamily: 'Playfair Display SC',
+      fontSize: isMobile ? 24 : 30,
+      fontWeight: '700',
       color: theme.colors.text,
       marginBottom: 4,
     },
-
-    quantity: {
-      fontSize: 26,
-      fontWeight: '700',
+    pageSubtitle: {
+      fontFamily: 'Inter',
+      fontSize: 13,
       color: theme.colors.text,
-      marginBottom: 14,
+      opacity: 0.8,
+      lineHeight: 18,
     },
-
-    statusContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 10,
+    desktopAddButton: {
+      height: 48,
+      margin: 0,
+      borderRadius: 8,
+      paddingHorizontal: 20,
+      width: undefined,
     },
-
-    statusDot: {
-      width: 9,
-      height: 9,
-      borderRadius: 5,
-      marginRight: 7,
-    },
-
-    statusOk: {
-      backgroundColor: theme.colors.secondary,
-    },
-
-    statusLow: {
-      backgroundColor: theme.colors.primary,
-    },
-
-    statusEmpty: {
-      backgroundColor: theme.colors.border,
-    },
-
-    statusText: {
-      fontSize: 16,
-      color: theme.colors.text,
-    },
-
-    packageInfo: {
-      fontSize: 14,
-      color: theme.colors.text,
-      marginBottom: 12,
-    },
-
-    feedbackContainer: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: 40,
-    },
-
-    feedbackText: {
-      marginTop: 12,
-      fontSize: 16,
-      color: theme.colors.text,
-    },
-
-    errorText: {
-      fontSize: 16,
-      color: theme.colors.primary,
-      textAlign: 'center',
-    },
-
-    emptyText: {
-      fontSize: 16,
-      color: theme.colors.text,
-      textAlign: 'center',
-      fontStyle: 'italic',
-    },
-
-    modalOverlay: {
-      flex: 1,
-      backgroundColor: theme.colors.backdrop,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-
-    modalAvoidContainer: {
+    searchRow: {
       width: '100%',
-      alignItems: 'center',
-      justifyContent: 'center',
+      marginBottom: 4,
     },
-
-    modalContainer: {
-      width: '90%',
-      maxWidth: 500,
-      backgroundColor: theme.colors.background,
-      borderRadius: 16,
-      padding: 20,
+    searchInput: {
+      width: '100%',
+      margin: 0,
+      backgroundColor: theme.colors.pitchBackground,
+      borderRadius: 12,
+      borderColor: theme.colors.outlineVariant,
     },
-
-    modalTitle: {
-      fontSize: 22,
-      fontWeight: '700',
-      color: theme.colors.text,
-      marginBottom: 20,
-    },
-
-    editTitle: {
-      fontSize: 18,
-      color: theme.colors.text,
+    filterPillsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
       marginBottom: 8,
     },
-
-    modalButtons: {
-      flexDirection: 'row',
+    filterPill: {
+      minHeight: 36,
+      paddingHorizontal: 14,
+      paddingVertical: 6,
+      borderRadius: 9999,
+      backgroundColor: theme.colors.pitchBackground,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
       justifyContent: 'center',
-      gap: 10,
-      marginTop: 16,
+      alignItems: 'center',
     },
-
-    modalButton: {
-      flex: 1,
-      width: undefined,
-      margin: 0,
+    filterPillActive: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
     },
-
-    editButton: {
+    filterPillText: {
+      fontFamily: 'Inter',
+      fontSize: 12,
+      fontWeight: '600',
+      color: theme.colors.text,
+    },
+    filterPillTextActive: {
+      color: theme.colors.secondaryText,
+      fontWeight: '700',
+    },
+    cardsGrid: {
       width: '100%',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 14,
+    },
+    feedbackContainer: {
+      width: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 48,
+      gap: 10,
+    },
+    feedbackText: {
+      fontFamily: 'Inter',
+      fontSize: 15,
+      color: theme.colors.text,
+      marginTop: 8,
+    },
+    errorText: {
+      fontFamily: 'Inter',
+      fontSize: 15,
+      color: theme.colors.primary,
+      textAlign: 'center',
+      paddingHorizontal: 20,
+    },
+    retryButton: {
+      width: 200,
+      height: 44,
       margin: 0,
       marginTop: 8,
+      borderRadius: 8,
+    },
+    emptyTitle: {
+      fontFamily: 'Playfair Display SC',
+      fontSize: 20,
+      fontWeight: '700',
+      color: theme.colors.text,
+      textAlign: 'center',
+      marginTop: 8,
+    },
+    emptySubtitle: {
+      fontFamily: 'Inter',
+      fontSize: 13,
+      color: theme.colors.text,
+      opacity: 0.75,
+      textAlign: 'center',
+      maxWidth: 340,
+      lineHeight: 18,
+    },
+    emptyButton: {
+      width: undefined,
+      height: 48,
+      margin: 0,
+      marginTop: 12,
+      paddingHorizontal: 24,
+      borderRadius: 8,
+    },
+    mobileFab: {
+      position: 'absolute',
+      bottom: 24,
+      right: 20,
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: theme.colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 40,
+      elevation: 4,
+      shadowColor: theme.colors.border,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
     },
   });

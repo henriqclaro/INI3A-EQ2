@@ -12,4 +12,20 @@ export {
 } from './recipe';
 export { PartialTag } from './tag';
 export { PartialIngredient, RecipeIngredient, RecipeIngredientInput } from './ingredient';
-export { UserInventoryItem } from './inventory';
+export {
+  AdjustmentRequest,
+  AdjustmentResponse,
+  InventoryIngredient,
+  InventoryItem,
+  InventoryItemResponse,
+  InventoryListResponse,
+  InventoryMovement,
+  PurchaseRequest,
+  PurchaseResponse,
+  TransactionItem,
+  TransactionListResponse,
+  TransactionQueryRequest,
+  UserInventoryItem,
+  WasteRequest,
+  WasteResponse,
+} from './inventory';

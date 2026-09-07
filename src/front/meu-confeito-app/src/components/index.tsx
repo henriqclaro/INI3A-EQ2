@@ -6,3 +6,9 @@ export { Input } from '@/src/components/Input';
 export { Label } from '@/src/components/Label';
 export { RecipeSmallView } from '@/src/components/RecipeSmallView';
 export { RecipeView } from '@/src/components/RecipeView';
+export {
+  StockCard,
+  StockOperationModal,
+  StockSummaryBanner,
+  type StockOperationType,
+} from '@/src/components/stock';
