@@ -42,3 +42,8 @@ export const querySchema = z.object({
     .pipe(z.number().int()),
   search: z.string('Search query must be a single string').trim().optional(),
 });
+
+export const updateVisibilitySchema = z.object({
+  userId: z.uuid('Invalid UUID for User ID'),
+  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']),
+});

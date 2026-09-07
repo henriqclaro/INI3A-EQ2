@@ -144,4 +144,15 @@ export namespace RecipeDTO {
       }[];
     }[];
   }
+
+  export type UpdateVisibilityRequest = z.infer<typeof recipe.updateVisibilitySchema>;
+  export interface UpdateVisibilityResponse {
+    recipe: {
+      id: string;
+      userId: string | null;
+      title: string;
+      status: string;
+      updatedAt: Date;
+    };
+  }
 }

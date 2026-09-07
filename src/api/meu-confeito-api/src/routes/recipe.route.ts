@@ -34,4 +34,10 @@ recipeRoutes.get(
   recipeController.search.bind(recipeController),
 );
 
+recipeRoutes.patch(
+  '/:id/visibility',
+  validate({ params: recipe.paramsSchema, body: recipe.updateVisibilitySchema }),
+  recipeController.updateVisibility.bind(recipeController),
+);
+
 export { recipeRoutes };

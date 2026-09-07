@@ -268,4 +268,66 @@ export class RecipeService {
 
     return { recipes };
   }
+
+  async updateVisibility(
+    context: RequestContext,
+    id: string,
+    data: RecipeDTO.UpdateVisibilityRequest,
+  ) {
+    this.checkPermission(context, data.userId);
+
+    const [recipe, user] = await Promise.all([
+      prisma.recipe.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          userId: true,
+          title: true,
+          status: true,
+        },
+      }),
+      prisma.user.findUnique({
+        where: { id: data.userId },
+        select: {
+          phone: true,
+        },
+      }),
+    ]);
+
+    if (!recipe || recipe.status === 'SUSPENDED') {
+      throw new NotFoundError('Recipe not found', 'RESOURCE_NOT_FOUND');
+    }
+
+    if (recipe.userId !== data.userId) {
+      throw new ForbiddenError('Action denied for lack of privileges');
+    }
+
+    if (!user) {
+      throw new NotFoundError('User not found', 'USER_NOT_FOUND');
+    }
+
+    if (data.status === 'PUBLISHED' && !user.phone) {
+      throw new ForbiddenError(
+        'User phone number is required to make recipe public',
+        'USER_PHONE_NUMBER_REQUIRED',
+      );
+    }
+
+    const updatedRecipe = await prisma.recipe.update({
+      where: { id },
+      data: {
+        status: data.status,
+      },
+
+      select: {
+        id: true,
+        userId: true,
+        title: true,
+        status: true,
+        updatedAt: true,
+      },
+    });
+
+    return { recipe: updatedRecipe };
+  }
 }

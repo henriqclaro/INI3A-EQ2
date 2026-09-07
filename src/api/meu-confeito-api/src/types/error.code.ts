@@ -14,7 +14,8 @@ export type UserErrorCode =
   | 'USER_NOT_FOUND'
   | 'USER_ALREADY_EXISTS'
   | 'USER_INVALID_PASSWORD'
-  | 'USER_ACCOUNT_GONE';
+  | 'USER_ACCOUNT_GONE'
+  | 'USER_PHONE_NUMBER_REQUIRED';
 
 export type AuthErrorCode =
   | 'AUTH_UNAUTHORIZED'

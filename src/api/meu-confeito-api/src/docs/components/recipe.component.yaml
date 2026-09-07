@@ -285,3 +285,25 @@ components:
                           format: uuid
                         name:
                           type: string
+    RecipeUpdateVisibilityResponse:
+      type: object
+      properties:
+        recipe:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            userId:
+              type: string
+              format: uuid
+              nullable: true
+            title:
+              type: string
+            status:
+              type: string
+              enum: [DRAFT, PUBLISHED, ARCHIVED]
+            updatedAt:
+              type: string
+
+              format: date-time

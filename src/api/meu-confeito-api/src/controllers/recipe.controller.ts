@@ -77,4 +77,22 @@ export class RecipeController {
 
     return new DefaultSuccessResponse(res, responseData, 'Recipes selected successfully').send();
   }
+
+  async updateVisibility(
+    req: Request<RecipeDTO.RequestParam, unknown, RecipeDTO.UpdateVisibilityRequest>,
+    res: Response<ApiResponse<RecipeDTO.UpdateVisibilityResponse>>,
+  ) {
+    const context = this.extractProps(req);
+
+    const recipeId = req.params.id;
+
+    const responseData: RecipeDTO.UpdateVisibilityResponse =
+      await this.recipeService.updateVisibility(context, recipeId, req.body);
+
+    return new DefaultSuccessResponse(
+      res,
+      responseData,
+      'Recipe visibility updated successfully',
+    ).send();
+  }
 }
