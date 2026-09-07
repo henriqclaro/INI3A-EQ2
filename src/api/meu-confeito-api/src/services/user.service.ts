@@ -413,12 +413,14 @@ export class UserService {
         ingredientId: data.ingredientId,
         currentQuantity: data.currentQuantity ?? 0,
         costPerBaseUnit: data.costPerBaseUnit ?? 0,
+        expirationDate: data.expirationDate ? new Date(data.expirationDate) : null,
       },
       select: {
         userId: true,
         ingredientId: true,
         currentQuantity: true,
         costPerBaseUnit: true,
+        expirationDate: true,
         lastUpdated: true,
         ingredient: {
           select: {
@@ -447,6 +449,7 @@ export class UserService {
         ingredientId: true,
         currentQuantity: true,
         costPerBaseUnit: true,
+        expirationDate: true,
         lastUpdated: true,
         ingredient: {
           select: {

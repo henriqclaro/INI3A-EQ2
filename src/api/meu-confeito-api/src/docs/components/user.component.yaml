@@ -187,6 +187,11 @@ components:
               costPerBaseUnit:
                 type: number
                 description: Custo por unidade base do ingrediente
+              expirationDate:
+                type: string
+                format: date-time
+                nullable: true
+                description: Data de validade do item em estoque
               lastUpdated:
                 type: string
                 format: date-time
@@ -234,6 +239,11 @@ components:
             costPerBaseUnit:
               type: number
               description: Custo por unidade base do ingrediente
+            expirationDate:
+              type: string
+              format: date-time
+              nullable: true
+              description: Data de validade do item em estoque
             lastUpdated:
               type: string
               format: date-time

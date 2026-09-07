@@ -59,10 +59,8 @@ enum UnitDimension {
 enum StandardUnit {
   G
   KG
-
   ML
   L
-
   UN
 
   @@map("standard_units")
@@ -298,6 +296,8 @@ model UserInventory {
 
   costPerBaseUnit Decimal @default(0.000000) @map("cost_per_base_unit") @db.Decimal(12, 6)
 
+  expirationDate DateTime? @map("expiration_date") @db.Date
+
   lastUpdated DateTime @updatedAt @map("last_updated") @db.Timestamptz(3)
 
   user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -313,6 +313,7 @@ model Production {
   recipeId       String    @map("recipe_id")
   yieldProduced  Decimal   @map("yield_produced") @db.Decimal(10, 2) // Rendimento Gerado
   productionDate DateTime  @default(now()) @map("production_date") @db.Timestamptz(3)
+  expirationDate DateTime? @map("expiration_date") @db.Date
   canceledAt     DateTime? @map("canceled_at") @db.Timestamptz(3)
 
   ingredientCost Decimal @default(0.00) @map("ingredient_cost") @db.Decimal(10, 2) // Custo somado dos insumos
@@ -345,7 +346,8 @@ model InventoryTransaction {
   unitCost  Decimal @default(0.0000) @map("unit_cost") @db.Decimal(10, 4) // Custo unitário do insumo no momento
   totalCost Decimal @default(0.00) @map("total_cost") @db.Decimal(10, 2) // quantityChanged * unitCost
 
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  expirationDate DateTime? @map("expiration_date") @db.Date
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
 
   user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   ingredient Ingredient  @relation(fields: [ingredientId], references: [id], onDelete: Restrict)

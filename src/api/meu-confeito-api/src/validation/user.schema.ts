@@ -39,6 +39,7 @@ export const inventoryRegisterSchema = z.object({
   ingredientId: z.number().int().positive('Ingredient ID must be a positive integer'),
   currentQuantity: z.number().min(0, 'Current quantity cannot be negative').default(0),
   costPerBaseUnit: z.number().min(0, 'Cost per base unit cannot be negative').default(0),
+  expirationDate: z.iso.date('Invalid format for expiration date').nullish(),
 });
 
 export const saveRecipeSchema = z.object({

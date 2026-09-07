@@ -163,6 +163,7 @@ CREATE TABLE "user_inventory" (
     "ingredient_id" INTEGER NOT NULL,
     "current_quantity" DECIMAL(10,3) NOT NULL DEFAULT 0.000,
     "cost_per_base_unit" DECIMAL(12,6) NOT NULL DEFAULT 0.000000,
+    "expiration_date" DATE,
     "last_updated" TIMESTAMPTZ(3) NOT NULL,
 
     CONSTRAINT "user_inventory_pkey" PRIMARY KEY ("user_id","ingredient_id")
@@ -175,6 +176,7 @@ CREATE TABLE "production" (
     "recipe_id" TEXT NOT NULL,
     "yield_produced" DECIMAL(10,2) NOT NULL,
     "production_date" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "expiration_date" DATE,
     "canceled_at" TIMESTAMPTZ(3),
     "ingredient_cost" DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     "labor_cost" DECIMAL(10,2) NOT NULL DEFAULT 0.00,
@@ -197,6 +199,7 @@ CREATE TABLE "inventory_transaction" (
     "measurement_unit" "standard_units" NOT NULL,
     "unit_cost" DECIMAL(10,4) NOT NULL DEFAULT 0.0000,
     "total_cost" DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    "expiration_date" DATE,
     "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "inventory_transaction_pkey" PRIMARY KEY ("id")

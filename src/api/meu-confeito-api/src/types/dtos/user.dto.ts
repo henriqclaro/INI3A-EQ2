@@ -98,6 +98,7 @@ export namespace UserDTO {
       ingredientId: number;
       currentQuantity: Decimal;
       costPerBaseUnit: Decimal;
+      expirationDate: Date | null;
       lastUpdated: Date;
       ingredient: {
         id: number;
@@ -116,6 +117,7 @@ export namespace UserDTO {
       ingredientId: number;
       currentQuantity: Decimal;
       costPerBaseUnit: Decimal;
+      expirationDate: Date | null;
       lastUpdated: Date;
       ingredient: {
         id: number;
