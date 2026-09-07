@@ -54,7 +54,7 @@ export function useUserEdit() {
 
 export function useUserInventory(userId: string | undefined) {
   const [inventories, setInventories] = useState<UserInventoryItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(Boolean(userId));
   const [error, setError] = useState<string | null>(null);
 
   const fetchUserInventory = useCallback(async () => {
@@ -77,8 +77,36 @@ export function useUserInventory(userId: string | undefined) {
   }, [userId]);
 
   useEffect(() => {
-    fetchUserInventory();
-  }, [fetchUserInventory]);
+    let isMounted = true;
+
+    if (!userId) {
+      return;
+    }
+
+    async function load() {
+      try {
+        const res = await UserService.getInventory(userId!);
+        if (isMounted) {
+          setInventories(res.data.userInventories);
+        }
+      } catch (err) {
+        if (isMounted) {
+          console.error('Error fetching user inventory: ', err);
+          setError('Erro ao carregar estoque.');
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    load();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [userId]);
 
   return {
     inventories,
