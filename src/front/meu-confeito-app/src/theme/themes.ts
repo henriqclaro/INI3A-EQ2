@@ -13,6 +13,7 @@ export const colors = {
   colorYellow: '#FFF25E',
   colorCiano: '#8DFBFF',
   colorGreen: '#388E3C',
+  colorBackdrop: 'rgba(64, 36, 43, 0.4)',
 };
 
 export const COLOR_SUCCESS = colors.colorGreen;
@@ -32,6 +33,7 @@ export const lightTheme = {
     lightGray: colors.colorLightGray,
     placeholder: colors.colorGray,
     success: colors.colorGreen,
+    backdrop: colors.colorBackdrop,
 
     // Barra de Navegação
     secondaryContainer: colors.colorLightPink, // Pílula

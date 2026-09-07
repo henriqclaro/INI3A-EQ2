@@ -69,7 +69,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="recipes"
         options={{
-          title: 'Receitas',
+          title: 'Suas Receitas',
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="book-open-variant-outline" color={color} size={26} />
           ),

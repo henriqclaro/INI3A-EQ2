@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { Image } from 'expo-image';
@@ -29,6 +29,7 @@ export const RecipeView = ({
   onPress,
 }: RecipeViewProps) => {
   const { theme } = useThemeMode();
+  const [hasImageError, setHasImageError] = useState(false);
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -46,15 +47,33 @@ export const RecipeView = ({
     });
   }, [tags, theme]);
 
-  const hasValidCover = Boolean(coverUrl && coverUrl.trim().length > 0);
+  const hasValidCover = Boolean(coverUrl && coverUrl.trim().length > 0 && !hasImageError);
 
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.85}>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={onPress}
+      activeOpacity={0.85}
+      accessibilityRole="button"
+      accessibilityLabel={`Receita: ${title}`}
+    >
       {hasValidCover ? (
-        <Image source={{ uri: coverUrl! }} style={styles.image} contentFit="cover" />
+        <Image
+          source={{ uri: coverUrl! }}
+          style={styles.image}
+          contentFit="cover"
+          onError={() => setHasImageError(true)}
+        />
       ) : (
         <View style={[styles.image, styles.placeholder]}>
-          <MaterialCommunityIcons name="cupcake" size={44} color={theme.colors.placeholder} />
+          <View style={styles.placeholderIconBadge}>
+            <MaterialCommunityIcons
+              name="cake-variant-outline"
+              size={36}
+              color={theme.colors.primary}
+            />
+          </View>
+          <Text style={styles.placeholderText}>Sem foto de capa</Text>
         </View>
       )}
 
@@ -78,7 +97,7 @@ export const RecipeView = ({
 
         {prepTimeMinutes > 0 && (
           <View style={styles.timeBadge}>
-            <MaterialCommunityIcons name="timer-outline" size={18} color={theme.colors.text} />
+            <MaterialCommunityIcons name="timer-outline" size={16} color={theme.colors.text} />
             <Text style={styles.timeText}>{prepTimeMinutes} min</Text>
           </View>
         )}
@@ -92,7 +111,8 @@ const createStyles = (theme: AppTheme) =>
     container: {
       backgroundColor: theme.colors.pitchBackground,
       borderRadius: 16,
-      borderWidth: 0,
+      borderWidth: 1,
+      borderColor: theme.colors.secBorder,
       width: '100%',
       overflow: 'hidden',
     },
@@ -104,13 +124,33 @@ const createStyles = (theme: AppTheme) =>
       backgroundColor: theme.colors.background,
       alignItems: 'center',
       justifyContent: 'center',
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.secBorder,
+      gap: 6,
+    },
+    placeholderIconBadge: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: theme.colors.secondary,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+    },
+    placeholderText: {
+      fontFamily: 'Inter',
+      fontSize: 12,
+      fontWeight: '500',
+      color: theme.colors.text,
+      opacity: 0.7,
     },
     infoContainer: {
       padding: 16,
     },
     title: {
-      fontSize: 20,
-      lineHeight: 26,
+      fontSize: 19,
+      lineHeight: 25,
       fontWeight: 'bold',
       fontFamily: 'Playfair Display SC',
       color: theme.colors.text,
@@ -123,7 +163,7 @@ const createStyles = (theme: AppTheme) =>
     },
     tagBadge: {
       paddingVertical: 4,
-      paddingHorizontal: 12,
+      paddingHorizontal: 10,
       borderRadius: 9999,
     },
     tagText: {
@@ -137,6 +177,8 @@ const createStyles = (theme: AppTheme) =>
       alignSelf: 'flex-start',
       marginTop: 10,
       backgroundColor: theme.colors.background,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
       paddingVertical: 4,
       paddingHorizontal: 10,
       borderRadius: 9999,

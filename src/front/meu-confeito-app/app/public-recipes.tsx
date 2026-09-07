@@ -4,6 +4,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
   useWindowDimensions,
 } from 'react-native';
@@ -25,6 +26,7 @@ export default function PublicRecipesScreen() {
   const { width } = useWindowDimensions();
 
   const isDesktop = width >= 768;
+  const hasActiveSearch = Boolean(search.trim().length > 0);
 
   const cardWidth = useMemo(() => {
     if (width >= 1200) {
@@ -46,14 +48,28 @@ export default function PublicRecipesScreen() {
       <Stack.Screen options={{ title: 'Receitas Públicas' }} />
 
       <View style={styles.container}>
-        {/* <BackButton /> */}
         <View style={styles.headerContent}>
           <Input
             value={search}
-            placeholder="Pesquisar receitas..."
+            placeholder="Buscar por título ou ingredientes..."
             onChangeText={setSearch}
             containerStyle={styles.searchInput}
+            leftIcon={
+              <MaterialCommunityIcons name="magnify" size={22} color={theme.colors.placeholder} />
+            }
+            isClearable={true}
+            onClear={() => setSearch('')}
           />
+
+          {!isLoading && (
+            <View style={styles.metaRow}>
+              <Text style={styles.resultCountText}>
+                {hasActiveSearch
+                  ? `${recipes.length} ${recipes.length === 1 ? 'receita encontrada' : 'receitas encontradas'}`
+                  : `${recipes.length} ${recipes.length === 1 ? 'receita disponível' : 'receitas disponíveis'}`}
+              </Text>
+            </View>
+          )}
         </View>
 
         <ScrollView
@@ -67,16 +83,38 @@ export default function PublicRecipesScreen() {
             </View>
           ) : recipes.length === 0 ? (
             <View style={styles.feedbackContainer}>
-              <MaterialCommunityIcons
-                name="book-search-outline"
-                size={56}
-                color={theme.colors.placeholder}
-              />
-              <Text style={styles.emptyText}>
-                {search.trim()
-                  ? 'Nenhuma receita encontrada para a busca.'
-                  : 'Nenhuma receita pública disponível no momento.'}
+              <View style={styles.emptyIconWrapper}>
+                <MaterialCommunityIcons
+                  name="book-search-outline"
+                  size={44}
+                  color={theme.colors.primary}
+                />
+              </View>
+              <Text style={styles.emptyTitle}>
+                {hasActiveSearch
+                  ? 'Nenhuma receita encontrada'
+                  : 'Nenhuma receita pública no momento'}
               </Text>
+              <Text style={styles.emptySubtitle}>
+                {hasActiveSearch
+                  ? `Não encontramos resultados para "${search}". Tente buscar por outros termos ou ingredientes.`
+                  : 'Explore novamente mais tarde para descobrir novas receitas compartilhadas.'}
+              </Text>
+
+              {hasActiveSearch && (
+                <TouchableOpacity
+                  style={styles.clearSearchBtn}
+                  onPress={() => setSearch('')}
+                  activeOpacity={0.85}
+                >
+                  <MaterialCommunityIcons
+                    name="close-circle-outline"
+                    size={18}
+                    color={theme.colors.primary}
+                  />
+                  <Text style={styles.clearSearchBtnText}>Limpar busca</Text>
+                </TouchableOpacity>
+              )}
             </View>
           ) : (
             <View style={styles.gridContainer}>
@@ -116,12 +154,34 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       alignSelf: 'center',
       alignItems: 'center',
       paddingHorizontal: isDesktop ? 24 : 16,
-      paddingTop: 8,
+      paddingTop: 12,
+      paddingBottom: 4,
     },
     searchInput: {
       width: '100%',
-      maxWidth: 500,
-      marginVertical: 8,
+      maxWidth: 600,
+      height: 52,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.secBorder,
+      backgroundColor: theme.colors.pitchBackground,
+      margin: 0,
+    },
+    metaRow: {
+      width: '100%',
+      maxWidth: 600,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: 4,
+      marginTop: 8,
+      marginBottom: 4,
+    },
+    resultCountText: {
+      fontFamily: 'Inter',
+      fontSize: 13,
+      color: theme.colors.text,
+      opacity: 0.75,
     },
     scrollView: {
       flex: 1,
@@ -130,7 +190,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
     scrollContainer: {
       paddingHorizontal: isDesktop ? 24 : 16,
       paddingTop: 8,
-      paddingBottom: 40,
+      paddingBottom: 60,
       alignItems: 'center',
     },
     gridContainer: {
@@ -147,15 +207,56 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       maxWidth: isDesktop ? undefined : 480,
     },
     feedbackContainer: {
-      paddingTop: 60,
+      paddingTop: 48,
+      paddingHorizontal: 20,
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 12,
+      maxWidth: 420,
     },
-    emptyText: {
+    emptyIconWrapper: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      backgroundColor: theme.colors.secondary,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      marginBottom: 16,
+    },
+    emptyTitle: {
       color: theme.colors.text,
-      fontSize: 16,
-      fontStyle: 'italic',
+      fontFamily: 'Playfair Display SC',
+      fontSize: 20,
+      fontWeight: 'bold',
       textAlign: 'center',
+      marginBottom: 8,
+    },
+    emptySubtitle: {
+      color: theme.colors.text,
+      fontFamily: 'Inter',
+      fontSize: 14,
+      lineHeight: 20,
+      opacity: 0.8,
+      textAlign: 'center',
+      marginBottom: 20,
+    },
+    clearSearchBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: theme.colors.pitchBackground,
+      borderWidth: 1,
+      borderColor: theme.colors.primary,
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      borderRadius: 8,
+      minHeight: 48,
+    },
+    clearSearchBtnText: {
+      fontFamily: 'Inter',
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.colors.primary,
     },
   });
