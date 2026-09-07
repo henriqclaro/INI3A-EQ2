@@ -22,8 +22,34 @@ export function useIngredients(search?: string) {
   }, [search]);
 
   useEffect(() => {
-    fetchIngredients();
-  }, [fetchIngredients]);
+    let isMounted = true;
+
+    async function load() {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const res = await IngredientService.search(search);
+        if (isMounted) {
+          setIngredients(res.data.ingredients);
+        }
+      } catch (err) {
+        if (isMounted) {
+          console.error('Error fetching ingredients: ', err);
+          setError('Erro ao buscar ingredientes.');
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    load();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [search]);
 
   return { ingredients, isLoading, error, refetch: fetchIngredients };
 }

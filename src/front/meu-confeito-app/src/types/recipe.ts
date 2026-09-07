@@ -1,13 +1,64 @@
 import { RecipeIngredient } from './ingredient';
 import { PartialTag } from './tag';
 
+export type StandardUnit = 'G' | 'KG' | 'ML' | 'L' | 'UN';
+
+export type RecipeStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | 'SUSPENDED';
+
+export interface RecipeItem {
+  id: string;
+  ingredientId: number | null;
+  subRecipeId: string | null;
+  quantity: number | string;
+  unit: StandardUnit | string;
+  displayQuantity: number | string | null;
+  displayUnit: string | null;
+  sortOrder: number;
+  notes: string | null;
+  ingredient?: {
+    id: number;
+    name: string;
+    slug?: string;
+    category?: string;
+    baseDimension?: string;
+    baseUnit?: string;
+    description?: string | null;
+  } | null;
+  subRecipe?: {
+    id: string;
+    title: string;
+    baseYield: number | string;
+    yieldUnit: string;
+  } | null;
+  inventory?: {
+    currentQuantity: number | string;
+    costPerBaseUnit: number | string;
+    lastUpdated: Date | string;
+  } | null;
+}
+
+export interface RecipeItemInput {
+  ingredientId?: number | null;
+  subRecipeId?: string | null;
+  quantity: number;
+  unit: StandardUnit;
+  displayQuantity?: number | null;
+  displayUnit?: string | null;
+  sortOrder?: number;
+  notes?: string | null;
+}
+
 export interface PartialRecipe {
   id: string;
   title: string;
   coverUrl: string | null;
+  profitMargin?: number | string;
+  overhead?: number | string;
+  hourlyLabor?: number | string;
+  packagingCost?: number | string;
   prepTimeMinutes: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
   tags: {
     tag: PartialTag;
   }[];
@@ -19,46 +70,43 @@ export interface FullRecipe {
   parentId: string | null;
   title: string;
   coverUrl: string | null;
-  instructions: JSON;
-  baseYield: string;
-  yieldUnit: string;
+  instructions: { steps?: { text: string }[] } | Record<string, unknown> | string | unknown;
+  baseYield: number | string;
+  yieldUnit: StandardUnit | string;
 
-  status: string;
+  status: RecipeStatus | string;
   totalSaves: number;
   totalReviews: number;
-  averageRating: string;
+  averageRating: number | string;
 
-  profitMargin: string;
-  overhead: string;
+  profitMargin: number | string;
+  overhead: number | string;
   prepTimeMinutes: number;
-  hourlyLabor: string;
-  packagingCost: string;
+  hourlyLabor: number | string;
+  packagingCost: number | string;
 
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 
-  ingredients: RecipeIngredient[];
+  items: RecipeItem[];
+  /** Backward-compatibility alias for screens/components previously using ingredients */
+  ingredients?: RecipeIngredient[] | RecipeItem[];
 }
 
 export interface RecipeRegisterInput {
-  userId: string;
+  userId?: string;
   parentId?: string | null;
   title: string;
   coverUrl?: string | null;
-  instructions: Record<string, any> | { text: string }[] | any;
+  instructions: Record<string, unknown>;
   baseYield: number;
-  yieldUnit: string;
+  yieldUnit: StandardUnit;
   profitMargin?: number;
   overhead?: number;
   prepTimeMinutes?: number;
   hourlyLabor?: number;
   packagingCost?: number;
-  ingredients: {
-    ingredientId: string;
-    baseQuantity: number;
-    measurementUnit: string;
-    notes?: string | null;
-  }[];
+  items: RecipeItemInput[];
 }
 
 export interface RecipeRegisterResponseData {
@@ -68,20 +116,40 @@ export interface RecipeRegisterResponseData {
     parentId: string | null;
     title: string;
     coverUrl: string | null;
-    instructions: any;
+    instructions: unknown;
     baseYield: number | string;
-    yieldUnit: string;
+    yieldUnit: StandardUnit | string;
     profitMargin?: number | string;
     overhead?: number | string;
     prepTimeMinutes?: number;
     hourlyLabor?: number | string;
     packagingCost?: number | string;
     createdAt: Date | string;
-    ingredients: {
-      ingredientId: string;
-      baseQuantity: number | string;
-      measurementUnit: string;
+    items: {
+      id: string;
+      ingredientId: number | null;
+      subRecipeId: string | null;
+      quantity: number | string;
+      unit: string;
+      displayQuantity: number | string | null;
+      displayUnit: string | null;
+      sortOrder: number;
       notes: string | null;
     }[];
+  };
+}
+
+export interface UpdateRecipeVisibilityInput {
+  userId: string;
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+}
+
+export interface UpdateRecipeVisibilityResponseData {
+  recipe: {
+    id: string;
+    userId: string | null;
+    title: string;
+    status: string;
+    updatedAt: Date | string;
   };
 }

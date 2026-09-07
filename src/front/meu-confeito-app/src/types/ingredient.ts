@@ -1,19 +1,24 @@
 export interface PartialIngredient {
-  id: string;
-  name: string[];
+  id: number | string;
+  name: string;
   category: string;
+  slug?: string;
+  aliases?: string[];
+  baseDimension?: string;
+  baseUnit?: string;
+  description?: string | null;
 }
 
 export interface RecipeIngredient {
-  ingredientId: string;
+  ingredientId: number | string;
   baseQuantity: number;
   measurementUnit: string;
-  notes: string;
+  notes?: string | null;
   ingredient: PartialIngredient;
 }
 
 export interface RecipeIngredientInput {
-  ingredientId: string;
+  ingredientId: number | string;
   baseQuantity: number;
   measurementUnit: string;
   notes?: string | null;

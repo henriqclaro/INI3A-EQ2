@@ -20,18 +20,22 @@ import { Picker } from '@react-native-picker/picker';
 import { ActivityIndicator } from 'react-native-paper';
 
 import { CustomButton } from '@/src/components';
-import { COMMON_UNITS } from '@/src/constants/common-units';
+import { STANDARD_UNITS } from '@/src/constants/common-units';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useIngredients } from '@/src/hooks/useIngredients';
-import { useRecipeRegister } from '@/src/hooks/useRecipes';
+import { useRecipeRegister, useUserRecipes } from '@/src/hooks/useRecipes';
 import { AppTheme } from '@/src/theme/themes';
-import { RecipeIngredientInput, RecipeRegisterInput } from '@/src/types';
+import { RecipeItemInput, RecipeRegisterInput, StandardUnit } from '@/src/types';
 
-interface IngredientFormItem {
+interface RecipeFormItem {
+  itemType: 'INGREDIENT' | 'SUB_RECIPE';
   ingredientId: string;
-  baseQuantity: string;
-  measurementUnit: string;
+  subRecipeId: string;
+  quantity: string;
+  unit: StandardUnit;
+  displayQuantity: string;
+  displayUnit: string;
   notes: string;
 }
 
@@ -43,6 +47,7 @@ export default function CreateRecipeScreen() {
 
   const { registerRecipe, isLoading: isSubmitting } = useRecipeRegister();
   const { ingredients: availableIngredients, isLoading: isLoadingIngredients } = useIngredients();
+  const { recipes: userRecipes, isLoading: isLoadingUserRecipes } = useUserRecipes(user?.id);
 
   const styles = useMemo(() => createStyles(theme, isSmallScreen), [theme, isSmallScreen]);
 
@@ -50,7 +55,7 @@ export default function CreateRecipeScreen() {
   const [title, setTitle] = useState('');
   const [coverUrl, setCoverUrl] = useState('');
   const [baseYield, setBaseYield] = useState('');
-  const [yieldUnit, setYieldUnit] = useState('porções');
+  const [yieldUnit, setYieldUnit] = useState<StandardUnit>('UN');
   const [prepTimeMinutes, setPrepTimeMinutes] = useState('');
 
   // Financial / Pricing States
@@ -59,36 +64,54 @@ export default function CreateRecipeScreen() {
   const [hourlyLabor, setHourlyLabor] = useState('');
   const [packagingCost, setPackagingCost] = useState('');
 
-  // Ingredients State
-  const [ingredients, setIngredients] = useState<IngredientFormItem[]>([
-    { ingredientId: '', baseQuantity: '', measurementUnit: 'g', notes: '' },
+  // Recipe Items State (BOM architecture)
+  const [items, setItems] = useState<RecipeFormItem[]>([
+    {
+      itemType: 'INGREDIENT',
+      ingredientId: '',
+      subRecipeId: '',
+      quantity: '',
+      unit: 'G',
+      displayQuantity: '',
+      displayUnit: '',
+      notes: '',
+    },
   ]);
 
   // Instructions / Steps State
   const [steps, setSteps] = useState<string[]>(['']);
 
-  // Add & Remove Ingredients
-  const handleAddIngredient = () => {
-    setIngredients((prev) => [
+  // Add & Remove Items
+  const handleAddItem = () => {
+    setItems((prev) => [
       ...prev,
-      { ingredientId: '', baseQuantity: '', measurementUnit: 'g', notes: '' },
+      {
+        itemType: 'INGREDIENT',
+        ingredientId: '',
+        subRecipeId: '',
+        quantity: '',
+        unit: 'G',
+        displayQuantity: '',
+        displayUnit: '',
+        notes: '',
+      },
     ]);
   };
 
-  const handleRemoveIngredient = (index: number) => {
-    if (ingredients.length === 1) {
-      Alert.alert('Aviso', 'A receita deve conter ao menos 1 ingrediente.');
+  const handleRemoveItem = (index: number) => {
+    if (items.length === 1) {
+      Alert.alert('Aviso', 'A receita deve conter ao menos 1 item.');
       return;
     }
-    setIngredients((prev) => prev.filter((_, i) => i !== index));
+    setItems((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleIngredientChange = (
+  const handleItemChange = <K extends keyof RecipeFormItem>(
     index: number,
-    field: keyof IngredientFormItem,
-    value: string,
+    field: K,
+    value: RecipeFormItem[K],
   ) => {
-    setIngredients((prev) => {
+    setItems((prev) => {
       const updated = [...prev];
       updated[index] = { ...updated[index], [field]: value };
       return updated;
@@ -128,7 +151,7 @@ export default function CreateRecipeScreen() {
       return;
     }
 
-    const parsedYield = parseFloat(baseYield);
+    const parsedYield = parseFloat(baseYield.replace(',', '.'));
     if (!baseYield || isNaN(parsedYield) || parsedYield <= 0) {
       Alert.alert(
         'Campo Obrigatório',
@@ -137,51 +160,50 @@ export default function CreateRecipeScreen() {
       return;
     }
 
-    if (!yieldUnit.trim()) {
-      Alert.alert(
-        'Campo Obrigatório',
-        'Por favor, informe a unidade de rendimento (ex: porções, unidades).',
-      );
-      return;
-    }
+    // Validate items
+    const validItems: RecipeItemInput[] = [];
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const parsedQty = parseFloat(item.quantity.replace(',', '.'));
 
-    // Validate ingredients
-    const validIngredients: RecipeIngredientInput[] = [];
-    for (let i = 0; i < ingredients.length; i++) {
-      const item = ingredients[i];
-      const parsedQty = parseFloat(item.baseQuantity);
+      if (item.itemType === 'INGREDIENT') {
+        if (!item.ingredientId) {
+          Alert.alert('Ingrediente Inválido', `Selecione o ingrediente do item #${i + 1}.`);
+          return;
+        }
+      } else {
+        if (!item.subRecipeId) {
+          Alert.alert('Sub-receita Inválida', `Selecione a sub-receita do item #${i + 1}.`);
+          return;
+        }
+      }
 
-      if (!item.ingredientId) {
-        Alert.alert('Ingrediente Inválido', `Selecione o ingrediente #${i + 1} da lista.`);
+      if (!item.quantity || isNaN(parsedQty) || parsedQty <= 0) {
+        Alert.alert('Quantidade Inválida', `Informe uma quantidade válida para o item #${i + 1}.`);
         return;
       }
 
-      if (!item.baseQuantity || isNaN(parsedQty) || parsedQty <= 0) {
-        Alert.alert(
-          'Quantidade Inválida',
-          `Informe uma quantidade válida para o ingrediente #${i + 1}.`,
-        );
-        return;
-      }
+      const parsedDisplayQty = item.displayQuantity.trim()
+        ? parseFloat(item.displayQuantity.replace(',', '.'))
+        : null;
 
-      if (!item.measurementUnit.trim()) {
-        Alert.alert(
-          'Unidade Inválida',
-          `Informe a unidade de medida para o ingrediente #${i + 1}.`,
-        );
-        return;
-      }
-
-      validIngredients.push({
-        ingredientId: item.ingredientId,
-        baseQuantity: parsedQty,
-        measurementUnit: item.measurementUnit.trim(),
+      validItems.push({
+        ingredientId: item.itemType === 'INGREDIENT' ? parseInt(item.ingredientId, 10) : null,
+        subRecipeId: item.itemType === 'SUB_RECIPE' ? item.subRecipeId : null,
+        quantity: parsedQty,
+        unit: item.unit,
+        displayQuantity:
+          parsedDisplayQty && !isNaN(parsedDisplayQty) && parsedDisplayQty > 0
+            ? parsedDisplayQty
+            : null,
+        displayUnit: item.displayUnit.trim() ? item.displayUnit.trim() : null,
+        sortOrder: i,
         notes: item.notes.trim() ? item.notes.trim() : null,
       });
     }
 
-    if (validIngredients.length === 0) {
-      Alert.alert('Ingredientes', 'A receita deve ter ao menos 1 ingrediente.');
+    if (validItems.length === 0) {
+      Alert.alert('Itens da Receita', 'A receita deve conter ao menos 1 item.');
       return;
     }
 
@@ -196,7 +218,7 @@ export default function CreateRecipeScreen() {
       return;
     }
 
-    // Format payload
+    // Format payload matching registerSchema
     const payload: RecipeRegisterInput = {
       userId: user.id,
       parentId: null,
@@ -206,13 +228,13 @@ export default function CreateRecipeScreen() {
         steps: validSteps,
       },
       baseYield: parsedYield,
-      yieldUnit: yieldUnit.trim(),
-      profitMargin: profitMargin ? parseFloat(profitMargin) : undefined,
-      overhead: overhead ? parseFloat(overhead) : undefined,
+      yieldUnit,
+      profitMargin: profitMargin ? parseFloat(profitMargin.replace(',', '.')) : undefined,
+      overhead: overhead ? parseFloat(overhead.replace(',', '.')) : undefined,
       prepTimeMinutes: prepTimeMinutes ? parseInt(prepTimeMinutes, 10) : undefined,
-      hourlyLabor: hourlyLabor ? parseFloat(hourlyLabor) : undefined,
-      packagingCost: packagingCost ? parseFloat(packagingCost) : undefined,
-      ingredients: validIngredients,
+      hourlyLabor: hourlyLabor ? parseFloat(hourlyLabor.replace(',', '.')) : undefined,
+      packagingCost: packagingCost ? parseFloat(packagingCost.replace(',', '.')) : undefined,
+      items: validItems,
     };
 
     try {
@@ -233,9 +255,10 @@ export default function CreateRecipeScreen() {
           },
         },
       ]);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
       const errorMsg =
-        err?.response?.data?.message || err?.message || 'Não foi possível salvar a receita.';
+        apiErr?.response?.data?.message || apiErr?.message || 'Não foi possível salvar a receita.';
       Alert.alert('Erro ao cadastrar', errorMsg);
     }
   };
@@ -257,8 +280,6 @@ export default function CreateRecipeScreen() {
           keyboardDismissMode="on-drag"
           automaticallyAdjustKeyboardInsets
         >
-          {/* <BackButton /> */}
-
           <Text style={styles.primaryTitle}>Nova Receita</Text>
           <Text style={styles.subtitle}>
             Preencha as informações abaixo para registrar sua receita no sistema.
@@ -312,13 +333,18 @@ export default function CreateRecipeScreen() {
 
               <View style={[styles.inputGroup, styles.flex1]}>
                 <Text style={styles.label}>Unidade Rendimento *</Text>
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Ex: porções, un"
-                  placeholderTextColor={theme.colors.placeholder}
-                  value={yieldUnit}
-                  onChangeText={setYieldUnit}
-                />
+                <View style={styles.pickerWrapper}>
+                  <Picker
+                    selectedValue={yieldUnit}
+                    onValueChange={(val) => setYieldUnit(val as StandardUnit)}
+                    style={styles.picker}
+                    dropdownIconColor={theme.colors.text}
+                  >
+                    {STANDARD_UNITS.map((u) => (
+                      <Picker.Item key={u.value} label={u.label} value={u.value} />
+                    ))}
+                  </Picker>
+                </View>
               </View>
             </View>
 
@@ -356,10 +382,10 @@ export default function CreateRecipeScreen() {
               </View>
 
               <View style={[styles.inputGroup, styles.flex1]}>
-                <Text style={styles.label}>Custos Fixos / Overhead (R$)</Text>
+                <Text style={styles.label}>Custos Fixos / Overhead (%)</Text>
                 <TextInput
                   style={styles.textInput}
-                  placeholder="Ex: 5.00"
+                  placeholder="Ex: 10"
                   placeholderTextColor={theme.colors.placeholder}
                   keyboardType="numeric"
                   value={overhead}
@@ -395,23 +421,29 @@ export default function CreateRecipeScreen() {
             </View>
           </View>
 
-          {/* Card: Ingredientes */}
+          {/* Card: Itens da Receita (Ingredientes e Sub-receitas) */}
           <View style={styles.box}>
             <View style={styles.boxHeaderRow}>
-              <Text style={styles.secondaryTitle}>Ingredientes *</Text>
-              {isLoadingIngredients && (
+              <Text style={styles.secondaryTitle}>Itens da Receita *</Text>
+              {(isLoadingIngredients || isLoadingUserRecipes) && (
                 <ActivityIndicator size="small" color={theme.colors.primary} />
               )}
             </View>
+            <Text style={styles.boxHelperText}>
+              Adicione os insumos necessários. Você pode incluir ingredientes do catálogo ou
+              sub-receitas já cadastradas.
+            </Text>
 
-            {ingredients.map((item, index) => (
+            {items.map((item, index) => (
               <View key={index} style={styles.ingredientCard}>
                 <View style={styles.ingredientCardHeader}>
                   <Text style={styles.ingredientIndexText}>Item #{index + 1}</Text>
-                  {ingredients.length > 1 && (
+                  {items.length > 1 && (
                     <TouchableOpacity
-                      onPress={() => handleRemoveIngredient(index)}
+                      onPress={() => handleRemoveItem(index)}
                       style={styles.removeBtn}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Remover item ${index + 1}`}
                     >
                       <MaterialCommunityIcons
                         name="trash-can-outline"
@@ -422,63 +454,162 @@ export default function CreateRecipeScreen() {
                   )}
                 </View>
 
-                {/* Seleção do Ingrediente */}
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Ingrediente *</Text>
-                  <View style={styles.pickerWrapper}>
-                    <Picker
-                      selectedValue={item.ingredientId}
-                      onValueChange={(val) => handleIngredientChange(index, 'ingredientId', val)}
-                      style={styles.picker}
-                      dropdownIconColor={theme.colors.text}
+                {/* Tipo de Item (Ingrediente ou Sub-receita) */}
+                <View style={styles.itemTypeRow}>
+                  <TouchableOpacity
+                    style={[
+                      styles.itemTypeBtn,
+                      item.itemType === 'INGREDIENT' && styles.itemTypeBtnActive,
+                    ]}
+                    onPress={() => handleItemChange(index, 'itemType', 'INGREDIENT')}
+                    activeOpacity={0.8}
+                  >
+                    <MaterialCommunityIcons
+                      name="food-apple-outline"
+                      size={16}
+                      color={
+                        item.itemType === 'INGREDIENT'
+                          ? theme.colors.secondaryText
+                          : theme.colors.text
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.itemTypeBtnText,
+                        item.itemType === 'INGREDIENT' && styles.itemTypeBtnTextActive,
+                      ]}
                     >
-                      <Picker.Item label="Selecione um ingrediente..." value="" />
-                      {availableIngredients.map((ing) => {
-                        const ingName = Array.isArray(ing.name)
-                          ? ing.name.join(' / ')
-                          : String(ing.name);
-                        return (
-                          <Picker.Item
-                            key={ing.id}
-                            label={`${ingName} (${ing.category})`}
-                            value={ing.id}
-                          />
-                        );
-                      })}
-                    </Picker>
-                  </View>
+                      Ingrediente
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.itemTypeBtn,
+                      item.itemType === 'SUB_RECIPE' && styles.itemTypeBtnActive,
+                    ]}
+                    onPress={() => handleItemChange(index, 'itemType', 'SUB_RECIPE')}
+                    activeOpacity={0.8}
+                  >
+                    <MaterialCommunityIcons
+                      name="cake-variant-outline"
+                      size={16}
+                      color={
+                        item.itemType === 'SUB_RECIPE'
+                          ? theme.colors.secondaryText
+                          : theme.colors.text
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.itemTypeBtnText,
+                        item.itemType === 'SUB_RECIPE' && styles.itemTypeBtnTextActive,
+                      ]}
+                    >
+                      Sub-receita
+                    </Text>
+                  </TouchableOpacity>
                 </View>
 
-                {/* Quantidade e Unidade */}
+                {/* Seleção do Ingrediente ou Sub-receita */}
+                {item.itemType === 'INGREDIENT' ? (
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.label}>Ingrediente *</Text>
+                    <View style={styles.pickerWrapper}>
+                      <Picker
+                        selectedValue={item.ingredientId}
+                        onValueChange={(val) =>
+                          handleItemChange(index, 'ingredientId', String(val))
+                        }
+                        style={styles.picker}
+                        dropdownIconColor={theme.colors.text}
+                      >
+                        <Picker.Item label="Selecione um ingrediente..." value="" />
+                        {availableIngredients.map((ing) => (
+                          <Picker.Item
+                            key={ing.id}
+                            label={`${ing.name} (${ing.category})`}
+                            value={String(ing.id)}
+                          />
+                        ))}
+                      </Picker>
+                    </View>
+                  </View>
+                ) : (
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.label}>Sub-receita *</Text>
+                    <View style={styles.pickerWrapper}>
+                      <Picker
+                        selectedValue={item.subRecipeId}
+                        onValueChange={(val) => handleItemChange(index, 'subRecipeId', String(val))}
+                        style={styles.picker}
+                        dropdownIconColor={theme.colors.text}
+                      >
+                        <Picker.Item label="Selecione uma sub-receita..." value="" />
+                        {userRecipes.map((r) => (
+                          <Picker.Item key={r.id} label={r.title} value={r.id} />
+                        ))}
+                      </Picker>
+                    </View>
+                  </View>
+                )}
+
+                {/* Quantidade Métrica e Unidade Padrão */}
                 <View style={styles.row}>
                   <View style={[styles.inputGroup, styles.flex1]}>
-                    <Text style={styles.label}>Quantidade *</Text>
+                    <Text style={styles.label}>Quantidade Padrão *</Text>
                     <TextInput
                       style={styles.textInput}
                       placeholder="Ex: 250"
                       placeholderTextColor={theme.colors.placeholder}
                       keyboardType="numeric"
-                      value={item.baseQuantity}
-                      onChangeText={(val) => handleIngredientChange(index, 'baseQuantity', val)}
+                      value={item.quantity}
+                      onChangeText={(val) => handleItemChange(index, 'quantity', val)}
                     />
                   </View>
 
                   <View style={[styles.inputGroup, styles.flex1]}>
-                    <Text style={styles.label}>Unidade *</Text>
+                    <Text style={styles.label}>Unidade Padrão *</Text>
                     <View style={styles.pickerWrapper}>
                       <Picker
-                        selectedValue={item.measurementUnit}
+                        selectedValue={item.unit}
                         onValueChange={(val) =>
-                          handleIngredientChange(index, 'measurementUnit', val)
+                          handleItemChange(index, 'unit', val as StandardUnit)
                         }
                         style={styles.picker}
                         dropdownIconColor={theme.colors.text}
                       >
-                        {COMMON_UNITS.map((u) => (
+                        {STANDARD_UNITS.map((u) => (
                           <Picker.Item key={u.value} label={u.label} value={u.value} />
                         ))}
                       </Picker>
                     </View>
+                  </View>
+                </View>
+
+                {/* Exibição Empírica Opcional */}
+                <View style={styles.row}>
+                  <View style={[styles.inputGroup, styles.flex1]}>
+                    <Text style={styles.label}>Qtd. Exibição (opcional)</Text>
+                    <TextInput
+                      style={styles.textInput}
+                      placeholder="Ex: 2"
+                      placeholderTextColor={theme.colors.placeholder}
+                      keyboardType="numeric"
+                      value={item.displayQuantity}
+                      onChangeText={(val) => handleItemChange(index, 'displayQuantity', val)}
+                    />
+                  </View>
+
+                  <View style={[styles.inputGroup, styles.flex1]}>
+                    <Text style={styles.label}>Unidade Exibição (opcional)</Text>
+                    <TextInput
+                      style={styles.textInput}
+                      placeholder="Ex: xícaras, colheres"
+                      placeholderTextColor={theme.colors.placeholder}
+                      value={item.displayUnit}
+                      onChangeText={(val) => handleItemChange(index, 'displayUnit', val)}
+                    />
                   </View>
                 </View>
 
@@ -490,15 +621,15 @@ export default function CreateRecipeScreen() {
                     placeholder="Ex: peneirado, temperatura ambiente"
                     placeholderTextColor={theme.colors.placeholder}
                     value={item.notes}
-                    onChangeText={(val) => handleIngredientChange(index, 'notes', val)}
+                    onChangeText={(val) => handleItemChange(index, 'notes', val)}
                   />
                 </View>
               </View>
             ))}
 
-            <CustomButton variant="dashed" style={styles.addBtn} onPress={handleAddIngredient}>
+            <CustomButton variant="dashed" style={styles.addBtn} onPress={handleAddItem}>
               <MaterialCommunityIcons name="plus" size={20} color={theme.colors.primary} />
-              <Text style={styles.addBtnText}>Adicionar Ingrediente</Text>
+              <Text style={styles.addBtnText}>Adicionar Item</Text>
             </CustomButton>
           </View>
 
@@ -520,6 +651,8 @@ export default function CreateRecipeScreen() {
                     <TouchableOpacity
                       onPress={() => handleRemoveStep(index)}
                       style={styles.removeStepBtn}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Remover etapa ${index + 1}`}
                     >
                       <MaterialCommunityIcons
                         name="trash-can-outline"
@@ -682,7 +815,7 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: 8,
+      marginBottom: 10,
     },
     ingredientIndexText: {
       fontSize: 14,
@@ -691,12 +824,47 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
     },
     removeBtn: {
       padding: 4,
+      minWidth: 48,
+      minHeight: 48,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    itemTypeRow: {
+      flexDirection: 'row',
+      backgroundColor: theme.colors.pitchBackground,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.colors.secBorder,
+      padding: 3,
+      marginBottom: 12,
+      gap: 6,
+    },
+    itemTypeBtn: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 48,
+      borderRadius: 6,
+      gap: 6,
+    },
+    itemTypeBtnActive: {
+      backgroundColor: theme.colors.primary,
+    },
+    itemTypeBtnText: {
+      fontFamily: 'Inter',
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.text,
+    },
+    itemTypeBtnTextActive: {
+      color: theme.colors.secondaryText,
     },
     addBtn: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      paddingVertical: 12,
+      minHeight: 48,
       borderRadius: 8,
       borderWidth: 1.5,
       marginTop: 6,
@@ -740,6 +908,10 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
     },
     removeStepBtn: {
       padding: 4,
+      minWidth: 48,
+      minHeight: 48,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     stepTextInput: {
       backgroundColor: theme.colors.background,

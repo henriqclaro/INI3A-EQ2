@@ -1,3 +1,13 @@
+import { StandardUnit } from '../types/recipe';
+
+export const STANDARD_UNITS: { label: string; value: StandardUnit; short: string }[] = [
+  { label: 'Gramas (g)', value: 'G', short: 'g' },
+  { label: 'Quilos (kg)', value: 'KG', short: 'kg' },
+  { label: 'Mililitros (ml)', value: 'ML', short: 'ml' },
+  { label: 'Litros (L)', value: 'L', short: 'L' },
+  { label: 'Unidades (un)', value: 'UN', short: 'un' },
+];
+
 export const COMMON_UNITS = [
   { label: 'Gramas (g)', value: 'g' },
   { label: 'Quilos (kg)', value: 'kg' },

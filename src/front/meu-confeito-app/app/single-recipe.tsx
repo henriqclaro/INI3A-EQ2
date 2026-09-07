@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,16 +15,21 @@ import { Stack, router, useLocalSearchParams } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
+import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useSingleRecipe } from '@/src/hooks/useRecipes';
 import { AppTheme } from '@/src/theme/themes';
-import { PartialTag } from '@/src/types';
+import { PartialTag, RecipeItem, RecipeStatus } from '@/src/types';
 
 export default function RecipeScreen() {
   const { theme } = useThemeMode();
+  const { user } = useAuth();
   const { width } = useWindowDimensions();
   const { recipeId } = useLocalSearchParams() as { recipeId: string };
-  const { recipe, isLoading } = useSingleRecipe(recipeId);
+  const { recipe, isLoading, updateVisibility, isUpdatingVisibility } = useSingleRecipe(
+    recipeId,
+    user?.id,
+  );
 
   const isDesktop = width >= 768;
   const isSmallScreen = width < 360;
@@ -48,8 +54,15 @@ export default function RecipeScreen() {
     recipe?.coverUrl && recipe.coverUrl.trim().length > 0 && !hasImageError,
   );
 
+  const isOwner = Boolean(user?.id && recipe?.userId && user.id === recipe.userId);
+
+  const recipeItems: RecipeItem[] = useMemo(
+    () => recipe?.items || (recipe as { ingredients?: RecipeItem[] })?.ingredients || [],
+    [recipe],
+  );
+
   const recipeTags = useMemo(() => {
-    const rawTags = (recipe as any)?.tags;
+    const rawTags = (recipe as { tags?: { tag: PartialTag }[] })?.tags;
     if (!Array.isArray(rawTags)) return [];
     return rawTags.map((item: { tag: PartialTag }) => {
       const tagType = (item?.tag?.type || '').toLowerCase();
@@ -64,16 +77,135 @@ export default function RecipeScreen() {
 
   const parsedInstructions = useMemo(() => {
     if (!recipe?.instructions) return [];
+    if (typeof recipe.instructions === 'object' && recipe.instructions !== null) {
+      const inst = recipe.instructions as { steps?: { text?: string }[] };
+      if (Array.isArray(inst.steps)) {
+        return inst.steps
+          .map((step) => (typeof step === 'string' ? step : step?.text || ''))
+          .filter(Boolean);
+      }
+    }
     if (Array.isArray(recipe.instructions)) {
-      return recipe.instructions.map((step: any) =>
-        typeof step === 'string' ? step : step?.text || JSON.stringify(step),
-      );
+      return (recipe.instructions as unknown[])
+        .map((step) =>
+          typeof step === 'string'
+            ? step
+            : (step as { text?: string })?.text || JSON.stringify(step),
+        )
+        .filter(Boolean);
     }
     if (typeof recipe.instructions === 'string') {
       return [recipe.instructions];
     }
-    return [String(recipe.instructions)];
+    return [];
   }, [recipe]);
+
+  // Financial Calculations based on API inventory items
+  const financialMetrics = useMemo(() => {
+    const totalItemCost = recipeItems.reduce((acc, item) => {
+      const qty = Number(item.quantity) || 0;
+      const unitCost = item.inventory ? Number(item.inventory.costPerBaseUnit) : 0;
+      return acc + qty * unitCost;
+    }, 0);
+
+    const hasAnyInventory = recipeItems.some(
+      (item) => item.inventory && Number(item.inventory.costPerBaseUnit) > 0,
+    );
+
+    const packaging = Number(recipe?.packagingCost) || 0;
+    const laborRate = Number(recipe?.hourlyLabor) || 0;
+    const prepMinutes = Number(recipe?.prepTimeMinutes) || 0;
+    const laborCost = (laborRate * prepMinutes) / 60;
+    const directCosts = totalItemCost + packaging + laborCost;
+
+    const overheadPct = Number(recipe?.overhead) || 0;
+    const overheadCost = directCosts * (overheadPct / 100);
+
+    const totalRecipeCost = directCosts + overheadCost;
+    const yieldNum = Number(recipe?.baseYield) || 1;
+    const unitCost = totalRecipeCost / yieldNum;
+
+    const profitPct = Number(recipe?.profitMargin) || 0;
+    const suggestedUnitPrice = unitCost * (1 + profitPct / 100);
+    const suggestedTotalPrice = suggestedUnitPrice * yieldNum;
+
+    return {
+      totalItemCost,
+      packagingCost: packaging,
+      laborCost,
+      overheadCost,
+      totalRecipeCost,
+      unitCost,
+      suggestedUnitPrice,
+      suggestedTotalPrice,
+      hasAnyInventory,
+    };
+  }, [recipe, recipeItems]);
+
+  const handleToggleVisibility = async (newStatus: RecipeStatus) => {
+    try {
+      await updateVisibility(newStatus);
+      Alert.alert(
+        'Status Atualizado',
+        newStatus === 'PUBLISHED'
+          ? 'Sua receita agora está publicada na comunidade!'
+          : 'Sua receita agora está como rascunho.',
+      );
+    } catch (err: unknown) {
+      const apiErr = err as {
+        response?: { data?: { code?: string; message?: string } };
+        message?: string;
+      };
+      if (apiErr?.response?.data?.code === 'USER_PHONE_NUMBER_REQUIRED') {
+        Alert.alert(
+          'Telefone Obrigatório',
+          'Para publicar receitas na comunidade, é necessário ter um número de telefone cadastrado no seu perfil.',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+              text: 'Editar Perfil',
+              onPress: () => router.push('/edit-profile'),
+            },
+          ],
+        );
+      } else {
+        const msg =
+          apiErr?.response?.data?.message ||
+          apiErr?.message ||
+          'Não foi possível atualizar o status da receita.';
+        Alert.alert('Erro', msg);
+      }
+    }
+  };
+
+  const getStatusBadge = (status?: string) => {
+    switch (status) {
+      case 'PUBLISHED':
+        return {
+          label: 'Pública',
+          icon: 'earth' as const,
+          color: theme.colors.success || '#2E7D32',
+          bgColor: '#E8F5E9',
+        };
+      case 'ARCHIVED':
+        return {
+          label: 'Arquivada',
+          icon: 'archive-outline' as const,
+          color: theme.colors.placeholder,
+          bgColor: theme.colors.lightGray,
+        };
+      case 'DRAFT':
+      default:
+        return {
+          label: 'Rascunho',
+          icon: 'file-document-edit-outline' as const,
+          color: theme.colors.primary,
+          bgColor: theme.colors.secondary,
+        };
+    }
+  };
+
+  const statusBadge = getStatusBadge(recipe?.status);
 
   return (
     <>
@@ -99,6 +231,8 @@ export default function RecipeScreen() {
               style={styles.backButton}
               onPress={() => router.back()}
               activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel="Voltar"
             >
               <Text style={styles.backButtonText}>Voltar</Text>
             </TouchableOpacity>
@@ -134,9 +268,60 @@ export default function RecipeScreen() {
                 </View>
               )}
 
-              {/* Title, Meta and Tags Header */}
+              {/* Title, Meta, Status and Tags Header */}
               <View style={styles.headerSection}>
-                <Text style={styles.primaryTitle}>{recipe.title}</Text>
+                <View style={styles.titleRow}>
+                  <Text style={styles.primaryTitle}>{recipe.title}</Text>
+                  <View style={[styles.statusBadge, { backgroundColor: statusBadge.bgColor }]}>
+                    <MaterialCommunityIcons
+                      name={statusBadge.icon}
+                      size={14}
+                      color={statusBadge.color}
+                    />
+                    <Text style={[styles.statusBadgeText, { color: statusBadge.color }]}>
+                      {statusBadge.label}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Owner Visibility Controls */}
+                {isOwner && (
+                  <View style={styles.visibilityActions}>
+                    {recipe.status === 'PUBLISHED' ? (
+                      <TouchableOpacity
+                        style={styles.visibilityBtnDraft}
+                        onPress={() => handleToggleVisibility('DRAFT')}
+                        disabled={isUpdatingVisibility}
+                        activeOpacity={0.85}
+                        accessibilityRole="button"
+                        accessibilityLabel="Mudar receita para rascunho"
+                      >
+                        <MaterialCommunityIcons
+                          name="lock-outline"
+                          size={16}
+                          color={theme.colors.text}
+                        />
+                        <Text style={styles.visibilityBtnTextDraft}>Tornar Rascunho</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity
+                        style={styles.visibilityBtnPublish}
+                        onPress={() => handleToggleVisibility('PUBLISHED')}
+                        disabled={isUpdatingVisibility}
+                        activeOpacity={0.85}
+                        accessibilityRole="button"
+                        accessibilityLabel="Publicar receita na comunidade"
+                      >
+                        <MaterialCommunityIcons
+                          name="earth"
+                          size={16}
+                          color={theme.colors.secondaryText}
+                        />
+                        <Text style={styles.visibilityBtnTextPublish}>Publicar Receita</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                )}
 
                 <View style={styles.metaRow}>
                   {Boolean(recipe.baseYield) && (
@@ -147,7 +332,7 @@ export default function RecipeScreen() {
                         color={theme.colors.text}
                       />
                       <Text style={styles.metaBadgeText}>
-                        Rende {recipe.baseYield} {recipe.yieldUnit || 'porções'}
+                        Rende {recipe.baseYield} {recipe.yieldUnit || 'UN'}
                       </Text>
                     </View>
                   )}
@@ -166,7 +351,7 @@ export default function RecipeScreen() {
 
                 {recipeTags.length > 0 && (
                   <View style={styles.tagsRow}>
-                    {recipeTags.map((item: any) => (
+                    {recipeTags.map((item: { tag: PartialTag; backgroundColor: string }) => (
                       <View
                         key={item?.tag?.id || item?.tag?.name}
                         style={[styles.tagPill, { backgroundColor: item.backgroundColor }]}
@@ -234,7 +419,7 @@ export default function RecipeScreen() {
               {/* Recipe View Mode */}
               {viewMode === 'recipe' ? (
                 <View style={styles.modeContainer}>
-                  {/* Ingredients Card */}
+                  {/* Items Card */}
                   <View style={styles.cardBox}>
                     <View style={styles.cardHeader}>
                       <MaterialCommunityIcons
@@ -242,22 +427,28 @@ export default function RecipeScreen() {
                         size={22}
                         color={theme.colors.primary}
                       />
-                      <Text style={styles.cardTitle}>Ingredientes</Text>
+                      <Text style={styles.cardTitle}>Itens da Receita</Text>
                     </View>
 
-                    {recipe.ingredients && recipe.ingredients.length > 0 ? (
-                      recipe.ingredients.map((item, index) => {
-                        const ingId = String(item.ingredientId || index);
-                        const isIngredientChecked = Boolean(checkedIngredientMap[ingId]);
-                        const ingName = Array.isArray(item.ingredient?.name)
-                          ? item.ingredient.name.join(', ')
+                    {recipeItems.length > 0 ? (
+                      recipeItems.map((item, index) => {
+                        const itemId = item.id || String(index);
+                        const isIngredientChecked = Boolean(checkedIngredientMap[itemId]);
+                        const isSubRecipe = Boolean(item.subRecipe);
+                        const itemName = isSubRecipe
+                          ? item.subRecipe?.title || 'Sub-receita'
                           : item.ingredient?.name || 'Ingrediente';
+
+                        const formattedQuantity =
+                          item.displayQuantity && item.displayUnit
+                            ? `${item.displayQuantity} ${item.displayUnit} (${item.quantity} ${item.unit})`
+                            : `${item.quantity} ${item.unit}`;
 
                         return (
                           <TouchableOpacity
-                            key={ingId}
+                            key={itemId}
                             style={styles.ingredientRow}
-                            onPress={() => toggleIngredient(ingId)}
+                            onPress={() => toggleIngredient(itemId)}
                             activeOpacity={0.7}
                             accessibilityRole="checkbox"
                             accessibilityState={{ checked: isIngredientChecked }}
@@ -277,24 +468,33 @@ export default function RecipeScreen() {
                                   />
                                 )}
                               </View>
-                              <Text
-                                style={[
-                                  styles.ingredientName,
-                                  isIngredientChecked && styles.checkedIngredientText,
-                                ]}
-                              >
-                                {ingName}
-                                {item.notes ? ` (${item.notes})` : ''}
-                              </Text>
+                              <View style={styles.ingredientTextGroup}>
+                                <View style={styles.ingredientTitleRow}>
+                                  <Text
+                                    style={[
+                                      styles.ingredientName,
+                                      isIngredientChecked && styles.checkedIngredientText,
+                                    ]}
+                                  >
+                                    {itemName}
+                                  </Text>
+                                  {isSubRecipe && (
+                                    <View style={styles.subRecipeBadge}>
+                                      <Text style={styles.subRecipeBadgeText}>Sub-receita</Text>
+                                    </View>
+                                  )}
+                                </View>
+                                {Boolean(item.notes) && (
+                                  <Text style={styles.ingredientNotes}>{item.notes}</Text>
+                                )}
+                              </View>
                             </View>
-                            <Text style={styles.ingredientQuantity}>
-                              {item.baseQuantity} {item.measurementUnit}
-                            </Text>
+                            <Text style={styles.ingredientQuantity}>{formattedQuantity}</Text>
                           </TouchableOpacity>
                         );
                       })
                     ) : (
-                      <Text style={styles.emptyCardText}>Nenhum ingrediente informado.</Text>
+                      <Text style={styles.emptyCardText}>Nenhum item informado.</Text>
                     )}
                   </View>
 
@@ -328,7 +528,7 @@ export default function RecipeScreen() {
               ) : (
                 /* Pricing View Mode */
                 <View style={styles.modeContainer}>
-                  {/* Ingredients Breakdown */}
+                  {/* Items Cost Breakdown */}
                   <View style={styles.cardBox}>
                     <View style={styles.cardHeader}>
                       <MaterialCommunityIcons
@@ -336,26 +536,45 @@ export default function RecipeScreen() {
                         size={22}
                         color={theme.colors.primary}
                       />
-                      <Text style={styles.cardTitle}>Custo por Ingrediente</Text>
+                      <Text style={styles.cardTitle}>Custo por Insumo (Estoque)</Text>
                     </View>
 
-                    {recipe.ingredients && recipe.ingredients.length > 0 ? (
-                      recipe.ingredients.map((item, index) => {
-                        const ingName = Array.isArray(item.ingredient?.name)
-                          ? item.ingredient.name.join(', ')
-                          : item.ingredient?.name || 'Ingrediente';
+                    {recipeItems.length > 0 ? (
+                      recipeItems.map((item, index) => {
+                        const itemName = item.ingredient?.name || item.subRecipe?.title || 'Insumo';
+                        const hasCost =
+                          item.inventory && Number(item.inventory.costPerBaseUnit) > 0;
+                        const costValue = hasCost
+                          ? (Number(item.quantity) * Number(item.inventory!.costPerBaseUnit))
+                              .toFixed(2)
+                              .replace('.', ',')
+                          : null;
 
                         return (
-                          <View key={item.ingredientId || index} style={styles.pricingRow}>
-                            <Text style={styles.pricingItemName}>
-                              {item.baseQuantity} {item.measurementUnit} • {ingName}
+                          <View key={item.id || index} style={styles.pricingRow}>
+                            <View style={styles.pricingLeft}>
+                              <Text style={styles.pricingItemName}>
+                                {item.quantity} {item.unit} • {itemName}
+                              </Text>
+                              {!hasCost && (
+                                <Text style={styles.pricingWarningText}>
+                                  Sem custo registrado no estoque
+                                </Text>
+                              )}
+                            </View>
+                            <Text
+                              style={[
+                                styles.pricingItemValue,
+                                !hasCost && styles.pricingItemValueMissing,
+                              ]}
+                            >
+                              {hasCost ? `R$ ${costValue}` : 'R$ --,--'}
                             </Text>
-                            <Text style={styles.pricingItemValue}>R$ --,--</Text>
                           </View>
                         );
                       })
                     ) : (
-                      <Text style={styles.emptyCardText}>Sem ingredientes listados.</Text>
+                      <Text style={styles.emptyCardText}>Sem insumos listados.</Text>
                     )}
                   </View>
 
@@ -371,30 +590,59 @@ export default function RecipeScreen() {
                     </View>
 
                     <View style={styles.pricingRow}>
-                      <Text style={styles.pricingItemName}>Custo total de ingredientes:</Text>
-                      <Text style={styles.pricingItemValue}>R$ --,--</Text>
+                      <Text style={styles.pricingItemName}>Insumos / Ingredientes:</Text>
+                      <Text style={styles.pricingItemValue}>
+                        R$ {financialMetrics.totalItemCost.toFixed(2).replace('.', ',')}
+                      </Text>
                     </View>
 
-                    {recipe.packagingCost && (
+                    {financialMetrics.packagingCost > 0 && (
                       <View style={styles.pricingRow}>
                         <Text style={styles.pricingItemName}>Embalagem:</Text>
-                        <Text style={styles.pricingItemValue}>R$ {recipe.packagingCost}</Text>
+                        <Text style={styles.pricingItemValue}>
+                          R$ {financialMetrics.packagingCost.toFixed(2).replace('.', ',')}
+                        </Text>
                       </View>
                     )}
 
-                    {recipe.overhead && (
+                    {financialMetrics.laborCost > 0 && (
                       <View style={styles.pricingRow}>
-                        <Text style={styles.pricingItemName}>Custos fixos / overhead:</Text>
-                        <Text style={styles.pricingItemValue}>R$ {recipe.overhead}</Text>
+                        <Text style={styles.pricingItemName}>
+                          Mão de obra ({recipe.prepTimeMinutes} min @ R${' '}
+                          {Number(recipe.hourlyLabor).toFixed(2)}/h):
+                        </Text>
+                        <Text style={styles.pricingItemValue}>
+                          R$ {financialMetrics.laborCost.toFixed(2).replace('.', ',')}
+                        </Text>
                       </View>
                     )}
 
-                    {recipe.hourlyLabor && (
+                    {financialMetrics.overheadCost > 0 && (
                       <View style={styles.pricingRow}>
-                        <Text style={styles.pricingItemName}>Mão de obra:</Text>
-                        <Text style={styles.pricingItemValue}>R$ {recipe.hourlyLabor}/h</Text>
+                        <Text style={styles.pricingItemName}>
+                          Custos fixos / overhead ({recipe.overhead}%):
+                        </Text>
+                        <Text style={styles.pricingItemValue}>
+                          R$ {financialMetrics.overheadCost.toFixed(2).replace('.', ',')}
+                        </Text>
                       </View>
                     )}
+
+                    <View style={[styles.pricingRow, styles.totalRow]}>
+                      <Text style={styles.totalLabel}>Custo Total de Produção:</Text>
+                      <Text style={styles.totalValue}>
+                        R$ {financialMetrics.totalRecipeCost.toFixed(2).replace('.', ',')}
+                      </Text>
+                    </View>
+
+                    <View style={styles.pricingRow}>
+                      <Text style={styles.pricingItemName}>
+                        Custo Unitário ({recipe.baseYield} {recipe.yieldUnit || 'UN'}):
+                      </Text>
+                      <Text style={styles.pricingItemValue}>
+                        R$ {financialMetrics.unitCost.toFixed(2).replace('.', ',')}
+                      </Text>
+                    </View>
                   </View>
 
                   {/* Markup & Selling Price Suggestion Card */}
@@ -417,7 +665,18 @@ export default function RecipeScreen() {
 
                     <View style={styles.priceContainer}>
                       <Text style={styles.priceSubtitle}>Preço de Venda Sugerido (Unidade):</Text>
-                      <Text style={styles.priceValueText}>R$ --,--</Text>
+                      <Text style={styles.priceValueText}>
+                        R$ {financialMetrics.suggestedUnitPrice.toFixed(2).replace('.', ',')}
+                      </Text>
+                    </View>
+
+                    <View style={styles.priceSubContainer}>
+                      <Text style={styles.priceSubText}>
+                        Preço Total da Receita:{' '}
+                        <Text style={styles.priceSubTextBold}>
+                          R$ {financialMetrics.suggestedTotalPrice.toFixed(2).replace('.', ',')}
+                        </Text>
+                      </Text>
                     </View>
                   </View>
                 </View>
@@ -543,12 +802,68 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       marginBottom: 20,
       gap: 10,
     },
+    titleRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      gap: 12,
+    },
     primaryTitle: {
+      flex: 1,
       color: theme.colors.text,
       fontFamily: 'Playfair Display SC',
       fontSize: 26,
       lineHeight: 32,
       fontWeight: 'bold',
+    },
+    statusBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 5,
+      paddingHorizontal: 10,
+      borderRadius: 9999,
+      gap: 5,
+    },
+    statusBadgeText: {
+      fontFamily: 'Inter',
+      fontSize: 12,
+      fontWeight: '700',
+    },
+    visibilityActions: {
+      flexDirection: 'row',
+      marginTop: 2,
+    },
+    visibilityBtnPublish: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.primary,
+      paddingHorizontal: 16,
+      minHeight: 48,
+      borderRadius: 8,
+      gap: 8,
+    },
+    visibilityBtnTextPublish: {
+      color: theme.colors.secondaryText,
+      fontFamily: 'Inter',
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    visibilityBtnDraft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.pitchBackground,
+      borderWidth: 1,
+      borderColor: theme.colors.secBorder,
+      paddingHorizontal: 16,
+      minHeight: 48,
+      borderRadius: 8,
+      gap: 8,
+    },
+    visibilityBtnTextDraft: {
+      color: theme.colors.text,
+      fontFamily: 'Inter',
+      fontSize: 13,
+      fontWeight: '600',
     },
     metaRow: {
       flexDirection: 'row',
@@ -661,7 +976,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       paddingVertical: 12,
     },
 
-    // Ingredient Row
+    // Item Row
     ingredientRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -677,6 +992,15 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       flex: 1,
       paddingRight: 12,
       gap: 12,
+    },
+    ingredientTextGroup: {
+      flex: 1,
+    },
+    ingredientTitleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: 6,
     },
     checkbox: {
       width: 22,
@@ -700,6 +1024,26 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     checkedIngredientText: {
       textDecorationLine: 'line-through',
       opacity: 0.5,
+    },
+    subRecipeBadge: {
+      backgroundColor: theme.colors.secondary,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: 9999,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+    },
+    subRecipeBadgeText: {
+      fontFamily: 'Inter',
+      fontSize: 10,
+      fontWeight: '700',
+      color: theme.colors.text,
+    },
+    ingredientNotes: {
+      fontFamily: 'Inter',
+      fontSize: 12,
+      color: theme.colors.placeholder,
+      marginTop: 2,
     },
     ingredientQuantity: {
       fontFamily: 'Inter',
@@ -749,11 +1093,19 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       borderBottomWidth: 1,
       borderBottomColor: theme.colors.lightGray,
     },
+    pricingLeft: {
+      flex: 1,
+    },
     pricingItemName: {
       fontFamily: 'Inter',
       fontSize: 14,
       color: theme.colors.text,
-      flex: 1,
+    },
+    pricingWarningText: {
+      fontFamily: 'Inter',
+      fontSize: 11,
+      color: theme.colors.primary,
+      marginTop: 2,
     },
     pricingItemValue: {
       fontFamily: 'Inter',
@@ -761,6 +1113,27 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       fontWeight: 'bold',
       color: theme.colors.text,
       marginLeft: 10,
+    },
+    pricingItemValueMissing: {
+      color: theme.colors.placeholder,
+    },
+    totalRow: {
+      borderTopWidth: 1.5,
+      borderTopColor: theme.colors.secBorder,
+      paddingTop: 12,
+      marginTop: 4,
+    },
+    totalLabel: {
+      fontFamily: 'Inter',
+      fontSize: 15,
+      fontWeight: 'bold',
+      color: theme.colors.text,
+    },
+    totalValue: {
+      fontFamily: 'Inter',
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: theme.colors.primary,
     },
 
     // Suggested Price Card
@@ -810,5 +1183,19 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       fontSize: 26,
       fontWeight: 'bold',
       color: theme.colors.primary,
+    },
+    priceSubContainer: {
+      alignItems: 'center',
+      paddingTop: 4,
+    },
+    priceSubText: {
+      fontFamily: 'Inter',
+      fontSize: 13,
+      color: theme.colors.text,
+      opacity: 0.85,
+    },
+    priceSubTextBold: {
+      fontWeight: 'bold',
+      color: theme.colors.text,
     },
   });
