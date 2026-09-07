@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -22,7 +23,7 @@ export default function PublicRecipesScreen() {
   const [search, setSearch] = useState('');
 
   const { theme } = useThemeMode();
-  const { recipes, isLoading } = useManyRecipes(search);
+  const { recipes, isLoading, refetch } = useManyRecipes(search);
   const { width } = useWindowDimensions();
 
   const isDesktop = width >= 768;
@@ -76,6 +77,14 @@ export default function PublicRecipesScreen() {
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContainer}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={refetch}
+              tintColor={theme.colors.primary}
+              colors={[theme.colors.primary]}
+            />
+          }
         >
           {isLoading ? (
             <View style={styles.feedbackContainer}>

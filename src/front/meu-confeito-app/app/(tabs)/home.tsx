@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { router } from 'expo-router';
 
@@ -12,7 +12,7 @@ import { AppTheme } from '@/src/theme/themes';
 export default function HomeScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
-  const { recipes } = useUserRecipes(user?.id);
+  const { recipes, isLoading, refetch } = useUserRecipes(user?.id);
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -30,6 +30,14 @@ export default function HomeScreen() {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContainer}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={refetch}
+              tintColor={theme.colors.primary}
+              colors={[theme.colors.primary]}
+            />
+          }
         >
           {recipes.length > 0 ? (
             recipes.map((recipe) => (
@@ -46,7 +54,7 @@ export default function HomeScreen() {
           ) : (
             <Text style={styles.emptyText}>Você ainda não possui receitas públicas.</Text>
           )}
-          <CustomButton title="Estoque" onPress={() => router.push('/stock' as any)} />
+          <CustomButton title="Estoque" onPress={() => router.push('/stock')} />
         </ScrollView>
       </View>
     </View>

@@ -80,7 +80,7 @@ export const StockSummaryBanner = ({
             <MaterialCommunityIcons
               name="clock-alert-outline"
               size={20}
-              color={expiringSoonCount > 0 ? theme.colors.tags.product : theme.colors.placeholder}
+              color={expiringSoonCount > 0 ? theme.colors.warning : theme.colors.placeholder}
             />
           </View>
           <View style={styles.textContainer}>
@@ -129,10 +129,10 @@ const createStyles = (theme: AppTheme) =>
       gap: 10,
     },
     metricCardAlert: {
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.danger,
     },
     metricCardWarning: {
-      borderColor: theme.colors.tags.product,
+      borderColor: theme.colors.warning,
     },
     iconWrapper: {
       width: 38,
@@ -145,11 +145,11 @@ const createStyles = (theme: AppTheme) =>
       borderColor: theme.colors.outlineVariant,
     },
     iconWrapperCritical: {
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.danger,
       backgroundColor: theme.colors.background,
     },
     iconWrapperWarning: {
-      borderColor: theme.colors.tags.product,
+      borderColor: theme.colors.warning,
       backgroundColor: theme.colors.background,
     },
     textContainer: {
@@ -177,9 +177,9 @@ const createStyles = (theme: AppTheme) =>
       color: theme.colors.primary,
     },
     metricValueCritical: {
-      color: theme.colors.primary,
+      color: theme.colors.danger,
     },
     metricValueWarning: {
-      color: theme.colors.primary,
+      color: theme.colors.warning,
     },
   });

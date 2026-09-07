@@ -662,12 +662,12 @@ const createStyles = (theme: AppTheme) =>
       color: theme.colors.text,
     },
     inputError: {
-      borderColor: theme.colors.primary,
+      borderColor: theme.colors.danger,
     },
     errorText: {
       fontFamily: 'Inter',
       fontSize: 11,
-      color: theme.colors.primary,
+      color: theme.colors.danger,
       marginTop: 4,
     },
     prefixText: {
@@ -736,7 +736,7 @@ const createStyles = (theme: AppTheme) =>
       color: theme.colors.success,
     },
     previewNegative: {
-      color: theme.colors.primary,
+      color: theme.colors.danger,
     },
     footerActions: {
       flexDirection: 'row',

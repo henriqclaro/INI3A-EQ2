@@ -10,13 +10,17 @@ export const colors = {
   colorGray: '#A9A9A9',
 
   colorOrange: '#FFA189',
-  colorYellow: '#FFF25E',
+  colorYellow: '#B45309', // High contrast amber warning tone
+  colorTagVariety: '#FFF25E', // Pastel yellow for variety tags
+  colorRed: '#C62828', // High contrast rich red danger tone
   colorCiano: '#8DFBFF',
   colorGreen: '#388E3C',
   colorBackdrop: 'rgba(64, 36, 43, 0.4)',
 };
 
 export const COLOR_SUCCESS = colors.colorGreen;
+export const COLOR_DANGER = colors.colorRed;
+export const COLOR_WARNING = colors.colorYellow;
 
 export const lightTheme = {
   ...MD3LightTheme,
@@ -33,6 +37,8 @@ export const lightTheme = {
     lightGray: colors.colorLightGray,
     placeholder: colors.colorGray,
     success: colors.colorGreen,
+    danger: colors.colorRed,
+    warning: colors.colorYellow,
     backdrop: colors.colorBackdrop,
 
     // Barra de Navegação
@@ -43,7 +49,7 @@ export const lightTheme = {
 
     tags: {
       product: colors.colorOrange,
-      variety: colors.colorYellow,
+      variety: colors.colorTagVariety,
       attribute: colors.colorCiano,
     },
   },

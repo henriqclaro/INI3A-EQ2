@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -23,7 +24,7 @@ import { AppTheme } from '@/src/theme/themes';
 export default function RecipesScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
-  const { recipes, isLoading } = useUserRecipes(user?.id);
+  const { recipes, isLoading, refetch } = useUserRecipes(user?.id);
   const { width } = useWindowDimensions();
   const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
 
@@ -81,6 +82,14 @@ export default function RecipesScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isLoading}
+            onRefresh={refetch}
+            tintColor={theme.colors.primary}
+            colors={[theme.colors.primary]}
+          />
+        }
       >
         {isLoading ? (
           <View style={styles.loadingContainer}>

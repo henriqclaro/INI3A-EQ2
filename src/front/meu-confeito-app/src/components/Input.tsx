@@ -118,7 +118,7 @@ const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
       width: 275,
-      minHeight: 52,
+      height: 52,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
       backgroundColor: theme.colors.pitchBackground,
@@ -130,9 +130,10 @@ const createStyles = (theme: AppTheme) =>
     },
     input: {
       flex: 1,
+      height: '100%',
       fontSize: 16,
       color: theme.colors.text,
-      paddingVertical: 10,
+      paddingVertical: 0,
     },
     iconSlot: {
       justifyContent: 'center',
@@ -140,9 +141,9 @@ const createStyles = (theme: AppTheme) =>
       marginRight: 8,
     },
     actionButton: {
+      alignSelf: 'stretch',
       justifyContent: 'center',
       alignItems: 'center',
       paddingLeft: 8,
-      height: '100%',
     },
   });

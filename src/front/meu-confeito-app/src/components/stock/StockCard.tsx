@@ -105,9 +105,9 @@ export const StockCard = ({ item, cardWidth, onAdjust, onPurchase, onWaste }: St
             size={16}
             color={
               isCardExpired
-                ? theme.colors.primary
+                ? theme.colors.danger
                 : isCardExpiringSoon
-                  ? theme.colors.tags.product
+                  ? theme.colors.warning
                   : theme.colors.text
             }
           />
@@ -151,7 +151,7 @@ export const StockCard = ({ item, cardWidth, onAdjust, onPurchase, onWaste }: St
           accessibilityLabel={`Registrar compra para ${ingredientName}`}
         >
           <MaterialCommunityIcons name="plus" size={18} color={theme.colors.secondaryText} />
-          <Text style={styles.actionBtnTextPrimary}>+ Compra</Text>
+          <Text style={styles.actionBtnTextPrimary}>Compra</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -317,11 +317,11 @@ const createStyles = (theme: AppTheme) =>
     },
     expirationSoon: {
       backgroundColor: theme.colors.background,
-      borderColor: theme.colors.tags.product,
+      borderColor: theme.colors.warning,
     },
     expirationExpired: {
       backgroundColor: theme.colors.background,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.danger,
     },
     expirationText: {
       fontFamily: 'Inter',
@@ -330,11 +330,11 @@ const createStyles = (theme: AppTheme) =>
       color: theme.colors.text,
     },
     expirationTextSoon: {
-      color: theme.colors.tags.product,
-      fontWeight: '600',
+      color: theme.colors.warning,
+      fontWeight: '700',
     },
     expirationTextExpired: {
-      color: theme.colors.primary,
+      color: theme.colors.danger,
       fontWeight: '700',
     },
     actionsRow: {

@@ -3,6 +3,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -33,12 +34,31 @@ export default function RegisterStockScreen() {
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
 
-  const { ingredients: availableIngredients, isLoading: isLoadingIngredients } = useIngredients();
-  const { inventory, registerPurchase, registerAdjustment } = useInventory();
+  const {
+    ingredients: availableIngredients,
+    isLoading: isLoadingIngredients,
+    refetch: refetchIngredients,
+  } = useIngredients();
+  const {
+    inventory,
+    registerPurchase,
+    registerAdjustment,
+    refetch: refetchInventory,
+  } = useInventory();
 
   // Mode: purchase (with cost & avg calculation) or initial adjustment (only balance)
   const [entryMode, setEntryMode] = useState<EntryMode>('purchase');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([refetchIngredients(), refetchInventory()]);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // Form Fields
   const [ingredientSearch, setIngredientSearch] = useState('');
@@ -268,6 +288,14 @@ export default function RegisterStockScreen() {
           contentContainerStyle={styles.scrollContainer}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              tintColor={theme.colors.primary}
+              colors={[theme.colors.primary]}
+            />
+          }
         >
           <View style={styles.card}>
             {/* Header section */}

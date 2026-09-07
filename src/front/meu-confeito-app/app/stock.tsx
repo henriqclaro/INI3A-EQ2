@@ -432,6 +432,7 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
     },
     searchInput: {
       width: '100%',
+      height: 52,
       margin: 0,
       backgroundColor: theme.colors.pitchBackground,
       borderRadius: 12,

@@ -382,7 +382,7 @@ export default function CreateRecipeScreen() {
               </View>
 
               <View style={[styles.inputGroup, styles.flex1]}>
-                <Text style={styles.label}>Custos Fixos / Overhead (%)</Text>
+                <Text style={styles.label}>Custos Fixos (%)</Text>
                 <TextInput
                   style={styles.textInput}
                   placeholder="Ex: 10"
