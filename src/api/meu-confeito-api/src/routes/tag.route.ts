@@ -16,4 +16,6 @@ tagRoutes.post(
   tagController.register.bind(tagController),
 );
 
+tagRoutes.get('/', validate({ query: tag.querySchema }), tagController.search.bind(tagController));
+
 export { tagRoutes };

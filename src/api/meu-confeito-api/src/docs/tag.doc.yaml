@@ -21,3 +21,30 @@ paths:
           description: Ação negada por falta de privilégios
         '409':
           description: Tag já existente
+    get:
+      summary: Busca e lista tags
+      tags:
+        - Tags
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [USER, PRODUCT, VARIETY, ATTRIBUTE]
+      responses:
+        '200':
+          description: Tags selecionadas com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagSearchResponse'
+        '400':
+          description: Erro na validação dos dados

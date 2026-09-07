@@ -20,3 +20,25 @@ components:
             createdAt:
               type: string
               format: date-time
+    TagSearchResponse:
+      type: object
+      properties:
+        tags:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              name:
+                type: string
+              type:
+                type: string
+              creatorId:
+                type: string
+                format: uuid
+                nullable: true
+              createdAt:
+                type: string
+                format: date-time

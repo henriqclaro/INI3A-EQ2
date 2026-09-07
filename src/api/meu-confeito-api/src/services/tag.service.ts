@@ -1,4 +1,5 @@
 import prisma from '../config/database';
+import type { Prisma, TagType } from '../generated/prisma/client';
 import { ConflictError, ForbiddenError } from '../responses/http.error';
 import type { RequestContext } from '../types/context.interface';
 import type { TagDTO } from '../types/dtos/tag.dto';
@@ -37,5 +38,41 @@ export class TagService {
     });
 
     return { tag };
+  }
+
+  async search(search?: string, page?: number, type?: TagType) {
+    const baseFilter: Prisma.TagWhereInput = {};
+
+    if (search) {
+      baseFilter.name = {
+        contains: search,
+        mode: 'insensitive',
+      };
+    }
+
+    if (type) {
+      baseFilter.type = type;
+    }
+
+    const safePage = Number(page);
+    const skipValue = !isNaN(safePage) && safePage > 0 ? safePage * 15 : 0;
+
+    const tags = await prisma.tag.findMany({
+      where: baseFilter,
+      take: 15,
+      skip: skipValue,
+      orderBy: {
+        name: 'asc',
+      },
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        creatorId: true,
+        createdAt: true,
+      },
+    });
+
+    return { tags };
   }
 }

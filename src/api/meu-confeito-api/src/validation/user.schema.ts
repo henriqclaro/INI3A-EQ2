@@ -32,7 +32,7 @@ export const deleteSchema = z.object({
 });
 
 export const inventoryRegisterSchema = z.object({
-  ingredientId: z.uuid('Invalid UUID for ingredient ID'),
+  ingredientId: z.string('Invalid string for ingredient ID'),
   measurementUnit: z.string('Measurement unit is required'),
   currentQuantity: z.number('Current quantity must be a number').optional(),
   packagePrice: z.number('Package price must be a number').optional(),

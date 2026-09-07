@@ -13,4 +13,15 @@ export namespace TagDTO {
       createdAt: Date;
     };
   }
+
+  export type QueryRequest = z.infer<typeof tag.querySchema>;
+  export interface SearchResponse {
+    tags: {
+      id: string;
+      name: string;
+      type: string;
+      creatorId: string | null;
+      createdAt: Date;
+    }[];
+  }
 }
