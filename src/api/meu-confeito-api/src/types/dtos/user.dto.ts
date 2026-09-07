@@ -24,14 +24,6 @@ export namespace UserDTO {
       name: string;
       email: string;
       phone: string | null;
-      bio?: string | null;
-      instagram?: string | null;
-      neighborhood?: string | null;
-      city?: string | null;
-      location: {
-        latitude: number;
-        longitude: number;
-      } | null;
       pfpUrl: string | null;
       role: string;
       updatedAt: Date;

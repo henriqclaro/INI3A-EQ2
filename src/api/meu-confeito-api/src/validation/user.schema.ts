@@ -1,10 +1,5 @@
 import { z } from 'zod';
 
-export const locationSchema = z.object({
-  latitude: z.number('Latitude must be a valid number'),
-  longitude: z.number('Logitude must be a valid number'),
-});
-
 export const registerSchema = z.object({
   name: z.string().min(3, 'Name must have at least 3 characters'),
   email: z.email('Invalid email format'),
@@ -22,12 +17,7 @@ export const updateSchema = z
     name: z.string().min(3, 'Name must have at least 3 characters'),
     email: z.email('Invalid email format'),
     phone: z.e164('Invalid E164 for phone number'),
-    location: locationSchema.nullish(),
     pfpUrl: z.url('Invalid URL for photo'),
-    bio: z.string().max(500).nullish(),
-    instagram: z.string().max(100).nullish(),
-    neighborhood: z.string().max(100).nullish(),
-    city: z.string().max(100).nullish(),
   })
   .partial();
 

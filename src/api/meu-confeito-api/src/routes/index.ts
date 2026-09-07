@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { authRoutes } from './auth.route';
+import { bakerProfileRoutes } from './baker-profile.route';
 import { ingredientRoutes } from './ingredient.route';
 import { recipeRoutes } from './recipe.route';
 import { tagRoutes } from './tag.route';
@@ -25,5 +26,7 @@ routes.use('/tags', tagRoutes);
 routes.use('/ingredients', ingredientRoutes);
 
 routes.use('/recipes', recipeRoutes);
+
+routes.use('/baker-profiles', bakerProfileRoutes);
 
 export { routes };

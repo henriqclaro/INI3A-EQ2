@@ -1,0 +1,78 @@
+components:
+  schemas:
+    BakerProfileProfileResponse:
+      type: object
+      properties:
+        bakerProfile:
+          type: object
+          properties:
+            userId:
+              type: string
+              format: uuid
+            name:
+              type: string
+            email:
+              type: string
+            phone:
+              type: string
+              nullable: true
+            pfpUrl:
+              type: string
+              format: url
+              nullable: true
+            bio:
+              type: string
+              nullable: true
+            instagram:
+              type: string
+              nullable: true
+            neighborhood:
+              type: string
+              nullable: true
+            city:
+              type: string
+              nullable: true
+            location:
+              type: object
+              properties:
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+              nullable: true
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+    BakerProfilePublicProfileResponse:
+      type: object
+      properties:
+        bakerProfile:
+          type: object
+          properties:
+            userId:
+              type: string
+              format: uuid
+            name:
+              type: string
+            pfpUrl:
+              type: string
+              format: url
+              nullable: true
+            phone:
+              type: string
+              nullable: true
+            bio:
+              type: string
+              nullable: true
+            instagram:
+              type: string
+              nullable: true
+            neighborhood:
+              type: string
+              nullable: true
+            city:
+              type: string
+              nullable: true

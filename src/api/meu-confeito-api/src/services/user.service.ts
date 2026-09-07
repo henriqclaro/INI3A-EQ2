@@ -24,15 +24,6 @@ export class UserService {
     }
   }
 
-  private parseLocation(rawLocation: any) {
-    if (rawLocation) {
-      const [longitude, latitude] = rawLocation.coordinates;
-      return { latitude, longitude };
-    }
-
-    return null;
-  }
-
   // Queries de CRUD ------------------------
 
   async register(data: UserDTO.RegisterRequest) {
@@ -46,33 +37,21 @@ export class UserService {
 
     const hashedPassword = await bcrypt.hash(data.password, env.BCRYPT_ROUNDS);
 
-    const user = await prisma.$transaction(async (tx) => {
-      const createdUser = await tx.user.create({
-        data: {
-          name: data.name,
-          email: data.email,
-          phone: data.phone,
-          passwordHash: hashedPassword,
-          role: data.role,
-        },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          createdAt: true,
-        },
-      });
-
-      if (data.role === 'BAKER') {
-        await tx.bakerProfile.create({
-          data: {
-            userId: createdUser.id,
-          },
-        });
-      }
-
-      return createdUser;
+    const user = await prisma.user.create({
+      data: {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        passwordHash: hashedPassword,
+        role: data.role,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      },
     });
 
     return { user };
@@ -81,51 +60,33 @@ export class UserService {
   async select(context: RequestContext, id: string) {
     this.checkPermission(context, id);
 
-    // eslint-disable-next-line @ts-safeql/check-sql
-    const result = await prisma.$queryRaw<any[]>`
-      SELECT
-        "user".id,
-        "user".name,
-        "user".email,
-        "user".phone,
-        "user".profile_picture_url as "pfpUrl",
-        "user".role as role,
-        "user".updated_at as "updatedAt",
-        "user".is_active as "isActive",
-        bp.bio,
-        bp.instagram,
-        bp.neighborhood,
-        bp.city,
-        ST_AsGeoJSON(bp.location)::json as location
-      FROM "user"
-      LEFT JOIN "baker_profile" bp ON bp.user_id = "user".id
-      WHERE "user".id = ${id}
-      LIMIT 1
-    `;
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        pfpUrl: true,
+        role: true,
+        updatedAt: true,
+        isActive: true,
+      },
+    });
 
-    const rawUser = result[0] || null;
+    this.checkUser(user);
 
-    this.checkUser(rawUser);
-
-    const parsedLocation = this.parseLocation(rawUser.location);
-
-    const user = {
-      id: rawUser.id,
-      name: rawUser.name,
-      email: rawUser.email,
-      phone: rawUser.phone,
-      bio: rawUser.bio,
-      instagram: rawUser.instagram,
-      neighborhood: rawUser.neighborhood,
-      city: rawUser.city,
-      pfpUrl: rawUser.pfpUrl,
-      role: rawUser.role,
-      updatedAt: rawUser.updatedAt,
-      isActive: rawUser.isActive,
-      location: parsedLocation,
+    return {
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        pfpUrl: user.pfpUrl,
+        role: user.role,
+        updatedAt: user.updatedAt,
+      },
     };
-
-    return { user };
   }
 
   async update(context: RequestContext, id: string, data: UserDTO.UpdateRequest) {
@@ -141,108 +102,28 @@ export class UserService {
       }
     }
 
-    const { location, bio, instagram, neighborhood, city, ...userData } = data;
-
-    const profileData = {
-      ...(bio !== undefined && { bio }),
-      ...(instagram !== undefined && { instagram }),
-      ...(neighborhood !== undefined && { neighborhood }),
-      ...(city !== undefined && { city }),
-    };
-
-    const rawUpdatedUser: any = await prisma.$transaction(async (tx) => {
-      const existingUser = await tx.user.findUnique({
-        where: { id: id },
-        select: { isActive: true },
-      });
-
-      this.checkUser(existingUser);
-
-      if (Object.keys(userData).length > 0) {
-        await tx.user.update({
-          where: { id: id },
-          data: userData,
-        });
-      }
-
-      if (Object.keys(profileData).length > 0) {
-        await tx.bakerProfile.upsert({
-          where: { userId: id },
-          update: profileData,
-          create: {
-            userId: id,
-            ...profileData,
-          },
-        });
-      }
-
-      if (location !== undefined) {
-        if (location === null) {
-          await tx.$executeRaw`
-            UPDATE "baker_profile"
-            SET location = NULL, updated_at = NOW()
-            WHERE user_id = ${id}
-          `;
-        } else {
-          await tx.bakerProfile.upsert({
-            where: { userId: id },
-            update: {},
-            create: { userId: id },
-          });
-
-          await tx.$executeRaw`
-            UPDATE "baker_profile"
-            SET
-              location = ST_SetSRID(ST_MakePoint(${location.longitude}, ${location.latitude}), 4326),
-              updated_at = NOW()
-            WHERE user_id = ${id}
-          `;
-        }
-      }
-
-      const result = await tx.$queryRaw<any[]>`
-        SELECT 
-          "user".id, 
-          "user".name, 
-          "user".email, 
-          "user".phone, 
-          "user".profile_picture_url as "pfpUrl", 
-          "user".role as "role", 
-          "user".updated_at as "updatedAt", 
-          "user".is_active as "isActive",
-          bp.bio,
-          bp.instagram,
-          bp.neighborhood,
-          bp.city,
-          ST_AsGeoJSON(bp.location)::json as location
-        FROM "user"
-        LEFT JOIN "baker_profile" bp ON bp.user_id = "user".id
-        WHERE "user".id = ${id}
-        LIMIT 1
-      `;
-
-      return result[0];
+    const existingUser = await prisma.user.findUnique({
+      where: { id },
+      select: { isActive: true },
     });
 
-    const parsedLocation = this.parseLocation(rawUpdatedUser.location);
+    this.checkUser(existingUser);
 
-    const user = {
-      id: rawUpdatedUser.id,
-      name: rawUpdatedUser.name,
-      email: rawUpdatedUser.email,
-      phone: rawUpdatedUser.phone,
-      bio: rawUpdatedUser.bio,
-      instagram: rawUpdatedUser.instagram,
-      neighborhood: rawUpdatedUser.neighborhood,
-      city: rawUpdatedUser.city,
-      pfpUrl: rawUpdatedUser.pfpUrl,
-      role: rawUpdatedUser.role,
-      updatedAt: rawUpdatedUser.updatedAt,
-      isActive: rawUpdatedUser.isActive,
-      location: parsedLocation,
-    };
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        pfpUrl: true,
+        role: true,
+        updatedAt: true,
+      },
+    });
 
-    return { user };
+    return { user: updatedUser };
   }
 
   async delete(context: RequestContext, id: string, data: UserDTO.DeleteRequest) {
@@ -279,11 +160,9 @@ export class UserService {
         },
       });
 
-      await tx.$executeRaw`
-        UPDATE "baker_profile"
-        SET location = NULL
-        WHERE user_id = ${id}
-      `;
+      await tx.bakerProfile.deleteMany({
+        where: { userId: id },
+      });
     });
   }
 

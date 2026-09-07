@@ -1,0 +1,102 @@
+paths:
+  /baker-profiles/me:
+    post:
+      summary: Cadastra o perfil de confeiteiro do usuário autenticado
+      tags:
+        - Perfil de Confeiteiro
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BakerProfileRegisterSchema'
+      responses:
+        '201':
+          description: Perfil de confeiteiro cadastrado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BakerProfileProfileResponse'
+        '400':
+          description: Erro na validação dos dados
+        '403':
+          description: Ação negada por falta de privilégios ou telefone não cadastrado
+        '404':
+          description: Usuário não encontrado
+        '409':
+          description: Perfil de confeiteiro já cadastrado
+        '410':
+          description: Usuário suspenso ou excluído
+    get:
+      summary: Seleciona o perfil de confeiteiro do usuário autenticado
+      tags:
+        - Perfil de Confeiteiro
+      responses:
+        '200':
+          description: Perfil de confeiteiro selecionado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BakerProfileProfileResponse'
+        '404':
+          description: Perfil de confeiteiro não encontrado
+        '410':
+          description: Usuário suspenso ou excluído
+    patch:
+      summary: Atualiza dados do perfil de confeiteiro do usuário autenticado
+      tags:
+        - Perfil de Confeiteiro
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BakerProfileUpdateSchema'
+      responses:
+        '200':
+          description: Perfil de confeiteiro atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BakerProfileProfileResponse'
+        '400':
+          description: Erro na validação dos dados
+        '404':
+          description: Perfil de confeiteiro não encontrado
+        '410':
+          description: Usuário suspenso ou excluído
+    delete:
+      summary: Exclui o perfil de confeiteiro do usuário autenticado
+      tags:
+        - Perfil de Confeiteiro
+      responses:
+        '204':
+          description: Perfil de confeiteiro excluído com sucesso
+        '404':
+          description: Perfil de confeiteiro não encontrado
+        '410':
+          description: Usuário suspenso ou excluído
+  /baker-profiles/{id}:
+    get:
+      summary: Seleciona as informações públicas de um perfil de confeiteiro
+      tags:
+        - Perfil de Confeiteiro
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/BakerProfileParamsSchema'
+      responses:
+        '200':
+          description: Perfil de confeiteiro selecionado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BakerProfilePublicProfileResponse'
+        '400':
+          description: Erro na validação dos dados
+        '404':
+          description: Perfil de confeiteiro não encontrado
+        '410':
+          description: Usuário suspenso ou excluído
