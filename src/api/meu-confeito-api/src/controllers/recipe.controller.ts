@@ -1,7 +1,11 @@
 import type { Request, Response } from 'express';
 
 import type { Role } from '../generated/prisma/client';
-import { CreatedResponse, DefaultSuccessResponse } from '../responses/http.success';
+import {
+  CreatedResponse,
+  DefaultSuccessResponse,
+  NoContentResponse,
+} from '../responses/http.success';
 import { RecipeService } from '../services/recipe.service';
 import type { ApiResponse } from '../types/api.response';
 import type { RequestContext } from '../types/context.interface';
@@ -95,5 +99,32 @@ export class RecipeController {
       responseData,
       'Recipe visibility updated successfully',
     ).send();
+  }
+
+  async update(
+    req: Request<RecipeDTO.RequestParams, unknown, RecipeDTO.UpdateRequest>,
+    res: Response<ApiResponse<RecipeDTO.UpdateResponse>>,
+  ) {
+    const context = this.extractProps(req);
+
+    const recipeId = req.params.id;
+
+    const responseData: RecipeDTO.UpdateResponse = await this.recipeService.update(
+      context,
+      recipeId,
+      req.body,
+    );
+
+    return new DefaultSuccessResponse(res, responseData, 'Recipe updated successfully').send();
+  }
+
+  async delete(req: Request<RecipeDTO.RequestParams>, res: Response<ApiResponse>) {
+    const context = this.extractProps(req);
+
+    const recipeId = req.params.id;
+
+    await this.recipeService.delete(context, recipeId);
+
+    return new NoContentResponse(res, 'Recipe deleted successfully').send();
   }
 }

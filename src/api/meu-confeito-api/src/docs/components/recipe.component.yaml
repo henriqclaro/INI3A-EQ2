@@ -84,6 +84,20 @@ components:
                   notes:
                     type: string
                     nullable: true
+            tags:
+              type: array
+              items:
+                type: object
+                properties:
+                  tag:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      type:
+                        type: string
     RecipeSingleSelectResponse:
       type: object
       properties:
@@ -224,6 +238,174 @@ components:
                           - ML
                           - L
                           - UN
+            tags:
+              type: array
+              items:
+                type: object
+                properties:
+                  tag:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      type:
+                        type: string
+    RecipeUpdateResponse:
+      type: object
+      properties:
+        recipe:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            userId:
+              type: string
+              format: uuid
+              nullable: true
+            parentId:
+              type: string
+              format: uuid
+              nullable: true
+            title:
+              type: string
+            coverUrl:
+              type: string
+              format: url
+              nullable: true
+            instructions:
+              type: object
+            baseYield:
+              type: number
+            yieldUnit:
+              type: string
+              enum:
+                - G
+                - KG
+                - ML
+                - L
+                - UN
+            status:
+              type: string
+            totalSaves:
+              type: integer
+            totalReviews:
+              type: integer
+            averageRating:
+              type: number
+            profitMargin:
+              type: number
+            overhead:
+              type: number
+            prepTimeMinutes:
+              type: integer
+            hourlyLabor:
+              type: number
+            packagingCost:
+              type: number
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+            items:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  ingredientId:
+                    type: integer
+                    nullable: true
+                  subRecipeId:
+                    type: string
+                    format: uuid
+                    nullable: true
+                  quantity:
+                    type: number
+                  unit:
+                    type: string
+                    enum:
+                      - G
+                      - KG
+                      - ML
+                      - L
+                      - UN
+                  displayQuantity:
+                    type: number
+                    nullable: true
+                  displayUnit:
+                    type: string
+                    nullable: true
+                  sortOrder:
+                    type: integer
+                  notes:
+                    type: string
+                    nullable: true
+                  ingredient:
+                    type: object
+                    nullable: true
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      slug:
+                        type: string
+                      category:
+                        type: string
+                      baseDimension:
+                        type: string
+                        enum:
+                          - MASS
+                          - VOLUME
+                          - COUNT
+                      baseUnit:
+                        type: string
+                        enum:
+                          - G
+                          - KG
+                          - ML
+                          - L
+                          - UN
+                  subRecipe:
+                    type: object
+                    nullable: true
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      title:
+                        type: string
+                      baseYield:
+                        type: number
+                      yieldUnit:
+                        type: string
+                        enum:
+                          - G
+                          - KG
+                          - ML
+                          - L
+                          - UN
+            tags:
+              type: array
+              items:
+                type: object
+                properties:
+                  tag:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      type:
+                        type: string
     RecipeSingleSelectUserInventoryResponse:
       type: object
       properties:
@@ -423,8 +605,7 @@ components:
                         type:
                           type: string
                         id:
-                          type: string
-                          format: uuid
+                          type: integer
                         name:
                           type: string
     RecipeUpdateVisibilityResponse:

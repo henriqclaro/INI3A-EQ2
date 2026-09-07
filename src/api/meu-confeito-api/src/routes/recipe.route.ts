@@ -40,4 +40,16 @@ recipeRoutes.patch(
   recipeController.updateVisibility.bind(recipeController),
 );
 
+recipeRoutes.patch(
+  '/:id',
+  validate({ params: recipe.paramsSchema, body: recipe.updateSchema }),
+  recipeController.update.bind(recipeController),
+);
+
+recipeRoutes.delete(
+  '/:id',
+  validate({ params: recipe.paramsSchema }),
+  recipeController.delete.bind(recipeController),
+);
+
 export { recipeRoutes };

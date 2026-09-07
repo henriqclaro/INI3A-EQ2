@@ -36,7 +36,32 @@ export const registerSchema = z.object({
   packagingCost: z.number('Packaging cost must be a number').optional(),
 
   items: z.array(recipeItemSchema).min(1, 'Recipe must contain at least 1 item'),
+  tagIds: z
+    .array(z.number().int().positive('Tag ID must be a positive integer'))
+    .max(5, 'A recipe can have at most 5 tags')
+    .optional(),
 });
+
+export const updateSchema = z
+  .object({
+    title: z.string().min(1, 'Title must have at least 1 character'),
+    coverUrl: z.url('Invalid URL for Cover Image').nullable(),
+    instructions: z.looseObject({}, { error: 'Invalid JSON for Instructions' }),
+    baseYield: z.number().positive('Base yield must be positive'),
+    yieldUnit: z.enum(['G', 'KG', 'ML', 'L', 'UN']),
+
+    profitMargin: z.number('Profit margin must be a number'),
+    overhead: z.number('Overhead must be a number'),
+    prepTimeMinutes: z.int('Preparation time must be an integer'),
+    hourlyLabor: z.number('Hourly labor must be a number'),
+    packagingCost: z.number('Packaging cost must be a number'),
+
+    items: z.array(recipeItemSchema).min(1, 'Recipe must contain at least 1 item'),
+    tagIds: z
+      .array(z.number().int().positive('Tag ID must be a positive integer'))
+      .max(5, 'A recipe can have at most 5 tags'),
+  })
+  .partial();
 
 export const paramsSchema = z.object({
   id: z.uuid('Invalid UUID for recipe ID'),

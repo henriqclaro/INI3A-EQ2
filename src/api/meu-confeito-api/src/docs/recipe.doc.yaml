@@ -63,6 +63,54 @@ paths:
           description: Ação negada por falta de privilégios
         '404':
           description: Receita não encontrada
+    patch:
+      summary: Atualiza dados de uma receita
+      tags:
+        - Receitas
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/RecipeParamsSchema'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeUpdateSchema'
+      responses:
+        '200':
+          description: Receita atualizada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeUpdateResponse'
+        '400':
+          description: Erro na validação dos dados
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Receita ou recurso não encontrado
+    delete:
+      summary: Exclui uma receita
+      tags:
+        - Receitas
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/RecipeParamsSchema'
+      responses:
+        '204':
+          description: Receita excluída com sucesso
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Receita não encontrada
+        '409':
+          description: Conflito ao excluir receita em uso como sub-receita ou com produções registradas
   /recipes/{id}/users/{userId}:
     get:
       summary: Seleciona uma receita por ID incluindo o estoque do usuário

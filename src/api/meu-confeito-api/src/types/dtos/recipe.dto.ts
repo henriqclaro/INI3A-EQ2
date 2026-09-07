@@ -36,12 +36,25 @@ export namespace RecipeDTO {
         sortOrder: number;
         notes: string | null;
       }[];
+      tags?: {
+        tag: {
+          id: number;
+          name: string;
+          type: TagType;
+        };
+      }[];
     };
   }
 
   export type RequestParam = z.infer<typeof recipe.paramsSchema>;
+  export type RequestParams = z.infer<typeof recipe.paramsSchema>;
+  export type UpdateRequest = z.infer<typeof recipe.updateSchema>;
   export type UserInventoryRequestParam = z.infer<typeof recipe.userInventoryParamsSchema>;
   export type QueryRequest = z.infer<typeof recipe.querySchema>;
+
+  export interface UpdateResponse {
+    recipe: SingleSelectResponse['recipe'];
+  }
 
   export interface SingleSelectResponse {
     recipe: {
@@ -92,6 +105,13 @@ export namespace RecipeDTO {
           baseYield: Decimal;
           yieldUnit: string;
         } | null;
+      }[];
+      tags?: {
+        tag: {
+          id: number;
+          name: string;
+          type: TagType;
+        };
       }[];
     };
   }
