@@ -1,4 +1,55 @@
 paths:
+  /baker-profiles:
+    get:
+      summary: Busca e lista perfis de confeiteiro por proximidade e tags
+      tags:
+        - Perfil de Confeiteiro
+      parameters:
+        - in: query
+          name: lat
+          required: true
+          description: Latitude do ponto de referência
+          schema:
+            type: number
+        - in: query
+          name: lng
+          required: true
+          description: Longitude do ponto de referência
+          schema:
+            type: number
+        - in: query
+          name: radius
+          required: false
+          description: Raio de busca em metros (padrão 10000m)
+          schema:
+            type: number
+            default: 10000
+        - in: query
+          name: page
+          required: false
+          description: Página para paginação (início em 0, 10 itens por página)
+          schema:
+            type: integer
+            default: 0
+        - in: query
+          name: tags
+          required: false
+          description: Tags para filtro (IDs numéricos ou nomes separados por vírgula)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Perfis de confeiteiro selecionados com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BakerProfileSelectByLocationResponse'
+        '400':
+          description: Erro na validação dos dados
+        '404':
+          description: Usuário não encontrado
+        '410':
+          description: Usuário suspenso ou excluído
   /baker-profiles/me:
     post:
       summary: Cadastra o perfil de confeiteiro do usuário autenticado

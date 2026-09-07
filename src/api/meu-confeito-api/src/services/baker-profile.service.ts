@@ -1,4 +1,5 @@
 import prisma from '../config/database';
+import { Prisma } from '../generated/prisma/client';
 import { ConflictError, ForbiddenError, GoneError, NotFoundError } from '../responses/http.error';
 import type { RequestContext } from '../types/context.interface';
 import type { BakerProfileDTO } from '../types/dtos/baker-profile.dto';
@@ -284,5 +285,77 @@ export class BakerProfileService {
         city: profile.city,
       },
     };
+  }
+
+  async selectByLocation(
+    context: RequestContext,
+    data: BakerProfileDTO.QueryRequest,
+  ): Promise<BakerProfileDTO.SelectByLocationResponse> {
+    const sender = await prisma.user.findUnique({
+      where: { id: context.userId },
+      select: { isActive: true },
+    });
+
+    if (!sender) {
+      throw new NotFoundError('User not found', 'USER_NOT_FOUND');
+    }
+
+    if (!sender.isActive) {
+      throw new GoneError('User suspended or deleted', 'USER_ACCOUNT_GONE');
+    }
+
+    const limit = 10;
+    const safePage = data.page ?? 0;
+    const offset = safePage > 0 ? safePage * limit : 0;
+
+    let tagCondition = Prisma.empty;
+    if (data.tags && data.tags.length > 0) {
+      const numericTagIds = data.tags
+        .map((t) => parseInt(t, 10))
+        .filter((n) => !isNaN(n) && Number.isInteger(n));
+      const tagNames = data.tags.map((t) => t.toLowerCase());
+
+      tagCondition = Prisma.sql`AND EXISTS (
+        SELECT 1
+        FROM "user_tag" ut
+        JOIN "tag" t ON t.id = ut.tag_id
+        WHERE ut.user_id = bp.user_id
+          AND (
+            ${numericTagIds.length > 0 ? Prisma.sql`ut.tag_id = ANY(${numericTagIds}) OR ` : Prisma.empty}LOWER(t.name) = ANY(${tagNames})
+          )
+      )`;
+    }
+
+    /* eslint-disable @ts-safeql/check-sql */
+    const result = await prisma.$queryRaw<any[]>`
+      SELECT
+        bp.user_id as "userId",
+        "user".name,
+        "user".profile_picture_url as "pfpUrl",
+        bp.neighborhood,
+        bp.city,
+        ROUND(ST_Distance(bp.location::geography, ST_SetSRID(ST_MakePoint(${data.lng}, ${data.lat}), 4326)::geography)::numeric, 2)::float as distance
+      FROM "baker_profile" bp
+      INNER JOIN "user" ON "user".id = bp.user_id
+      WHERE "user".is_active = true
+        AND bp.location IS NOT NULL
+        AND ST_DWithin(bp.location::geography, ST_SetSRID(ST_MakePoint(${data.lng}, ${data.lat}), 4326)::geography, ${data.radius})
+        ${tagCondition}
+      ORDER BY distance ASC
+      LIMIT ${limit}
+      OFFSET ${offset}
+    `;
+    /* eslint-enable @ts-safeql/check-sql */
+
+    const bakerProfiles = result.map((row) => ({
+      userId: row.userId,
+      name: row.name,
+      pfpUrl: row.pfpUrl,
+      distance: Number(row.distance),
+      neighborhood: row.neighborhood,
+      city: row.city,
+    }));
+
+    return { bakerProfiles };
   }
 }

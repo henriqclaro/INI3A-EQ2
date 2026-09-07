@@ -76,3 +76,29 @@ components:
             city:
               type: string
               nullable: true
+    BakerProfileSelectByLocationResponse:
+      type: object
+      properties:
+        bakerProfiles:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: string
+                format: uuid
+              name:
+                type: string
+              pfpUrl:
+                type: string
+                format: url
+                nullable: true
+              distance:
+                type: number
+                description: Distância em metros do ponto fornecido
+              neighborhood:
+                type: string
+                nullable: true
+              city:
+                type: string
+                nullable: true

@@ -39,4 +39,17 @@ export namespace BakerProfileDTO {
       city: string | null;
     };
   }
+
+  export type QueryRequest = z.infer<typeof bakerProfile.querySchema>;
+
+  export interface SelectByLocationResponse {
+    bakerProfiles: {
+      userId: string;
+      name: string;
+      pfpUrl: string | null;
+      distance: number;
+      neighborhood: string | null;
+      city: string | null;
+    }[];
+  }
 }

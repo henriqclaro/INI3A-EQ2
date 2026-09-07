@@ -79,4 +79,19 @@ export class BakerProfileController {
       'Baker profile selected successfully',
     ).send();
   }
+
+  async selectByLocation(
+    req: Request,
+    res: Response<ApiResponse<BakerProfileDTO.SelectByLocationResponse>>,
+  ) {
+    const context = this.extractProps(req);
+    const query = req.query as unknown as BakerProfileDTO.QueryRequest;
+    const responseData = await this.bakerProfileService.selectByLocation(context, query);
+
+    return new DefaultSuccessResponse(
+      res,
+      responseData,
+      'Baker profiles selected successfully',
+    ).send();
+  }
 }

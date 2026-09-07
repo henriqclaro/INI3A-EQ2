@@ -10,6 +10,12 @@ const bakerProfileController = new BakerProfileController();
 
 bakerProfileRoutes.use(authMiddleware);
 
+bakerProfileRoutes.get(
+  '/',
+  validate({ query: bakerProfile.querySchema }),
+  bakerProfileController.selectByLocation.bind(bakerProfileController),
+);
+
 bakerProfileRoutes.post(
   '/me',
   validate({ body: bakerProfile.registerSchema }),
