@@ -1,0 +1,180 @@
+paths:
+  /inventory:
+    get:
+      summary: Lista os itens de estoque do usuário autenticado
+      description: Retorna a lista completa de itens em estoque do usuário autenticado com os detalhes de cada ingrediente.
+      tags:
+        - Estoque
+      responses:
+        '200':
+          description: Itens de estoque selecionados com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryListResponse'
+        '401':
+          description: Token inválido ou expirado
+        '403':
+          description: Ação negada por falta de privilégios
+
+  /inventory/transactions:
+    get:
+      summary: Lista o histórico de transações de estoque
+      description: Retorna o extrato do livro-razão de movimentações de estoque (compras, ajustes, desperdícios) do usuário autenticado.
+      tags:
+        - Estoque
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 0
+          description: Número da página (iniciando em 0)
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          description: Quantidade de registros por página
+        - in: query
+          name: ingredientId
+          schema:
+            type: integer
+          description: Filtrar por ID do ingrediente
+        - in: query
+          name: transactionType
+          schema:
+            type: string
+            enum:
+              - PURCHASE
+              - PRODUCTION_USAGE
+              - PRODUCTION_REVERSAL
+              - WASTE
+              - MANUAL_ADJUSTMENT
+          description: Filtrar pelo tipo de movimentação
+      responses:
+        '200':
+          description: Transações de estoque selecionadas com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryTransactionListResponse'
+        '400':
+          description: Erro na validação dos dados
+        '401':
+          description: Token inválido ou expirado
+        '403':
+          description: Ação negada por falta de privilégios
+
+  /inventory/{ingredientId}:
+    get:
+      summary: Seleciona um item de estoque pelo ID do ingrediente
+      description: Retorna os detalhes de estoque de um ingrediente específico do usuário autenticado.
+      tags:
+        - Estoque
+      parameters:
+        - in: path
+          name: ingredientId
+          required: true
+          schema:
+            type: integer
+          description: ID do ingrediente
+      responses:
+        '200':
+          description: Item de estoque selecionado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventorySelectByIngredientResponse'
+        '400':
+          description: Erro na validação dos dados
+        '401':
+          description: Token inválido ou expirado
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Item de estoque não encontrado
+
+  /inventory/purchases:
+    post:
+      summary: Registra uma compra de ingrediente no estoque
+      description: Registra uma nova compra de insumo, recalcula o Preço Médio Ponderado (PMP) e cria uma transação no livro-razão.
+      tags:
+        - Estoque
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryPurchaseSchema'
+      responses:
+        '201':
+          description: Compra registrada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryPurchaseResponse'
+        '400':
+          description: Erro na validação dos dados
+        '401':
+          description: Token inválido ou expirado
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Ingrediente não encontrado
+
+  /inventory/adjustments:
+    post:
+      summary: Registra um ajuste manual no estoque
+      description: Atualiza o saldo físico real de um insumo no estoque e registra uma transação no livro-razão caso haja diferença.
+      tags:
+        - Estoque
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryAdjustmentSchema'
+      responses:
+        '201':
+          description: Ajuste de estoque registrado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryAdjustmentResponse'
+        '400':
+          description: Erro na validação dos dados
+        '401':
+          description: Token inválido ou expirado
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Ingrediente não encontrado
+
+  /inventory/waste:
+    post:
+      summary: Registra descarte ou desperdício de insumo
+      description: Registra a perda ou descarte de um insumo, reduz o saldo de estoque e calcula o prejuízo contábil.
+      tags:
+        - Estoque
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryWasteSchema'
+      responses:
+        '201':
+          description: Desperdício de estoque registrado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryWasteResponse'
+        '400':
+          description: Erro na validação dos dados ou saldo insuficiente
+        '401':
+          description: Token inválido ou expirado
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Item de estoque não encontrado

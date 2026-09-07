@@ -82,47 +82,6 @@ export namespace UserDTO {
     }[];
   }
 
-  export type RegisterUserInventoryRequest = z.infer<typeof user.inventoryRegisterSchema>;
-
-  export interface RegisterUserInventoryResponse {
-    userInventory: {
-      userId: string;
-      ingredientId: number;
-      currentQuantity: Decimal;
-      costPerBaseUnit: Decimal;
-      expirationDate: Date | null;
-      lastUpdated: Date;
-      ingredient: {
-        id: number;
-        name: string;
-        slug: string;
-        category: string;
-        baseDimension: string;
-        baseUnit: string;
-        description: string | null;
-      };
-    };
-  }
-
-  export interface SelectUserInventoryResponse {
-    userInventories: {
-      ingredientId: number;
-      currentQuantity: Decimal;
-      costPerBaseUnit: Decimal;
-      expirationDate: Date | null;
-      lastUpdated: Date;
-      ingredient: {
-        id: number;
-        name: string;
-        slug: string;
-        category: string;
-        baseDimension: string;
-        baseUnit: string;
-        description: string | null;
-      };
-    }[];
-  }
-
   export type SaveRecipeRequest = z.infer<typeof user.saveRecipeSchema>;
   export interface SaveRecipeResponse {
     userSavedRecipe: {

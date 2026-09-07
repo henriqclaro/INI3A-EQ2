@@ -115,38 +115,6 @@ export class UserController {
     return new DefaultSuccessResponse(res, responseData, 'User Saves selected successfully').send();
   }
 
-  async registerUserInventory(
-    req: Request<UserDTO.RequestParams, unknown, UserDTO.RegisterUserInventoryRequest>,
-    res: Response<ApiResponse<UserDTO.RegisterUserInventoryResponse>>,
-  ) {
-    const context = this.extractProps(req);
-
-    const userId = req.params.id;
-
-    const responseData: UserDTO.RegisterUserInventoryResponse =
-      await this.userService.registerUserInventory(context, userId, req.body);
-
-    return new CreatedResponse(res, responseData, 'User Inventory created successfully').send();
-  }
-
-  async selectUserInventory(
-    req: Request<UserDTO.RequestParams>,
-    res: Response<ApiResponse<UserDTO.SelectUserInventoryResponse>>,
-  ) {
-    const context = this.extractProps(req);
-
-    const userId = req.params.id;
-
-    const responseData: UserDTO.SelectUserInventoryResponse =
-      await this.userService.selectUserInventory(context, userId);
-
-    return new DefaultSuccessResponse(
-      res,
-      responseData,
-      'User Inventory selected successfully',
-    ).send();
-  }
-
   async saveRecipe(
     req: Request<UserDTO.RequestParams, unknown, UserDTO.SaveRecipeRequest>,
     res: Response<ApiResponse<UserDTO.SaveRecipeResponse>>,

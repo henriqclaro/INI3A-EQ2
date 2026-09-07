@@ -62,16 +62,4 @@ userRoutes.delete(
   userController.removeSaveRecipe.bind(userController),
 );
 
-userRoutes.post(
-  '/:id/inventories',
-  validate({ params: user.paramsSchema, body: user.inventoryRegisterSchema }),
-  userController.registerUserInventory.bind(userController),
-);
-
-userRoutes.get(
-  '/:id/inventories',
-  validate({ params: user.paramsSchema }),
-  userController.selectUserInventory.bind(userController),
-);
-
 export { userRoutes };

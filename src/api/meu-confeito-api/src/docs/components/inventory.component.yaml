@@ -1,0 +1,154 @@
+components:
+  schemas:
+    InventoryItem:
+      type: object
+      properties:
+        ingredientId:
+          type: integer
+        currentQuantity:
+          type: number
+          description: Quantidade atual em estoque na unidade base
+        costPerBaseUnit:
+          type: number
+          description: Custo médio ponderado por unidade base
+        expirationDate:
+          type: string
+          format: date-time
+          nullable: true
+          description: Data de validade do insumo
+        lastUpdated:
+          type: string
+          format: date-time
+        ingredient:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            slug:
+              type: string
+            category:
+              type: string
+            baseDimension:
+              type: string
+              enum:
+                - MASS
+                - VOLUME
+                - COUNT
+            baseUnit:
+              type: string
+              enum:
+                - G
+                - KG
+                - ML
+                - L
+                - UN
+            description:
+              type: string
+              nullable: true
+    InventoryTransactionItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        ingredientId:
+          type: integer
+        productionId:
+          type: string
+          format: uuid
+          nullable: true
+        transactionType:
+          type: string
+          enum:
+            - PURCHASE
+            - PRODUCTION_USAGE
+            - PRODUCTION_REVERSAL
+            - WASTE
+            - MANUAL_ADJUSTMENT
+        quantityChanged:
+          type: number
+          description: Quantidade movimentada na transação
+        measurementUnit:
+          type: string
+          enum:
+            - G
+            - KG
+            - ML
+            - L
+            - UN
+        unitCost:
+          type: number
+          description: Custo unitário no momento da transação
+        totalCost:
+          type: number
+          description: Custo total da transação
+        expirationDate:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        ingredient:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            slug:
+              type: string
+            baseUnit:
+              type: string
+              enum:
+                - G
+                - KG
+                - ML
+                - L
+                - UN
+    InventoryListResponse:
+      type: object
+      properties:
+        inventory:
+          type: array
+          items:
+            $ref: '#/components/schemas/InventoryItem'
+    InventorySelectByIngredientResponse:
+      type: object
+      properties:
+        inventory:
+          $ref: '#/components/schemas/InventoryItem'
+    InventoryPurchaseResponse:
+      type: object
+      properties:
+        inventory:
+          $ref: '#/components/schemas/InventoryItem'
+        transaction:
+          $ref: '#/components/schemas/InventoryTransactionItem'
+    InventoryAdjustmentResponse:
+      type: object
+      properties:
+        inventory:
+          $ref: '#/components/schemas/InventoryItem'
+        transaction:
+          $ref: '#/components/schemas/InventoryTransactionItem'
+          nullable: true
+    InventoryWasteResponse:
+      type: object
+      properties:
+        inventory:
+          $ref: '#/components/schemas/InventoryItem'
+        transaction:
+          $ref: '#/components/schemas/InventoryTransactionItem'
+    InventoryTransactionListResponse:
+      type: object
+      properties:
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/InventoryTransactionItem'
