@@ -11,7 +11,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
-import { Stack } from 'expo-router';
+import { Stack, router } from 'expo-router';
 
 import { CustomButton, Input } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
@@ -102,12 +102,20 @@ export default function StockScreen() {
       <View style={styles.container}>
         {/* <BackButton /> */}
         <View style={styles.headerContent}>
-          <Input
-            value={search}
-            placeholder="Buscar Ingrediente..."
-            onChangeText={setSearch}
-            containerStyle={styles.searchInput}
-          />
+          <View style={styles.searchAndActionRow}>
+            <Input
+              value={search}
+              placeholder="Buscar Ingrediente..."
+              onChangeText={setSearch}
+              containerStyle={styles.searchInput}
+            />
+            <CustomButton
+              title="+ Adicionar"
+              variant="primary"
+              onPress={() => router.push('/register-stock' as any)}
+              style={styles.addStockButton}
+            />
+          </View>
         </View>
 
         <ScrollView
@@ -132,6 +140,14 @@ export default function StockScreen() {
                   ? 'Nenhum ingrediente encontrado para a busca.'
                   : 'Nenhum ingrediente cadastrado no estoque.'}
               </Text>
+              {!search.trim() && (
+                <CustomButton
+                  title="Cadastrar Primeiro Ingrediente"
+                  variant="dashed"
+                  onPress={() => router.push('/register-stock' as any)}
+                  style={styles.emptyButton}
+                />
+              )}
             </View>
           ) : (
             <View style={styles.gridContainer}>
@@ -252,10 +268,28 @@ const createStyles = (theme: AppTheme) =>
       alignItems: 'center',
       paddingHorizontal: 20,
     },
-    searchInput: {
+    searchAndActionRow: {
       width: '100%',
-      maxWidth: 500,
+      maxWidth: 640,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
       marginVertical: 8,
+    },
+    searchInput: {
+      flex: 1,
+      margin: 0,
+    },
+    addStockButton: {
+      height: 48,
+      margin: 0,
+      borderRadius: 8,
+      paddingHorizontal: 16,
+    },
+    emptyButton: {
+      marginTop: 14,
+      borderRadius: 8,
+      paddingHorizontal: 20,
     },
     scrollContainer: {
       alignItems: 'center',

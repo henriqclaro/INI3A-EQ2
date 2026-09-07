@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { UserEditData, UserInventoryItem, UserRegisterData, UserService } from '../services/user';
+import {
+  RegisterUserInventoryData,
+  UserEditData,
+  UserInventoryItem,
+  UserRegisterData,
+  UserService,
+} from '../services/user';
 
 export function useUserRegister() {
   const [isLoading, setIsLoading] = useState(false);
@@ -82,4 +88,31 @@ export function useUserInventory(userId: string | undefined) {
     refetch: fetchUserInventory,
     setInventories,
   };
+}
+
+export function useUserInventoryRegister() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const registerInventory = async (userId: string, data: RegisterUserInventoryData) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await UserService.registerInventory(userId, data);
+      return response;
+    } catch (err: unknown) {
+      console.error('Error registering user inventory:', err);
+      const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
+      const apiMessage =
+        apiErr?.response?.data?.message ||
+        apiErr?.message ||
+        'Erro ao cadastrar ingrediente no estoque.';
+      setError(apiMessage);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { registerInventory, isLoading, error };
 }

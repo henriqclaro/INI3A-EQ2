@@ -20,6 +20,7 @@ import { Picker } from '@react-native-picker/picker';
 import { ActivityIndicator } from 'react-native-paper';
 
 import { CustomButton } from '@/src/components';
+import { COMMON_UNITS } from '@/src/constants/common-units';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useIngredients } from '@/src/hooks/useIngredients';
@@ -33,18 +34,6 @@ interface IngredientFormItem {
   measurementUnit: string;
   notes: string;
 }
-
-const COMMON_UNITS = [
-  { label: 'Gramas (g)', value: 'g' },
-  { label: 'Quilos (kg)', value: 'kg' },
-  { label: 'Mililitros (ml)', value: 'ml' },
-  { label: 'Litros (L)', value: 'L' },
-  { label: 'Unidades (un)', value: 'un' },
-  { label: 'Xícaras', value: 'xícara' },
-  { label: 'Colheres de sopa', value: 'colher de sopa' },
-  { label: 'Colheres de chá', value: 'colher de chá' },
-  { label: 'Pitadas', value: 'pitada' },
-];
 
 export default function CreateRecipeScreen() {
   const { theme } = useThemeMode();
