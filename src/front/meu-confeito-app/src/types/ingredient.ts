@@ -18,4 +18,3 @@ export interface RecipeIngredientInput {
   measurementUnit: string;
   notes?: string | null;
 }
-

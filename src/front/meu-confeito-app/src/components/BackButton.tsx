@@ -1,3 +1,7 @@
+/**
+ * O componente foi completamente comentado para favorecer o back navigation do header
+ */
+/*
 import { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 
@@ -30,3 +34,6 @@ const createStyles = (theme: AppTheme) =>
       zIndex: 10,
     },
   });
+*/
+
+export const BackButton = () => null;

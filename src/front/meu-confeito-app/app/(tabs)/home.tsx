@@ -46,10 +46,7 @@ export default function HomeScreen() {
           ) : (
             <Text style={styles.emptyText}>Você ainda não possui receitas públicas.</Text>
           )}
-          <CustomButton
-            title="Estoque"
-            onPress={() => router.push('/stock')}
-          />
+          <CustomButton title="Estoque" onPress={() => router.push('/stock' as any)} />
         </ScrollView>
       </View>
     </View>
@@ -61,11 +58,11 @@ const createStyles = (theme: AppTheme) =>
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
-      paddingTop: 80,
+      paddingTop: 16,
     },
     header: {
       paddingHorizontal: 20,
-      marginBottom: 30,
+      marginBottom: 20,
     },
     title: {
       color: theme.colors.primary,

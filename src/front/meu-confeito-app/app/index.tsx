@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
 import { Image } from 'expo-image';
 import { Link, Stack } from 'expo-router';
@@ -21,31 +21,44 @@ export default function WelcomeScreen() {
 
       <View style={styles.container}>
         <ScrollView
-            contentContainerStyle={styles.scrollContainer}
-            showsHorizontalScrollIndicator={false}
-          >
-        <View style={styles.contentContainer}>
-          
-          <Image source={require('../assets/images/logo.svg')} style={styles.logo} />
+          contentContainerStyle={styles.scrollContainer}
+          showsHorizontalScrollIndicator={false}
+        >
+          <View style={styles.contentContainer}>
+            <Image source={require('../assets/images/logo.svg')} style={styles.logo} />
 
-          <Text style={styles.mainText}>Seja bem-vindo(a) ao MeuConfeito!</Text>
-          <Text style={styles.text}>
-            Um aplicativo pensado para auxiliar confeiteiras que desejam organizar suas produções,
-            projetar suas vendas e armazenar suas receitas.
-          </Text>
-        
-          <Link href="/register" asChild>
-            <CustomButton title="Cadastrar como Confeiteira" variant="primary" />
-          </Link>
+            <Text style={styles.mainText}>Seja bem-vindo(a) ao MeuConfeito!</Text>
+            <Text style={styles.text}>
+              Um aplicativo pensado para auxiliar confeiteiras que desejam organizar suas produções,
+              projetar suas vendas e armazenar suas receitas.
+            </Text>
 
-          <Link href="/register" asChild>
-            <CustomButton title="Cadastrar como Cliente" variant="secondary" />
-          </Link>
+            {/* This should send the 'BAKER' role*/}
+            <Link
+              href={{
+                pathname: '/register',
+                params: { role: 'BAKER' },
+              }}
+              asChild
+            >
+              <CustomButton title="Cadastrar como Confeiteira" variant="primary" />
+            </Link>
 
-          <Link href="/login" asChild>
-            <CustomButton title="Já tenho cadastro" variant="neutral" />
-          </Link>
-        </View>
+            {/* This should send the 'CUSTOMER' role*/}
+            <Link
+              href={{
+                pathname: '/register',
+                params: { role: 'CUSTOMER' },
+              }}
+              asChild
+            >
+              <CustomButton title="Cadastrar como Cliente" variant="secondary" />
+            </Link>
+
+            <Link href="/login" asChild>
+              <CustomButton title="Já tenho cadastro" variant="neutral" />
+            </Link>
+          </View>
         </ScrollView>
         {/* Foto que aparece no PC */}
         {isDesktop && (
@@ -56,9 +69,7 @@ export default function WelcomeScreen() {
               contentFit="cover"
             />
           </View>
-          
         )}
-
       </View>
     </>
   );

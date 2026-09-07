@@ -1,9 +1,19 @@
 import { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 
 import { Stack, router } from 'expo-router';
 
-import { BackButton, Input, RecipeView } from '@/src/components';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+
+import { Input, RecipeView } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useManyRecipes } from '@/src/hooks/useRecipes';
 import { AppTheme } from '@/src/theme/themes';
@@ -12,97 +22,241 @@ export default function PublicRecipesScreen() {
   const [search, setSearch] = useState('');
 
   const { theme } = useThemeMode();
-  const { recipes } = useManyRecipes(search);
+  const { recipes, isLoading } = useManyRecipes(search);
   const { width } = useWindowDimensions();
+
+  const isDesktop = width >= 768;
+  const hasActiveSearch = Boolean(search.trim().length > 0);
 
   const cardWidth = useMemo(() => {
     if (width >= 1200) {
-      return (1200 - 40 - 45) / 4; // 4 columns on large desktop
+      return (1200 - 48 - 48) / 4; // 4 columns on large desktop
     }
-    if (width >= 900) {
-      return (width - 40 - 30) / 3; // 3 columns on tablet / small desktop
+    if (width >= 960) {
+      return (width - 48 - 32) / 3; // 3 columns on tablet / small desktop
     }
-    if (width >= 600) {
-      return (width - 40 - 15) / 2; // 2 columns on tablets
+    if (width >= 768) {
+      return (width - 48 - 16) / 2; // 2 columns on tablets
     }
     return undefined; // full width on mobile
   }, [width]);
 
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
   return (
     <>
       <Stack.Screen options={{ title: 'Receitas Públicas' }} />
 
       <View style={styles.container}>
-        <BackButton />
         <View style={styles.headerContent}>
           <Input
             value={search}
-            placeholder="Pesquisar receitas..."
+            placeholder="Buscar por título ou ingredientes..."
             onChangeText={setSearch}
             containerStyle={styles.searchInput}
+            leftIcon={
+              <MaterialCommunityIcons name="magnify" size={22} color={theme.colors.placeholder} />
+            }
+            isClearable={true}
+            onClear={() => setSearch('')}
           />
+
+          {!isLoading && (
+            <View style={styles.metaRow}>
+              <Text style={styles.resultCountText}>
+                {hasActiveSearch
+                  ? `${recipes.length} ${recipes.length === 1 ? 'receita encontrada' : 'receitas encontradas'}`
+                  : `${recipes.length} ${recipes.length === 1 ? 'receita disponível' : 'receitas disponíveis'}`}
+              </Text>
+            </View>
+          )}
         </View>
 
         <ScrollView
+          style={styles.scrollView}
           contentContainerStyle={styles.scrollContainer}
-          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
         >
-          <View style={styles.gridContainer}>
-            {recipes.map((recipe) => (
-              <View key={recipe.id} style={[styles.cardWrapper, cardWidth ? { width: cardWidth } : null]}>
-                <RecipeView
-                  title={recipe.title}
-                  coverUrl={recipe.coverUrl}
-                  tags={recipe.tags}
-                  prepTimeMinutes={recipe.prepTimeMinutes}
-                  onPress={() => {
-                    router.push({ pathname: '/single-recipe', params: { recipeId: recipe.id } });
-                  }}
+          {isLoading ? (
+            <View style={styles.feedbackContainer}>
+              <ActivityIndicator size="large" color={theme.colors.primary} />
+            </View>
+          ) : recipes.length === 0 ? (
+            <View style={styles.feedbackContainer}>
+              <View style={styles.emptyIconWrapper}>
+                <MaterialCommunityIcons
+                  name="book-search-outline"
+                  size={44}
+                  color={theme.colors.primary}
                 />
               </View>
-            ))}
-          </View>
+              <Text style={styles.emptyTitle}>
+                {hasActiveSearch
+                  ? 'Nenhuma receita encontrada'
+                  : 'Nenhuma receita pública no momento'}
+              </Text>
+              <Text style={styles.emptySubtitle}>
+                {hasActiveSearch
+                  ? `Não encontramos resultados para "${search}". Tente buscar por outros termos ou ingredientes.`
+                  : 'Explore novamente mais tarde para descobrir novas receitas compartilhadas.'}
+              </Text>
+
+              {hasActiveSearch && (
+                <TouchableOpacity
+                  style={styles.clearSearchBtn}
+                  onPress={() => setSearch('')}
+                  activeOpacity={0.85}
+                >
+                  <MaterialCommunityIcons
+                    name="close-circle-outline"
+                    size={18}
+                    color={theme.colors.primary}
+                  />
+                  <Text style={styles.clearSearchBtnText}>Limpar busca</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ) : (
+            <View style={styles.gridContainer}>
+              {recipes.map((recipe) => (
+                <View
+                  key={recipe.id}
+                  style={[styles.cardWrapper, cardWidth ? { width: cardWidth } : null]}
+                >
+                  <RecipeView
+                    title={recipe.title}
+                    coverUrl={recipe.coverUrl}
+                    tags={recipe.tags}
+                    prepTimeMinutes={recipe.prepTimeMinutes}
+                    onPress={() => {
+                      router.push({ pathname: '/single-recipe', params: { recipeId: recipe.id } });
+                    }}
+                  />
+                </View>
+              ))}
+            </View>
+          )}
         </ScrollView>
       </View>
     </>
   );
 }
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = (theme: AppTheme, isDesktop: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
-      alignItems: 'center',
-      paddingTop: 80,
     },
     headerContent: {
       width: '100%',
       maxWidth: 1200,
+      alignSelf: 'center',
       alignItems: 'center',
-      paddingHorizontal: 20,
+      paddingHorizontal: isDesktop ? 24 : 16,
+      paddingTop: 12,
+      paddingBottom: 4,
     },
     searchInput: {
       width: '100%',
-      maxWidth: 500,
-      margin: 12,
+      maxWidth: 600,
+      height: 52,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.secBorder,
+      backgroundColor: theme.colors.pitchBackground,
+      margin: 0,
     },
-    scrollContainer: {
+    metaRow: {
+      width: '100%',
+      maxWidth: 600,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
       alignItems: 'center',
-      padding: 20,
+      paddingHorizontal: 4,
+      marginTop: 8,
+      marginBottom: 4,
+    },
+    resultCountText: {
+      fontFamily: 'Inter',
+      fontSize: 13,
+      color: theme.colors.text,
+      opacity: 0.75,
+    },
+    scrollView: {
+      flex: 1,
       width: '100%',
     },
+    scrollContainer: {
+      paddingHorizontal: isDesktop ? 24 : 16,
+      paddingTop: 8,
+      paddingBottom: 60,
+      alignItems: 'center',
+    },
     gridContainer: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 15,
-      justifyContent: 'center',
+      flexDirection: isDesktop ? 'row' : 'column',
+      flexWrap: isDesktop ? 'wrap' : 'nowrap',
+      gap: 16,
+      justifyContent: isDesktop ? 'flex-start' : 'center',
+      alignItems: 'center',
       width: '100%',
       maxWidth: 1200,
     },
     cardWrapper: {
       width: '100%',
+      maxWidth: isDesktop ? undefined : 480,
+    },
+    feedbackContainer: {
+      paddingTop: 48,
+      paddingHorizontal: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+      maxWidth: 420,
+    },
+    emptyIconWrapper: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      backgroundColor: theme.colors.secondary,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      marginBottom: 16,
+    },
+    emptyTitle: {
+      color: theme.colors.text,
+      fontFamily: 'Playfair Display SC',
+      fontSize: 20,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      marginBottom: 8,
+    },
+    emptySubtitle: {
+      color: theme.colors.text,
+      fontFamily: 'Inter',
+      fontSize: 14,
+      lineHeight: 20,
+      opacity: 0.8,
+      textAlign: 'center',
+      marginBottom: 20,
+    },
+    clearSearchBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: theme.colors.pitchBackground,
+      borderWidth: 1,
+      borderColor: theme.colors.primary,
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      borderRadius: 8,
+      minHeight: 48,
+    },
+    clearSearchBtnText: {
+      fontFamily: 'Inter',
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.colors.primary,
     },
   });

@@ -9,12 +9,12 @@
 
 <div align="center">
     <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-22.x-6DA55F?style=for-the-badge&logo=node.js" alt="Node.js Badge"></a>
-    <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.x-007ACC?style=for-the-badge&logo=typescript" alt="TypeScript Badge"></a><br>
+    <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-6.x-007ACC?style=for-the-badge&logo=typescript" alt="TypeScript Badge"></a><br>
     <a href="https://expressjs.com"><img src="https://img.shields.io/badge/Express.js-5.x-lightgrey?style=for-the-badge&logo=express" alt="Express.js Badge"></a>
     <a href="https://www.prisma.io/orm"><img src="https://img.shields.io/badge/Prisma-7.x-6366f1?style=for-the-badge&logo=prisma" alt="Prisma ORM Badge"></a>
     <a href="https://www.postgresql.org"><img src="https://img.shields.io/badge/Postgresql-18.x-336791?style=for-the-badge&logo=postgresql" alt="PostgreSQL Badge"></a><br>
-    <a href="https://react.dev/"><img src="https://img.shields.io/badge/React_Native-0.83.x-61DAFB?style=for-the-badge&logo=React" alt="React Native Badge"></a>
-    <a href="https://expo.dev/go"><img src="https://img.shields.io/badge/Expo-55.x-white?style=for-the-badge&logo=Expo" alt="Expo Badge"></a>
+    <a href="https://react.dev/"><img src="https://img.shields.io/badge/React_Native-0.86.x-61DAFB?style=for-the-badge&logo=React" alt="React Native Badge"></a>
+    <a href="https://expo.dev/go"><img src="https://img.shields.io/badge/Expo-57.x-white?style=for-the-badge&logo=Expo" alt="Expo Badge"></a>
 </div>
 
 ---
@@ -44,8 +44,8 @@ Antes de iniciar, certifique-se de ter os seguintes itens instalados:
 * **Expo Go**
   Aplicativo para testar o projeto no celular:
 
-  * Android: [Site do Expo](https://expo.dev/go?sdkVersion=55&platform=android&device=true)
-  * iOS: Fazer build manualmente
+  * Android: [Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent&pcampaignid=web_share)
+  * iOS: [App Store](https://apps.apple.com/br/app/expo-go/id982107779)
   * Geral: Abrir pelo navegador
 
 ---

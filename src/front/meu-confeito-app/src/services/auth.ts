@@ -10,13 +10,16 @@ export interface LogInData {
 export interface LogInResponse {
   data: {
     user: {
+      id: string;
       name: string;
       email: string;
       phone: string | null;
-      location: {
-        lat: number;
-        lng: number;
-      };
+      location?: {
+        lat?: number;
+        lng?: number;
+        latitude?: number;
+        longitude?: number;
+      } | null;
       pfpUrl: string | null;
       role: string;
     };

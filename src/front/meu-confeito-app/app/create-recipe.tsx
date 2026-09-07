@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import {
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -17,7 +19,8 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Picker } from '@react-native-picker/picker';
 import { ActivityIndicator } from 'react-native-paper';
 
-import { BackButton, CustomButton } from '@/src/components';
+import { CustomButton } from '@/src/components';
+import { COMMON_UNITS } from '@/src/constants/common-units';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useIngredients } from '@/src/hooks/useIngredients';
@@ -31,18 +34,6 @@ interface IngredientFormItem {
   measurementUnit: string;
   notes: string;
 }
-
-const COMMON_UNITS = [
-  { label: 'Gramas (g)', value: 'g' },
-  { label: 'Quilos (kg)', value: 'kg' },
-  { label: 'Mililitros (ml)', value: 'ml' },
-  { label: 'Litros (L)', value: 'L' },
-  { label: 'Unidades (un)', value: 'un' },
-  { label: 'Xícaras', value: 'xícara' },
-  { label: 'Colheres de sopa', value: 'colher de sopa' },
-  { label: 'Colheres de chá', value: 'colher de chá' },
-  { label: 'Pitadas', value: 'pitada' },
-];
 
 export default function CreateRecipeScreen() {
   const { theme } = useThemeMode();
@@ -139,12 +130,18 @@ export default function CreateRecipeScreen() {
 
     const parsedYield = parseFloat(baseYield);
     if (!baseYield || isNaN(parsedYield) || parsedYield <= 0) {
-      Alert.alert('Campo Obrigatório', 'Por favor, informe um rendimento base válido maior que zero.');
+      Alert.alert(
+        'Campo Obrigatório',
+        'Por favor, informe um rendimento base válido maior que zero.',
+      );
       return;
     }
 
     if (!yieldUnit.trim()) {
-      Alert.alert('Campo Obrigatório', 'Por favor, informe a unidade de rendimento (ex: porções, unidades).');
+      Alert.alert(
+        'Campo Obrigatório',
+        'Por favor, informe a unidade de rendimento (ex: porções, unidades).',
+      );
       return;
     }
 
@@ -155,10 +152,7 @@ export default function CreateRecipeScreen() {
       const parsedQty = parseFloat(item.baseQuantity);
 
       if (!item.ingredientId) {
-        Alert.alert(
-          'Ingrediente Inválido',
-          `Selecione o ingrediente #${i + 1} da lista.`,
-        );
+        Alert.alert('Ingrediente Inválido', `Selecione o ingrediente #${i + 1} da lista.`);
         return;
       }
 
@@ -250,13 +244,20 @@ export default function CreateRecipeScreen() {
     <>
       <Stack.Screen options={{ title: 'Cadastrar Receita' }} />
 
-      <View style={styles.container}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+      >
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          automaticallyAdjustKeyboardInsets
         >
-          <BackButton />
+          {/* <BackButton /> */}
 
           <Text style={styles.primaryTitle}>Nova Receita</Text>
           <Text style={styles.subtitle}>
@@ -265,11 +266,7 @@ export default function CreateRecipeScreen() {
 
           {/* Imagem de Capa */}
           {coverUrl.trim() ? (
-            <Image
-              source={{ uri: coverUrl }}
-              style={styles.imagePreview}
-              contentFit="cover"
-            />
+            <Image source={{ uri: coverUrl }} style={styles.imagePreview} contentFit="cover" />
           ) : null}
 
           {/* Card: Dados Básicos */}
@@ -402,7 +399,9 @@ export default function CreateRecipeScreen() {
           <View style={styles.box}>
             <View style={styles.boxHeaderRow}>
               <Text style={styles.secondaryTitle}>Ingredientes *</Text>
-              {isLoadingIngredients && <ActivityIndicator size="small" color={theme.colors.primary} />}
+              {isLoadingIngredients && (
+                <ActivityIndicator size="small" color={theme.colors.primary} />
+              )}
             </View>
 
             {ingredients.map((item, index) => (
@@ -497,10 +496,10 @@ export default function CreateRecipeScreen() {
               </View>
             ))}
 
-            <TouchableOpacity style={styles.addBtn} onPress={handleAddIngredient}>
+            <CustomButton variant="dashed" style={styles.addBtn} onPress={handleAddIngredient}>
               <MaterialCommunityIcons name="plus" size={20} color={theme.colors.primary} />
               <Text style={styles.addBtnText}>Adicionar Ingrediente</Text>
-            </TouchableOpacity>
+            </CustomButton>
           </View>
 
           {/* Card: Modo de Preparo */}
@@ -543,10 +542,10 @@ export default function CreateRecipeScreen() {
               </View>
             ))}
 
-            <TouchableOpacity style={styles.addBtn} onPress={handleAddStep}>
+            <CustomButton variant="dashed" style={styles.addBtn} onPress={handleAddStep}>
               <MaterialCommunityIcons name="plus" size={20} color={theme.colors.primary} />
               <Text style={styles.addBtnText}>Adicionar Etapa</Text>
-            </TouchableOpacity>
+            </CustomButton>
           </View>
 
           {/* Botão de Salvar Receita */}
@@ -563,7 +562,7 @@ export default function CreateRecipeScreen() {
             )}
           </View>
         </ScrollView>
-      </View>
+      </KeyboardAvoidingView>
     </>
   );
 }
@@ -579,8 +578,8 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
     },
     scrollContent: {
       paddingHorizontal: 20,
-      paddingTop: 40,
-      paddingBottom: 60,
+      paddingTop: 16,
+      paddingBottom: 100,
       maxWidth: 700,
       alignSelf: 'center',
       width: '100%',
@@ -591,7 +590,7 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       fontSize: 26,
       fontWeight: 'bold',
       marginBottom: 6,
-      marginTop: 10,
+      marginTop: 4,
     },
     subtitle: {
       fontSize: 15,
@@ -700,9 +699,6 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       paddingVertical: 12,
       borderRadius: 8,
       borderWidth: 1.5,
-      borderStyle: 'dashed',
-      borderColor: theme.colors.primary,
-      backgroundColor: theme.colors.pitchBackground,
       marginTop: 6,
       gap: 6,
     },

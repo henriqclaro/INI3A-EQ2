@@ -3,10 +3,6 @@ import { ReactNode, createContext, useContext, useEffect, useState } from 'react
 import { AuthService, LogInData, LogInResponse } from '../services/auth';
 import { Storage } from '../utils/storage';
 
-/*
-// IMPLEMENTAR LÓGICA DE ATUALIZAÇÃO DEPOIS
-*/
-
 interface UserProfile {
   id: string;
   name: string;
@@ -21,12 +17,13 @@ interface AuthContextData {
   isLoadingStorage: boolean;
   signIn: (data: LogInData) => Promise<void>;
   signOut: () => Promise<void>;
+  updateUser: (updatedUser: Partial<UserProfile>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoadingStorage, setIsLoadingStorage] = useState(true);
 
   useEffect(() => {
@@ -77,8 +74,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }
 
+  async function updateUser(updatedData: Partial<UserProfile>) {
+    // Filter out undefined keys so partial updates don't overwrite existing user data
+    const cleanUpdates: Partial<UserProfile> = {};
+    for (const [key, value] of Object.entries(updatedData)) {
+      if (value !== undefined) {
+        (cleanUpdates as any)[key] = value;
+      }
+    }
+
+    let currentUser = user;
+    if (!currentUser) {
+      const stored = await Storage.getItem('user_profile');
+      if (stored) {
+        try {
+          currentUser = JSON.parse(stored);
+        } catch (e) {
+          console.error('Error parsing stored user profile:', e);
+        }
+      }
+    }
+
+    if (!currentUser) return;
+
+    const newUser: UserProfile = { ...currentUser, ...cleanUpdates };
+    await Storage.setItem('user_profile', JSON.stringify(newUser));
+    setUser(newUser);
+  }
+
   return (
-    <AuthContext.Provider value={{ user, isLoadingStorage, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, isLoadingStorage, signIn, signOut, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
