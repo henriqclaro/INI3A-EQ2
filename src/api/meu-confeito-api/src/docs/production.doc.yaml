@@ -1,0 +1,132 @@
+paths:
+  /productions:
+    get:
+      summary: Lista as fornadas de produção do usuário autenticado
+      description: Retorna o histórico paginado de fornadas e produções cadastradas, com opções de filtro por receita e cancelamento.
+      tags:
+        - Produções
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 0
+          description: Número da página (iniciando em 0)
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          description: Quantidade de registros por página
+        - in: query
+          name: recipeId
+          schema:
+            type: string
+            format: uuid
+          description: Filtrar por ID da receita
+        - in: query
+          name: includeCanceled
+          schema:
+            type: boolean
+            default: false
+          description: Se verdadeiro, inclui fornadas canceladas no resultado
+      responses:
+        '200':
+          description: Fornadas de produção selecionadas com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductionListResponse'
+        '400':
+          description: Erro na validação dos dados
+        '401':
+          description: Token inválido ou expirado
+        '403':
+          description: Ação negada por falta de privilégios
+
+    post:
+      summary: Registra uma nova fornada de produção
+      description: Registra a produção de uma receita, deduzindo atomicamente os insumos da árvore BOM do estoque com movimentações no livro-razão e calculando snapshots de custos.
+      tags:
+        - Produções
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductionRegisterProductionSchema'
+      responses:
+        '201':
+          description: Fornada de produção registrada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductionRegisterResponse'
+        '400':
+          description: Saldo insuficiente no estoque ou erro de validação dos dados
+        '401':
+          description: Token inválido ou expirado
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Receita não encontrada
+
+  /productions/{id}:
+    get:
+      summary: Seleciona uma fornada de produção por ID
+      description: Retorna os detalhes de uma produção específica, incluindo snapshots de custos e insumos consumidos.
+      tags:
+        - Produções
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID da produção
+      responses:
+        '200':
+          description: Produção selecionada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductionSelectResponse'
+        '400':
+          description: Erro na validação dos dados
+        '401':
+          description: Token inválido ou expirado
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Produção não encontrada
+
+  /productions/{id}/cancel:
+    post:
+      summary: Cancela uma fornada de produção e estorna o estoque
+      description: Cancela a fornada de produção, estorna atomicamente os insumos de volta ao estoque e registra transações de reversão no livro-razão.
+      tags:
+        - Produções
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID da produção
+      responses:
+        '200':
+          description: Produção cancelada e estoque estornado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductionCancelResponse'
+        '400':
+          description: Produção já cancelada ou erro na requisição
+        '401':
+          description: Token inválido ou expirado
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Produção não encontrada

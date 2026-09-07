@@ -1,0 +1,154 @@
+components:
+  schemas:
+    ProductionTransaction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        ingredientId:
+          type: integer
+        transactionType:
+          type: string
+          enum:
+            - PURCHASE
+            - PRODUCTION_USAGE
+            - PRODUCTION_REVERSAL
+            - WASTE
+            - MANUAL_ADJUSTMENT
+        quantityChanged:
+          type: number
+          description: Quantidade movimentada na transação
+        measurementUnit:
+          type: string
+          enum:
+            - G
+            - KG
+            - ML
+            - L
+            - UN
+        unitCost:
+          type: number
+          description: Custo unitário no momento da produção
+        totalCost:
+          type: number
+          description: Custo total consumido
+        expirationDate:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        ingredient:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            slug:
+              type: string
+            baseUnit:
+              type: string
+              enum:
+                - G
+                - KG
+                - ML
+                - L
+                - UN
+
+    ProductionItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        recipeId:
+          type: string
+          format: uuid
+        yieldProduced:
+          type: number
+          description: Rendimento produzido na fornada
+        productionDate:
+          type: string
+          format: date-time
+        expirationDate:
+          type: string
+          format: date-time
+          nullable: true
+          description: Data de validade da fornada
+        canceledAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Data e hora do cancelamento (se houver)
+        ingredientCost:
+          type: number
+          description: Custo total dos insumos consumidos
+        laborCost:
+          type: number
+          description: Custo de mão de obra rateado
+        overheadCost:
+          type: number
+          description: Custos indiretos rateados
+        packagingCost:
+          type: number
+          description: Custo de embalagem proporcional
+        totalCost:
+          type: number
+          description: Custo total da fornada
+        unitCost:
+          type: number
+          description: Custo unitário de cada unidade ou porção produzida
+        recipe:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            title:
+              type: string
+            yieldUnit:
+              type: string
+              enum:
+                - G
+                - KG
+                - ML
+                - L
+                - UN
+            baseYield:
+              type: number
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductionTransaction'
+
+    ProductionRegisterResponse:
+      type: object
+      properties:
+        production:
+          $ref: '#/components/schemas/ProductionItem'
+
+    ProductionSelectResponse:
+      type: object
+      properties:
+        production:
+          $ref: '#/components/schemas/ProductionItem'
+
+    ProductionListResponse:
+      type: object
+      properties:
+        productions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductionItem'
+
+    ProductionCancelResponse:
+      type: object
+      properties:
+        production:
+          $ref: '#/components/schemas/ProductionItem'

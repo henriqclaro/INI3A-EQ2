@@ -4,6 +4,7 @@ import { authRoutes } from './auth.route';
 import { bakerProfileRoutes } from './baker-profile.route';
 import { ingredientRoutes } from './ingredient.route';
 import { inventoryRoutes } from './inventory.route';
+import { productionRoutes } from './production.route';
 import { recipeRoutes } from './recipe.route';
 import { tagRoutes } from './tag.route';
 import { userRoutes } from './user.route';
@@ -29,6 +30,8 @@ routes.use('/ingredients', ingredientRoutes);
 routes.use('/inventory', inventoryRoutes);
 
 routes.use('/recipes', recipeRoutes);
+
+routes.use('/productions', productionRoutes);
 
 routes.use('/baker-profiles', bakerProfileRoutes);
 

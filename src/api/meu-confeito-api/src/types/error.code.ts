@@ -12,7 +12,8 @@ export type ResourceErrorCode =
   | 'RESOURCE_STATE_CONFLICT'
   | 'RESOURCE_GONE'
   | 'SUB_RECIPE_CIRCULAR_DEPENDENCY'
-  | 'INSUFFICIENT_STOCK';
+  | 'INSUFFICIENT_STOCK'
+  | 'ALREADY_CANCELED';
 
 export type UserErrorCode =
   | 'USER_NOT_FOUND'
