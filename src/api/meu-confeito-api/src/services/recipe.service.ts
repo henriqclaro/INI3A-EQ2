@@ -2,7 +2,7 @@ import type { JsonNullClass } from '@prisma/client/runtime/client';
 
 import prisma from '../config/database';
 import type { Prisma } from '../generated/prisma/client';
-import { ForbiddenError, NotFoundError } from '../responses/http.error';
+import { DefaultAppError, ForbiddenError, NotFoundError } from '../responses/http.error';
 import type { RequestContext } from '../types/context.interface';
 import type { RecipeDTO } from '../types/dtos/recipe.dto';
 
@@ -14,11 +14,63 @@ export class RecipeService {
   }
 
   async register(context: RequestContext, data: RecipeDTO.RegisterRequest) {
-    this.checkPermission(context, data.userId);
+    const targetUserId = data.userId ?? context.userId;
+    this.checkPermission(context, targetUserId);
+
+    if (data.parentId) {
+      const parentExists = await prisma.recipe.findUnique({
+        where: { id: data.parentId },
+      });
+      if (!parentExists || parentExists.status === 'SUSPENDED') {
+        throw new NotFoundError('Parent recipe not found', 'RESOURCE_NOT_FOUND');
+      }
+    }
+
+    for (const item of data.items) {
+      if (item.ingredientId) {
+        const ingredient = await prisma.ingredient.findUnique({
+          where: { id: item.ingredientId },
+        });
+        if (!ingredient) {
+          throw new NotFoundError(
+            `Ingredient with ID ${item.ingredientId} not found`,
+            'RESOURCE_NOT_FOUND',
+          );
+        }
+      }
+
+      if (item.subRecipeId) {
+        if (data.parentId && item.subRecipeId === data.parentId) {
+          throw new DefaultAppError(
+            'Sub-recipe cannot reference parent recipe',
+            'SUB_RECIPE_CIRCULAR_DEPENDENCY',
+          );
+        }
+
+        const subRecipe = await prisma.recipe.findUnique({
+          where: { id: item.subRecipeId },
+        });
+
+        if (!subRecipe || subRecipe.status === 'SUSPENDED') {
+          throw new NotFoundError(
+            `Sub-recipe with ID ${item.subRecipeId} not found`,
+            'RESOURCE_NOT_FOUND',
+          );
+        }
+
+        if (
+          subRecipe.status !== 'PUBLISHED' &&
+          subRecipe.userId !== targetUserId &&
+          context.userRole !== 'ADMIN'
+        ) {
+          throw new ForbiddenError('Action denied for lack of privileges');
+        }
+      }
+    }
 
     const recipe = await prisma.recipe.create({
       data: {
-        userId: data.userId,
+        userId: targetUserId,
         parentId: data.parentId,
         title: data.title,
         coverUrl: data.coverUrl,
@@ -31,12 +83,16 @@ export class RecipeService {
         hourlyLabor: data.hourlyLabor,
         packagingCost: data.packagingCost,
 
-        ingredients: {
-          create: data.ingredients.map((ing) => ({
-            ingredientId: ing.ingredientId,
-            baseQuantity: ing.baseQuantity,
-            measurementUnit: ing.measurementUnit,
-            notes: ing.notes,
+        items: {
+          create: data.items.map((item, index) => ({
+            ingredientId: item.ingredientId ?? null,
+            subRecipeId: item.subRecipeId ?? null,
+            quantity: item.quantity,
+            unit: item.unit,
+            displayQuantity: item.displayQuantity ?? null,
+            displayUnit: item.displayUnit ?? null,
+            sortOrder: item.sortOrder ?? index,
+            notes: item.notes ?? null,
           })),
         },
       },
@@ -56,11 +112,16 @@ export class RecipeService {
         packagingCost: true,
         createdAt: true,
 
-        ingredients: {
+        items: {
           select: {
+            id: true,
             ingredientId: true,
-            baseQuantity: true,
-            measurementUnit: true,
+            subRecipeId: true,
+            quantity: true,
+            unit: true,
+            displayQuantity: true,
+            displayUnit: true,
+            sortOrder: true,
             notes: true,
           },
         },
@@ -75,18 +136,25 @@ export class RecipeService {
       where: { id: id },
 
       include: {
-        ingredients: {
-          select: {
-            baseQuantity: true,
-            measurementUnit: true,
-            notes: true,
-            ingredientId: true,
-
+        items: {
+          orderBy: { sortOrder: 'asc' },
+          include: {
             ingredient: {
               select: {
                 id: true,
                 name: true,
+                slug: true,
                 category: true,
+                baseDimension: true,
+                baseUnit: true,
+              },
+            },
+            subRecipe: {
+              select: {
+                id: true,
+                title: true,
+                baseYield: true,
+                yieldUnit: true,
               },
             },
           },
@@ -117,18 +185,17 @@ export class RecipeService {
       where: { id: id },
 
       include: {
-        ingredients: {
-          select: {
-            ingredientId: true,
-            baseQuantity: true,
-            measurementUnit: true,
-            notes: true,
-
+        items: {
+          orderBy: { sortOrder: 'asc' },
+          include: {
             ingredient: {
               select: {
                 id: true,
                 name: true,
+                slug: true,
                 category: true,
+                baseDimension: true,
+                baseUnit: true,
                 description: true,
                 inventories: {
                   where: {
@@ -136,13 +203,18 @@ export class RecipeService {
                   },
                   select: {
                     currentQuantity: true,
-                    measurementUnit: true,
-                    packagePrice: true,
-                    packageSize: true,
-                    costUnit: true,
+                    costPerBaseUnit: true,
                     lastUpdated: true,
                   },
                 },
+              },
+            },
+            subRecipe: {
+              select: {
+                id: true,
+                title: true,
+                baseYield: true,
+                yieldUnit: true,
               },
             },
           },
@@ -163,39 +235,54 @@ export class RecipeService {
       }
     }
 
-    const formattedIngredients = recipe.ingredients.map((item) => {
-      const inventory = item.ingredient.inventories[0] ?? null;
+    const formattedItems = recipe.items.map((item) => {
+      const inventory = item.ingredient?.inventories[0] ?? null;
 
       return {
+        id: item.id,
         ingredientId: item.ingredientId,
-        baseQuantity: item.baseQuantity,
-        measurementUnit: item.measurementUnit,
+        subRecipeId: item.subRecipeId,
+        quantity: item.quantity,
+        unit: item.unit,
+        displayQuantity: item.displayQuantity,
+        displayUnit: item.displayUnit,
+        sortOrder: item.sortOrder,
         notes: item.notes,
-        ingredient: {
-          id: item.ingredient.id,
-          name: item.ingredient.name,
-          category: item.ingredient.category,
-          description: item.ingredient.description,
-        },
+        ingredient: item.ingredient
+          ? {
+              id: item.ingredient.id,
+              name: item.ingredient.name,
+              slug: item.ingredient.slug,
+              category: item.ingredient.category,
+              baseDimension: item.ingredient.baseDimension,
+              baseUnit: item.ingredient.baseUnit,
+              description: item.ingredient.description,
+            }
+          : null,
+        subRecipe: item.subRecipe
+          ? {
+              id: item.subRecipe.id,
+              title: item.subRecipe.title,
+              baseYield: item.subRecipe.baseYield,
+              yieldUnit: item.subRecipe.yieldUnit,
+            }
+          : null,
         inventory: inventory
           ? {
               currentQuantity: inventory.currentQuantity,
-              measurementUnit: inventory.measurementUnit,
-              packagePrice: inventory.packagePrice,
-              packageSize: inventory.packageSize,
-              costUnit: inventory.costUnit,
+              costPerBaseUnit: inventory.costPerBaseUnit,
               lastUpdated: inventory.lastUpdated,
             }
           : null,
       };
     });
 
-    const { ingredients: _ingredients, ...recipeData } = recipe;
+    const { items: _items, ...recipeData } = recipe;
 
     return {
       recipe: {
         ...recipeData,
-        ingredients: formattedIngredients,
+        items: formattedItems,
       },
     };
   }

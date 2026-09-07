@@ -7,13 +7,15 @@ components:
           type: object
           properties:
             id:
-              type: string
-              format: uuid
+              type: integer
             parentId:
-              type: string
-              format: uuid
+              type: integer
               nullable: true
             name:
+              type: string
+            slug:
+              type: string
+            aliases:
               type: array
               items:
                 type: string
@@ -22,6 +24,20 @@ components:
               nullable: true
             category:
               type: string
+            baseDimension:
+              type: string
+              enum:
+                - MASS
+                - VOLUME
+                - COUNT
+            baseUnit:
+              type: string
+              enum:
+                - G
+                - KG
+                - ML
+                - L
+                - UN
             creatorId:
               type: string
               format: uuid
@@ -29,6 +45,17 @@ components:
             createdAt:
               type: string
               format: date-time
+            conversions:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  fromUnit:
+                    type: string
+                  factorToBase:
+                    type: number
     IngredientSearchResponse:
       type: object
       properties:
@@ -38,14 +65,31 @@ components:
             type: object
             properties:
               id:
-                type: string
-                format: uuid
+                type: integer
               name:
+                type: string
+              slug:
+                type: string
+              aliases:
                 type: array
                 items:
                   type: string
+              baseDimension:
+                type: string
+                enum:
+                  - MASS
+                  - VOLUME
+                  - COUNT
+              baseUnit:
+                type: string
+                enum:
+                  - G
+                  - KG
+                  - ML
+                  - L
+                  - UN
+              category:
+                type: string
               description:
                 type: string
                 nullable: true
-              category:
-                type: string

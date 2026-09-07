@@ -1,20 +1,33 @@
 import { z } from 'zod';
 
-export const ingredientSchema = z.object({
-  ingredientId: z.string('Invalid string for Ingredient ID'),
-  baseQuantity: z.number('Ingredient base quantity must be a number'),
-  measurementUnit: z.string('Ingredient measurement unit is required'),
-  notes: z.string().nullable(),
-});
+export const recipeItemSchema = z
+  .object({
+    ingredientId: z.number().int().positive().nullable().optional(),
+    subRecipeId: z.uuid('Invalid UUID for sub-recipe ID').nullable().optional(),
+    quantity: z.number().positive('Quantity must be a positive number'),
+    unit: z.enum(['G', 'KG', 'ML', 'L', 'UN']),
+    displayQuantity: z.number().positive().nullable().optional(),
+    displayUnit: z.string().max(30).nullable().optional(),
+    sortOrder: z.number().int().min(0).default(0),
+    notes: z.string().max(255).nullable().optional(),
+  })
+  .refine(
+    (data) =>
+      (data.ingredientId !== null && data.ingredientId !== undefined) !==
+      (data.subRecipeId !== null && data.subRecipeId !== undefined),
+    {
+      message: 'Recipe item must specify either ingredientId or subRecipeId, but not both',
+    },
+  );
 
 export const registerSchema = z.object({
-  userId: z.uuid('Invalid UUID for User ID'),
-  parentId: z.uuid('Invalid UUID for Parent ID').nullable(),
-  title: z.string('Title is required'),
-  coverUrl: z.url('Invalid URL for Cover Image').nullable(),
+  userId: z.uuid('Invalid UUID for User ID').optional(),
+  parentId: z.uuid('Invalid UUID for Parent ID').nullable().optional(),
+  title: z.string().min(1, 'Title is required'),
+  coverUrl: z.url('Invalid URL for Cover Image').nullable().optional(),
   instructions: z.looseObject({}, { error: 'Invalid JSON for Instructions' }),
-  baseYield: z.number('Base yield must be a number'),
-  yieldUnit: z.string('Yield unit is required'),
+  baseYield: z.number().positive('Base yield must be positive'),
+  yieldUnit: z.enum(['G', 'KG', 'ML', 'L', 'UN']),
 
   profitMargin: z.number('Profit margin must be a number').optional(),
   overhead: z.number('Overhead must be a number').optional(),
@@ -22,7 +35,7 @@ export const registerSchema = z.object({
   hourlyLabor: z.number('Hourly labor must be a number').optional(),
   packagingCost: z.number('Packaging cost must be a number').optional(),
 
-  ingredients: z.array(ingredientSchema).min(1, 'Recipe must have at least 1 ingredient'),
+  items: z.array(recipeItemSchema).min(1, 'Recipe must contain at least 1 item'),
 });
 
 export const paramsSchema = z.object({

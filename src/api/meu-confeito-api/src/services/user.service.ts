@@ -46,21 +46,33 @@ export class UserService {
 
     const hashedPassword = await bcrypt.hash(data.password, env.BCRYPT_ROUNDS);
 
-    const user = await prisma.user.create({
-      data: {
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        passwordHash: hashedPassword,
-        role: data.role,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-      },
+    const user = await prisma.$transaction(async (tx) => {
+      const createdUser = await tx.user.create({
+        data: {
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          passwordHash: hashedPassword,
+          role: data.role,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+        },
+      });
+
+      if (data.role === 'BAKER') {
+        await tx.bakerProfile.create({
+          data: {
+            userId: createdUser.id,
+          },
+        });
+      }
+
+      return createdUser;
     });
 
     return { user };
@@ -72,17 +84,22 @@ export class UserService {
     // eslint-disable-next-line @ts-safeql/check-sql
     const result = await prisma.$queryRaw<any[]>`
       SELECT
-        id,
-        name,
-        email,
-        phone,
-        profile_picture_url as "pfpUrl",
-        role as "roleType",
-        updated_at as "updatedAt",
-        is_active as "isActive",
-        ST_AsGeoJSON(location)::json as location
+        "user".id,
+        "user".name,
+        "user".email,
+        "user".phone,
+        "user".profile_picture_url as "pfpUrl",
+        "user".role as role,
+        "user".updated_at as "updatedAt",
+        "user".is_active as "isActive",
+        bp.bio,
+        bp.instagram,
+        bp.neighborhood,
+        bp.city,
+        ST_AsGeoJSON(bp.location)::json as location
       FROM "user"
-      WHERE id = ${id}
+      LEFT JOIN "baker_profile" bp ON bp.user_id = "user".id
+      WHERE "user".id = ${id}
       LIMIT 1
     `;
 
@@ -90,13 +107,17 @@ export class UserService {
 
     this.checkUser(rawUser);
 
-    const parsedLocation = this.parseLocation(rawUser.locationGeoJSON);
+    const parsedLocation = this.parseLocation(rawUser.location);
 
     const user = {
       id: rawUser.id,
       name: rawUser.name,
       email: rawUser.email,
       phone: rawUser.phone,
+      bio: rawUser.bio,
+      instagram: rawUser.instagram,
+      neighborhood: rawUser.neighborhood,
+      city: rawUser.city,
       pfpUrl: rawUser.pfpUrl,
       role: rawUser.role,
       updatedAt: rawUser.updatedAt,
@@ -120,9 +141,16 @@ export class UserService {
       }
     }
 
-    const { location, ...standartData } = data;
+    const { location, bio, instagram, neighborhood, city, ...userData } = data;
 
-    const rawUpdatedUser: any = prisma.$transaction(async (tx) => {
+    const profileData = {
+      ...(bio !== undefined && { bio }),
+      ...(instagram !== undefined && { instagram }),
+      ...(neighborhood !== undefined && { neighborhood }),
+      ...(city !== undefined && { city }),
+    };
+
+    const rawUpdatedUser: any = await prisma.$transaction(async (tx) => {
       const existingUser = await tx.user.findUnique({
         where: { id: id },
         select: { isActive: true },
@@ -130,49 +158,83 @@ export class UserService {
 
       this.checkUser(existingUser);
 
-      if (Object.keys(standartData).length > 0) {
+      if (Object.keys(userData).length > 0) {
         await tx.user.update({
           where: { id: id },
-          data: standartData,
+          data: userData,
         });
       }
 
-      if (location) {
-        await tx.$executeRaw`
-         UPDATE "user"
-         SET
-          location = ST_SetSRID(ST_MakePoint(${location.longitude}, ${location.latitude}), 4326),
-          updated_at = NOW()
-         WHERE id = ${id}
-        `;
+      if (Object.keys(profileData).length > 0) {
+        await tx.bakerProfile.upsert({
+          where: { userId: id },
+          update: profileData,
+          create: {
+            userId: id,
+            ...profileData,
+          },
+        });
+      }
+
+      if (location !== undefined) {
+        if (location === null) {
+          await tx.$executeRaw`
+            UPDATE "baker_profile"
+            SET location = NULL, updated_at = NOW()
+            WHERE user_id = ${id}
+          `;
+        } else {
+          await tx.bakerProfile.upsert({
+            where: { userId: id },
+            update: {},
+            create: { userId: id },
+          });
+
+          await tx.$executeRaw`
+            UPDATE "baker_profile"
+            SET
+              location = ST_SetSRID(ST_MakePoint(${location.longitude}, ${location.latitude}), 4326),
+              updated_at = NOW()
+            WHERE user_id = ${id}
+          `;
+        }
       }
 
       const result = await tx.$queryRaw<any[]>`
         SELECT 
-          id, 
-          name, 
-          email, 
-          phone, 
-          profile_picture_url as "pfpUrl", 
-          role as "role", 
-          updated_at as "updatedAt", 
-          is_active as "isActive",
-          ST_AsGeoJSON(location)::json as "locationGeoJSON"
+          "user".id, 
+          "user".name, 
+          "user".email, 
+          "user".phone, 
+          "user".profile_picture_url as "pfpUrl", 
+          "user".role as "role", 
+          "user".updated_at as "updatedAt", 
+          "user".is_active as "isActive",
+          bp.bio,
+          bp.instagram,
+          bp.neighborhood,
+          bp.city,
+          ST_AsGeoJSON(bp.location)::json as location
         FROM "user"
-        WHERE id = ${id}
+        LEFT JOIN "baker_profile" bp ON bp.user_id = "user".id
+        WHERE "user".id = ${id}
         LIMIT 1
       `;
 
       return result[0];
     });
 
-    const parsedLocation = this.parseLocation(rawUpdatedUser.locationGeoJSON);
+    const parsedLocation = this.parseLocation(rawUpdatedUser.location);
 
     const user = {
       id: rawUpdatedUser.id,
       name: rawUpdatedUser.name,
       email: rawUpdatedUser.email,
       phone: rawUpdatedUser.phone,
+      bio: rawUpdatedUser.bio,
+      instagram: rawUpdatedUser.instagram,
+      neighborhood: rawUpdatedUser.neighborhood,
+      city: rawUpdatedUser.city,
       pfpUrl: rawUpdatedUser.pfpUrl,
       role: rawUpdatedUser.role,
       updatedAt: rawUpdatedUser.updatedAt,
@@ -218,9 +280,9 @@ export class UserService {
       });
 
       await tx.$executeRaw`
-        UPDATE "user"
+        UPDATE "baker_profile"
         SET location = NULL
-        WHERE id = ${id}
+        WHERE user_id = ${id}
       `;
     });
   }
@@ -345,34 +407,27 @@ export class UserService {
       );
     }
 
-    const packagePrice = data.packagePrice ?? 0;
-    const packageSize = data.packageSize ?? 1;
-    const costUnit = data.costUnit ?? (packageSize > 0 ? packagePrice / packageSize : 0);
-
     const userInventory = await prisma.userInventory.create({
       data: {
         userId: id,
         ingredientId: data.ingredientId,
         currentQuantity: data.currentQuantity ?? 0,
-        measurementUnit: data.measurementUnit,
-        packagePrice: packagePrice,
-        packageSize: packageSize,
-        costUnit: costUnit,
+        costPerBaseUnit: data.costPerBaseUnit ?? 0,
       },
       select: {
         userId: true,
         ingredientId: true,
         currentQuantity: true,
-        measurementUnit: true,
-        packagePrice: true,
-        packageSize: true,
-        costUnit: true,
+        costPerBaseUnit: true,
         lastUpdated: true,
         ingredient: {
           select: {
             id: true,
             name: true,
+            slug: true,
             category: true,
+            baseDimension: true,
+            baseUnit: true,
             description: true,
           },
         },
@@ -391,16 +446,16 @@ export class UserService {
       select: {
         ingredientId: true,
         currentQuantity: true,
-        measurementUnit: true,
-        packagePrice: true,
-        packageSize: true,
-        costUnit: true,
+        costPerBaseUnit: true,
         lastUpdated: true,
         ingredient: {
           select: {
             id: true,
             name: true,
+            slug: true,
             category: true,
+            baseDimension: true,
+            baseUnit: true,
             description: true,
           },
         },

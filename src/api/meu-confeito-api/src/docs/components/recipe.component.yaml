@@ -29,6 +29,12 @@ components:
               type: number
             yieldUnit:
               type: string
+              enum:
+                - G
+                - KG
+                - ML
+                - L
+                - UN
             profitMargin:
               type: number
             overhead:
@@ -42,18 +48,39 @@ components:
             createdAt:
               type: string
               format: date-time
-            ingredients:
+            items:
               type: array
               items:
                 type: object
                 properties:
-                  ingredientId:
+                  id:
                     type: string
                     format: uuid
-                  baseQuantity:
-                    type: number
-                  measurementUnit:
+                  ingredientId:
+                    type: integer
+                    nullable: true
+                  subRecipeId:
                     type: string
+                    format: uuid
+                    nullable: true
+                  quantity:
+                    type: number
+                  unit:
+                    type: string
+                    enum:
+                      - G
+                      - KG
+                      - ML
+                      - L
+                      - UN
+                  displayQuantity:
+                    type: number
+                    nullable: true
+                  displayUnit:
+                    type: string
+                    nullable: true
+                  sortOrder:
+                    type: integer
                   notes:
                     type: string
                     nullable: true
@@ -86,6 +113,12 @@ components:
               type: number
             yieldUnit:
               type: string
+              enum:
+                - G
+                - KG
+                - ML
+                - L
+                - UN
             status:
               type: string
             totalSaves:
@@ -110,33 +143,87 @@ components:
             updatedAt:
               type: string
               format: date-time
-            ingredients:
+            items:
               type: array
               items:
                 type: object
                 properties:
-                  ingredientId:
+                  id:
                     type: string
                     format: uuid
-                  baseQuantity:
-                    type: number
-                  measurementUnit:
+                  ingredientId:
+                    type: integer
+                    nullable: true
+                  subRecipeId:
                     type: string
+                    format: uuid
+                    nullable: true
+                  quantity:
+                    type: number
+                  unit:
+                    type: string
+                    enum:
+                      - G
+                      - KG
+                      - ML
+                      - L
+                      - UN
+                  displayQuantity:
+                    type: number
+                    nullable: true
+                  displayUnit:
+                    type: string
+                    nullable: true
+                  sortOrder:
+                    type: integer
                   notes:
                     type: string
                     nullable: true
                   ingredient:
                     type: object
+                    nullable: true
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      slug:
+                        type: string
+                      category:
+                        type: string
+                      baseDimension:
+                        type: string
+                        enum:
+                          - MASS
+                          - VOLUME
+                          - COUNT
+                      baseUnit:
+                        type: string
+                        enum:
+                          - G
+                          - KG
+                          - ML
+                          - L
+                          - UN
+                  subRecipe:
+                    type: object
+                    nullable: true
                     properties:
                       id:
                         type: string
                         format: uuid
-                      name:
-                        type: array
-                        items:
-                          type: string
-                      category:
+                      title:
                         type: string
+                      baseYield:
+                        type: number
+                      yieldUnit:
+                        type: string
+                        enum:
+                          - G
+                          - KG
+                          - ML
+                          - L
+                          - UN
     RecipeSingleSelectUserInventoryResponse:
       type: object
       properties:
@@ -166,6 +253,12 @@ components:
               type: number
             yieldUnit:
               type: string
+              enum:
+                - G
+                - KG
+                - ML
+                - L
+                - UN
             status:
               type: string
             totalSaves:
@@ -190,50 +283,99 @@ components:
             updatedAt:
               type: string
               format: date-time
-            ingredients:
+            items:
               type: array
               items:
                 type: object
                 properties:
-                  ingredientId:
+                  id:
                     type: string
                     format: uuid
-                  baseQuantity:
-                    type: number
-                  measurementUnit:
+                  ingredientId:
+                    type: integer
+                    nullable: true
+                  subRecipeId:
                     type: string
+                    format: uuid
+                    nullable: true
+                  quantity:
+                    type: number
+                  unit:
+                    type: string
+                    enum:
+                      - G
+                      - KG
+                      - ML
+                      - L
+                      - UN
+                  displayQuantity:
+                    type: number
+                    nullable: true
+                  displayUnit:
+                    type: string
+                    nullable: true
+                  sortOrder:
+                    type: integer
                   notes:
                     type: string
                     nullable: true
                   ingredient:
                     type: object
+                    nullable: true
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      slug:
+                        type: string
+                      category:
+                        type: string
+                      baseDimension:
+                        type: string
+                        enum:
+                          - MASS
+                          - VOLUME
+                          - COUNT
+                      baseUnit:
+                        type: string
+                        enum:
+                          - G
+                          - KG
+                          - ML
+                          - L
+                          - UN
+                      description:
+                        type: string
+                        nullable: true
+                  subRecipe:
+                    type: object
+                    nullable: true
                     properties:
                       id:
                         type: string
                         format: uuid
-                      name:
-                        type: array
-                        items:
-                          type: string
-                      category:
+                      title:
                         type: string
-                      description:
+                      baseYield:
+                        type: number
+                      yieldUnit:
                         type: string
-                        nullable: true
+                        enum:
+                          - G
+                          - KG
+                          - ML
+                          - L
+                          - UN
                   inventory:
                     type: object
                     nullable: true
                     properties:
                       currentQuantity:
                         type: number
-                      measurementUnit:
-                        type: string
-                      packagePrice:
+                      costPerBaseUnit:
                         type: number
-                      packageSize:
-                        type: number
-                      costUnit:
-                        type: number
+                        description: Custo por unidade base do ingrediente
                       lastUpdated:
                         type: string
                         format: date-time

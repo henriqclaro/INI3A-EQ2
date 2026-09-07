@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 
-import type { TagType } from '../generated/prisma/client';
+import type { Role, TagType } from '../generated/prisma/client';
 import { CreatedResponse, DefaultSuccessResponse } from '../responses/http.success';
 import { TagService } from '../services/tag.service';
 import type { ApiResponse } from '../types/api.response';
@@ -13,7 +13,7 @@ export class TagController {
     this.tagService = new TagService();
   }
 
-  private extractProps(req: Request) {
+  private extractProps(req: { userId: string; userRole: Role }) {
     const userId = req.userId;
     const userRole = req.userRole;
 

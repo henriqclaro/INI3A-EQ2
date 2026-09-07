@@ -37,6 +37,18 @@ components:
             phone:
               type: string
               nullable: true
+            bio:
+              type: string
+              nullable: true
+            instagram:
+              type: string
+              nullable: true
+            neighborhood:
+              type: string
+              nullable: true
+            city:
+              type: string
+              nullable: true
             location:
               type: object
               properties:
@@ -169,18 +181,12 @@ components:
             type: object
             properties:
               ingredientId:
-                type: string
-                format: uuid
+                type: integer
               currentQuantity:
                 type: number
-              measurementUnit:
-                type: string
-              packagePrice:
+              costPerBaseUnit:
                 type: number
-              packageSize:
-                type: number
-              costUnit:
-                type: number
+                description: Custo por unidade base do ingrediente
               lastUpdated:
                 type: string
                 format: date-time
@@ -188,14 +194,27 @@ components:
                 type: object
                 properties:
                   id:
-                    type: string
-                    format: uuid
+                    type: integer
                   name:
-                    type: array
-                    items:
-                      type: string
+                    type: string
+                  slug:
+                    type: string
                   category:
                     type: string
+                  baseDimension:
+                    type: string
+                    enum:
+                      - MASS
+                      - VOLUME
+                      - COUNT
+                  baseUnit:
+                    type: string
+                    enum:
+                      - G
+                      - KG
+                      - ML
+                      - L
+                      - UN
                   description:
                     type: string
                     nullable: true
@@ -209,18 +228,12 @@ components:
               type: string
               format: uuid
             ingredientId:
-              type: string
-              format: uuid
+              type: integer
             currentQuantity:
               type: number
-            measurementUnit:
-              type: string
-            packagePrice:
+            costPerBaseUnit:
               type: number
-            packageSize:
-              type: number
-            costUnit:
-              type: number
+              description: Custo por unidade base do ingrediente
             lastUpdated:
               type: string
               format: date-time
@@ -228,14 +241,27 @@ components:
               type: object
               properties:
                 id:
-                  type: string
-                  format: uuid
+                  type: integer
                 name:
-                  type: array
-                  items:
-                    type: string
+                  type: string
+                slug:
+                  type: string
                 category:
                   type: string
+                baseDimension:
+                  type: string
+                  enum:
+                    - MASS
+                    - VOLUME
+                    - COUNT
+                baseUnit:
+                  type: string
+                  enum:
+                    - G
+                    - KG
+                    - ML
+                    - L
+                    - UN
                 description:
                   type: string
                   nullable: true

@@ -1,8 +1,10 @@
 import type { Request, Response } from 'express';
 
+import type { Role } from '../generated/prisma/client';
 import { CreatedResponse, DefaultSuccessResponse } from '../responses/http.success';
 import { IngredientService } from '../services/ingredient.service';
 import type { ApiResponse } from '../types/api.response';
+import type { RequestContext } from '../types/context.interface';
 import type { IngredientDTO } from '../types/dtos/ingredient.dto';
 
 export class IngredientController {
@@ -12,15 +14,15 @@ export class IngredientController {
     this.ingredientService = new IngredientService();
   }
 
-  private extractProps(req: Request) {
-    const userId = req.userId;
-    const userRole = req.userRole;
-
-    return { userId, userRole };
+  private extractProps(req: { userId: string; userRole: Role }): RequestContext {
+    return {
+      userId: req.userId,
+      userRole: req.userRole,
+    };
   }
 
   async register(
-    req: Request<any, unknown, IngredientDTO.RegisterRequest>,
+    req: Request<Record<string, string>, unknown, IngredientDTO.RegisterRequest>,
     res: Response<ApiResponse<IngredientDTO.RegisterResponse>>,
   ) {
     const context = this.extractProps(req);
@@ -33,14 +35,13 @@ export class IngredientController {
     return new CreatedResponse(res, responseData, 'Ingredient created successfully').send();
   }
 
-  async serach(req: Request<any>, res: Response<ApiResponse<IngredientDTO.SearchResponse>>) {
-    const search = req.query.search as string;
+  async search(req: Request, res: Response<ApiResponse<IngredientDTO.SearchResponse>>) {
+    const context = this.extractProps(req);
 
-    const page = req.query.page as unknown as number;
-
+    const query = req.query as unknown as IngredientDTO.QueryRequest;
     const responseData: IngredientDTO.SearchResponse = await this.ingredientService.search(
-      search,
-      page,
+      context,
+      query,
     );
 
     return new DefaultSuccessResponse(

@@ -4,29 +4,44 @@ import { randomBytes } from 'node:crypto';
 
 import prisma from '../config/database';
 import { env } from '../config/env.config';
+import type { Role } from '../generated/prisma/client';
 import { AuthError } from '../responses/http.error';
 import type { AuthDTO } from '../types/dtos/auth.dto';
 
 export class AuthService {
+  private parseLocation(rawLocation: any) {
+    if (rawLocation?.coordinates) {
+      const [longitude, latitude] = rawLocation.coordinates;
+      return { latitude, longitude };
+    }
+
+    return null;
+  }
+
   async logIn(data: AuthDTO.LogInRequest) {
     // eslint-disable-next-line @ts-safeql/check-sql
     const result = await prisma.$queryRaw<any[]>`
       SELECT
-        id,
-        name,
-        phone,
-        profile_picture_url as "pfpUrl",
-        password_hash as "passwordHash",
-        role as "roleType",
-        ST_AsGeoJSON(location)::json as location
+        "user".id,
+        "user".name,
+        "user".phone,
+        "user".profile_picture_url as "pfpUrl",
+        "user".password_hash as "passwordHash",
+        "user".role as role,
+        ST_AsGeoJSON(bp.location)::json as location
       FROM "user"
-      WHERE email = ${data.email}
+      LEFT JOIN "baker_profile" bp ON bp.user_id = "user".id
+      WHERE "user".email = ${data.email}
       LIMIT 1
     `;
 
     const foundUser = result[0] || null;
 
     if (!foundUser) {
+      throw new AuthError('Invalid credentials', 'AUTH_UNAUTHORIZED');
+    }
+
+    if (!foundUser.passwordHash) {
       throw new AuthError('Invalid credentials', 'AUTH_UNAUTHORIZED');
     }
 
@@ -41,14 +56,14 @@ export class AuthService {
       name: foundUser.name,
       email: data.email,
       phone: foundUser.phone,
-      location: foundUser.location,
+      location: this.parseLocation(foundUser.location),
       pfpUrl: foundUser.pfpUrl,
-      role: foundUser.roleType,
+      role: foundUser.role as Role,
     };
 
     const payload = {
       id: foundUser.id,
-      role: foundUser.role,
+      role: foundUser.role as Role,
     };
 
     const token = jwt.sign(payload, env.JWT_SECRET, { expiresIn: '30m' });

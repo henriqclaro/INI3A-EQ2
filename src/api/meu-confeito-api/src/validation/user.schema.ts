@@ -22,8 +22,12 @@ export const updateSchema = z
     name: z.string().min(3, 'Name must have at least 3 characters'),
     email: z.email('Invalid email format'),
     phone: z.e164('Invalid E164 for phone number'),
-    location: locationSchema,
+    location: locationSchema.nullish(),
     pfpUrl: z.url('Invalid URL for photo'),
+    bio: z.string().max(500).nullish(),
+    instagram: z.string().max(100).nullish(),
+    neighborhood: z.string().max(100).nullish(),
+    city: z.string().max(100).nullish(),
   })
   .partial();
 
@@ -32,15 +36,9 @@ export const deleteSchema = z.object({
 });
 
 export const inventoryRegisterSchema = z.object({
-  ingredientId: z.string('Invalid string for ingredient ID'),
-  measurementUnit: z.string('Measurement unit is required'),
-  currentQuantity: z.number('Current quantity must be a number').optional(),
-  packagePrice: z.number('Package price must be a number').optional(),
-  packageSize: z
-    .number('Package size must be a number')
-    .positive('Package size must be positive')
-    .optional(),
-  costUnit: z.number('Cost per unit must be a number').optional(),
+  ingredientId: z.number().int().positive('Ingredient ID must be a positive integer'),
+  currentQuantity: z.number().min(0, 'Current quantity cannot be negative').default(0),
+  costPerBaseUnit: z.number().min(0, 'Cost per base unit cannot be negative').default(0),
 });
 
 export const saveRecipeSchema = z.object({

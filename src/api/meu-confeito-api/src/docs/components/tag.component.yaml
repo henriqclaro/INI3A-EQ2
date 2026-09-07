@@ -7,12 +7,16 @@ components:
           type: object
           properties:
             id:
-              type: string
-              format: uuid
+              type: integer
             name:
               type: string
             type:
               type: string
+              enum:
+                - USER
+                - PRODUCT
+                - VARIETY
+                - ATTRIBUTE
             creatorId:
               type: string
               format: uuid
@@ -29,12 +33,16 @@ components:
             type: object
             properties:
               id:
-                type: string
-                format: uuid
+                type: integer
               name:
                 type: string
               type:
                 type: string
+                enum:
+                  - USER
+                  - PRODUCT
+                  - VARIETY
+                  - ATTRIBUTE
               creatorId:
                 type: string
                 format: uuid

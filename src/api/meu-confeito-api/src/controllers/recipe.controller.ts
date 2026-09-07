@@ -1,8 +1,10 @@
 import type { Request, Response } from 'express';
 
+import type { Role } from '../generated/prisma/client';
 import { CreatedResponse, DefaultSuccessResponse } from '../responses/http.success';
 import { RecipeService } from '../services/recipe.service';
 import type { ApiResponse } from '../types/api.response';
+import type { RequestContext } from '../types/context.interface';
 import type { RecipeDTO } from '../types/dtos/recipe.dto';
 
 export class RecipeController {
@@ -12,7 +14,7 @@ export class RecipeController {
     this.recipeService = new RecipeService();
   }
 
-  private extractProps(req: Request) {
+  private extractProps(req: { userId: string; userRole: Role }): RequestContext {
     const userId = req.userId;
     const userRole = req.userRole;
 
@@ -20,7 +22,7 @@ export class RecipeController {
   }
 
   async register(
-    req: Request<any, unknown, RecipeDTO.RegisterRequest>,
+    req: Request<Record<string, string>, unknown, RecipeDTO.RegisterRequest>,
     res: Response<ApiResponse<RecipeDTO.RegisterResponse>>,
   ) {
     const context = this.extractProps(req);
@@ -34,7 +36,7 @@ export class RecipeController {
   }
 
   async selectSingle(
-    req: Request<any>,
+    req: Request<RecipeDTO.RequestParam>,
     res: Response<ApiResponse<RecipeDTO.SingleSelectResponse>>,
   ) {
     const context = this.extractProps(req);
@@ -68,10 +70,9 @@ export class RecipeController {
     ).send();
   }
 
-  async search(req: Request<any>, res: Response<ApiResponse<RecipeDTO.SearchResponse>>) {
-    const search = req.query.search as string;
-
-    const page = req.query.page as unknown as number;
+  async search(req: Request, res: Response<ApiResponse<RecipeDTO.SearchResponse>>) {
+    const search = req.query.search as string | undefined;
+    const page = req.query.page as unknown as number | undefined;
 
     const responseData: RecipeDTO.SearchResponse = await this.recipeService.search(search, page);
 

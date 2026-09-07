@@ -1,6 +1,7 @@
 import type { Decimal, JsonValue } from '@prisma/client/runtime/client';
 import type { z } from 'zod';
 
+import type { TagType } from '../../generated/prisma/client';
 import type * as recipe from '../../validation/recipe.schema';
 
 export namespace RecipeDTO {
@@ -24,10 +25,15 @@ export namespace RecipeDTO {
 
       createdAt: Date;
 
-      ingredients: {
-        ingredientId: string;
-        baseQuantity: Decimal;
-        measurementUnit: string;
+      items: {
+        id: string;
+        ingredientId: number | null;
+        subRecipeId: string | null;
+        quantity: Decimal;
+        unit: string;
+        displayQuantity: Decimal | null;
+        displayUnit: string | null;
+        sortOrder: number;
         notes: string | null;
       }[];
     };
@@ -35,6 +41,7 @@ export namespace RecipeDTO {
 
   export type RequestParam = z.infer<typeof recipe.paramsSchema>;
   export type UserInventoryRequestParam = z.infer<typeof recipe.userInventoryParamsSchema>;
+  export type QueryRequest = z.infer<typeof recipe.querySchema>;
 
   export interface SingleSelectResponse {
     recipe: {
@@ -61,16 +68,30 @@ export namespace RecipeDTO {
       createdAt: Date;
       updatedAt: Date;
 
-      ingredients: {
-        ingredientId: string;
-        baseQuantity: Decimal;
-        measurementUnit: string;
+      items: {
+        id: string;
+        ingredientId: number | null;
+        subRecipeId: string | null;
+        quantity: Decimal;
+        unit: string;
+        displayQuantity: Decimal | null;
+        displayUnit: string | null;
+        sortOrder: number;
         notes: string | null;
         ingredient: {
-          id: string;
-          name: string[];
+          id: number;
+          name: string;
+          slug: string;
           category: string;
-        };
+          baseDimension: string;
+          baseUnit: string;
+        } | null;
+        subRecipe: {
+          id: string;
+          title: string;
+          baseYield: Decimal;
+          yieldUnit: string;
+        } | null;
       }[];
     };
   }
@@ -100,23 +121,34 @@ export namespace RecipeDTO {
       createdAt: Date;
       updatedAt: Date;
 
-      ingredients: {
-        ingredientId: string;
-        baseQuantity: Decimal;
-        measurementUnit: string;
+      items: {
+        id: string;
+        ingredientId: number | null;
+        subRecipeId: string | null;
+        quantity: Decimal;
+        unit: string;
+        displayQuantity: Decimal | null;
+        displayUnit: string | null;
+        sortOrder: number;
         notes: string | null;
         ingredient: {
-          id: string;
-          name: string[];
+          id: number;
+          name: string;
+          slug: string;
           category: string;
+          baseDimension: string;
+          baseUnit: string;
           description: string | null;
-        };
+        } | null;
+        subRecipe: {
+          id: string;
+          title: string;
+          baseYield: Decimal;
+          yieldUnit: string;
+        } | null;
         inventory: {
           currentQuantity: Decimal;
-          measurementUnit: string;
-          packagePrice: Decimal;
-          packageSize: Decimal;
-          costUnit: Decimal;
+          costPerBaseUnit: Decimal;
           lastUpdated: Date;
         } | null;
       }[];
@@ -137,8 +169,8 @@ export namespace RecipeDTO {
       updatedAt: Date;
       tags: {
         tag: {
-          type: string;
-          id: string;
+          type: TagType;
+          id: number;
           name: string;
         };
       }[];

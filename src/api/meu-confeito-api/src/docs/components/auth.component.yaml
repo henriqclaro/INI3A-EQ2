@@ -16,6 +16,18 @@ components:
             phone:
               type: string
               nullable: true
+            bio:
+              type: string
+              nullable: true
+            instagram:
+              type: string
+              nullable: true
+            neighborhood:
+              type: string
+              nullable: true
+            city:
+              type: string
+              nullable: true
             location:
               type: object
               properties:

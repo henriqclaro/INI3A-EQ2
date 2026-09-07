@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 
+import type { Role } from '../generated/prisma/client';
 import {
   CreatedResponse,
   DefaultSuccessResponse,
@@ -15,7 +16,7 @@ export class UserController {
   constructor() {
     this.userService = new UserService();
   }
-  private extractProps(req: Request) {
+  private extractProps(req: { userId: string; userRole: Role }) {
     const userId = req.userId;
     const userRole = req.userRole;
 
@@ -25,7 +26,7 @@ export class UserController {
   // Métodos de CRUD ------------------------
 
   async register(
-    req: Request<unknown, unknown, UserDTO.RegisterRequest>,
+    req: Request<Record<string, string>, unknown, UserDTO.RegisterRequest>,
     res: Response<ApiResponse<UserDTO.RegisterResponse>>,
   ) {
     const responseData: UserDTO.RegisterResponse = await this.userService.register(req.body);
@@ -33,7 +34,10 @@ export class UserController {
     return new CreatedResponse(res, responseData, 'User created successfully').send();
   }
 
-  async select(req: Request<any>, res: Response<ApiResponse<UserDTO.SelectResponse>>) {
+  async select(
+    req: Request<UserDTO.RequestParams>,
+    res: Response<ApiResponse<UserDTO.SelectResponse>>,
+  ) {
     const context = this.extractProps(req);
 
     const userId = req.params.id;
@@ -44,7 +48,7 @@ export class UserController {
   }
 
   async update(
-    req: Request<any, unknown, UserDTO.UpdateRequest>,
+    req: Request<UserDTO.RequestParams, unknown, UserDTO.UpdateRequest>,
     res: Response<ApiResponse<UserDTO.UpdateResponse>>,
   ) {
     const context = this.extractProps(req);
@@ -60,7 +64,10 @@ export class UserController {
     return new DefaultSuccessResponse(res, responseData, 'User updated sucessfully').send();
   }
 
-  async delete(req: Request<any, unknown, UserDTO.DeleteRequest>, res: Response<ApiResponse>) {
+  async delete(
+    req: Request<UserDTO.RequestParams, unknown, UserDTO.DeleteRequest>,
+    res: Response<ApiResponse>,
+  ) {
     const context = this.extractProps(req);
 
     const userId = req.params.id;
@@ -73,7 +80,7 @@ export class UserController {
   // Métodos de Relações ------------------------
 
   async selectUserRecipe(
-    req: Request<any>,
+    req: Request<UserDTO.RequestParams>,
     res: Response<ApiResponse<UserDTO.SelectUserRecipesResponse>>,
   ) {
     const context = this.extractProps(req);
@@ -93,7 +100,7 @@ export class UserController {
   }
 
   async selectUserSaves(
-    req: Request<any>,
+    req: Request<UserDTO.RequestParams>,
     res: Response<ApiResponse<UserDTO.SelectUserSavesResponse>>,
   ) {
     const context = this.extractProps(req);

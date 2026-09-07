@@ -1,6 +1,7 @@
 import type { Decimal } from '@prisma/client/runtime/client';
 import type { z } from 'zod';
 
+import type { TagType } from '../../generated/prisma/client';
 import type * as user from '../../validation/user.schema';
 
 export namespace UserDTO {
@@ -23,6 +24,10 @@ export namespace UserDTO {
       name: string;
       email: string;
       phone: string | null;
+      bio?: string | null;
+      instagram?: string | null;
+      neighborhood?: string | null;
+      city?: string | null;
       location: {
         latitude: number;
         longitude: number;
@@ -54,9 +59,9 @@ export namespace UserDTO {
       updatedAt: Date;
       tags: {
         tag: {
-          type: string;
+          type: TagType;
           name: string;
-          id: string;
+          id: number;
         };
       }[];
     }[];
@@ -76,8 +81,8 @@ export namespace UserDTO {
         tags: {
           tag: {
             name: string;
-            id: string;
-            type: string;
+            id: number;
+            type: TagType;
           };
         }[];
       };
@@ -90,17 +95,17 @@ export namespace UserDTO {
   export interface RegisterUserInventoryResponse {
     userInventory: {
       userId: string;
-      ingredientId: string;
+      ingredientId: number;
       currentQuantity: Decimal;
-      measurementUnit: string;
-      packagePrice: Decimal;
-      packageSize: Decimal;
-      costUnit: Decimal;
+      costPerBaseUnit: Decimal;
       lastUpdated: Date;
       ingredient: {
-        id: string;
-        name: string[];
+        id: number;
+        name: string;
+        slug: string;
         category: string;
+        baseDimension: string;
+        baseUnit: string;
         description: string | null;
       };
     };
@@ -108,17 +113,17 @@ export namespace UserDTO {
 
   export interface SelectUserInventoryResponse {
     userInventories: {
-      ingredientId: string;
+      ingredientId: number;
       currentQuantity: Decimal;
-      measurementUnit: string;
-      packagePrice: Decimal;
-      packageSize: Decimal;
-      costUnit: Decimal;
+      costPerBaseUnit: Decimal;
       lastUpdated: Date;
       ingredient: {
-        id: string;
-        name: string[];
+        id: number;
+        name: string;
+        slug: string;
         category: string;
+        baseDimension: string;
+        baseUnit: string;
         description: string | null;
       };
     }[];

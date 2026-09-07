@@ -3,70 +3,127 @@ import type { Prisma } from '../generated/prisma/client';
 import { ConflictError, ForbiddenError, NotFoundError } from '../responses/http.error';
 import type { RequestContext } from '../types/context.interface';
 import type { IngredientDTO } from '../types/dtos/ingredient.dto';
+import { generateSlug } from '../utils/slugify.util';
 
 export class IngredientService {
-  private checkPermission(context: RequestContext, id: string) {
-    if (context.userId !== id && context.userRole !== 'ADMIN') {
+  private checkPermission(context: RequestContext) {
+    if (context.userRole !== 'ADMIN' && context.userRole !== 'BAKER') {
       throw new ForbiddenError('Action denied for lack of privileges');
     }
   }
 
   async register(context: RequestContext, data: IngredientDTO.RegisterRequest) {
-    this.checkPermission(context, data.creatorId);
+    this.checkPermission(context);
 
-    data.name.map((name) => {
-      name = name.toLocaleLowerCase();
-    });
+    const creatorId = context.userRole === 'ADMIN' ? null : context.userId;
+    const slug = data.slug || generateSlug(data.name);
 
-    const ingredientExists = await prisma.ingredient.findUnique({
-      where: { name: data.name },
-    });
+    const existingIngredient = creatorId
+      ? await prisma.ingredient.findUnique({
+          where: { creatorId_slug: { creatorId, slug } },
+        })
+      : await prisma.ingredient.findFirst({
+          where: { creatorId: null, slug },
+        });
 
-    if (ingredientExists) {
-      throw new ConflictError('Ingredient already exists', 'RESOURCE_ALREADY_EXISTS');
+    if (existingIngredient) {
+      throw new ConflictError(
+        'Ingredient with this slug already exists for this creator',
+        'RESOURCE_ALREADY_EXISTS',
+      );
     }
 
-    const parentExists = await prisma.ingredient.findUnique({
-      where: { id: data.parentId },
-    });
+    if (data.parentId) {
+      const parentExists = await prisma.ingredient.findUnique({
+        where: { id: data.parentId },
+      });
 
-    if (!parentExists) {
-      throw new NotFoundError('Parent ingredient does not exist', 'RESOURCE_NOT_FOUND');
+      if (!parentExists) {
+        throw new NotFoundError('Parent ingredient does not exist', 'RESOURCE_NOT_FOUND');
+      }
     }
 
     const ingredient = await prisma.ingredient.create({
       data: {
         parentId: data.parentId,
         name: data.name,
+        slug,
+        aliases: data.aliases ?? [],
         description: data.description,
         category: data.category,
-        creatorId: data.creatorId,
+        baseDimension: data.baseDimension,
+        baseUnit: data.baseUnit,
+        creatorId,
+        conversions: data.conversions?.length
+          ? {
+              create: data.conversions.map((conv) => ({
+                fromUnit: conv.fromUnit,
+                factorToBase: conv.factorToBase,
+              })),
+            }
+          : undefined,
       },
       select: {
         id: true,
         parentId: true,
         name: true,
+        slug: true,
+        aliases: true,
         description: true,
         category: true,
+        baseDimension: true,
+        baseUnit: true,
         creatorId: true,
         createdAt: true,
+        conversions: {
+          select: {
+            id: true,
+            fromUnit: true,
+            factorToBase: true,
+          },
+        },
       },
     });
 
     return { ingredient };
   }
 
-  async search(search?: string, page?: number) {
-    const baseFilter: Prisma.IngredientWhereInput = {};
+  async search(context: RequestContext, query?: IngredientDTO.QueryRequest) {
+    const search = query?.search;
+    const page = query?.page;
+    const category = query?.category;
+    const baseDimension = query?.baseDimension;
+
+    const baseFilter: Prisma.IngredientWhereInput = {
+      OR: [{ creatorId: null }, { creatorId: context.userId }],
+    };
+
+    const conditions: Prisma.IngredientWhereInput[] = [];
 
     if (search) {
-      baseFilter.OR = [
-        {
-          name: {
-            has: search.toLocaleLowerCase(),
-          },
-        },
-      ];
+      conditions.push({
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { slug: { contains: search, mode: 'insensitive' } },
+          { aliases: { has: search.toLowerCase() } },
+        ],
+      });
+    }
+
+    if (category) {
+      conditions.push({
+        category: { equals: category, mode: 'insensitive' },
+      });
+    }
+
+    if (baseDimension) {
+      conditions.push({
+        baseDimension: { equals: baseDimension },
+      });
+    }
+
+    if (conditions.length > 0) {
+      baseFilter.AND = conditions;
     }
 
     const safePage = Number(page);
@@ -82,8 +139,12 @@ export class IngredientService {
       select: {
         id: true,
         name: true,
-        description: true,
+        slug: true,
+        aliases: true,
+        baseDimension: true,
+        baseUnit: true,
         category: true,
+        description: true,
       },
     });
 

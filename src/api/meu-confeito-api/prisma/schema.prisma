@@ -48,25 +48,45 @@ enum InventoryMovement {
   @@map("inventory_movement_type")
 }
 
+enum UnitDimension {
+  MASS
+  VOLUME
+  COUNT
+
+  @@map("unit_dimension")
+}
+
+enum StandardUnit {
+  G
+  KG
+
+  ML
+  L
+
+  UN
+
+  @@map("standard_units")
+}
+
 model User {
-  id           String                                @id @default(uuid())
-  name         String                                @db.VarChar(100)
-  email        String                                @unique @db.VarChar(255)
-  phone        String?                               @unique @db.VarChar(20)
-  location     Unsupported("geometry(Point, 4326)")?
-  pfpUrl       String?                               @map("profile_picture_url") @db.VarChar(255)
-  passwordHash String                                @map("password_hash") @db.VarChar(255)
-  providerId   String?                               @map("provider_id") // !==(NULL) -> Login com Google
+  id           String  @id @default(uuid())
+  email        String  @unique @db.VarChar(255)
+  name         String  @db.VarChar(100)
+  phone        String? @unique @db.VarChar(20)
+  pfpUrl       String? @map("profile_picture_url") @db.VarChar(255)
+  passwordHash String? @map("password_hash") @db.VarChar(255)
+  providerId   String? @unique @map("provider_id") // !==(NULL) -> Login com Google
 
   role      Role
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
   isActive  Boolean  @default(true) @map("is_active")
 
+  profile BakerProfile?
+
   refreshTokens RefreshToken[]
   ingredients   Ingredient[]
   recipes       Recipe[]
-  profileTags   UserTag[]
   createdTags   Tag[]
   inventories   UserInventory[]
   productions   Production[]
@@ -93,12 +113,38 @@ model RefreshToken {
   @@map("refresh_token")
 }
 
+model BakerProfile {
+  userId    String  @id @map("user_id")
+  bio       String?
+  instagram String?
+
+  location     Unsupported("geometry(Point, 4326)")?
+  neighborhood String?
+  city         String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  showcase    ShowcaseRecipe[]
+  profileTags UserTag[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([location], type: Gist)
+  @@map("baker_profile")
+}
+
 model Ingredient {
-  id          String   @id @default(uuid())
-  parentId    String?  @map("parent_id")
-  name        String[] @unique
+  id          Int      @id @default(autoincrement())
+  parentId    Int?     @map("parent_id")
+  name        String   @db.VarChar(100)
+  slug        String   @db.VarChar(100)
+  aliases     String[] // Array de nomes possíveis, evita redundâncias
   description String?  @db.Text
   category    String   @db.VarChar(50)
+
+  baseDimension UnitDimension @default(MASS) @map("base_dimension")
+  baseUnit      StandardUnit  @default(G) @map("base_unit")
 
   creatorId String?  @map("creator_id")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
@@ -109,22 +155,41 @@ model Ingredient {
 
   children Ingredient[] @relation("IngredientHierarchy")
 
-  recipes      RecipeIngredient[]
+  conversions IngredientConversion[]
+
+  recipeItems  RecipeItem[]
   inventories  UserInventory[]
   transactions InventoryTransaction[]
 
+  @@unique([creatorId, slug])
   @@map("ingredient")
 }
 
+// Tabela de equivalência
+model IngredientConversion {
+  id           Int    @id @default(autoincrement())
+  ingredientId Int    @map("ingredient_id")
+  fromUnit     String @map("from_unit") @db.VarChar(30)
+
+  // Fator multiplicador para converter em baseUnit (g, ml ou un)
+  // Ex: Para Farinha, fromUnit: CUP -> factorToBase: 120.000 (1 xícara = 120g)
+  factorToBase Decimal @map("factor_to_base") @db.Decimal(10, 4)
+
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+
+  @@unique([ingredientId, fromUnit])
+  @@map("ingredient_conversion")
+}
+
 model Recipe {
-  id           String  @id @default(uuid())
-  userId       String? @map("user_id")
-  parentId     String? @map("parent_id")
-  title        String  @db.VarChar(100)
-  coverUrl     String? @map("cover_image_url") @db.VarChar(255)
-  instructions Json    @db.JsonB
-  baseYield    Decimal @map("base_yield") @db.Decimal(10, 2) // Rendimento
-  yieldUnit    String  @map("yield_unit") @db.VarChar(50) // Unidade de rendimento
+  id           String       @id @default(uuid())
+  userId       String?      @map("user_id")
+  parentId     String?      @map("parent_id")
+  title        String       @db.VarChar(100)
+  coverUrl     String?      @map("cover_image_url") @db.VarChar(255)
+  instructions Json         @db.JsonB
+  baseYield    Decimal      @map("base_yield") @db.Decimal(10, 2) // Rendimento
+  yieldUnit    StandardUnit @map("yield_unit") // Unidade de rendimento
 
   status        RecipeStatus @default(DRAFT)
   totalSaves    Int          @default(0) @map("total_saves")
@@ -146,18 +211,21 @@ model Recipe {
 
   children Recipe[] @relation("RecipeHierarchy")
 
-  ingredients RecipeIngredient[]
-  tags        RecipeTag[]
-  productions Production[]
-  saves       UserSavedRecipe[]
-  reviews     RecipeReview[]
+  items      RecipeItem[] @relation("RecipeToItems")
+  usedAsItem RecipeItem[] @relation("SubRecipeToItems")
+
+  tags            RecipeTag[]
+  productions     Production[]
+  saves           UserSavedRecipe[]
+  reviews         RecipeReview[]
+  showcaseRecipes ShowcaseRecipe[]
 
   @@index([userId])
   @@map("recipe")
 }
 
 model Tag {
-  id   String  @id @default(uuid())
+  id   Int     @id @default(autoincrement())
   name String  @unique @db.VarChar(50)
   type TagType
 
@@ -174,10 +242,10 @@ model Tag {
 
 model UserTag {
   userId String @map("user_id")
-  tagId  String @map("tag_id")
+  tagId  Int    @map("tag_id")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tag     Tag          @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  profile BakerProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@id([userId, tagId])
   @@map("user_tag")
@@ -185,7 +253,7 @@ model UserTag {
 
 model RecipeTag {
   recipeId String @map("recipe_id")
-  tagId    String @map("tag_id")
+  tagId    Int    @map("tag_id")
 
   recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
@@ -194,73 +262,111 @@ model RecipeTag {
   @@map("recipe_tag")
 }
 
-model RecipeIngredient {
-  recipeId        String  @map("recipe_id")
-  ingredientId    String  @map("ingredient_id")
-  baseQuantity    Decimal @map("base_quantity") @db.Decimal(10, 3) // Qtde base pro rendimento
-  measurementUnit String  @map("measurement_unit") @db.VarChar(30)
-  notes           String? @db.VarChar(255) // Estado do ingrediente
+// Bill of Material: Substitue a relação antiga, permitindo sub-receitas como item de receita
+model RecipeItem {
+  id       String @id @default(uuid())
+  recipeId String @map("recipe_id")
 
-  recipe     Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+  // Exclusividade mútua (XOR): preencha um ou outro
+  ingredientId Int?    @map("ingredient_id")
+  subRecipeId  String? @map("sub_recipe_id")
 
-  @@id([recipeId, ingredientId])
-  @@map("recipe_ingredient")
+  quantity Decimal      @map("quantity") @db.Decimal(10, 3) // Sempre salvo em unidade métrica
+  unit     StandardUnit
+
+  // Apoio empírico
+  displayQuantity Decimal? @map("display_quantity") @db.Decimal(10, 2) // e.g.: 2
+  displayUnit     String?  @map("display_unit") @db.VarChar(30) // e.g.: Xícaras
+
+  sortOrder Int     @default(0) @map("sort_order")
+  notes     String? @db.VarChar(255)
+
+  recipe     Recipe      @relation("RecipeToItems", fields: [recipeId], references: [id], onDelete: Cascade)
+  ingredient Ingredient? @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+  subRecipe  Recipe?     @relation("SubRecipeToItems", fields: [subRecipeId], references: [id], onDelete: Restrict)
+
+  @@index([recipeId])
+  @@index([ingredientId])
+  @@index([subRecipeId])
+  @@map("recipe_item")
 }
 
 model UserInventory {
   userId          String  @map("user_id")
-  ingredientId    String  @map("ingredient_id")
+  ingredientId    Int     @map("ingredient_id")
   currentQuantity Decimal @default(0.000) @map("current_quantity") @db.Decimal(10, 3)
-  measurementUnit String  @map("measurement_unit") @db.VarChar(30)
 
-  packagePrice Decimal @default(0.0000) @map("package_price") @db.Decimal(10, 4)
-  packageSize  Decimal @default(1.000) @map("package_size") @db.Decimal(10, 3)
-  costUnit     Decimal @map("cost_per_unit") @db.Decimal(10, 4) // Padronizar no tratamento de dados
+  costPerBaseUnit Decimal @default(0.000000) @map("cost_per_base_unit") @db.Decimal(12, 6)
 
   lastUpdated DateTime @updatedAt @map("last_updated") @db.Timestamptz(3)
 
   user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
 
   @@id([userId, ingredientId])
   @@map("user_inventory")
 }
 
 model Production {
-  id             String   @id @default(uuid())
-  userId         String   @map("user_id")
-  recipeId       String   @map("recipe_id")
-  yieldProduced  Decimal  @map("yield_produced") @db.Decimal(10, 2) // Rendimento Gerado
-  productionDate DateTime @default(now()) @map("production_date") @db.Timestamptz(3)
+  id             String    @id @default(uuid())
+  userId         String    @map("user_id")
+  recipeId       String    @map("recipe_id")
+  yieldProduced  Decimal   @map("yield_produced") @db.Decimal(10, 2) // Rendimento Gerado
+  productionDate DateTime  @default(now()) @map("production_date") @db.Timestamptz(3)
+  canceledAt     DateTime? @map("canceled_at") @db.Timestamptz(3)
 
-  canceledAt DateTime? @map("canceled_at") @db.Timestamptz(3)
+  ingredientCost Decimal @default(0.00) @map("ingredient_cost") @db.Decimal(10, 2) // Custo somado dos insumos
+  laborCost      Decimal @default(0.00) @map("labor_cost") @db.Decimal(10, 2) // Custo de mão de obra aplicado
+  overheadCost   Decimal @default(0.00) @map("overhead_cost") @db.Decimal(10, 2) // Custos fixos/indiretos rateados
+  packagingCost  Decimal @default(0.00) @map("packaging_cost") @db.Decimal(10, 2) // Custo de embalagem no momento
+  totalCost      Decimal @default(0.00) @map("total_cost") @db.Decimal(10, 2) // Soma de todos os custos
+  unitCost       Decimal @default(0.00) @map("unit_cost") @db.Decimal(10, 4) // totalCost / yieldProduced
 
   user         User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   recipe       Recipe                 @relation(fields: [recipeId], references: [id], onDelete: Restrict)
   transactions InventoryTransaction[]
 
+  @@index([userId, productionDate])
   @@map("production")
 }
 
-// Livro-Razão :(
+// Livro-Razão
 model InventoryTransaction {
   id           String  @id @default(uuid())
   userId       String  @map("user_id")
-  ingredientId String  @map("ingredient_id")
+  ingredientId Int     @map("ingredient_id")
   productionId String? @map("production_id")
 
   transactionType InventoryMovement @map("transaction_type")
   quantityChanged Decimal           @map("quantity_changed") @db.Decimal(10, 3)
-  measurementUnit String            @map("measurement_unit") @db.VarChar(30)
+  measurementUnit StandardUnit      @map("measurement_unit")
+
+  // Snapshot Contábil do Livro-Razão
+  unitCost  Decimal @default(0.0000) @map("unit_cost") @db.Decimal(10, 4) // Custo unitário do insumo no momento
+  totalCost Decimal @default(0.00) @map("total_cost") @db.Decimal(10, 2) // quantityChanged * unitCost
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ingredient Ingredient  @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  ingredient Ingredient  @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
   production Production? @relation(fields: [productionId], references: [id], onDelete: SetNull)
 
+  @@index([userId, createdAt])
+  @@index([ingredientId])
   @@map("inventory_transaction")
+}
+
+model ShowcaseRecipe {
+  userId    String   @map("profile_id")
+  recipeId  String   @map("recipe_id")
+  order     Int?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  profile BakerProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  recipe  Recipe       @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, recipeId])
+  @@map("showcase_recipe")
 }
 
 model UserSavedRecipe {
