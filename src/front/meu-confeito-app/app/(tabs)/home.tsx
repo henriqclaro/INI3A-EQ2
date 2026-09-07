@@ -54,7 +54,19 @@ export default function HomeScreen() {
           ) : (
             <Text style={styles.emptyText}>Você ainda não possui receitas públicas.</Text>
           )}
-          <CustomButton title="Estoque" onPress={() => router.push('/stock')} />
+          <View style={styles.actionsContainer}>
+            <CustomButton
+              title="Estoque"
+              onPress={() => router.push('/stock')}
+              style={styles.actionBtn}
+            />
+            <CustomButton
+              title="Histórico de Produções"
+              variant="secondary"
+              onPress={() => router.push('/productions')}
+              style={styles.actionBtn}
+            />
+          </View>
         </ScrollView>
       </View>
     </View>
@@ -104,5 +116,14 @@ const createStyles = (theme: AppTheme) =>
       fontSize: 16,
       fontStyle: 'italic',
       marginTop: 20,
+    },
+    actionsContainer: {
+      alignItems: 'center',
+      gap: 12,
+      marginTop: 10,
+    },
+    actionBtn: {
+      width: '100%',
+      maxWidth: 320,
     },
   });

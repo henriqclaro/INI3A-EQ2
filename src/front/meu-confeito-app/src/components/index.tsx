@@ -18,3 +18,11 @@ export {
   type RecipeFormProps,
   type RecipeFormSubmitData,
 } from '@/src/components/RecipeForm';
+export {
+  ProduceRecipeModal,
+  ProductionCard,
+  ProductionDetailsModal,
+  type ProduceRecipeModalProps,
+  type ProductionCardProps,
+  type ProductionDetailsModalProps,
+} from '@/src/components/production';

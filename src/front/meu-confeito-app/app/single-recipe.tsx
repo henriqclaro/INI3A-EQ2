@@ -15,6 +15,7 @@ import { Stack, router, useFocusEffect, useLocalSearchParams } from 'expo-router
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
+import { ProduceRecipeModal } from '@/src/components/production';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useSingleRecipe } from '@/src/hooks/useRecipes';
@@ -43,6 +44,7 @@ export default function RecipeScreen() {
   const [hasImageError, setHasImageError] = useState(false);
   const [checkedIngredientMap, setCheckedIngredientMap] = useState<Record<string, boolean>>({});
   const [viewMode, setViewMode] = useState<'recipe' | 'pricing'>('recipe');
+  const [isProduceModalOpen, setIsProduceModalOpen] = useState(false);
 
   const styles = useMemo(
     () => createStyles(theme, isDesktop, isSmallScreen),
@@ -404,6 +406,22 @@ export default function RecipeScreen() {
                     )}
                   </View>
 
+                  {/* Primary Action: Produzir */}
+                  <TouchableOpacity
+                    style={styles.btnActionProduce}
+                    onPress={() => setIsProduceModalOpen(true)}
+                    activeOpacity={0.85}
+                    accessibilityRole="button"
+                    accessibilityLabel="Registrar produção desta receita"
+                  >
+                    <MaterialCommunityIcons
+                      name="pot-steam"
+                      size={20}
+                      color={theme.colors.secondaryText}
+                    />
+                    <Text style={styles.btnActionTextProduce}>Produzir Receita</Text>
+                  </TouchableOpacity>
+
                   <View style={styles.ownerActionButtons}>
                     {/* Botão Editar */}
                     <TouchableOpacity
@@ -496,6 +514,50 @@ export default function RecipeScreen() {
                       </TouchableOpacity>
                     )}
                   </View>
+
+                  {/* Link para histórico de produções */}
+                  <TouchableOpacity
+                    style={styles.historyLinkBtn}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/productions',
+                        params: { recipeId: recipe.id },
+                      })
+                    }
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel="Ver produções anteriores desta receita"
+                  >
+                    <MaterialCommunityIcons name="history" size={18} color={theme.colors.primary} />
+                    <Text style={styles.historyLinkText}>
+                      Ver histórico de produções desta receita
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {!isOwner && user && recipe.status === 'PUBLISHED' && (
+                <View style={styles.guestProduceCard}>
+                  <View style={styles.guestProduceInfo}>
+                    <Text style={styles.guestProduceTitle}>Gostou desta receita?</Text>
+                    <Text style={styles.guestProduceSubtitle}>
+                      Produza usando os insumos do seu estoque.
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.btnActionProduceGuest}
+                    onPress={() => setIsProduceModalOpen(true)}
+                    activeOpacity={0.85}
+                    accessibilityRole="button"
+                    accessibilityLabel="Registrar produção desta receita pública"
+                  >
+                    <MaterialCommunityIcons
+                      name="pot-steam"
+                      size={18}
+                      color={theme.colors.secondaryText}
+                    />
+                    <Text style={styles.btnActionTextProduceGuest}>Produzir</Text>
+                  </TouchableOpacity>
                 </View>
               )}
 
@@ -820,6 +882,29 @@ export default function RecipeScreen() {
             </View>
           </ScrollView>
         )}
+
+        {recipe && (
+          <ProduceRecipeModal
+            isVisible={isProduceModalOpen}
+            recipe={recipe}
+            onClose={() => setIsProduceModalOpen(false)}
+            onSuccess={(production) => {
+              setIsProduceModalOpen(false);
+              refetch();
+              Alert.alert(
+                'Produção Registrada!',
+                `Foram produzidos ${production.yieldProduced} ${recipe.yieldUnit || 'unidade(s)'} com sucesso. O estoque foi debitado.`,
+                [
+                  { text: 'OK', style: 'cancel' },
+                  {
+                    text: 'Ver Produções',
+                    onPress: () => router.push('/productions'),
+                  },
+                ],
+              );
+            }}
+          />
+        )}
       </View>
     </>
   );
@@ -1001,6 +1086,22 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       flexDirection: isSmallScreen ? 'column' : 'row',
       gap: 8,
     },
+    btnActionProduce: {
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.primary,
+      borderRadius: 8,
+      paddingHorizontal: 16,
+      gap: 8,
+    },
+    btnActionTextProduce: {
+      fontFamily: 'Inter',
+      fontSize: 14,
+      fontWeight: '700',
+      color: theme.colors.secondaryText,
+    },
     btnActionEdit: {
       flex: 1,
       minHeight: 48,
@@ -1091,6 +1192,65 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       fontSize: 13,
       fontWeight: '600',
       color: theme.colors.primary,
+    },
+    historyLinkBtn: {
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.secBorder,
+      paddingTop: 8,
+      gap: 6,
+    },
+    historyLinkText: {
+      fontFamily: 'Inter',
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.primary,
+    },
+    guestProduceCard: {
+      backgroundColor: theme.colors.pitchBackground,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: theme.colors.secBorder,
+      padding: 14,
+      marginBottom: 20,
+      flexDirection: isSmallScreen ? 'column' : 'row',
+      alignItems: isSmallScreen ? 'stretch' : 'center',
+      justifyContent: 'space-between',
+      gap: 12,
+    },
+    guestProduceInfo: {
+      flex: 1,
+    },
+    guestProduceTitle: {
+      fontFamily: 'Inter',
+      fontSize: 14,
+      fontWeight: 'bold',
+      color: theme.colors.text,
+      marginBottom: 2,
+    },
+    guestProduceSubtitle: {
+      fontFamily: 'Inter',
+      fontSize: 12,
+      color: theme.colors.lightGray,
+    },
+    btnActionProduceGuest: {
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.primary,
+      borderRadius: 8,
+      paddingHorizontal: 16,
+      gap: 6,
+    },
+    btnActionTextProduceGuest: {
+      fontFamily: 'Inter',
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.secondaryText,
     },
     metaRow: {
       flexDirection: 'row',

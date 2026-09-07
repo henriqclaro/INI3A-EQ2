@@ -30,3 +30,11 @@ export {
   WasteRequest,
   WasteResponse,
 } from './inventory';
+export {
+  ProductionItem,
+  ProductionListResponse,
+  ProductionQueryParams,
+  ProductionResponse,
+  ProductionTransaction,
+  RegisterProductionInput,
+} from './production';
