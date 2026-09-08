@@ -83,6 +83,7 @@ model User {
   profile BakerProfile?
 
   refreshTokens RefreshToken[]
+  passwordRests PasswordReset[]
   ingredients   Ingredient[]
   recipes       Recipe[]
   createdTags   Tag[]
@@ -109,6 +110,19 @@ model RefreshToken {
   @@unique([userId, sessionId])
   @@index([userId])
   @@map("refresh_token")
+}
+
+model PasswordReset {
+  codeHash  String
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  userId String @id
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset")
 }
 
 model BakerProfile {
@@ -290,9 +304,10 @@ model RecipeItem {
 }
 
 model UserInventory {
-  userId          String  @map("user_id")
-  ingredientId    Int     @map("ingredient_id")
-  currentQuantity Decimal @default(0.000) @map("current_quantity") @db.Decimal(10, 3)
+  userId          String   @map("user_id")
+  ingredientId    Int      @map("ingredient_id")
+  currentQuantity Decimal  @default(0.000) @map("current_quantity") @db.Decimal(10, 3)
+  minQuantity     Decimal? @map("min_quantity") @db.Decimal(10, 3)
 
   costPerBaseUnit Decimal @default(0.000000) @map("cost_per_base_unit") @db.Decimal(12, 6)
 

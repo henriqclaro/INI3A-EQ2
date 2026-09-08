@@ -49,6 +49,17 @@ CREATE TABLE "refresh_token" (
 );
 
 -- CreateTable
+CREATE TABLE "password_reset" (
+    "codeHash" TEXT NOT NULL,
+    "attempts" INTEGER NOT NULL DEFAULT 0,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "userId" TEXT NOT NULL,
+
+    CONSTRAINT "password_reset_pkey" PRIMARY KEY ("userId")
+);
+
+-- CreateTable
 CREATE TABLE "baker_profile" (
     "user_id" TEXT NOT NULL,
     "bio" TEXT,
@@ -162,6 +173,7 @@ CREATE TABLE "user_inventory" (
     "user_id" TEXT NOT NULL,
     "ingredient_id" INTEGER NOT NULL,
     "current_quantity" DECIMAL(10,3) NOT NULL DEFAULT 0.000,
+    "min_quantity" DECIMAL(10,3),
     "cost_per_base_unit" DECIMAL(12,6) NOT NULL DEFAULT 0.000000,
     "expiration_date" DATE,
     "last_updated" TIMESTAMPTZ(3) NOT NULL,
@@ -255,6 +267,9 @@ CREATE INDEX "refresh_token_user_id_idx" ON "refresh_token"("user_id");
 CREATE UNIQUE INDEX "refresh_token_user_id_session_id_key" ON "refresh_token"("user_id", "session_id");
 
 -- CreateIndex
+CREATE INDEX "password_reset_userId_idx" ON "password_reset"("userId");
+
+-- CreateIndex
 CREATE INDEX "baker_profile_location_idx" ON "baker_profile" USING GIST ("location");
 
 -- CreateIndex
@@ -292,6 +307,9 @@ CREATE UNIQUE INDEX "recipe_review_user_id_recipe_id_key" ON "recipe_review"("us
 
 -- AddForeignKey
 ALTER TABLE "refresh_token" ADD CONSTRAINT "refresh_token_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "password_reset" ADD CONSTRAINT "password_reset_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "baker_profile" ADD CONSTRAINT "baker_profile_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
