@@ -14,6 +14,11 @@ export {
 } from '@/src/components/stock';
 export { TagSelector, type TagSelectorProps } from '@/src/components/TagSelector';
 export {
+  IngredientSelector,
+  type IngredientSelectorProps,
+} from '@/src/components/IngredientSelector';
+export { RecipeSelector, type RecipeSelectorProps } from '@/src/components/RecipeSelector';
+export {
   RecipeForm,
   type RecipeFormProps,
   type RecipeFormSubmitData,

@@ -16,10 +16,9 @@ import {
 import { Stack, router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { Picker } from '@react-native-picker/picker';
 import { ActivityIndicator } from 'react-native-paper';
 
-import { CustomButton, Input, StockCard } from '@/src/components';
+import { CustomButton, IngredientSelector, StockCard } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useIngredients } from '@/src/hooks/useIngredients';
 import { useInventory } from '@/src/hooks/useInventory';
@@ -34,11 +33,7 @@ export default function RegisterStockScreen() {
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
 
-  const {
-    ingredients: availableIngredients,
-    isLoading: isLoadingIngredients,
-    refetch: refetchIngredients,
-  } = useIngredients();
+  const { ingredients: availableIngredients, refetch: refetchIngredients } = useIngredients();
   const {
     inventory,
     registerPurchase,
@@ -61,7 +56,6 @@ export default function RegisterStockScreen() {
   };
 
   // Form Fields
-  const [ingredientSearch, setIngredientSearch] = useState('');
   const [selectedIngredientId, setSelectedIngredientId] = useState('');
   const [quantityInput, setQuantityInput] = useState('');
   const [totalCostInput, setTotalCostInput] = useState('');
@@ -93,17 +87,6 @@ export default function RegisterStockScreen() {
   }, [inventory, selectedIngredientId]);
 
   const isAlreadyInStock = Boolean(existingStockItem);
-
-  // Filter available ingredients for the dropdown
-  const filteredAvailableIngredients = useMemo(() => {
-    if (!ingredientSearch.trim()) return availableIngredients;
-    const searchLower = ingredientSearch.toLowerCase();
-    return availableIngredients.filter((ing) => {
-      const hasMatchingName = Boolean(ing.name?.toLowerCase().includes(searchLower));
-      const hasMatchingCategory = Boolean(ing.category?.toLowerCase().includes(searchLower));
-      return hasMatchingName || hasMatchingCategory;
-    });
-  }, [availableIngredients, ingredientSearch]);
 
   // Sync package helper with quantityInput
   const handlePackageValuesChange = (newCountStr: string, newSizeStr: string) => {
@@ -364,111 +347,39 @@ export default function RegisterStockScreen() {
                 <Text style={styles.fieldsetSectionTitle}>1. Seleção do Insumo</Text>
               </View>
 
-              {/* Filter / Search input */}
-              <View style={styles.fieldWrapper}>
-                <Text style={styles.label}>Filtrar Insumo</Text>
-                <Input
-                  value={ingredientSearch}
-                  onChangeText={setIngredientSearch}
-                  placeholder="Digite para filtrar a lista..."
-                  isClearable
-                  onClear={() => setIngredientSearch('')}
-                  containerStyle={styles.filterInput}
-                  leftIcon={
-                    <MaterialCommunityIcons
-                      name="magnify"
-                      size={18}
-                      color={theme.colors.onSurfaceVariant}
-                    />
-                  }
-                />
-              </View>
+              <IngredientSelector
+                selectedIngredientId={selectedIngredientId}
+                selectedIngredient={selectedIngredient}
+                onSelectIngredient={(ing) => {
+                  setSelectedIngredientId(ing ? String(ing.id) : '');
+                  setHasTouchedIngredient(true);
+                }}
+                initialIngredients={availableIngredients}
+                error={ingredientError}
+                isRequired
+                label="Insumo"
+                placeholder="Buscar insumo no catálogo (ex: Farinha, Leite, Chocolate)..."
+                helperText="Busque e selecione o ingrediente do catálogo para dar entrada ou ajuste de estoque."
+              />
 
-              {/* Ingredient Picker */}
-              <View style={styles.fieldWrapper}>
-                <View style={styles.labelRow}>
-                  <Text style={styles.label}>
-                    Insumo <Text style={styles.required}>*</Text>
-                  </Text>
-                  {isLoadingIngredients && (
-                    <ActivityIndicator size="small" color={theme.colors.primary} />
-                  )}
+              {/* Existing Stock Alert */}
+              {isAlreadyInStock && existingStockItem && (
+                <View style={styles.existingStockBanner}>
+                  <MaterialCommunityIcons
+                    name="information-outline"
+                    size={18}
+                    color={theme.colors.primary}
+                  />
+                  <View style={styles.existingStockTextContainer}>
+                    <Text style={styles.existingStockTitle}>Item já possui estoque:</Text>
+                    <Text style={styles.existingStockDetail}>
+                      Saldo atual: {formatQuantity(existingStockItem.currentQuantity, baseUnit)} |
+                      Custo médio: {formatCurrency(Number(existingStockItem.costPerBaseUnit) || 0)}{' '}
+                      / {baseUnit}
+                    </Text>
+                  </View>
                 </View>
-
-                <View
-                  style={[
-                    styles.pickerWrapper,
-                    Boolean(ingredientError) && styles.pickerError,
-                    Boolean(selectedIngredientId && !ingredientError) && styles.pickerSuccess,
-                  ]}
-                >
-                  <Picker
-                    selectedValue={selectedIngredientId}
-                    onValueChange={(val) => {
-                      setSelectedIngredientId(String(val));
-                      setHasTouchedIngredient(true);
-                    }}
-                    style={styles.picker}
-                    dropdownIconColor={theme.colors.text}
-                  >
-                    <Picker.Item label="Selecione um insumo..." value="" />
-                    {filteredAvailableIngredients.map((ing) => {
-                      const inStockTag = inventory.some(
-                        (i) => String(i.ingredientId) === String(ing.id),
-                      )
-                        ? ' (Já cadastrado)'
-                        : '';
-                      return (
-                        <Picker.Item
-                          key={ing.id}
-                          label={`${ing.name} [${ing.category}] (${ing.baseUnit || 'un'})${inStockTag}`}
-                          value={String(ing.id)}
-                        />
-                      );
-                    })}
-                  </Picker>
-                </View>
-
-                {ingredientError ? (
-                  <View style={styles.helperRow}>
-                    <MaterialCommunityIcons
-                      name="alert-circle-outline"
-                      size={14}
-                      color={theme.colors.error}
-                    />
-                    <Text style={styles.errorText}>{ingredientError}</Text>
-                  </View>
-                ) : selectedIngredient ? (
-                  <View style={styles.tagRow}>
-                    <View style={styles.categoryChip}>
-                      <Text style={styles.categoryChipText}>{selectedIngredient.category}</Text>
-                    </View>
-                    <View style={styles.unitChip}>
-                      <Text style={styles.unitChipText}>Unidade Base: {baseUnit}</Text>
-                    </View>
-                  </View>
-                ) : null}
-
-                {/* Existing Stock Alert */}
-                {isAlreadyInStock && existingStockItem && (
-                  <View style={styles.existingStockBanner}>
-                    <MaterialCommunityIcons
-                      name="information-outline"
-                      size={18}
-                      color={theme.colors.primary}
-                    />
-                    <View style={styles.existingStockTextContainer}>
-                      <Text style={styles.existingStockTitle}>Item já possui estoque:</Text>
-                      <Text style={styles.existingStockDetail}>
-                        Saldo atual: {formatQuantity(existingStockItem.currentQuantity, baseUnit)} |
-                        Custo médio:{' '}
-                        {formatCurrency(Number(existingStockItem.costPerBaseUnit) || 0)} /{' '}
-                        {baseUnit}
-                      </Text>
-                    </View>
-                  </View>
-                )}
-              </View>
+              )}
             </View>
 
             {/* Section 2: Quantidade e Custo */}
@@ -838,73 +749,6 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
     required: {
       color: theme.colors.primary,
     },
-    filterInput: {
-      width: '100%',
-      height: 48,
-      minHeight: 48,
-      margin: 0,
-      borderRadius: theme.rounded.default,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      backgroundColor: theme.colors.surfaceContainerLowest,
-    },
-    pickerWrapper: {
-      width: '100%',
-      height: 50,
-      minHeight: 48,
-      borderRadius: theme.rounded.default,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      backgroundColor: theme.colors.surfaceContainerLowest,
-      justifyContent: 'center',
-      overflow: 'hidden',
-    },
-    pickerError: {
-      borderColor: theme.colors.error,
-      borderWidth: 1.5,
-    },
-    pickerSuccess: {
-      borderColor: theme.colors.success,
-    },
-    picker: {
-      width: '100%',
-      color: theme.colors.text,
-    },
-    tagRow: {
-      flexDirection: 'row',
-      gap: 8,
-      marginTop: 6,
-    },
-    categoryChip: {
-      backgroundColor: theme.colors.surfaceContainerLow,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      paddingHorizontal: 10,
-      paddingVertical: 4,
-      borderRadius: theme.rounded.full,
-    },
-    categoryChipText: {
-      fontFamily: theme.typography.labelSm.fontFamily,
-      fontSize: 11,
-      fontWeight: '600',
-      color: theme.colors.espressoDark,
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
-    },
-    unitChip: {
-      backgroundColor: theme.colors.surfaceContainerLow,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      paddingHorizontal: 10,
-      paddingVertical: 4,
-      borderRadius: theme.rounded.full,
-    },
-    unitChipText: {
-      fontFamily: theme.typography.labelSm.fontFamily,
-      fontSize: 11,
-      fontWeight: '600',
-      color: theme.colors.onSurfaceVariant,
-    },
     existingStockBanner: {
       flexDirection: 'row',
       alignItems: 'flex-start',
@@ -930,12 +774,6 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       fontSize: 11,
       color: theme.colors.onSurfaceVariant,
       marginTop: 2,
-    },
-    helperRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginTop: 4,
-      gap: 4,
     },
     helperText: {
       fontFamily: theme.typography.bodySm.fontFamily,

@@ -19,6 +19,8 @@ import { Picker } from '@react-native-picker/picker';
 import { ActivityIndicator } from 'react-native-paper';
 
 import { CustomButton } from '@/src/components/CustomButton';
+import { IngredientSelector } from '@/src/components/IngredientSelector';
+import { RecipeSelector } from '@/src/components/RecipeSelector';
 import { TagSelector } from '@/src/components/TagSelector';
 import { STANDARD_UNITS } from '@/src/constants/common-units';
 import { useAuth } from '@/src/contexts/AuthContext';
@@ -618,43 +620,46 @@ export function RecipeForm({
               {/* Ingredient or Sub-recipe Selection */}
               {item.itemType === 'INGREDIENT' ? (
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Ingrediente *</Text>
-                  <View style={styles.pickerWrapper}>
-                    <Picker
-                      selectedValue={item.ingredientId}
-                      onValueChange={(val) => handleItemChange(index, 'ingredientId', String(val))}
-                      style={styles.picker}
-                      dropdownIconColor={theme.colors.onSurface}
-                    >
-                      <Picker.Item label="Selecione um ingrediente..." value="" />
-                      {availableIngredients.map((ing) => (
-                        <Picker.Item
-                          key={ing.id}
-                          label={`${ing.name} (${ing.category})`}
-                          value={String(ing.id)}
-                        />
-                      ))}
-                    </Picker>
-                  </View>
+                  <IngredientSelector
+                    selectedIngredientId={item.ingredientId}
+                    onSelectIngredient={(selectedIng) => {
+                      handleItemChange(
+                        index,
+                        'ingredientId',
+                        selectedIng ? String(selectedIng.id) : '',
+                      );
+                      if (selectedIng?.baseUnit) {
+                        const matchedUnit = STANDARD_UNITS.find(
+                          (u) => u.value.toUpperCase() === selectedIng.baseUnit?.toUpperCase(),
+                        );
+                        if (matchedUnit) {
+                          handleItemChange(index, 'unit', matchedUnit.value);
+                        }
+                      }
+                    }}
+                    initialIngredients={availableIngredients}
+                    label="Ingrediente"
+                    placeholder="Buscar ingrediente (ex: Cacau, Açúcar, Farinha)..."
+                    isRequired
+                    isDisabled={isSubmitting}
+                  />
                 </View>
               ) : (
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Sub-receita *</Text>
-                  <View style={styles.pickerWrapper}>
-                    <Picker
-                      selectedValue={item.subRecipeId}
-                      onValueChange={(val) => handleItemChange(index, 'subRecipeId', String(val))}
-                      style={styles.picker}
-                      dropdownIconColor={theme.colors.onSurface}
-                    >
-                      <Picker.Item label="Selecione uma sub-receita..." value="" />
-                      {userRecipes
-                        .filter((r) => !initialRecipe?.id || r.id !== initialRecipe.id)
-                        .map((r) => (
-                          <Picker.Item key={r.id} label={r.title} value={r.id} />
-                        ))}
-                    </Picker>
-                  </View>
+                  <RecipeSelector
+                    selectedRecipeId={item.subRecipeId}
+                    onSelectRecipe={(selectedRec) => {
+                      handleItemChange(index, 'subRecipeId', selectedRec ? selectedRec.id : '');
+                    }}
+                    userId={user?.id}
+                    onlyUserRecipes={true}
+                    excludeRecipeId={initialRecipe?.id}
+                    initialRecipes={userRecipes}
+                    label="Sub-receita"
+                    placeholder="Buscar sub-receita (ex: Recheio de Brigadeiro)..."
+                    isRequired
+                    isDisabled={isSubmitting}
+                  />
                 </View>
               )}
 
