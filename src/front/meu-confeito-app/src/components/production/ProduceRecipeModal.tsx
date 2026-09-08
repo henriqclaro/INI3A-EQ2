@@ -146,7 +146,7 @@ function ProduceRecipeModalContent({ recipe, onClose, onSuccess }: ProduceRecipe
             <TextInput
               style={styles.textInput}
               placeholder={`Ex: ${recipe.baseYield || '12'}`}
-              placeholderTextColor={theme.colors.onSurfaceVariant}
+              placeholderTextColor={theme.colors.placeholder}
               keyboardType="numeric"
               value={yieldProduced}
               onChangeText={setYieldProduced}
@@ -165,7 +165,7 @@ function ProduceRecipeModalContent({ recipe, onClose, onSuccess }: ProduceRecipe
             <TextInput
               style={styles.textInput}
               placeholder="AAAA-MM-DD (ex: 2026-10-20)"
-              placeholderTextColor={theme.colors.onSurfaceVariant}
+              placeholderTextColor={theme.colors.placeholder}
               value={expirationDate}
               onChangeText={setExpirationDate}
               autoCapitalize="none"

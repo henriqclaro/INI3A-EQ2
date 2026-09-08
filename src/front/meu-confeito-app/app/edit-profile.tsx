@@ -534,7 +534,7 @@ export default function EditProfileScreen() {
                     touched.name && isNameFieldValid && styles.inputSuccess,
                   ]}
                   style={styles.inputText}
-                  placeholderTextColor={theme.colors.onSurfaceVariant}
+                  placeholderTextColor={theme.colors.placeholder}
                 />
                 <View style={styles.helperRow}>
                   {nameError ? (
@@ -588,7 +588,7 @@ export default function EditProfileScreen() {
                     touched.email && isEmailFieldValid && styles.inputSuccess,
                   ]}
                   style={styles.inputText}
-                  placeholderTextColor={theme.colors.onSurfaceVariant}
+                  placeholderTextColor={theme.colors.placeholder}
                 />
                 <View style={styles.helperRow}>
                   {emailError ? (
@@ -634,7 +634,7 @@ export default function EditProfileScreen() {
                     touched.phone && phone.trim() && isPhoneFieldValid && styles.inputSuccess,
                   ]}
                   style={styles.inputText}
-                  placeholderTextColor={theme.colors.onSurfaceVariant}
+                  placeholderTextColor={theme.colors.placeholder}
                 />
                 <View style={styles.helperRow}>
                   {phoneError ? (
@@ -803,7 +803,7 @@ export default function EditProfileScreen() {
                           <MaterialCommunityIcons
                             name="check-circle"
                             size={14}
-                            color={theme.colors.success}
+                            color={theme.colors.chips.success.text}
                           />
                           <Text style={styles.gpsCoordsText}>
                             GPS ativo: {locationCoords.latitude.toFixed(4)},{' '}
@@ -831,7 +831,7 @@ export default function EditProfileScreen() {
                         onChangeText={setCity}
                         containerStyle={styles.inputContainer}
                         style={styles.inputText}
-                        placeholderTextColor={theme.colors.onSurfaceVariant}
+                        placeholderTextColor={theme.colors.placeholder}
                         leftIcon={
                           <MaterialCommunityIcons
                             name="city-variant-outline"
@@ -855,7 +855,7 @@ export default function EditProfileScreen() {
                         onChangeText={setNeighborhood}
                         containerStyle={styles.inputContainer}
                         style={styles.inputText}
-                        placeholderTextColor={theme.colors.onSurfaceVariant}
+                        placeholderTextColor={theme.colors.placeholder}
                         leftIcon={
                           <MaterialCommunityIcons
                             name="map-marker-outline"
@@ -881,7 +881,7 @@ export default function EditProfileScreen() {
                         onChangeText={setBio}
                         containerStyle={styles.textAreaContainer}
                         style={styles.textArea}
-                        placeholderTextColor={theme.colors.onSurfaceVariant}
+                        placeholderTextColor={theme.colors.placeholder}
                       />
                       <Text style={styles.helperText}>Máximo de 500 caracteres</Text>
                     </View>
@@ -900,7 +900,7 @@ export default function EditProfileScreen() {
                         onChangeText={setInstagram}
                         containerStyle={styles.inputContainer}
                         style={styles.inputText}
-                        placeholderTextColor={theme.colors.onSurfaceVariant}
+                        placeholderTextColor={theme.colors.placeholder}
                         leftIcon={
                           <MaterialCommunityIcons
                             name="instagram"
@@ -1154,7 +1154,7 @@ const createStyles = (theme: AppTheme) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 6,
-      backgroundColor: theme.colors.tertiaryContainer,
+      backgroundColor: theme.colors.chips.success.background,
       borderRadius: theme.rounded.sm,
       paddingHorizontal: 10,
       paddingVertical: 6,
@@ -1166,7 +1166,7 @@ const createStyles = (theme: AppTheme) =>
       fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 12,
       fontWeight: '600',
-      color: theme.colors.tertiary,
+      color: theme.colors.chips.success.text,
     },
     fieldWrapper: {
       width: '100%',

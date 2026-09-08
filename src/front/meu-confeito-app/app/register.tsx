@@ -310,7 +310,7 @@ export default function RegisterScreen() {
                     touched.name && isNameValid && styles.inputSuccess,
                   ]}
                   style={styles.inputText}
-                  placeholderTextColor={theme.colors.onSurfaceVariant}
+                  placeholderTextColor={theme.colors.placeholder}
                 />
                 <View style={styles.helperRow}>
                   {nameError ? (
@@ -357,7 +357,7 @@ export default function RegisterScreen() {
                     touched.email && isEmailValid && styles.inputSuccess,
                   ]}
                   style={styles.inputText}
-                  placeholderTextColor={theme.colors.onSurfaceVariant}
+                  placeholderTextColor={theme.colors.placeholder}
                 />
                 <View style={styles.helperRow}>
                   {emailError ? (
@@ -403,7 +403,7 @@ export default function RegisterScreen() {
                     touched.password && isPasswordValid && styles.inputSuccess,
                   ]}
                   style={[styles.inputText, styles.passwordInput]}
-                  placeholderTextColor={theme.colors.onSurfaceVariant}
+                  placeholderTextColor={theme.colors.placeholder}
                 />
                 <View style={styles.helperRow}>
                   {passwordError ? (
@@ -449,7 +449,7 @@ export default function RegisterScreen() {
                     touched.passVef && isPassVefValid && styles.inputSuccess,
                   ]}
                   style={[styles.inputText, styles.passwordInput]}
-                  placeholderTextColor={theme.colors.onSurfaceVariant}
+                  placeholderTextColor={theme.colors.placeholder}
                 />
                 <View style={styles.helperRow}>
                   {passVefError ? (
@@ -509,7 +509,7 @@ export default function RegisterScreen() {
                           styles.inputSuccess,
                       ]}
                       style={styles.inputText}
-                      placeholderTextColor={theme.colors.onSurfaceVariant}
+                      placeholderTextColor={theme.colors.placeholder}
                     />
                     <View style={styles.helperRow}>
                       {phoneError ? (

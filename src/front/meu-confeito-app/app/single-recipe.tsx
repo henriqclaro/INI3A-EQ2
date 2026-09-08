@@ -238,8 +238,8 @@ export default function RecipeScreen() {
         return {
           label: 'Pública',
           icon: 'earth' as const,
-          color: theme.colors.tertiary,
-          bgColor: theme.colors.tertiaryContainer,
+          color: theme.colors.chips.success.text,
+          bgColor: theme.colors.chips.success.background,
         };
       case 'ARCHIVED':
         return {

@@ -94,7 +94,8 @@ const createStyles = (
       paddingHorizontal: theme.spacing.space6,
       justifyContent: 'center',
       alignItems: 'center',
-      margin: theme.spacing.space3,
+      alignSelf: 'center',
+      marginVertical: theme.spacing.space3,
       ...(isPrimary ? theme.shadows.glow : isSecondary ? theme.shadows.soft : {}),
     },
     btnText: {

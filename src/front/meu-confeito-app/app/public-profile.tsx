@@ -204,7 +204,7 @@ export default function PublicProfileScreen() {
                   <MaterialCommunityIcons
                     name="storefront-outline"
                     size={14}
-                    color={theme.colors.tertiary}
+                    color={theme.colors.chips.success.text}
                   />
                   <Text style={styles.publicBadgeText}>Perfil Público</Text>
                 </View>
@@ -468,6 +468,9 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       ...theme.shadows.soft,
     },
     avatarContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      alignSelf: 'center',
       position: 'relative',
       marginBottom: 12,
     },
@@ -477,6 +480,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       borderRadius: 55,
       borderWidth: 3,
       borderColor: theme.colors.primary,
+      alignSelf: 'center',
     },
     placeholderAvatar: {
       backgroundColor: theme.colors.surfaceContainerLow,
@@ -489,7 +493,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       gap: 4,
       backgroundColor: theme.colors.chips.success.background,
       borderWidth: 1,
-      borderColor: theme.colors.tertiary,
+      borderColor: theme.colors.tertiaryFixed,
       paddingHorizontal: 10,
       paddingVertical: 4,
       borderRadius: theme.rounded.full,

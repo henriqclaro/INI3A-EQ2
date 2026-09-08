@@ -515,7 +515,7 @@ export default function RegisterStockScreen() {
                         handlePackageValuesChange(val, packageSize);
                       }}
                       placeholder="Ex: 2"
-                      placeholderTextColor={theme.colors.onSurfaceVariant}
+                      placeholderTextColor={theme.colors.placeholder}
                       keyboardType="numeric"
                     />
                   </View>
@@ -531,7 +531,7 @@ export default function RegisterStockScreen() {
                           handlePackageValuesChange(packageCount, val);
                         }}
                         placeholder="Ex: 500"
-                        placeholderTextColor={theme.colors.onSurfaceVariant}
+                        placeholderTextColor={theme.colors.placeholder}
                         keyboardType="numeric"
                       />
                       <View style={styles.suffixBadge}>
@@ -555,7 +555,7 @@ export default function RegisterStockScreen() {
                     value={quantityInput}
                     onChangeText={setQuantityInput}
                     placeholder="0"
-                    placeholderTextColor={theme.colors.onSurfaceVariant}
+                    placeholderTextColor={theme.colors.placeholder}
                     keyboardType="numeric"
                   />
                   <View style={styles.suffixBadge}>
@@ -582,7 +582,7 @@ export default function RegisterStockScreen() {
                       value={totalCostInput}
                       onChangeText={setTotalCostInput}
                       placeholder="0,00"
-                      placeholderTextColor={theme.colors.onSurfaceVariant}
+                      placeholderTextColor={theme.colors.placeholder}
                       keyboardType="numeric"
                     />
                   </View>
@@ -626,7 +626,7 @@ export default function RegisterStockScreen() {
                     value={expirationDateInput}
                     onChangeText={setExpirationDateInput}
                     placeholder="DD/MM/AAAA ou AAAA-MM-DD"
-                    placeholderTextColor={theme.colors.onSurfaceVariant}
+                    placeholderTextColor={theme.colors.placeholder}
                   />
                   <Text style={styles.helperText}>
                     Se informada, você receberá avisos automáticos na tela de Estoque antes do
@@ -644,7 +644,7 @@ export default function RegisterStockScreen() {
                     value={notesInput}
                     onChangeText={setNotesInput}
                     placeholder="Ex: Contagem inicial de estoque, acerto de inventário..."
-                    placeholderTextColor={theme.colors.onSurfaceVariant}
+                    placeholderTextColor={theme.colors.placeholder}
                     maxLength={255}
                     multiline
                   />

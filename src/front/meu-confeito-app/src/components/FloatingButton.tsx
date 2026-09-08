@@ -71,14 +71,36 @@ export const FloatingButton = ({
 
   const styles = useMemo(() => createStyles(theme, variant), [theme, variant]);
 
+  const getActionColors = (actionVariant?: 'primary' | 'secondary' | 'neutral') => {
+    switch (actionVariant) {
+      case 'secondary':
+        return {
+          bg: theme.colors.surfaceContainerLowest,
+          icon: theme.colors.primary,
+          border: theme.colors.outlineVariant,
+        };
+      case 'neutral':
+        return {
+          bg: theme.colors.surfaceContainerLowest,
+          icon: theme.colors.espressoDark,
+          border: theme.colors.outlineVariant,
+        };
+      case 'primary':
+      default:
+        return {
+          bg: theme.colors.primary,
+          icon: theme.colors.onPrimary,
+          border: theme.colors.primary,
+        };
+    }
+  };
+
   return (
     <View style={[styles.btnContainer, containerStyle]}>
       {hasActions && isExpanded && (
         <View style={styles.actionsWrapper}>
           {actions!.map((action) => {
-            const isSecondary = action.variant === 'secondary';
-            const iconColor = isSecondary ? theme.colors.text : theme.colors.secondaryText;
-            const actionBg = isSecondary ? theme.colors.secondary : theme.colors.primary;
+            const actionColors = getActionColors(action.variant);
 
             return (
               <TouchableOpacity
@@ -95,8 +117,16 @@ export const FloatingButton = ({
                 <View style={styles.actionLabelPill}>
                   <Text style={styles.actionLabelText}>{action.label}</Text>
                 </View>
-                <View style={[styles.actionMiniFab, { backgroundColor: actionBg }]}>
-                  <MaterialCommunityIcons name={action.icon} size={22} color={iconColor} />
+                <View
+                  style={[
+                    styles.actionMiniFab,
+                    {
+                      backgroundColor: actionColors.bg,
+                      borderColor: actionColors.border,
+                    },
+                  ]}
+                >
+                  <MaterialCommunityIcons name={action.icon} size={22} color={actionColors.icon} />
                 </View>
               </TouchableOpacity>
             );
@@ -118,14 +148,14 @@ export const FloatingButton = ({
             <MaterialCommunityIcons
               name="close"
               size={26}
-              color={variant === 'secondary' ? theme.colors.text : theme.colors.secondaryText}
+              color={variant === 'secondary' ? theme.colors.primary : theme.colors.onPrimary}
             />
           ) : (
             children || (
               <MaterialCommunityIcons
                 name="chef-hat"
                 size={26}
-                color={variant === 'secondary' ? theme.colors.text : theme.colors.secondaryText}
+                color={variant === 'secondary' ? theme.colors.primary : theme.colors.onPrimary}
               />
             )
           )

@@ -286,7 +286,7 @@ const StockOperationModalForm = ({
                       value={quantityInput}
                       onChangeText={setQuantityInput}
                       placeholder="0"
-                      placeholderTextColor={theme.colors.onSurfaceVariant}
+                      placeholderTextColor={theme.colors.placeholder}
                       keyboardType="numeric"
                     />
                     <View style={styles.suffixBadge}>
@@ -323,7 +323,7 @@ const StockOperationModalForm = ({
                     value={notesInput}
                     onChangeText={setNotesInput}
                     placeholder="Ex: Contagem mensal da despensa..."
-                    placeholderTextColor={theme.colors.onSurfaceVariant}
+                    placeholderTextColor={theme.colors.placeholder}
                     maxLength={255}
                     multiline
                   />
@@ -347,7 +347,7 @@ const StockOperationModalForm = ({
                       value={quantityInput}
                       onChangeText={setQuantityInput}
                       placeholder="Ex: 1000"
-                      placeholderTextColor={theme.colors.onSurfaceVariant}
+                      placeholderTextColor={theme.colors.placeholder}
                       keyboardType="numeric"
                     />
                     <View style={styles.suffixBadge}>
@@ -365,7 +365,7 @@ const StockOperationModalForm = ({
                       value={costInput}
                       onChangeText={setCostInput}
                       placeholder="0,00"
-                      placeholderTextColor={theme.colors.onSurfaceVariant}
+                      placeholderTextColor={theme.colors.placeholder}
                       keyboardType="numeric"
                     />
                   </View>
@@ -388,7 +388,7 @@ const StockOperationModalForm = ({
                     value={expirationDateInput}
                     onChangeText={setExpirationDateInput}
                     placeholder="DD/MM/AAAA ou AAAA-MM-DD"
-                    placeholderTextColor={theme.colors.onSurfaceVariant}
+                    placeholderTextColor={theme.colors.placeholder}
                   />
                 </View>
               </View>
@@ -415,7 +415,7 @@ const StockOperationModalForm = ({
                       value={quantityInput}
                       onChangeText={setQuantityInput}
                       placeholder="Ex: 200"
-                      placeholderTextColor={theme.colors.onSurfaceVariant}
+                      placeholderTextColor={theme.colors.placeholder}
                       keyboardType="numeric"
                     />
                     <View style={styles.suffixBadge}>
@@ -445,7 +445,7 @@ const StockOperationModalForm = ({
                     value={notesInput}
                     onChangeText={setNotesInput}
                     placeholder="Ex: Pacote danificado, vencido..."
-                    placeholderTextColor={theme.colors.onSurfaceVariant}
+                    placeholderTextColor={theme.colors.placeholder}
                     maxLength={255}
                     multiline
                   />

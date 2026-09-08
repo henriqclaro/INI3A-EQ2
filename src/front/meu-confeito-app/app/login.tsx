@@ -133,7 +133,7 @@ export default function LogInScreen() {
                   touched.email && !emailError && isEmailFormatValid && styles.inputSuccess,
                 ]}
                 style={styles.inputText}
-                placeholderTextColor={theme.colors.onSurfaceVariant}
+                placeholderTextColor={theme.colors.placeholder}
               />
               <View style={styles.helperRow}>
                 {emailError ? (
@@ -179,7 +179,7 @@ export default function LogInScreen() {
                   touched.password && !passwordError && password.length >= 8 && styles.inputSuccess,
                 ]}
                 style={[styles.inputText, styles.passwordInput]}
-                placeholderTextColor={theme.colors.onSurfaceVariant}
+                placeholderTextColor={theme.colors.placeholder}
               />
               <View style={styles.helperRow}>
                 {passwordError ? (
