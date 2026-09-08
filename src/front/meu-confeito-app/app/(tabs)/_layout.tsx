@@ -8,12 +8,16 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { BottomNavigation } from 'react-native-paper';
 
 import { CustomHeader } from '@/src/components';
+import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
 export default function TabsLayout() {
   const { theme } = useThemeMode();
+  const { user } = useAuth();
   const styles = useMemo(() => createStyles(theme), [theme]);
+
+  const isCustomerRole = user?.role?.trim().toUpperCase() === 'CUSTOMER';
 
   return (
     <Tabs
@@ -21,58 +25,77 @@ export default function TabsLayout() {
         headerShown: true,
         header: (props) => <CustomHeader {...props} />,
       }}
-      tabBar={({ navigation, state, descriptors, insets }) => (
-        <BottomNavigation.Bar
-          navigationState={state}
-          safeAreaInsets={insets}
-          onTabPress={({ route, preventDefault }) => {
-            const event = navigation.emit({
-              type: 'tabPress',
-              target: route.key,
-              canPreventDefault: true,
-            });
+      tabBar={({ navigation, state, descriptors, insets }) => {
+        // Explicitly exclude recipes and reports tabs for customer users
+        const hiddenTabNames = isCustomerRole ? ['recipes', 'reports'] : [];
+        const visibleRoutes = state.routes.filter((route) => !hiddenTabNames.includes(route.name));
 
-            if (event.defaultPrevented) {
-              preventDefault();
-            } else {
-              navigation.dispatch({
-                ...CommonActions.navigate(route.name, route.params),
-                target: state.key,
+        const currentRoute = state.routes[state.index];
+        const visibleIndex = visibleRoutes.findIndex((r) => r.key === currentRoute?.key);
+
+        const filteredNavigationState = {
+          ...state,
+          index: visibleIndex >= 0 ? visibleIndex : 0,
+          routes: visibleRoutes,
+        };
+
+        return (
+          <BottomNavigation.Bar
+            navigationState={filteredNavigationState}
+            safeAreaInsets={insets}
+            onTabPress={({ route, preventDefault }) => {
+              const event = navigation.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true,
               });
-            }
-          }}
-          renderIcon={({ route, focused, color }) => {
-            const { options } = descriptors[route.key];
 
-            if (options.tabBarIcon) {
-              return options.tabBarIcon({ focused, color, size: 24 });
-            }
+              if (event.defaultPrevented) {
+                preventDefault();
+              } else {
+                navigation.dispatch({
+                  ...CommonActions.navigate(route.name, route.params),
+                  target: state.key,
+                });
+              }
+            }}
+            renderIcon={({ route, focused, color }) => {
+              const { options } = descriptors[route.key];
 
-            return null;
-          }}
-          getLabelText={({ route }) => {
-            const { options } = descriptors[route.key];
-            return (options.tabBarLabel as string) || options.title || route.name;
-          }}
-          shifting={false}
-          labeled={true}
-          activeColor={theme.colors.onSecondaryContainer}
-          inactiveColor={theme.colors.onSurfaceVariant}
-          theme={{
-            colors: {
-              secondaryContainer: theme.colors.secondaryContainer,
-            },
-          }}
-          style={styles.tabBar}
-        />
-      )}
+              if (options.tabBarIcon) {
+                return options.tabBarIcon({ focused, color, size: 24 });
+              }
+
+              return null;
+            }}
+            getLabelText={({ route }) => {
+              const { options } = descriptors[route.key];
+              return (options.tabBarLabel as string) || options.title || route.name;
+            }}
+            shifting={false}
+            labeled={true}
+            activeColor={theme.colors.onSecondaryContainer}
+            inactiveColor={theme.colors.onSurfaceVariant}
+            theme={{
+              colors: {
+                secondaryContainer: theme.colors.secondaryContainer,
+              },
+            }}
+            style={styles.tabBar}
+          />
+        );
+      }}
     >
       <Tabs.Screen
         name="home"
         options={{
-          title: 'Início',
+          title: isCustomerRole ? 'Confeitarias' : 'Início',
           tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="home-outline" color={color} size={24} />
+            <MaterialCommunityIcons
+              name={isCustomerRole ? 'store-search-outline' : 'home-outline'}
+              color={color}
+              size={24}
+            />
           ),
         }}
       />
@@ -80,6 +103,8 @@ export default function TabsLayout() {
         name="recipes"
         options={{
           title: 'Suas Receitas',
+          href: isCustomerRole ? null : undefined,
+          tabBarItemStyle: isCustomerRole ? { display: 'none' } : undefined,
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="book-open-variant-outline" color={color} size={24} />
           ),
@@ -89,6 +114,8 @@ export default function TabsLayout() {
         name="reports"
         options={{
           title: 'Relatórios',
+          href: isCustomerRole ? null : undefined,
+          tabBarItemStyle: isCustomerRole ? { display: 'none' } : undefined,
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="chart-box-outline" color={color} size={24} />
           ),

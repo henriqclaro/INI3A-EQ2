@@ -1,16 +1,24 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
+import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
 export default function ReportsScreen() {
   const { theme } = useThemeMode();
+  const { user } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  useEffect(() => {
+    if (user?.role?.trim().toUpperCase() === 'CUSTOMER') {
+      router.replace('/(tabs)/home');
+    }
+  }, [user]);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);

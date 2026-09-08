@@ -79,6 +79,7 @@ function RootLayoutContent() {
           <Stack.Screen name="public-profile" options={{ title: 'Perfil Público' }} />
           <Stack.Screen name="productions" options={{ title: 'Histórico de Produções' }} />
           <Stack.Screen name="saved-recipes" options={{ title: 'Receitas Salvas' }} />
+          <Stack.Screen name="search-bakers" options={{ title: 'Buscar Confeitarias' }} />
           <Stack.Screen name="settings" options={{ title: 'Configurações' }} />
         </Stack>
       </PaperProvider>

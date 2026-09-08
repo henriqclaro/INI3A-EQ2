@@ -5,6 +5,8 @@ import {
   BakerProfile,
   BakerProfileRegisterInput,
   BakerProfileUpdateInput,
+  NearbyBakerItem,
+  NearbyBakersQuery,
   PublicBakerProfile,
 } from '../types/baker-profile';
 
@@ -18,13 +20,18 @@ interface ApiError {
   message?: string;
 }
 
-export function useMyBakerProfile() {
+export function useMyBakerProfile(isEnabled: boolean = true) {
   const [bakerProfile, setBakerProfile] = useState<BakerProfile | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(isEnabled);
   const [hasBakerProfile, setHasBakerProfile] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProfile = useCallback(async () => {
+    if (!isEnabled) {
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     try {
@@ -51,10 +58,14 @@ export function useMyBakerProfile() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [isEnabled]);
 
   useEffect(() => {
     let isMounted = true;
+
+    if (!isEnabled) {
+      return;
+    }
 
     async function load() {
       try {
@@ -93,7 +104,7 @@ export function useMyBakerProfile() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [isEnabled]);
 
   return {
     bakerProfile,
@@ -243,5 +254,46 @@ export function usePublicBakerProfile(userId: string | undefined) {
     hasError,
     errorMessage,
     refetch: fetchPublicProfile,
+  };
+}
+
+export function useNearbyBakers() {
+  const [bakers, setBakers] = useState<NearbyBakerItem[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [hasError, setHasError] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const searchBakers = useCallback(async (params: NearbyBakersQuery) => {
+    setIsLoading(true);
+    setHasError(false);
+    setErrorMessage(null);
+    try {
+      const response = await BakerProfileService.getNearbyBakers(params);
+      const list = response?.data?.bakerProfiles || [];
+      setBakers(list);
+      return list;
+    } catch (err: unknown) {
+      console.error('Error fetching nearby bakers:', err);
+      const apiErr = err as ApiError;
+      setHasError(true);
+      setErrorMessage(
+        apiErr?.response?.data?.message ||
+          apiErr?.message ||
+          'Não foi possível encontrar confeitarias na região.',
+      );
+      setBakers([]);
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  return {
+    bakers,
+    isLoading,
+    hasError,
+    errorMessage,
+    searchBakers,
+    setBakers,
   };
 }

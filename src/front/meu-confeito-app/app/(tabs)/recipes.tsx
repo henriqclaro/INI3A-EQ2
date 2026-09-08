@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -27,6 +27,12 @@ export default function RecipesScreen() {
   const { recipes, isLoading, refetch } = useUserRecipes(user?.id);
   const { width } = useWindowDimensions();
   const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
+
+  useEffect(() => {
+    if (user?.role?.trim().toUpperCase() === 'CUSTOMER') {
+      router.replace('/(tabs)/home');
+    }
+  }, [user]);
 
   const isDesktop = width >= 768;
 

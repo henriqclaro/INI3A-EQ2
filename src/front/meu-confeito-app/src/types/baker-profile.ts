@@ -44,3 +44,27 @@ export interface BakerProfileUpdateInput {
   city?: string | null;
   location?: BakerProfileLocation | null;
 }
+
+export interface NearbyBakerItem {
+  userId: string;
+  name: string;
+  pfpUrl: string | null;
+  distance: number;
+  neighborhood: string | null;
+  city: string | null;
+}
+
+export interface NearbyBakersQuery {
+  lat: number;
+  lng: number;
+  radius?: number; // In meters (e.g. 5000, 10000, 15000)
+  page?: number;
+  tags?: string[] | string;
+}
+
+export interface NearbyBakersResponse {
+  data: {
+    bakerProfiles: NearbyBakerItem[];
+  };
+  message?: string;
+}

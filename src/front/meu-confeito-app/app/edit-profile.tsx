@@ -42,8 +42,10 @@ import {
 export default function EditProfileScreen() {
   const { theme } = useThemeMode();
   const { user, updateUser } = useAuth();
+  const isBakerRole = user?.role?.trim().toUpperCase() === 'BAKER';
+
   const { editUser, isLoading: isLoadingUserEdit } = useUserEdit();
-  const [isLoadingInitialBaker, setIsLoadingInitialBaker] = useState<boolean>(true);
+  const [isLoadingInitialBaker, setIsLoadingInitialBaker] = useState<boolean>(isBakerRole);
   const [isTogglingPublic, setIsTogglingPublic] = useState<boolean>(false);
   const [isFetchingLocation, setIsFetchingLocation] = useState<boolean>(false);
 
@@ -73,6 +75,10 @@ export default function EditProfileScreen() {
   // Populate baker profile fields once loaded asynchronously
   useEffect(() => {
     let isMounted = true;
+
+    if (!isBakerRole) {
+      return;
+    }
 
     async function loadBakerData() {
       try {
@@ -109,11 +115,10 @@ export default function EditProfileScreen() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [isBakerRole]);
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
-  const isBakerRole = user?.role === 'BAKER';
   const isGlobalLoading =
     isLoadingInitialBaker ||
     isLoadingUserEdit ||
@@ -150,15 +155,15 @@ export default function EditProfileScreen() {
   }, [email, isEmailFieldValid, touched.email]);
 
   const phoneError = useMemo(() => {
-    if (!touched.phone && !isPublicProfile) return '';
-    if (isPublicProfile && !phone.trim()) {
+    if (!touched.phone && !(isBakerRole && isPublicProfile)) return '';
+    if (isBakerRole && isPublicProfile && !phone.trim()) {
       return 'Telefone é obrigatório para perfil comercial.';
     }
     if (phone.trim() && !E164_REGEX.test(toE164(phone))) {
       return 'Telefone incompleto ou inválido. Ex: (11) 99999-9999.';
     }
     return '';
-  }, [isPublicProfile, phone, touched.phone]);
+  }, [isBakerRole, isPublicProfile, phone, touched.phone]);
 
   // Handles intuitive location detection using expo-location
   const handleFetchLocation = async () => {
@@ -377,7 +382,7 @@ export default function EditProfileScreen() {
       return;
     }
 
-    if (isPublicProfile && !formattedPhone) {
+    if (isBakerRole && isPublicProfile && !formattedPhone) {
       Alert.alert(
         'Telefone obrigatório',
         'Para manter o perfil público ativo, é obrigatório cadastrar um telefone de contato.',
@@ -393,7 +398,7 @@ export default function EditProfileScreen() {
       return;
     }
 
-    if (isPublicProfile) {
+    if (isBakerRole && isPublicProfile) {
       if (bio.length > 500) {
         Alert.alert('Bio muito longa', 'A bio deve ter no máximo 500 caracteres.');
         return;
@@ -611,8 +616,8 @@ export default function EditProfileScreen() {
               <View style={styles.fieldWrapper}>
                 <View style={styles.labelRow}>
                   <Text style={styles.label}>
-                    Telefone / WhatsApp Comercial{' '}
-                    {isPublicProfile ? <Text style={styles.required}>*</Text> : null}
+                    {isBakerRole ? 'Telefone / WhatsApp Comercial' : 'Telefone'}{' '}
+                    {isBakerRole && isPublicProfile ? <Text style={styles.required}>*</Text> : null}
                   </Text>
                   {touched.phone && phone.trim() && isPhoneFieldValid && (
                     <MaterialCommunityIcons
@@ -649,7 +654,7 @@ export default function EditProfileScreen() {
                     </>
                   ) : (
                     <Text style={styles.helperText}>
-                      {isPublicProfile
+                      {isBakerRole && isPublicProfile
                         ? 'Obrigatório: clientes poderão enviar mensagem no WhatsApp'
                         : 'Opcional. Formato com DDD: (XX) 9XXXX-XXXX'}
                     </Text>
@@ -916,25 +921,7 @@ export default function EditProfileScreen() {
                   </>
                 )}
               </View>
-            ) : (
-              <View style={styles.card}>
-                <View style={styles.alertBannerPrivate}>
-                  <MaterialCommunityIcons
-                    name="store-outline"
-                    size={20}
-                    color={theme.colors.onSurfaceVariant}
-                    style={styles.alertBannerIcon}
-                  />
-                  <View style={styles.alertBannerTextContainer}>
-                    <Text style={styles.alertBannerTitlePrivate}>Conta de Cliente</Text>
-                    <Text style={styles.alertBannerText}>
-                      O perfil comercial público e divulgação de receitas estão disponíveis para
-                      perfis de Confeiteiro(a).
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            )}
+            ) : null}
 
             {/* Save Button - Only serves to update information */}
             <View style={styles.btnActionContainer}>

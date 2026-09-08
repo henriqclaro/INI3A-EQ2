@@ -33,3 +33,9 @@ export {
   ThemeToggleCard,
   type SettingsSectionProps,
 } from '@/src/components/settings';
+export {
+  BakerCard,
+  NearbyBakersExplorer,
+  type BakerCardProps,
+  type NearbyBakersExplorerProps,
+} from '@/src/components/baker';

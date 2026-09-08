@@ -3,18 +3,42 @@ import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native
 
 import { router } from 'expo-router';
 
-import { CustomButton, RecipeSmallView } from '@/src/components';
+import { CustomButton, NearbyBakersExplorer, RecipeSmallView } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useUserRecipes } from '@/src/hooks/useRecipes';
 import { AppTheme } from '@/src/theme/themes';
 
-export default function HomeScreen() {
+function CustomerHomeScreen() {
+  const { theme } = useThemeMode();
+  const { user } = useAuth();
+  const styles = useMemo(() => createCustomerStyles(theme), [theme]);
+
+  const firstName = user?.name ? user.name.split(' ')[0] : 'Cliente';
+
+  return (
+    <View style={styles.container}>
+      <NearbyBakersExplorer
+        hasIntroHeader={false}
+        headerContent={
+          <View style={styles.header}>
+            <Text style={styles.title}>Olá, {firstName}!</Text>
+            <Text style={styles.subtitle}>
+              Descubra confeitarias e doces artesanais perto de você.
+            </Text>
+          </View>
+        }
+      />
+    </View>
+  );
+}
+
+function BakerHomeScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
   const { recipes, isLoading, refetch } = useUserRecipes(user?.id);
 
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const styles = useMemo(() => createBakerStyles(theme), [theme]);
 
   const firstName = user?.name ? user.name.split(' ')[0] : 'Confeiteiro';
 
@@ -73,7 +97,44 @@ export default function HomeScreen() {
   );
 }
 
-const createStyles = (theme: AppTheme) =>
+export default function HomeScreen() {
+  const { user } = useAuth();
+  const isCustomerRole = user?.role?.trim().toUpperCase() === 'CUSTOMER';
+
+  if (isCustomerRole) {
+    return <CustomerHomeScreen />;
+  }
+
+  return <BakerHomeScreen />;
+}
+
+const createCustomerStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    header: {
+      paddingHorizontal: theme.spacing.space1,
+      paddingTop: theme.spacing.space2,
+      paddingBottom: theme.spacing.space1,
+    },
+    title: {
+      color: theme.colors.espressoDark,
+      fontFamily: theme.typography.headlineXl.fontFamily,
+      fontSize: 28,
+      fontWeight: '600',
+      marginBottom: 4,
+    },
+    subtitle: {
+      color: theme.colors.onSurfaceVariant,
+      fontFamily: theme.typography.bodyMd.fontFamily,
+      fontSize: 15,
+      lineHeight: 20,
+    },
+  });
+
+const createBakerStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
       flex: 1,
