@@ -1,4 +1,4 @@
-import { MD3LightTheme } from 'react-native-paper';
+import { MD3DarkTheme, MD3LightTheme } from 'react-native-paper';
 
 export const colors = {
   // Legacy mappings for backwards compatibility with existing screens
@@ -326,6 +326,154 @@ export const lightTheme = {
   },
   rounded,
   shadows,
+  typography,
+  spacing,
+  breakpoints,
+};
+
+export const darkColors = {
+  // Base & Surfaces
+  background: '#180E10',
+  surface: '#180E10',
+  surfaceDim: '#140A0C',
+  surfaceBright: '#241518',
+  surfaceContainerLowest: '#100608',
+  surfaceContainerLow: '#1E1013',
+  surfaceContainer: '#261519',
+  surfaceContainerHigh: '#321C21',
+  surfaceContainerHighest: '#40242B',
+  surfaceVariant: '#321C21',
+  parchment: '#584143',
+
+  // Text & On-Surface Colors
+  onSurface: '#F6EDDC',
+  onSurfaceVariant: '#E0BEC1',
+  espressoDark: '#FFD9DD',
+  text: '#F6EDDC',
+  inverseSurface: '#FFF8F7',
+  inverseOnSurface: '#25181A',
+
+  // Primary
+  primary: '#FBA8AF',
+  onPrimary: '#400012',
+  primaryContainer: '#C53557',
+  onPrimaryContainer: '#FFEAEC',
+  primaryFixed: '#FFD9DD',
+  onPrimaryFixed: '#400012',
+
+  // Secondary
+  secondary: '#E0BEC1',
+  onSecondary: '#25181A',
+  secondaryContainer: '#40242B',
+  onSecondaryContainer: '#FFDADB',
+  secondaryFixed: '#584143',
+  onSecondaryFixed: '#FFDADB',
+
+  // Tertiary & Semantic
+  tertiary: '#93F7B8',
+  onTertiary: '#00391F',
+  tertiaryContainer: '#006139',
+  onTertiaryContainer: '#BBFFD0',
+  tertiaryFixed: '#93F7B8',
+  onTertiaryFixed: '#002110',
+
+  // Neutrals & Artisanal Accents
+  accentBrown: '#6F4137',
+  placeholder: '#8C7073',
+  lightGray: '#40242B',
+  white: '#FFFFFF',
+
+  // Borders & Outlines
+  border: '#6F4137',
+  borderSubtle: '#321C21',
+  borderEmphasis: '#FBA8AF',
+  outline: '#8C7073',
+  outlineVariant: '#584143',
+
+  // Status & Feedback
+  error: '#FFB4AB',
+  onError: '#690005',
+  errorContainer: '#93000A',
+  onErrorContainer: '#FFDAD6',
+  colorBackdrop: 'rgba(16, 6, 8, 0.75)',
+};
+
+export const darkChips = {
+  primary: {
+    background: '#40242B',
+    text: '#FFD9DD',
+  },
+  secondary: {
+    background: '#321C21',
+    text: '#FBA8AF',
+  },
+  success: {
+    background: '#00391F',
+    text: '#93F7B8',
+  },
+  accent: {
+    background: '#4A1D27',
+    text: '#FFB2BB',
+  },
+};
+
+export const darkShadows = {
+  soft: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
+    elevation: 2,
+  },
+  hover: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.45,
+    shadowRadius: 30,
+    elevation: 4,
+  },
+  modal: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.6,
+    shadowRadius: 40,
+    elevation: 8,
+  },
+  glow: {
+    shadowColor: '#FBA8AF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
+    elevation: 4,
+  },
+};
+
+export const darkTheme: AppTheme = {
+  ...MD3DarkTheme,
+  colors: {
+    ...MD3DarkTheme.colors,
+    ...darkColors,
+    secBorder: darkColors.outlineVariant,
+    secondaryText: darkColors.onSurfaceVariant,
+    success: darkColors.tertiary,
+    danger: darkColors.error,
+    warning: colors.colorYellow,
+    backdrop: darkColors.colorBackdrop,
+    pitchBackground: darkColors.surfaceContainerLowest,
+    mediumGray: darkColors.onSurfaceVariant,
+    darkGray: darkColors.espressoDark,
+    textMuted: darkColors.onSurfaceVariant,
+    textSecondary: darkColors.onSurfaceVariant,
+    chips: darkChips,
+    onSurfaceDisabled: darkColors.onSurfaceVariant,
+    tags: {
+      product: '#FF8A65',
+      variety: '#FFF59D',
+      attribute: '#80DEEA',
+    },
+  },
+  rounded,
+  shadows: darkShadows,
   typography,
   spacing,
   breakpoints,

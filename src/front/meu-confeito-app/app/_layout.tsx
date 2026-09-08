@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Slot, Stack, useRouter, useSegments } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 
 import { ActivityIndicator, PaperProvider } from 'react-native-paper';
 
@@ -50,11 +51,12 @@ export const unstable_settings = {
 };
 
 function RootLayoutContent() {
-  const { theme } = useThemeMode();
+  const { theme, isDarkMode } = useThemeMode();
 
   return (
     <AuthProvider>
       <PaperProvider theme={theme}>
+        <StatusBar style={isDarkMode ? 'light' : 'dark'} />
         <Stack
           screenOptions={{
             headerShown: true,
@@ -77,6 +79,7 @@ function RootLayoutContent() {
           <Stack.Screen name="public-profile" options={{ title: 'Perfil Público' }} />
           <Stack.Screen name="productions" options={{ title: 'Histórico de Produções' }} />
           <Stack.Screen name="saved-recipes" options={{ title: 'Receitas Salvas' }} />
+          <Stack.Screen name="settings" options={{ title: 'Configurações' }} />
         </Stack>
       </PaperProvider>
     </AuthProvider>

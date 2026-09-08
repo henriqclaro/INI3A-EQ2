@@ -202,6 +202,14 @@ export default function ProfileScreen() {
             />
           ) : null}
 
+          {/* Settings Screen Option */}
+          <MenuOptionButton
+            title="Configurações"
+            subtitle="Aparência, tema e preferências do aplicativo"
+            icon="cog-outline"
+            onPress={() => router.push('/settings')}
+          />
+
           {/* Log Out Option */}
           <MenuOptionButton
             title="Sair da Conta"

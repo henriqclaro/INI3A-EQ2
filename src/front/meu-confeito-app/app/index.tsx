@@ -25,7 +25,7 @@ export default function WelcomeScreen() {
           showsHorizontalScrollIndicator={false}
         >
           <View style={styles.contentContainer}>
-            <Image source={require('../assets/images/logo.svg')} style={styles.logo} />
+            <Image source={require('../assets/images/logo-light.svg')} style={styles.logo} />
 
             <Text style={styles.mainText}>Seja bem-vindo(a) ao MeuConfeito!</Text>
             <Text style={styles.text}>

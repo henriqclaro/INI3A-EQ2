@@ -28,3 +28,8 @@ export {
 } from '@/src/components/production';
 export { SavedRecipeCard } from '@/src/components/SavedRecipeCard';
 export { MenuOptionButton, type MenuOptionButtonProps } from '@/src/components/MenuOptionButton';
+export {
+  SettingsSection,
+  ThemeToggleCard,
+  type SettingsSectionProps,
+} from '@/src/components/settings';
