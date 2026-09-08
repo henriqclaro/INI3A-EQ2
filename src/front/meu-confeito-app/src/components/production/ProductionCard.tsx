@@ -48,7 +48,7 @@ export function ProductionCard({
           <MaterialCommunityIcons
             name={hasCanceled ? 'close-circle-outline' : 'check-circle-outline'}
             size={13}
-            color={hasCanceled ? theme.colors.danger : theme.colors.success}
+            color={hasCanceled ? theme.colors.error : theme.colors.tertiary}
           />
           <Text
             style={[
@@ -86,7 +86,7 @@ export function ProductionCard({
           <MaterialCommunityIcons
             name="calendar-clock"
             size={14}
-            color={theme.colors.placeholder}
+            color={theme.colors.onSurfaceVariant}
           />
           <Text style={styles.expirationText}>
             Validade: {formatDate(production.expirationDate)}
@@ -120,7 +120,7 @@ export function ProductionCard({
             accessibilityRole="button"
             accessibilityLabel="Cancelar produção"
           >
-            <MaterialCommunityIcons name="undo-variant" size={16} color={theme.colors.danger} />
+            <MaterialCommunityIcons name="undo-variant" size={16} color={theme.colors.error} />
             <Text style={styles.cancelBtnText}>Cancelar</Text>
           </TouchableOpacity>
         )}
@@ -132,13 +132,14 @@ export function ProductionCard({
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     card: {
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 12,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderRadius: theme.rounded.lg,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
       padding: 16,
       marginBottom: 12,
       gap: 12,
+      ...theme.shadows.soft,
     },
     headerRow: {
       flexDirection: 'row',
@@ -150,50 +151,51 @@ const createStyles = (theme: AppTheme) =>
       flex: 1,
     },
     title: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 17,
-      fontWeight: 'bold',
-      color: theme.colors.text,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
       marginBottom: 2,
     },
     dateText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
-      color: theme.colors.placeholder,
+      color: theme.colors.onSurfaceVariant,
     },
     statusBadge: {
       flexDirection: 'row',
       alignItems: 'center',
       paddingVertical: 3,
       paddingHorizontal: 8,
-      borderRadius: 9999,
+      borderRadius: theme.rounded.full,
       borderWidth: 1,
-      backgroundColor: theme.colors.pitchBackground,
       gap: 4,
     },
     statusBadgeActive: {
-      borderColor: theme.colors.success,
+      borderColor: theme.colors.tertiary,
+      backgroundColor: theme.colors.chips.success.background,
     },
     statusBadgeCanceled: {
-      borderColor: theme.colors.danger,
+      borderColor: theme.colors.errorContainer,
+      backgroundColor: theme.colors.errorContainer,
     },
     statusBadgeText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 11,
-      fontWeight: 'bold',
+      fontWeight: '600',
     },
     statusBadgeTextActive: {
-      color: theme.colors.success,
+      color: theme.colors.chips.success.text,
     },
     statusBadgeTextCanceled: {
-      color: theme.colors.danger,
+      color: theme.colors.error,
     },
     metricsRow: {
       flexDirection: 'row',
-      backgroundColor: theme.colors.background,
-      borderRadius: 8,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderRadius: theme.rounded.sm,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
       padding: 10,
       justifyContent: 'space-between',
     },
@@ -202,22 +204,22 @@ const createStyles = (theme: AppTheme) =>
       alignItems: 'center',
     },
     metricLabel: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 11,
-      color: theme.colors.placeholder,
+      color: theme.colors.onSurfaceVariant,
       marginBottom: 2,
     },
     metricValue: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
     },
     metricValuePrimary: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 13,
-      fontWeight: 'bold',
-      color: theme.colors.primary,
+      fontWeight: '700',
+      color: theme.colors.tertiary,
     },
     expirationRow: {
       flexDirection: 'row',
@@ -225,16 +227,16 @@ const createStyles = (theme: AppTheme) =>
       gap: 5,
     },
     expirationText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
-      color: theme.colors.placeholder,
+      color: theme.colors.onSurfaceVariant,
     },
     actionRow: {
       flexDirection: 'row',
       justifyContent: 'flex-end',
       gap: 8,
       borderTopWidth: 1,
-      borderTopColor: theme.colors.lightGray,
+      borderTopColor: theme.colors.outlineVariant,
       paddingTop: 10,
     },
     detailsBtn: {
@@ -243,14 +245,14 @@ const createStyles = (theme: AppTheme) =>
       justifyContent: 'center',
       minHeight: 48,
       paddingHorizontal: 14,
-      borderRadius: 8,
-      backgroundColor: theme.colors.background,
+      borderRadius: theme.rounded.sm,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
-      borderColor: theme.colors.primary,
+      borderColor: theme.colors.outlineVariant,
       gap: 6,
     },
     detailsBtnText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
       color: theme.colors.primary,
@@ -261,16 +263,16 @@ const createStyles = (theme: AppTheme) =>
       justifyContent: 'center',
       minHeight: 48,
       paddingHorizontal: 14,
-      borderRadius: 8,
-      backgroundColor: theme.colors.background,
+      borderRadius: theme.rounded.sm,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
-      borderColor: theme.colors.danger,
+      borderColor: theme.colors.errorContainer,
       gap: 6,
     },
     cancelBtnText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.danger,
+      color: theme.colors.error,
     },
   });

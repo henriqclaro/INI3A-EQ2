@@ -392,7 +392,7 @@ export function RecipeForm({
             <TextInput
               style={styles.textInput}
               placeholder="Ex: Bolo de Cenoura com Chocolate"
-              placeholderTextColor={theme.colors.placeholder}
+              placeholderTextColor={theme.colors.onSurfaceVariant}
               value={title}
               onChangeText={setTitle}
             />
@@ -403,7 +403,7 @@ export function RecipeForm({
             <TextInput
               style={styles.textInput}
               placeholder="https://exemplo.com/imagem.jpg"
-              placeholderTextColor={theme.colors.placeholder}
+              placeholderTextColor={theme.colors.onSurfaceVariant}
               value={coverUrl}
               onChangeText={setCoverUrl}
               autoCapitalize="none"
@@ -417,7 +417,7 @@ export function RecipeForm({
               <TextInput
                 style={styles.textInput}
                 placeholder="Ex: 12"
-                placeholderTextColor={theme.colors.placeholder}
+                placeholderTextColor={theme.colors.onSurfaceVariant}
                 keyboardType="numeric"
                 value={baseYield}
                 onChangeText={setBaseYield}
@@ -431,7 +431,7 @@ export function RecipeForm({
                   selectedValue={yieldUnit}
                   onValueChange={(val) => setYieldUnit(val as StandardUnit)}
                   style={styles.picker}
-                  dropdownIconColor={theme.colors.text}
+                  dropdownIconColor={theme.colors.onSurface}
                 >
                   {STANDARD_UNITS.map((u) => (
                     <Picker.Item key={u.value} label={u.label} value={u.value} />
@@ -446,7 +446,7 @@ export function RecipeForm({
             <TextInput
               style={styles.textInput}
               placeholder="Ex: 45"
-              placeholderTextColor={theme.colors.placeholder}
+              placeholderTextColor={theme.colors.onSurfaceVariant}
               keyboardType="numeric"
               value={prepTimeMinutes}
               onChangeText={setPrepTimeMinutes}
@@ -478,7 +478,7 @@ export function RecipeForm({
               <TextInput
                 style={styles.textInput}
                 placeholder="Ex: 30"
-                placeholderTextColor={theme.colors.placeholder}
+                placeholderTextColor={theme.colors.onSurfaceVariant}
                 keyboardType="numeric"
                 value={profitMargin}
                 onChangeText={setProfitMargin}
@@ -490,7 +490,7 @@ export function RecipeForm({
               <TextInput
                 style={styles.textInput}
                 placeholder="Ex: 10"
-                placeholderTextColor={theme.colors.placeholder}
+                placeholderTextColor={theme.colors.onSurfaceVariant}
                 keyboardType="numeric"
                 value={overhead}
                 onChangeText={setOverhead}
@@ -504,7 +504,7 @@ export function RecipeForm({
               <TextInput
                 style={styles.textInput}
                 placeholder="Ex: 20.00"
-                placeholderTextColor={theme.colors.placeholder}
+                placeholderTextColor={theme.colors.onSurfaceVariant}
                 keyboardType="numeric"
                 value={hourlyLabor}
                 onChangeText={setHourlyLabor}
@@ -516,7 +516,7 @@ export function RecipeForm({
               <TextInput
                 style={styles.textInput}
                 placeholder="Ex: 2.50"
-                placeholderTextColor={theme.colors.placeholder}
+                placeholderTextColor={theme.colors.onSurfaceVariant}
                 keyboardType="numeric"
                 value={packagingCost}
                 onChangeText={setPackagingCost}
@@ -552,7 +552,7 @@ export function RecipeForm({
                     <MaterialCommunityIcons
                       name="trash-can-outline"
                       size={20}
-                      color={theme.colors.primary}
+                      color={theme.colors.error}
                     />
                   </TouchableOpacity>
                 )}
@@ -573,8 +573,8 @@ export function RecipeForm({
                     size={16}
                     color={
                       item.itemType === 'INGREDIENT'
-                        ? theme.colors.secondaryText
-                        : theme.colors.text
+                        ? theme.colors.onPrimary
+                        : theme.colors.onSurfaceVariant
                     }
                   />
                   <Text
@@ -600,8 +600,8 @@ export function RecipeForm({
                     size={16}
                     color={
                       item.itemType === 'SUB_RECIPE'
-                        ? theme.colors.secondaryText
-                        : theme.colors.text
+                        ? theme.colors.onPrimary
+                        : theme.colors.onSurfaceVariant
                     }
                   />
                   <Text
@@ -624,7 +624,7 @@ export function RecipeForm({
                       selectedValue={item.ingredientId}
                       onValueChange={(val) => handleItemChange(index, 'ingredientId', String(val))}
                       style={styles.picker}
-                      dropdownIconColor={theme.colors.text}
+                      dropdownIconColor={theme.colors.onSurface}
                     >
                       <Picker.Item label="Selecione um ingrediente..." value="" />
                       {availableIngredients.map((ing) => (
@@ -645,7 +645,7 @@ export function RecipeForm({
                       selectedValue={item.subRecipeId}
                       onValueChange={(val) => handleItemChange(index, 'subRecipeId', String(val))}
                       style={styles.picker}
-                      dropdownIconColor={theme.colors.text}
+                      dropdownIconColor={theme.colors.onSurface}
                     >
                       <Picker.Item label="Selecione uma sub-receita..." value="" />
                       {userRecipes
@@ -665,7 +665,7 @@ export function RecipeForm({
                   <TextInput
                     style={styles.textInput}
                     placeholder="Ex: 250"
-                    placeholderTextColor={theme.colors.placeholder}
+                    placeholderTextColor={theme.colors.onSurfaceVariant}
                     keyboardType="numeric"
                     value={item.quantity}
                     onChangeText={(val) => handleItemChange(index, 'quantity', val)}
@@ -679,7 +679,7 @@ export function RecipeForm({
                       selectedValue={item.unit}
                       onValueChange={(val) => handleItemChange(index, 'unit', val as StandardUnit)}
                       style={styles.picker}
-                      dropdownIconColor={theme.colors.text}
+                      dropdownIconColor={theme.colors.onSurface}
                     >
                       {STANDARD_UNITS.map((u) => (
                         <Picker.Item key={u.value} label={u.label} value={u.value} />
@@ -696,7 +696,7 @@ export function RecipeForm({
                   <TextInput
                     style={styles.textInput}
                     placeholder="Ex: 2"
-                    placeholderTextColor={theme.colors.placeholder}
+                    placeholderTextColor={theme.colors.onSurfaceVariant}
                     keyboardType="numeric"
                     value={item.displayQuantity}
                     onChangeText={(val) => handleItemChange(index, 'displayQuantity', val)}
@@ -708,7 +708,7 @@ export function RecipeForm({
                   <TextInput
                     style={styles.textInput}
                     placeholder="Ex: xícaras, colheres"
-                    placeholderTextColor={theme.colors.placeholder}
+                    placeholderTextColor={theme.colors.onSurfaceVariant}
                     value={item.displayUnit}
                     onChangeText={(val) => handleItemChange(index, 'displayUnit', val)}
                   />
@@ -721,7 +721,7 @@ export function RecipeForm({
                 <TextInput
                   style={styles.textInput}
                   placeholder="Ex: peneirado, temperatura ambiente"
-                  placeholderTextColor={theme.colors.placeholder}
+                  placeholderTextColor={theme.colors.onSurfaceVariant}
                   value={item.notes}
                   onChangeText={(val) => handleItemChange(index, 'notes', val)}
                 />
@@ -759,7 +759,7 @@ export function RecipeForm({
                     <MaterialCommunityIcons
                       name="trash-can-outline"
                       size={20}
-                      color={theme.colors.primary}
+                      color={theme.colors.error}
                     />
                   </TouchableOpacity>
                 )}
@@ -768,7 +768,7 @@ export function RecipeForm({
               <TextInput
                 style={styles.stepTextInput}
                 placeholder={`Descreva a etapa ${index + 1}...`}
-                placeholderTextColor={theme.colors.placeholder}
+                placeholderTextColor={theme.colors.onSurfaceVariant}
                 multiline
                 numberOfLines={3}
                 value={stepText}
@@ -819,16 +819,17 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       width: '100%',
     },
     primaryTitle: {
-      color: theme.colors.primary,
-      fontFamily: 'Playfair Display SC',
+      color: theme.colors.espressoDark,
+      fontFamily: theme.typography.headlineLg.fontFamily,
       fontSize: 26,
-      fontWeight: 'bold',
+      fontWeight: '600',
       marginBottom: 6,
       marginTop: 4,
     },
     subtitle: {
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 15,
-      color: theme.colors.text,
+      color: theme.colors.onSurfaceVariant,
       marginBottom: 20,
       lineHeight: 22,
     },
@@ -836,16 +837,19 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       width: '50%',
       aspectRatio: 4 / 3,
       alignSelf: 'center',
-      borderRadius: 16,
+      borderRadius: theme.rounded.lg,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
       marginBottom: 20,
     },
     box: {
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 12,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderRadius: theme.rounded.lg,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
       marginBottom: 20,
       padding: 20,
+      ...theme.shadows.soft,
     },
     boxHeaderRow: {
       flexDirection: 'row',
@@ -854,15 +858,16 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       marginBottom: 10,
     },
     secondaryTitle: {
-      color: theme.colors.primary,
-      fontFamily: 'Playfair Display SC',
+      color: theme.colors.espressoDark,
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 20,
-      fontWeight: 'bold',
+      fontWeight: '600',
       marginBottom: 12,
     },
     boxHelperText: {
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 13,
-      color: theme.colors.placeholder,
+      color: theme.colors.onSurfaceVariant,
       marginBottom: 16,
     },
     row: {
@@ -876,41 +881,43 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       marginBottom: 14,
     },
     label: {
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
       marginBottom: 6,
     },
     textInput: {
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
-      borderColor: theme.colors.lightGray,
-      borderRadius: 8,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.sm,
       paddingHorizontal: 12,
-      height: 46,
+      height: 48,
       fontSize: 15,
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
+      fontFamily: theme.typography.bodyMd.fontFamily,
     },
     pickerWrapper: {
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
-      borderColor: theme.colors.lightGray,
-      borderRadius: 8,
-      height: 46,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.sm,
+      height: 48,
       justifyContent: 'center',
       overflow: 'hidden',
     },
     picker: {
       width: '100%',
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
     },
     ingredientCard: {
-      backgroundColor: theme.colors.background,
-      borderRadius: 10,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderRadius: theme.rounded.md,
       padding: 14,
       marginBottom: 14,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
     },
     ingredientCardHeader: {
       flexDirection: 'row',
@@ -919,8 +926,9 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       marginBottom: 10,
     },
     ingredientIndexText: {
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
-      fontWeight: 'bold',
+      fontWeight: '700',
       color: theme.colors.primary,
     },
     removeBtn: {
@@ -932,10 +940,10 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
     },
     itemTypeRow: {
       flexDirection: 'row',
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 8,
+      backgroundColor: theme.colors.surfaceContainer,
+      borderRadius: theme.rounded.sm,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
       padding: 3,
       marginBottom: 12,
       gap: 6,
@@ -946,41 +954,43 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       alignItems: 'center',
       justifyContent: 'center',
       minHeight: 48,
-      borderRadius: 6,
+      borderRadius: theme.rounded.sm,
       gap: 6,
     },
     itemTypeBtnActive: {
       backgroundColor: theme.colors.primary,
+      ...theme.shadows.glow,
     },
     itemTypeBtnText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.onSurfaceVariant,
     },
     itemTypeBtnTextActive: {
-      color: theme.colors.secondaryText,
+      color: theme.colors.onPrimary,
     },
     addBtn: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
       minHeight: 48,
-      borderRadius: 8,
+      borderRadius: theme.rounded.sm,
       borderWidth: 1.5,
       marginTop: 6,
       gap: 6,
     },
     addBtnText: {
+      fontFamily: theme.typography.labelMd.fontFamily,
       color: theme.colors.primary,
       fontSize: 15,
-      fontWeight: 'bold',
+      fontWeight: '700',
     },
     stepContainer: {
       marginBottom: 16,
       paddingBottom: 12,
       borderBottomWidth: 1,
-      borderBottomColor: theme.colors.lightGray,
+      borderBottomColor: theme.colors.outlineVariant,
     },
     stepHeaderRow: {
       flexDirection: 'row',
@@ -991,20 +1001,22 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       width: 28,
       height: 28,
       borderRadius: 14,
-      backgroundColor: theme.colors.secondary,
+      backgroundColor: theme.colors.secondaryContainer,
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: 10,
     },
     stepText: {
-      color: theme.colors.primary,
-      fontWeight: 'bold',
+      fontFamily: theme.typography.labelSm.fontFamily,
+      color: theme.colors.onSecondaryContainer,
+      fontWeight: '700',
       fontSize: 14,
     },
     stepLabel: {
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
-      fontWeight: 'bold',
-      color: theme.colors.text,
+      fontWeight: '700',
+      color: theme.colors.onSurface,
       flex: 1,
     },
     removeStepBtn: {
@@ -1015,15 +1027,16 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       justifyContent: 'center',
     },
     stepTextInput: {
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
-      borderColor: theme.colors.lightGray,
-      borderRadius: 8,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.sm,
       paddingHorizontal: 12,
       paddingVertical: 10,
       minHeight: 70,
       fontSize: 15,
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
+      fontFamily: theme.typography.bodyMd.fontFamily,
       textAlignVertical: 'top',
     },
     submitContainer: {

@@ -137,8 +137,23 @@ export const FloatingButton = ({
   );
 };
 
-const createStyles = (theme: AppTheme, variant?: 'primary' | 'secondary' | 'neutral') =>
-  StyleSheet.create({
+const createStyles = (theme: AppTheme, variant?: 'primary' | 'secondary' | 'neutral') => {
+  const isSecondary = variant === 'secondary';
+  const isNeutral = variant === 'neutral';
+
+  const buttonBg = isSecondary
+    ? theme.colors.secondaryContainer
+    : isNeutral
+      ? theme.colors.surfaceContainerLowest
+      : theme.colors.primary;
+
+  const buttonBorder = isSecondary
+    ? theme.colors.secondaryContainer
+    : isNeutral
+      ? theme.colors.outlineVariant
+      : theme.colors.primary;
+
+  return StyleSheet.create({
     btnContainer: {
       position: 'absolute',
       alignItems: 'flex-end',
@@ -147,8 +162,8 @@ const createStyles = (theme: AppTheme, variant?: 'primary' | 'secondary' | 'neut
     actionsWrapper: {
       flexDirection: 'column',
       alignItems: 'flex-end',
-      gap: 12,
-      marginBottom: 12,
+      gap: theme.spacing.space3,
+      marginBottom: theme.spacing.space3,
     },
     actionRow: {
       flexDirection: 'row',
@@ -157,29 +172,29 @@ const createStyles = (theme: AppTheme, variant?: 'primary' | 'secondary' | 'neut
       gap: 10,
     },
     actionLabelPill: {
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      borderRadius: 9999,
-      paddingVertical: 8,
-      paddingHorizontal: 14,
+      borderRadius: theme.rounded.full,
+      paddingVertical: theme.spacing.space2,
+      paddingHorizontal: theme.spacing.space4,
       ...Platform.select({
         android: {
           elevation: 3,
         },
         default: {
-          shadowColor: '#40242B',
+          shadowColor: theme.colors.espressoDark,
           shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.12,
+          shadowOpacity: 0.1,
           shadowRadius: 6,
         },
       }),
     },
     actionLabelText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
     },
     actionMiniFab: {
       width: 48,
@@ -194,9 +209,9 @@ const createStyles = (theme: AppTheme, variant?: 'primary' | 'secondary' | 'neut
           elevation: 4,
         },
         default: {
-          shadowColor: '#40242B',
+          shadowColor: theme.colors.primary,
           shadowOffset: { width: 0, height: 3 },
-          shadowOpacity: 0.15,
+          shadowOpacity: 0.25,
           shadowRadius: 6,
         },
       }),
@@ -206,30 +221,21 @@ const createStyles = (theme: AppTheme, variant?: 'primary' | 'secondary' | 'neut
       height: 56,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor:
-        variant === 'secondary'
-          ? theme.colors.secondary
-          : variant === 'neutral'
-            ? theme.colors.background
-            : theme.colors.primary,
+      backgroundColor: buttonBg,
       borderWidth: 1,
-      borderColor:
-        variant === 'secondary'
-          ? theme.colors.secondary
-          : variant === 'neutral'
-            ? theme.colors.secBorder
-            : theme.colors.primary,
+      borderColor: buttonBorder,
       borderRadius: 28,
       ...Platform.select({
         android: {
           elevation: 4,
         },
         default: {
-          shadowColor: '#40242B',
+          shadowColor: theme.colors.primary,
           shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.16,
-          shadowRadius: 8,
+          shadowOpacity: 0.35,
+          shadowRadius: 10,
         },
       }),
     },
   });
+};

@@ -115,7 +115,7 @@ export default function LogInScreen() {
                   <MaterialCommunityIcons
                     name="check-circle-outline"
                     size={16}
-                    color={theme.colors.success}
+                    color={theme.colors.tertiary}
                   />
                 )}
               </View>
@@ -133,7 +133,7 @@ export default function LogInScreen() {
                   touched.email && !emailError && isEmailFormatValid && styles.inputSuccess,
                 ]}
                 style={styles.inputText}
-                placeholderTextColor={theme.colors.placeholder}
+                placeholderTextColor={theme.colors.onSurfaceVariant}
               />
               <View style={styles.helperRow}>
                 {emailError ? (
@@ -141,7 +141,7 @@ export default function LogInScreen() {
                     <MaterialCommunityIcons
                       name="alert-circle-outline"
                       size={14}
-                      color={theme.colors.primary}
+                      color={theme.colors.error}
                       style={styles.helperIcon}
                     />
                     <Text style={styles.errorText}>{emailError}</Text>
@@ -162,7 +162,7 @@ export default function LogInScreen() {
                   <MaterialCommunityIcons
                     name="check-circle-outline"
                     size={16}
-                    color={theme.colors.success}
+                    color={theme.colors.tertiary}
                   />
                 )}
               </View>
@@ -179,7 +179,7 @@ export default function LogInScreen() {
                   touched.password && !passwordError && password.length >= 8 && styles.inputSuccess,
                 ]}
                 style={[styles.inputText, styles.passwordInput]}
-                placeholderTextColor={theme.colors.placeholder}
+                placeholderTextColor={theme.colors.onSurfaceVariant}
               />
               <View style={styles.helperRow}>
                 {passwordError ? (
@@ -187,7 +187,7 @@ export default function LogInScreen() {
                     <MaterialCommunityIcons
                       name="alert-circle-outline"
                       size={14}
-                      color={theme.colors.primary}
+                      color={theme.colors.error}
                       style={styles.helperIcon}
                     />
                     <Text style={styles.errorText}>{passwordError}</Text>
@@ -251,29 +251,30 @@ const createStyles = (theme: AppTheme) =>
     card: {
       width: '100%',
       maxWidth: 460,
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 16,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderRadius: theme.rounded.lg,
       padding: 24,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
       gap: 16,
+      ...theme.shadows.soft,
     },
     headerArea: {
       alignItems: 'center',
       marginBottom: 6,
     },
     headline: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineLg.fontFamily,
       fontSize: 26,
-      fontWeight: 'bold',
-      color: theme.colors.text,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
       textAlign: 'center',
       marginBottom: 6,
     },
     subheadline: {
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 14,
-      color: theme.colors.text,
-      opacity: 0.8,
+      color: theme.colors.onSurfaceVariant,
       textAlign: 'center',
       lineHeight: 20,
     },
@@ -287,35 +288,37 @@ const createStyles = (theme: AppTheme) =>
       marginBottom: 2,
     },
     label: {
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
     },
     required: {
       color: theme.colors.primary,
     },
     inputContainer: {
       width: '100%',
-      height: 52,
+      height: 48,
       margin: 0,
       marginTop: 4,
       paddingLeft: 14,
       paddingRight: 14,
-      borderRadius: 8,
+      borderRadius: theme.rounded.sm,
       borderWidth: 1,
-      borderColor: theme.colors.lightGray,
-      backgroundColor: theme.colors.pitchBackground,
+      borderColor: theme.colors.outlineVariant,
+      backgroundColor: theme.colors.surfaceContainerLowest,
     },
     inputError: {
-      borderColor: theme.colors.primary,
+      borderColor: theme.colors.error,
       borderWidth: 1.5,
     },
     inputSuccess: {
-      borderColor: theme.colors.success,
+      borderColor: theme.colors.tertiary,
     },
     inputText: {
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 15,
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
     },
     passwordInput: {
       paddingRight: 36,
@@ -330,12 +333,14 @@ const createStyles = (theme: AppTheme) =>
       marginRight: 4,
     },
     helperText: {
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 11,
-      color: theme.colors.placeholder,
+      color: theme.colors.onSurfaceVariant,
     },
     errorText: {
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 11,
-      color: theme.colors.primary,
+      color: theme.colors.error,
       fontWeight: '500',
     },
     forgotRow: {
@@ -343,6 +348,7 @@ const createStyles = (theme: AppTheme) =>
       marginTop: -4,
     },
     forgotText: {
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
       color: theme.colors.primary,
@@ -356,15 +362,17 @@ const createStyles = (theme: AppTheme) =>
     button: {
       width: '100%',
       margin: 0,
-      borderRadius: 8,
-      height: 52,
+      borderRadius: theme.rounded.default,
+      height: 48,
     },
     txtRegister: {
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 14,
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
     },
     linkRegister: {
+      fontFamily: theme.typography.labelMd.fontFamily,
       color: theme.colors.primary,
-      fontWeight: 'bold',
+      fontWeight: '700',
     },
   });

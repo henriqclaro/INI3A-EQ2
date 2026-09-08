@@ -206,11 +206,10 @@ const StockOperationModalForm = ({
             <TouchableOpacity
               onPress={onClose}
               style={styles.closeBtn}
-              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               accessibilityRole="button"
               accessibilityLabel="Fechar modal"
             >
-              <MaterialCommunityIcons name="close" size={24} color={theme.colors.text} />
+              <MaterialCommunityIcons name="close" size={24} color={theme.colors.onSurface} />
             </TouchableOpacity>
           </View>
 
@@ -227,7 +226,7 @@ const StockOperationModalForm = ({
               <MaterialCommunityIcons
                 name="tune-variant"
                 size={16}
-                color={isAdjustMode ? theme.colors.primary : theme.colors.text}
+                color={isAdjustMode ? theme.colors.primary : theme.colors.onSurfaceVariant}
               />
               <Text style={[styles.tabText, isAdjustMode && styles.tabTextActive]}>Ajuste</Text>
             </TouchableOpacity>
@@ -243,7 +242,7 @@ const StockOperationModalForm = ({
               <MaterialCommunityIcons
                 name="cart-plus"
                 size={16}
-                color={isPurchaseMode ? theme.colors.primary : theme.colors.text}
+                color={isPurchaseMode ? theme.colors.primary : theme.colors.onSurfaceVariant}
               />
               <Text style={[styles.tabText, isPurchaseMode && styles.tabTextActive]}>
                 + Entrada
@@ -261,7 +260,7 @@ const StockOperationModalForm = ({
               <MaterialCommunityIcons
                 name="trash-can-outline"
                 size={16}
-                color={isWasteMode ? theme.colors.primary : theme.colors.text}
+                color={isWasteMode ? theme.colors.primary : theme.colors.onSurfaceVariant}
               />
               <Text style={[styles.tabText, isWasteMode && styles.tabTextActive]}>- Perda</Text>
             </TouchableOpacity>
@@ -287,7 +286,7 @@ const StockOperationModalForm = ({
                       value={quantityInput}
                       onChangeText={setQuantityInput}
                       placeholder="0"
-                      placeholderTextColor={theme.colors.placeholder}
+                      placeholderTextColor={theme.colors.onSurfaceVariant}
                       keyboardType="numeric"
                     />
                     <View style={styles.suffixBadge}>
@@ -324,7 +323,7 @@ const StockOperationModalForm = ({
                     value={notesInput}
                     onChangeText={setNotesInput}
                     placeholder="Ex: Contagem mensal da despensa..."
-                    placeholderTextColor={theme.colors.placeholder}
+                    placeholderTextColor={theme.colors.onSurfaceVariant}
                     maxLength={255}
                     multiline
                   />
@@ -348,7 +347,7 @@ const StockOperationModalForm = ({
                       value={quantityInput}
                       onChangeText={setQuantityInput}
                       placeholder="Ex: 1000"
-                      placeholderTextColor={theme.colors.placeholder}
+                      placeholderTextColor={theme.colors.onSurfaceVariant}
                       keyboardType="numeric"
                     />
                     <View style={styles.suffixBadge}>
@@ -366,7 +365,7 @@ const StockOperationModalForm = ({
                       value={costInput}
                       onChangeText={setCostInput}
                       placeholder="0,00"
-                      placeholderTextColor={theme.colors.placeholder}
+                      placeholderTextColor={theme.colors.onSurfaceVariant}
                       keyboardType="numeric"
                     />
                   </View>
@@ -389,7 +388,7 @@ const StockOperationModalForm = ({
                     value={expirationDateInput}
                     onChangeText={setExpirationDateInput}
                     placeholder="DD/MM/AAAA ou AAAA-MM-DD"
-                    placeholderTextColor={theme.colors.placeholder}
+                    placeholderTextColor={theme.colors.onSurfaceVariant}
                   />
                 </View>
               </View>
@@ -416,7 +415,7 @@ const StockOperationModalForm = ({
                       value={quantityInput}
                       onChangeText={setQuantityInput}
                       placeholder="Ex: 200"
-                      placeholderTextColor={theme.colors.placeholder}
+                      placeholderTextColor={theme.colors.onSurfaceVariant}
                       keyboardType="numeric"
                     />
                     <View style={styles.suffixBadge}>
@@ -446,7 +445,7 @@ const StockOperationModalForm = ({
                     value={notesInput}
                     onChangeText={setNotesInput}
                     placeholder="Ex: Pacote danificado, vencido..."
-                    placeholderTextColor={theme.colors.placeholder}
+                    placeholderTextColor={theme.colors.onSurfaceVariant}
                     maxLength={255}
                     multiline
                   />
@@ -476,7 +475,7 @@ const StockOperationModalForm = ({
               disabled={isSubmitting}
             >
               {isSubmitting ? (
-                <ActivityIndicator size="small" color={theme.colors.secondaryText} />
+                <ActivityIndicator size="small" color={theme.colors.onPrimary} />
               ) : (
                 <Text style={styles.submitBtnText}>
                   {isAdjustMode
@@ -536,12 +535,13 @@ const createStyles = (theme: AppTheme) =>
     },
     modalCard: {
       width: '100%',
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 16,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderRadius: theme.rounded.lg,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
       padding: 20,
       maxHeight: '90%',
+      ...theme.shadows.modal,
     },
     header: {
       flexDirection: 'row',
@@ -556,27 +556,27 @@ const createStyles = (theme: AppTheme) =>
       marginRight: 8,
     },
     title: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 18,
-      fontWeight: '700',
-      color: theme.colors.text,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
     },
     subtitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
-      color: theme.colors.placeholder,
+      color: theme.colors.onSurfaceVariant,
       marginTop: 2,
     },
     closeBtn: {
-      width: 44,
-      height: 44,
+      width: 48,
+      height: 48,
       justifyContent: 'center',
       alignItems: 'center',
     },
     tabsContainer: {
       flexDirection: 'row',
-      backgroundColor: theme.colors.background,
-      borderRadius: 10,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderRadius: theme.rounded.sm,
       padding: 4,
       marginVertical: 14,
       borderWidth: 1,
@@ -588,19 +588,20 @@ const createStyles = (theme: AppTheme) =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: 8,
+      borderRadius: theme.rounded.sm,
       gap: 6,
     },
     tabBtnActive: {
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
+      ...theme.shadows.soft,
     },
     tabText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 12,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.onSurfaceVariant,
     },
     tabTextActive: {
       color: theme.colors.primary,
@@ -614,20 +615,19 @@ const createStyles = (theme: AppTheme) =>
       paddingVertical: 4,
     },
     formExplainer: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
-      color: theme.colors.text,
-      opacity: 0.75,
+      color: theme.colors.onSurfaceVariant,
       lineHeight: 18,
     },
     fieldWrapper: {
       width: '100%',
     },
     label: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 12,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
       marginBottom: 6,
     },
     inputWithSuffix: {
@@ -636,8 +636,8 @@ const createStyles = (theme: AppTheme) =>
       height: 48,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      borderRadius: 8,
-      backgroundColor: theme.colors.pitchBackground,
+      borderRadius: theme.rounded.sm,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       overflow: 'hidden',
     },
     inputWithPrefix: {
@@ -646,8 +646,8 @@ const createStyles = (theme: AppTheme) =>
       height: 48,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      borderRadius: 8,
-      backgroundColor: theme.colors.pitchBackground,
+      borderRadius: theme.rounded.sm,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       paddingLeft: 12,
       overflow: 'hidden',
     },
@@ -655,26 +655,27 @@ const createStyles = (theme: AppTheme) =>
       height: 48,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      borderRadius: 8,
-      backgroundColor: theme.colors.pitchBackground,
+      borderRadius: theme.rounded.sm,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       paddingHorizontal: 12,
       fontSize: 15,
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
+      fontFamily: theme.typography.bodyMd.fontFamily,
     },
     inputError: {
-      borderColor: theme.colors.danger,
+      borderColor: theme.colors.error,
     },
     errorText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 11,
-      color: theme.colors.danger,
+      color: theme.colors.error,
       marginTop: 4,
     },
     prefixText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
       fontWeight: '600',
-      color: theme.colors.placeholder,
+      color: theme.colors.onSurfaceVariant,
       marginRight: 4,
     },
     textInput: {
@@ -682,10 +683,11 @@ const createStyles = (theme: AppTheme) =>
       height: '100%',
       paddingHorizontal: 12,
       fontSize: 15,
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
+      fontFamily: theme.typography.bodyMd.fontFamily,
     },
     suffixBadge: {
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLow,
       height: '100%',
       paddingHorizontal: 12,
       justifyContent: 'center',
@@ -694,25 +696,26 @@ const createStyles = (theme: AppTheme) =>
       borderLeftColor: theme.colors.outlineVariant,
     },
     suffixText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 12,
       fontWeight: '700',
-      color: theme.colors.text,
+      color: theme.colors.onSurfaceVariant,
     },
     textArea: {
       minHeight: 70,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      borderRadius: 8,
-      backgroundColor: theme.colors.pitchBackground,
+      borderRadius: theme.rounded.sm,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       padding: 10,
       fontSize: 14,
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
+      fontFamily: theme.typography.bodyMd.fontFamily,
       textAlignVertical: 'top',
     },
     previewBox: {
-      backgroundColor: theme.colors.background,
-      borderRadius: 8,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderRadius: theme.rounded.sm,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
       padding: 10,
@@ -721,22 +724,21 @@ const createStyles = (theme: AppTheme) =>
       alignItems: 'center',
     },
     previewBoxLabel: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 11,
-      color: theme.colors.text,
-      opacity: 0.8,
+      color: theme.colors.onSurfaceVariant,
     },
     previewBoxValue: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 13,
       fontWeight: '700',
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
     },
     previewPositive: {
-      color: theme.colors.success,
+      color: theme.colors.tertiary,
     },
     previewNegative: {
-      color: theme.colors.danger,
+      color: theme.colors.error,
     },
     footerActions: {
       flexDirection: 'row',
@@ -749,36 +751,37 @@ const createStyles = (theme: AppTheme) =>
     cancelBtn: {
       flex: 1,
       height: 48,
-      borderRadius: 8,
+      borderRadius: theme.rounded.sm,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       justifyContent: 'center',
       alignItems: 'center',
     },
     cancelBtnText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
     },
     submitBtn: {
       flex: 1.5,
       height: 48,
-      borderRadius: 8,
+      borderRadius: theme.rounded.sm,
       justifyContent: 'center',
       alignItems: 'center',
     },
     submitBtnPrimary: {
       backgroundColor: theme.colors.primary,
+      ...theme.shadows.glow,
     },
     submitBtnDanger: {
-      backgroundColor: theme.colors.primary,
+      backgroundColor: theme.colors.error,
     },
     submitBtnText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
       fontWeight: '700',
-      color: theme.colors.secondaryText,
+      color: theme.colors.onPrimary,
     },
   });

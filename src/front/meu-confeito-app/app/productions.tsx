@@ -122,8 +122,10 @@ export default function ProductionsScreen() {
           >
             <MaterialCommunityIcons
               name="check-circle-outline"
-              size={16}
-              color={activeFilter === 'active' ? theme.colors.secondaryText : theme.colors.text}
+              size={18}
+              color={
+                activeFilter === 'active' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant
+              }
             />
             <Text
               style={[
@@ -144,8 +146,10 @@ export default function ProductionsScreen() {
           >
             <MaterialCommunityIcons
               name="format-list-bulleted"
-              size={16}
-              color={activeFilter === 'all' ? theme.colors.secondaryText : theme.colors.text}
+              size={18}
+              color={
+                activeFilter === 'all' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant
+              }
             />
             <Text
               style={[styles.filterBtnText, activeFilter === 'all' && styles.filterBtnTextActive]}
@@ -179,7 +183,7 @@ export default function ProductionsScreen() {
             <MaterialCommunityIcons
               name="alert-circle-outline"
               size={56}
-              color={theme.colors.placeholder}
+              color={theme.colors.error}
             />
             <Text style={styles.emptyTitle}>Erro ao carregar produções</Text>
             <Text style={styles.emptySubtitle}>{error}</Text>
@@ -219,7 +223,7 @@ export default function ProductionsScreen() {
                 <MaterialCommunityIcons
                   name="pot-steam-outline"
                   size={56}
-                  color={theme.colors.placeholder}
+                  color={theme.colors.outline}
                 />
                 <Text style={styles.emptyTitle}>Nenhuma produção encontrada</Text>
                 <Text style={styles.emptySubtitle}>
@@ -235,7 +239,7 @@ export default function ProductionsScreen() {
                   <MaterialCommunityIcons
                     name="book-open-outline"
                     size={18}
-                    color={theme.colors.secondaryText}
+                    color={theme.colors.onPrimary}
                   />
                   <Text style={styles.actionBtnText}>Ver Minhas Receitas</Text>
                 </TouchableOpacity>
@@ -267,13 +271,13 @@ const createStyles = (theme: AppTheme) =>
     },
     filterRow: {
       flexDirection: 'row',
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 10,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderRadius: theme.rounded.md,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
       padding: 4,
       gap: 6,
-      marginBottom: 12,
+      marginBottom: 14,
     },
     filterBtn: {
       flex: 1,
@@ -281,7 +285,7 @@ const createStyles = (theme: AppTheme) =>
       alignItems: 'center',
       justifyContent: 'center',
       minHeight: 48,
-      borderRadius: 8,
+      borderRadius: theme.rounded.sm,
       gap: 6,
       paddingHorizontal: 8,
     },
@@ -289,50 +293,53 @@ const createStyles = (theme: AppTheme) =>
       backgroundColor: theme.colors.primary,
     },
     filterBtnText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.onSurfaceVariant,
     },
     filterBtnTextActive: {
-      color: theme.colors.secondaryText,
+      color: theme.colors.onPrimary,
+      fontWeight: '700',
     },
     summaryCard: {
       flexDirection: 'row',
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 12,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderRadius: theme.rounded.lg,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      padding: 14,
-      marginBottom: 14,
+      borderColor: theme.colors.outlineVariant,
+      padding: 16,
+      marginBottom: 16,
       alignItems: 'center',
+      ...theme.shadows.soft,
     },
     summaryCol: {
       flex: 1,
       alignItems: 'center',
-      gap: 2,
+      gap: 4,
     },
     summaryDivider: {
       width: 1,
       height: '80%',
-      backgroundColor: theme.colors.lightGray,
+      backgroundColor: theme.colors.outlineVariant,
     },
     summaryLabel: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
-      color: theme.colors.placeholder,
+      fontWeight: '500',
+      color: theme.colors.onSurfaceVariant,
     },
     summaryValue: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 20,
       fontWeight: 'bold',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
     },
     summaryValuePrimary: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 20,
       fontWeight: 'bold',
-      color: theme.colors.primary,
+      color: theme.colors.tertiary,
     },
     listContent: {
       paddingBottom: 40,
@@ -345,63 +352,64 @@ const createStyles = (theme: AppTheme) =>
       gap: 12,
     },
     loadingText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
-      color: theme.colors.text,
+      color: theme.colors.onSurfaceVariant,
       marginTop: 8,
     },
     emptyContainer: {
       alignItems: 'center',
       paddingVertical: 48,
       paddingHorizontal: 20,
-      gap: 10,
+      gap: 12,
     },
     emptyTitle: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 20,
       fontWeight: 'bold',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
       textAlign: 'center',
     },
     emptySubtitle: {
-      fontFamily: 'Inter',
-      fontSize: 13,
-      color: theme.colors.text,
-      opacity: 0.75,
+      fontFamily: theme.typography.bodyMd.fontFamily,
+      fontSize: 14,
+      color: theme.colors.onSurfaceVariant,
       textAlign: 'center',
-      lineHeight: 19,
+      lineHeight: 20,
       maxWidth: 320,
     },
     actionBtn: {
-      marginTop: 10,
+      marginTop: 12,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: theme.colors.primary,
       paddingHorizontal: 20,
       minHeight: 48,
-      borderRadius: 8,
+      borderRadius: theme.rounded.md,
       gap: 8,
+      ...theme.shadows.soft,
     },
     actionBtnText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
       fontWeight: '600',
-      color: theme.colors.secondaryText,
+      color: theme.colors.onPrimary,
     },
     retryBtn: {
-      marginTop: 8,
+      marginTop: 10,
       backgroundColor: theme.colors.primary,
       paddingVertical: 12,
       paddingHorizontal: 24,
-      borderRadius: 8,
+      borderRadius: theme.rounded.md,
       minHeight: 48,
       alignItems: 'center',
       justifyContent: 'center',
+      ...theme.shadows.soft,
     },
     retryBtnText: {
-      color: theme.colors.secondaryText,
-      fontFamily: 'Inter',
+      color: theme.colors.onPrimary,
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
       fontWeight: '600',
     },

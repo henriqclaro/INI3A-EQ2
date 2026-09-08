@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { Slot, Stack, useRouter, useSegments } from 'expo-router';
 
@@ -7,11 +8,14 @@ import { ActivityIndicator, PaperProvider } from 'react-native-paper';
 import { CustomHeader } from '@/src/components';
 import { AuthProvider, useAuth } from '@/src/contexts/AuthContext';
 import { ThemeProvider, useThemeMode } from '@/src/contexts/ThemeContext';
+import { AppTheme } from '@/src/theme/themes';
 
 function RootNavigation() {
   const { user, isLoadingStorage } = useAuth();
+  const { theme } = useThemeMode();
   const segments = useSegments();
   const router = useRouter();
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   useEffect(() => {
     if (isLoadingStorage) {
@@ -30,7 +34,11 @@ function RootNavigation() {
   }, [user, segments]);
 
   if (isLoadingStorage) {
-    return <ActivityIndicator size="large" />;
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
   }
 
   return <Slot />;
@@ -51,6 +59,7 @@ function RootLayoutContent() {
           screenOptions={{
             headerShown: true,
             header: (props) => <CustomHeader {...props} />,
+            contentStyle: { backgroundColor: theme.colors.background },
           }}
         >
           <RootNavigation />
@@ -73,6 +82,16 @@ function RootLayoutContent() {
     </AuthProvider>
   );
 }
+
+const createStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: theme.colors.background,
+    },
+  });
 
 export default function RootLayout() {
   return (

@@ -125,7 +125,7 @@ function ProduceRecipeModalContent({ recipe, onClose, onSuccess }: ProduceRecipe
             accessibilityRole="button"
             accessibilityLabel="Fechar modal"
           >
-            <MaterialCommunityIcons name="close" size={20} color={theme.colors.text} />
+            <MaterialCommunityIcons name="close" size={20} color={theme.colors.onSurface} />
           </TouchableOpacity>
         </View>
 
@@ -146,7 +146,7 @@ function ProduceRecipeModalContent({ recipe, onClose, onSuccess }: ProduceRecipe
             <TextInput
               style={styles.textInput}
               placeholder={`Ex: ${recipe.baseYield || '12'}`}
-              placeholderTextColor={theme.colors.placeholder}
+              placeholderTextColor={theme.colors.onSurfaceVariant}
               keyboardType="numeric"
               value={yieldProduced}
               onChangeText={setYieldProduced}
@@ -165,7 +165,7 @@ function ProduceRecipeModalContent({ recipe, onClose, onSuccess }: ProduceRecipe
             <TextInput
               style={styles.textInput}
               placeholder="AAAA-MM-DD (ex: 2026-10-20)"
-              placeholderTextColor={theme.colors.placeholder}
+              placeholderTextColor={theme.colors.onSurfaceVariant}
               value={expirationDate}
               onChangeText={setExpirationDate}
               autoCapitalize="none"
@@ -213,10 +213,10 @@ function ProduceRecipeModalContent({ recipe, onClose, onSuccess }: ProduceRecipe
             accessibilityLabel="Confirmar Produção"
           >
             {isSubmitting ? (
-              <ActivityIndicator size="small" color={theme.colors.secondaryText} />
+              <ActivityIndicator size="small" color={theme.colors.onPrimary} />
             ) : (
               <>
-                <MaterialCommunityIcons name="check" size={18} color={theme.colors.secondaryText} />
+                <MaterialCommunityIcons name="check" size={18} color={theme.colors.onPrimary} />
                 <Text style={styles.confirmBtnText}>Confirmar</Text>
               </>
             )}
@@ -246,7 +246,7 @@ const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     modalOverlay: {
       flex: 1,
-      backgroundColor: theme.colors.backdrop || 'rgba(64, 36, 43, 0.4)',
+      backgroundColor: theme.colors.backdrop,
       justifyContent: 'center',
       alignItems: 'center',
       padding: 16,
@@ -254,12 +254,13 @@ const createStyles = (theme: AppTheme) =>
     modalContent: {
       width: '100%',
       maxWidth: 480,
-      backgroundColor: theme.colors.background,
-      borderRadius: 16,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderRadius: theme.rounded.lg,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
       padding: 20,
       maxHeight: '90%',
+      ...theme.shadows.modal,
     },
     modalHeader: {
       flexDirection: 'row',
@@ -267,7 +268,7 @@ const createStyles = (theme: AppTheme) =>
       alignItems: 'center',
       marginBottom: 16,
       borderBottomWidth: 1,
-      borderBottomColor: theme.colors.secBorder,
+      borderBottomColor: theme.colors.outlineVariant,
       paddingBottom: 12,
     },
     modalHeaderTitleGroup: {
@@ -277,10 +278,10 @@ const createStyles = (theme: AppTheme) =>
       flex: 1,
     },
     modalTitle: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 20,
-      fontWeight: 'bold',
-      color: theme.colors.primary,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
       flex: 1,
     },
     closeBtn: {
@@ -293,44 +294,45 @@ const createStyles = (theme: AppTheme) =>
       paddingBottom: 10,
     },
     recipeBanner: {
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 10,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderRadius: theme.rounded.sm,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
       padding: 12,
       marginBottom: 16,
     },
     recipeBannerTitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyLg.fontFamily,
       fontSize: 16,
-      fontWeight: 'bold',
-      color: theme.colors.text,
+      fontWeight: '700',
+      color: theme.colors.espressoDark,
       marginBottom: 2,
     },
     recipeBannerSubtitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 13,
-      color: theme.colors.placeholder,
+      color: theme.colors.onSurfaceVariant,
     },
     inputGroup: {
       marginBottom: 14,
     },
     label: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
       marginBottom: 6,
     },
     textInput: {
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
-      borderColor: theme.colors.lightGray,
-      borderRadius: 8,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.sm,
       paddingHorizontal: 12,
       height: 48,
       fontSize: 15,
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
+      fontFamily: theme.typography.bodyMd.fontFamily,
     },
     scaleRow: {
       flexDirection: 'row',
@@ -339,21 +341,20 @@ const createStyles = (theme: AppTheme) =>
       marginTop: 4,
     },
     scaleText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
-      color: theme.colors.text,
-      opacity: 0.8,
+      color: theme.colors.onSurfaceVariant,
     },
     scaleTextBold: {
-      fontWeight: 'bold',
+      fontWeight: '700',
       color: theme.colors.primary,
     },
     infoBox: {
       flexDirection: 'row',
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.parchment,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      borderRadius: 10,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.sm,
       padding: 12,
       marginTop: 6,
       marginBottom: 16,
@@ -367,17 +368,16 @@ const createStyles = (theme: AppTheme) =>
       gap: 3,
     },
     infoTextBold: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
-      fontWeight: 'bold',
-      color: theme.colors.text,
+      fontWeight: '700',
+      color: theme.colors.espressoDark,
       marginBottom: 2,
     },
     infoText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 11,
-      color: theme.colors.text,
-      opacity: 0.8,
+      color: theme.colors.onSurface,
       lineHeight: 16,
     },
     buttonRow: {
@@ -390,16 +390,16 @@ const createStyles = (theme: AppTheme) =>
       minHeight: 48,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
-      borderColor: theme.colors.lightGray,
-      borderRadius: 8,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.sm,
     },
     cancelBtnText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
     },
     confirmBtn: {
       flex: 1.5,
@@ -408,13 +408,14 @@ const createStyles = (theme: AppTheme) =>
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: theme.colors.primary,
-      borderRadius: 8,
+      borderRadius: theme.rounded.sm,
       gap: 6,
+      ...theme.shadows.glow,
     },
     confirmBtnText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
       fontWeight: '600',
-      color: theme.colors.secondaryText,
+      color: theme.colors.onPrimary,
     },
   });

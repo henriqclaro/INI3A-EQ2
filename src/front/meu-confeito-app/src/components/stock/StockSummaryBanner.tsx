@@ -44,7 +44,7 @@ export const StockSummaryBanner = ({
         {/* Metric 2: Total Value */}
         <View style={styles.metricCard}>
           <View style={styles.iconWrapper}>
-            <MaterialCommunityIcons name="cash-multiple" size={20} color={theme.colors.primary} />
+            <MaterialCommunityIcons name="cash-multiple" size={20} color={theme.colors.tertiary} />
           </View>
           <View style={styles.textContainer}>
             <Text style={styles.metricLabel}>Valor em Estoque</Text>
@@ -58,7 +58,7 @@ export const StockSummaryBanner = ({
             <MaterialCommunityIcons
               name="alert-circle-outline"
               size={20}
-              color={outOfStockCount > 0 ? theme.colors.primary : theme.colors.placeholder}
+              color={outOfStockCount > 0 ? theme.colors.error : theme.colors.outline}
             />
           </View>
           <View style={styles.textContainer}>
@@ -80,7 +80,7 @@ export const StockSummaryBanner = ({
             <MaterialCommunityIcons
               name="clock-alert-outline"
               size={20}
-              color={expiringSoonCount > 0 ? theme.colors.warning : theme.colors.placeholder}
+              color={expiringSoonCount > 0 ? theme.colors.warning : theme.colors.outline}
             />
           </View>
           <View style={styles.textContainer}>
@@ -104,12 +104,13 @@ const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
       width: '100%',
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 16,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderRadius: theme.rounded.lg,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
       padding: 14,
       marginBottom: 16,
+      ...theme.shadows.soft,
     },
     grid: {
       flexDirection: 'row',
@@ -119,8 +120,8 @@ const createStyles = (theme: AppTheme) =>
     metricCard: {
       flex: 1,
       minWidth: '45%',
-      backgroundColor: theme.colors.background,
-      borderRadius: 12,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderRadius: theme.rounded.md,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
       padding: 10,
@@ -129,55 +130,56 @@ const createStyles = (theme: AppTheme) =>
       gap: 10,
     },
     metricCardAlert: {
-      borderColor: theme.colors.danger,
+      borderColor: theme.colors.error,
+      backgroundColor: theme.colors.errorContainer,
     },
     metricCardWarning: {
       borderColor: theme.colors.warning,
+      backgroundColor: theme.colors.surfaceContainerLow,
     },
     iconWrapper: {
       width: 38,
       height: 38,
       borderRadius: 19,
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       alignItems: 'center',
       justifyContent: 'center',
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
     },
     iconWrapperCritical: {
-      borderColor: theme.colors.danger,
-      backgroundColor: theme.colors.background,
+      borderColor: theme.colors.error,
+      backgroundColor: theme.colors.surfaceContainerLowest,
     },
     iconWrapperWarning: {
       borderColor: theme.colors.warning,
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLowest,
     },
     textContainer: {
       flex: 1,
       justifyContent: 'center',
     },
     metricLabel: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 11,
       fontWeight: '600',
-      color: theme.colors.text,
-      opacity: 0.7,
+      color: theme.colors.onSurfaceVariant,
       marginBottom: 2,
     },
     metricValue: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyLg.fontFamily,
       fontSize: 17,
       fontWeight: '700',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
     },
     metricValuePrimary: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyLg.fontFamily,
       fontSize: 16,
       fontWeight: '700',
-      color: theme.colors.primary,
+      color: theme.colors.tertiary,
     },
     metricValueCritical: {
-      color: theme.colors.danger,
+      color: theme.colors.error,
     },
     metricValueWarning: {
       color: theme.colors.warning,

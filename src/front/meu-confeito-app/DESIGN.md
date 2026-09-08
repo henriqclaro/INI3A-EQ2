@@ -1,61 +1,88 @@
 ---
 name: Meu Confeito
 colors:
-  # Base & Surfaces
-  background: '#F6EDDC'
-  surface: '#F6EDDC'
-  surface-variant: '#FFFFFF'
-  on-surface: '#40242B'
-  on-surface-variant: '#F6EDDC'
+  # Base & Surfaces (Blush-Cream Tonal Hierarchy & Parchment)
+  background: '#FFF8F7'
+  surface: '#FFF8F7'
+  surface-dim: '#EDD4D6'
+  surface-bright: '#FFF8F7'
+  surface-container-lowest: '#FFFFFF'
+  surface-container-low: '#FFF0F1'
+  surface-container: '#FFE9EA'
+  surface-container-high: '#FBE2E4'
+  surface-container-highest: '#F5DDDE'
+  surface-variant: '#F5DDDE'
+  parchment: '#F6EDDC'
 
-  # Primary (Berry / Dark Pink)
-  primary: '#C53557'
+  # Text & On-Surface Colors
+  on-surface: '#25181A'
+  on-surface-variant: '#584143'
+  espresso-dark: '#40242B'
+  text: '#40242B'
+  inverse-surface: '#3C2D2E'
+  inverse-on-surface: '#FFECED'
+
+  # Primary (Berry / Deep Crimson)
+  primary: '#A31940'
   on-primary: '#FFFFFF'
   primary-container: '#C53557'
-  on-primary-container: '#FFFFFF'
+  on-primary-container: '#FFEAEC'
+  primary-fixed: '#FFD9DD'
+  on-primary-fixed: '#400012'
 
-  # Secondary (Glaze / Light Pink)
-  secondary: '#FBA8AF'
-  on-secondary: '#40242B'
+  # Secondary (Glaze Pink & Rose)
+  secondary: '#8D4B52'
+  on-secondary: '#FFFFFF'
   secondary-container: '#FBA8AF'
   on-secondary-container: '#40242B'
+  secondary-fixed: '#FFDADB'
+  on-secondary-fixed: '#7A3C43'
 
-  # Neutrals & Accents
+  # Tertiary & Semantic (Artisanal Green / Financial Growth & Profit)
+  tertiary: '#006139'
+  on-tertiary: '#FFFFFF'
+  tertiary-container: '#007D4A'
+  on-tertiary-container: '#BBFFD0'
+  tertiary-fixed: '#93F7B8'
+  on-tertiary-fixed: '#002110'
+
+  # Neutrals & Artisanal Accents
   accent-brown: '#6F4137'
-  text: '#40242B'
-  secondary-text: '#FFFFFF'
-  placeholder: '#A9A9A9'
-  light-gray: '#D6D6D6'
+  placeholder: '#8C7073'
+  light-gray: '#E0BEC1'
   white: '#FFFFFF'
 
   # Borders & Outlines
-  border: '#40242B'
-  border-secondary: '#FBA8AF'
-  outline: '#40242B'
-  outline-variant: '#D6D6D6'
+  border: '#E0BEC1'
+  border-subtle: '#F6EDDC'
+  border-emphasis: '#40242B'
+  outline: '#8C7073'
+  outline-variant: '#E0BEC1'
 
-  # Semantic Tags
-  tag-product: '#FFA189'
-  tag-variety: '#FFF25E'
-  tag-attribute: '#8DFBFF'
+  # Status & Feedback
+  error: '#BA1A1A'
+  on-error: '#FFFFFF'
+  error-container: '#FFDAD6'
+  on-error-container: '#93000A'
+
 typography:
   headline-xl:
     fontFamily: PlayfairDisplaySC_600SemiBold
     fontSize: 32
-    lineHeight: 40
+    lineHeight: 38
     letterSpacing: 0.6
   headline-lg:
     fontFamily: PlayfairDisplaySC_600SemiBold
     fontSize: 26
-    lineHeight: 34
+    lineHeight: 32
   headline-md:
     fontFamily: PlayfairDisplaySC_600SemiBold
     fontSize: 20
-    lineHeight: 28
+    lineHeight: 26
   body-lg:
     fontFamily: Inter_400Regular
     fontSize: 18
-    lineHeight: 26
+    lineHeight: 28
   body-md:
     fontFamily: Inter_400Regular
     fontSize: 16
@@ -73,6 +100,8 @@ typography:
     fontFamily: Inter_500Medium
     fontSize: 11
     lineHeight: 14
+    letterSpacing: 0.2
+
 rounded:
   sm: 4
   default: 8
@@ -80,19 +109,33 @@ rounded:
   lg: 16
   xl: 24
   full: 9999
+
+shadows:
+  soft: '0px 4px 20px rgba(37, 24, 26, 0.05)'
+  hover: '0px 8px 30px rgba(37, 24, 26, 0.08)'
+  modal: '0px 12px 40px rgba(37, 24, 26, 0.12)'
+  glow: '0px 4px 12px rgba(163, 25, 64, 0.25)'
+
 spacing:
   base: 8
   touchable: 48
   margin-mobile: 16
   margin-tablet: 24
   margin-desktop: 40
-  gutter-mobile: 12
+  gutter-mobile: 16
   gutter-desktop: 24
   container-max: 1200
-  stack-xs: 4
-  stack-sm: 8
-  stack-md: 16
-  stack-lg: 24
+  space-1: 4
+  space-2: 8
+  space-3: 12
+  space-4: 16
+  space-5: 20
+  space-6: 24
+  space-8: 32
+  space-10: 40
+  space-12: 48
+  space-16: 64
+
 breakpoints:
   sm: 640
   md: 768
@@ -102,85 +145,109 @@ breakpoints:
 
 ## Brand & Style
 
-The design system is crafted for independent bakers and confectionery owners who balance the precision of production with the warmth of hospitality. The brand personality is **warm, artisanal, and professional**. It avoids the sterility of typical SaaS platforms, opting instead for a "digital kitchen" feel that evokes the tactile nature of flour, parchment, and sugar.
+The design system is crafted for independent bakers and confectionery owners who balance the precision of production with the warmth of hospitality. The brand personality is **warm, artisanal, and professional**. It avoids the sterile look of generic SaaS platforms, opting instead for a "digital kitchen" feel that evokes the tactile nature of flour, parchment, and sugar.
 
-The chosen design style is **Minimalism with a Tactile twist**. It relies on generous whitespace (reminiscent of a clean countertop) and a limited but high-impact color palette. While the UI remains clean and functional, the use of organic background tones and high-contrast editorial typography ensures the interface feels intentional and sophisticated rather than generic.
+The chosen design style is **Minimalism with Tactile Confectionery Elegance**. It pairs generous whitespace with a tiered blush-cream canvas, delicate rose-taupe borders, and organic confectionery glazes. High-contrast serif headlines deliver an editorial, stamped feel, while clean utilitarian sans-serif typography ensures effortless readability for complex recipe scaling and cost calculations.
 
 ## Colors
 
-The palette is inspired by confectionery ingredients and warm artisan baking tones:
+The palette is inspired by confectionery ingredients, warm baking ovens, and financial clarity:
 
-- **Primary (Dark Pink / Berry Deep - `#C53557`):** Reserved strictly for high-priority actions like "Confirm Order," "Save Recipe," or primary navigation states. Use it sparingly to maintain its significance.
-- **Secondary (Light Pink / Glaze Pink - `#FBA8AF`):** Used for navigation pills (`secondaryContainer`), progress bars, soft highlights, and secondary interactive states.
-- **Surface & Background (Light Yellow / Parchment - `#F6EDDC`):** Acts as the canvas for the entire application, reducing the harshness of pure white and providing an artisanal, organic warmth.
-- **On-Surface / Text (Marsala / Espresso - `#40242B`):** All primary text, standard borders, and key iconography use this deep wine tone to ensure high legibility with softer contrast than pure black.
-- **Accent (Warm Brown - `#6F4137`):** Complementary artisanal tone for tertiary badges, depth layers, or subtle emphasis.
-- **Containers (Pure White - `#FFFFFF`):** Used inside flat outlined cards, text inputs, and surface panels for crisp contrast against the cream background. Never use elevation or shadows on standard containers.
-- **Tags & Statuses:**
-  - **Product (`#FFA189`):** Soft warm orange for product categories.
-  - **Variety (`#FFF25E`):** Soft yellow for recipes, variations, and types.
-  - **Attribute (`#8DFBFF`):** Soft cyan for dietary attributes, tags, and technical specs.
+- **Primary (Interactive Berry `#A31940` & Berry Deep `#C53557`):** Used for primary calls-to-action ("Simulate Recipe", "Confirm Order"), active tab highlights, and brand emphasis. `#C53557` acts as the solid primary container and hover anchor.
+- **Secondary (Glaze Pink `#FBA8AF` & Rose Fixed `#FEABB2` / `#FFDADB`):** Represents smooth glazes and soft confectionery coatings. Used for secondary interactive states, secondary buttons, progress bars, and delicate accent backgrounds.
+- **Surface & Background (Blush-Cream `#FFF8F7` & Parchment `#F6EDDC`):** The primary canvas uses a soft blush-cream tone (`#FFF8F7`), while `#F6EDDC` provides warm artisan parchment character for secondary backgrounds, subtle dividers, and warm tactile cards.
+- **On-Surface & Text (Espresso Dark `#40242B` & Cocoa `#25181A`):** Headlines, brand titles, and high-emphasis labels use `#40242B` (Espresso Dark). General body text uses `#25181A` with `#584143` for muted secondary descriptors, ensuring optimal legibility without the harshness of pure black.
+- **Accent (Warm Brown `#6F4137`):** Artisanal cocoa tone reserved for tertiary badges, secondary indicators, and depth accents.
+- **Tertiary & Semantic Success (Artisanal Green `#006139` / `#93F7B8`):** Crucial for highlighting recipe profit margins, suggested retail markup, yield gains, and validated differentiators.
+- **Borders & Outlines (`#E0BEC1` / `#8C7073`):** Delicate rose-taupe borders (`#E0BEC1`) replace harsh black strokes on cards, tables, and inputs, keeping layouts light and cohesive. `#40242B` is reserved for intentional high-contrast emphasis.
+
+### Semantic Badges & Chips:
+
+- **Primary Chip (`#FFD9DD` / `#400012`):** Core features, essential badges, and project highlights.
+- **Secondary Chip (`#FFDADB` / `#7A3C43`):** Virality markers, geolocation tags, and recipes.
+- **Success Chip (`#93F7B8` / `#002110`):** Profit calculations, positive metrics, and active ready-to-deliver statuses.
+- **Accent Chip (`#FBE2E4` / `#C53557`):** Batch yield, production management, and operational tags.
 
 ## Typography
 
-This design system utilizes a high-contrast typographic pairing to bridge the gap between "artisanal" and "functional".
+This design system utilizes a high-contrast typographic pairing bridging the gap between "artisanal warmth" and "operational precision":
 
-**Playfair Display SC** is used for headlines. The Small Caps (SC) variant adds a prestigious, stamped quality—much like a baker’s seal. It should be used for page titles and section headers.
+**Playfair Display SC** is used for brand headlines and major section titles. The Small Caps (SC) variant adds a prestigious, stamped quality—reminiscent of a classic baker’s seal.
 
-**Inter** handles all utilitarian content. It is chosen for its exceptional readability in data-heavy environments like inventory lists and recipe ratios. Use the `label-md` style for category headers to differentiate them from body text through capitalization and letter-spacing.
+- `headline-xl`: 32px (fluid clamp up to 40px on large viewports), weight 600, letter spacing `0.6` (0.02em).
+- `headline-lg`: 26px (fluid clamp up to 32px), weight 600, line height 32px.
+- `headline-md`: 20px (fluid clamp up to 24px), weight 600, line height 26px.
 
-> **Tech Note (Expo Fonts):** Fonts must be loaded using the Expo Google Fonts packages (`@expo-google-fonts/playfair-display-sc` and `@expo-google-fonts/inter`). Use the `useFonts` hook at the root of the application (e.g., in `_layout.tsx` or `App.tsx`) to ensure they are loaded before rendering text. Use the exact keys provided in the frontmatter above.
+**Inter** handles all utilitarian content, forms, recipe grids, and data-dense tables:
+
+- `body-lg`: 18px / 28px line height.
+- `body-md`: 16px / 24px line height.
+- `body-sm`: 14px / 20px line height (supporting labels, ingredient quantities, and helper copy).
+- `label-md`: 12px / 16px, weight 600, uppercase with letter spacing `0.5` (0.04em–0.05em) for category badges, table headers, and button text.
+- `label-sm`: 11px / 14px, weight 500.
+
+> **Tech Note (Expo Fonts):** Fonts must be loaded using the Expo Google Fonts packages (`@expo-google-fonts/playfair-display-sc` and `@expo-google-fonts/inter`). Use the `useFonts` hook at the root of the application (e.g., in `_layout.tsx` or `App.tsx`) to ensure both families are loaded before rendering text.
 
 ## Responsive Layout & Grid
 
-The layout is built **Mobile-First** with progressive expansion for tablet and desktop viewports:
+The layout is built **Mobile-First** with progressive enhancements for tablet and desktop viewports:
 
 - **Mobile (< 768px):**
-  - Single-column flow with a fluid width.
-  - Outer screen margins: `16px`.
-  - Navigation via Bottom Navigation Bar and Bottom Sheets.
+  - Single-column flow with fluid width.
+  - Screen margins: `16px` (down to `12px` on ultra-compact screens <= 360px).
+  - Column gutters: `16px` (down to `12px` on <= 480px).
+  - Navigation via fixed Bottom Navigation Bar or collapsible top drawer.
   - Strict adherence to Safe Area insets (top and bottom).
 - **Tablet / Desktop (>= 768px):**
-  - Multi-column layout (up to 12 columns, max-width `1200px`).
-  - Outer screen margins: `24px` to `40px` with `24px` gutters.
-  - Navigation transitions to a persistent Sidebar or Top Bar.
-  - Modals replace Bottom Sheets; lists adopt split-pane / Master-Detail structures.
+  - Multi-column 12-column grid system (max-width `1200px`).
+  - Screen margins: `24px` to `40px` with `24px` gutters.
+  - Navigation expands to a sticky desktop header with blurred translucent backdrop (`backdrop-filter: blur(12px)`).
+  - Multi-column split views (e.g., interactive calculator with side-by-side ingredient list and live financial summary).
 
-## Elevation & Depth (Flat-First Policy)
+## Elevation & Depth (Soft Tactile Elevation)
 
-The visual system is strictly **Flat and Border-First**. Drop shadows and native elevation are explicitly forbidden on cards, list items, navigation bars, headers, inputs, and standard buttons. Visual separation must rely 100% on 1px borders and background contrast.
+Rather than harsh drops or completely flat surfaces, the interface utilizes **Soft Tactile Elevation** with warm, diffused shadows tinted by the espresso palette:
 
-- **Default State (Zero Elevation):**
-  - Android: `elevation: 0`
-  - iOS: `shadowOpacity: 0`, `shadowRadius: 0`
-  - Web: `box-shadow: none`
-  - Stroke: `borderWidth: 1`, `borderColor: '#40242B'` (or `#D6D6D6` / `#FBA8AF` for subtle dividers)
-
-- **The Sole Exception — Floating Action Buttons (FAB):**
-  Elevation is reserved exclusively for primary floating action triggers (e.g., floating "Add Item", "New Recipe" action buttons) that sit on a distinct z-index layer above scrollable content:
+- **Default Cards & Panels:**
+  - Base: Pure white (`#FFFFFF`) or tinted surface (`#FFF0F1` / `#FFE9EA`).
+  - Stroke: `1px solid #E0BEC1` (`outline-variant`).
+  - Shadow: Optional subtle ambient diffusion (`0px 4px 20px rgba(37, 24, 26, 0.05)`).
+- **Hover / Interactive Cards:**
+  - Stroke transitions to `#A31940` (Primary).
+  - Shadow expands to `0px 8px 30px rgba(37, 24, 26, 0.08)` with a smooth `250ms` ease.
+- **Buttons (Hover State):**
+  - Primary button lifts with a soft berry glow: `box-shadow: 0 4px 12px rgba(163, 25, 64, 0.25)`.
+- **Modals & Dialogs:**
+  - Backdrop: `rgba(37, 24, 26, 0.6)` with `backdrop-filter: blur(4px)`.
+  - Dialog container: `0px 12px 40px rgba(37, 24, 26, 0.12)`.
+- **Floating Action Triggers (FAB) & Map Pins:**
   - Android: `elevation: 4`
-  - iOS: `shadowColor: '#40242B'`, `shadowOffset: { width: 0, height: 4 }`, `shadowOpacity: 0.12`, `shadowRadius: 8`
-  - Web: `box-shadow: 0px 4px 12px rgba(64, 36, 43, 0.12)`
+  - iOS / Web: `box-shadow: 0 4px 10px rgba(163, 25, 64, 0.35)`.
 
 ## Touch & Interaction Targets
 
-- All interactive controls (buttons, icon buttons, checkboxes, chips) must have a minimum hit target of `48x48dp` on touch screens.
-- Use visual padding inside the component while ensuring the hit-box complies with accessibility standards.
+- All interactive controls (buttons, icon buttons, checkboxes, chips, table row actions) must have a minimum touch hit target of `48x48dp`.
+- Ensure comfortable internal padding (`12px 24px` for standard buttons; `8px 16px` for small triggers) while keeping hit-boxes accessible.
 
 ## Shapes & Iconography
 
-The shape language is **Rounded**, reflecting the soft, organic nature of dough and baked goods.
+The shape system balances organic confection curves with crisp digital alignment:
 
-- **Elements:** Standard components (Inputs, Buttons) use a `8px` (`rounded.default`) radius.
-- **Large Containers:** Cards and Modals use a `16px` (`rounded.lg`) radius to feel approachable and modern.
-- **Icons:** Use `MaterialCommunityIcons` from the `@expo/vector-icons` package. Prioritize icons with a softer appearance to match the UI's tactile softness. Avoid importing custom SVGs for standard UI elements when an equivalent `MaterialCommunityIcons` exists.
+- **Inputs, Buttons, and Icon Boxes:** `8px` (`rounded.default`).
+- **Inner Metric Cells, Table Cards, and Dialog Boxes:** `12px` (`rounded.md`).
+- **Standard Cards, Comparison Columns, and Panels:** `16px` (`rounded.lg`).
+- **Showcase Wrappers (Hero Card, Calculator Panel, Map Showcase, CTA):** `24px` (`rounded.xl`).
+- **Pills, Chips, Avatars, and Map Pins:** Full pill `9999px` (`rounded.full`).
+- **Icons:** Use `MaterialCommunityIcons` from `@expo/vector-icons` (or Lucide/SVG equivalents). Use thin-to-medium strokes (2px) to match the editorial typography.
 
 ## Components
 
-- **Buttons:** Primary buttons use a solid Primary background (`#C53557`) with White text (`#FFFFFF`). Secondary buttons use a Secondary background (`#FBA8AF`) with Marsala text (`#40242B`). Text is centered and uses `label-md` weight.
-- **Chips & Tags:** Used for order statuses and item tags (Product `#FFA189`, Variety `#FFF25E`, Attribute `#8DFBFF`). These should have a full pill border-radius (`9999px`) with dark Marsala text (`#40242B`).
-- **Input Fields:** Pure white background (`#FFFFFF`) with a 1px Marsala border (`#40242B`) or light outline (`#D6D6D6`). Placeholder text uses `#A9A9A9` and labels use `#40242B` in `label-sm`.
-- **Floating Action Buttons (FAB):** Circular or pill-shaped, fixed/floating over content. Uses Primary (`#C53557`) or Secondary (`#FBA8AF`) color with the elevation tokens defined in the _Elevation & Depth_ section.
-- **Cards:** Pure white (`#FFFFFF`) or cream (`#F6EDDC`) containers with a subtle 1px border (`#40242B` / `#D6D6D6`). Group recipe details or inventory metrics without heavy drop shadows.
-- **Lists:** Ingredient and inventory lists should use `body-md` for items and `body-sm` for quantities, with `#D6D6D6` or `#FBA8AF` horizontal dividers between rows.
-- **Checkboxes & Radios:** Should feel tactile and use Primary (`#C53557`) for the active/checked state.
+- **Buttons:**
+  - _Primary:_ Solid background `#A31940`, text `#FFFFFF`, uppercase `label-md`, `8px` radius. Hover shifts to `#C53557` with a soft berry glow.
+  - _Secondary:_ Background `#FBA8AF` / `#FEABB2`, text `#40242B` or `#7A3C43`. Hover transitions to `#FBA8AF`.
+  - _Outline:_ Transparent background, border `1px solid #E0BEC1`, text `#40242B`. Hover fills with `#FFE9EA`.
+- **Chips & Tags:** Pill-shaped (`9999px`), padding `4px 12px`, with optional `6px` circular status indicator (`chip-dot`). Follow the 4-tier semantic color definition.
+- **Input Fields & Selects:** Pure white background (`#FFFFFF`), `1px solid #E0BEC1`, text `#25181A`. On focus: outline border `#A31940` with an outer ring `0 0 0 2px #FBA8AF`.
+- **Cards & Containers:** Pure white (`#FFFFFF`) or soft tinted cream (`#FFF0F1` / `#FFE9EA`) with a `1px solid #E0BEC1` border and `16px` radius. Hover states smoothly tint the border toward `#A31940`.
+- **Tables & Financial Demonstratives:** Clean horizontal rows separated by `1px solid #FBE2E4` or `#E0BEC1`. Headers are uppercase, muted, and spaced (`label-md`). Key cost lines and selling prices receive prominent sizing in `#A31940` or `#006139`.
+- **Call-to-Action Banners:** Deep espresso gradient (`#40242B` to `#2F171D`) with subtle radial berry overlays (`rgba(197, 53, 87, 0.4)`), white typography, and `24px` rounded corners.

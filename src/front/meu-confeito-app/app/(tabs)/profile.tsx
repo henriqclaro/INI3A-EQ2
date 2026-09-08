@@ -94,15 +94,15 @@ export default function ProfileScreen() {
             {/* Small Badge indicating Public vs Private Profile */}
             {hasBakerProfile ? (
               <View style={styles.publicBadge}>
-                <MaterialCommunityIcons name="earth" size={13} color={theme.colors.primary} />
+                <View style={styles.chipDot} />
                 <Text style={styles.publicBadgeText}>Perfil Público</Text>
               </View>
             ) : (
               <View style={styles.privateBadge}>
                 <MaterialCommunityIcons
                   name="lock-outline"
-                  size={13}
-                  color={theme.colors.mediumGray}
+                  size={12}
+                  color={theme.colors.onSurfaceVariant}
                 />
                 <Text style={styles.privateBadgeText}>Perfil Privado</Text>
               </View>
@@ -111,14 +111,16 @@ export default function ProfileScreen() {
 
           <Text style={styles.userName}>{user?.name || 'Usuário'}</Text>
 
-          <Text style={styles.userRole}>{isBakerRole ? 'Confeiteira(o)' : 'Cliente'}</Text>
+          <View style={styles.roleBadge}>
+            <Text style={styles.userRole}>{isBakerRole ? 'Confeiteira(o)' : 'Cliente'}</Text>
+          </View>
 
           {user?.email ? (
             <View style={styles.emailRow}>
               <MaterialCommunityIcons
                 name="email-outline"
                 size={14}
-                color={theme.colors.mediumGray}
+                color={theme.colors.placeholder}
               />
               <Text style={styles.email}>{user.email}</Text>
             </View>
@@ -129,7 +131,7 @@ export default function ProfileScreen() {
               <MaterialCommunityIcons
                 name="map-marker-outline"
                 size={14}
-                color={theme.colors.primary}
+                color={theme.colors.secondary}
               />
               <Text style={styles.locationText}>{locationSummary}</Text>
             </View>
@@ -227,62 +229,67 @@ const createStyles = (theme: AppTheme) =>
       backgroundColor: theme.colors.background,
     },
     scrollContent: {
-      paddingHorizontal: 16,
-      paddingTop: 16,
-      paddingBottom: 60,
+      paddingHorizontal: theme.spacing.marginMobile,
+      paddingTop: theme.spacing.marginMobile,
+      paddingBottom: theme.spacing.space16,
       alignItems: 'center',
     },
     contentWrapper: {
       width: '100%',
       maxWidth: 480,
-      gap: 20,
+      gap: theme.spacing.space5,
     },
     card: {
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      borderRadius: 16,
-      paddingVertical: 24,
-      paddingHorizontal: 20,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.lg,
+      paddingVertical: theme.spacing.space6,
+      paddingHorizontal: theme.spacing.space5,
       alignItems: 'center',
       width: '100%',
+      ...theme.shadows.soft,
     },
     avatarWrapper: {
       alignItems: 'center',
-      marginBottom: 10,
+      marginBottom: theme.spacing.space2,
       position: 'relative',
     },
     image: {
       width: 110,
       height: 110,
-      borderRadius: 55,
+      borderRadius: theme.rounded.full,
       borderWidth: 3,
       borderColor: theme.colors.primary,
-      backgroundColor: theme.colors.lightGray,
-      marginBottom: 8,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      marginBottom: theme.spacing.space2,
     },
     placeholderImage: {
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLow,
       justifyContent: 'center',
       alignItems: 'center',
     },
     publicBadge: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 4,
-      backgroundColor: theme.colors.background,
-      borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      borderRadius: 9999,
-      paddingHorizontal: 10,
+      gap: 6,
+      backgroundColor: theme.colors.chips.success.background,
+      borderRadius: theme.rounded.full,
+      paddingHorizontal: 12,
       paddingVertical: 4,
       alignSelf: 'center',
     },
+    chipDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: theme.colors.tertiary,
+    },
     publicBadgeText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 11,
-      fontWeight: '700',
-      color: theme.colors.primary,
+      fontWeight: '600',
+      color: theme.colors.chips.success.text,
       letterSpacing: 0.5,
       textTransform: 'uppercase',
     },
@@ -290,109 +297,114 @@ const createStyles = (theme: AppTheme) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 4,
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerHigh,
       borderWidth: 1,
-      borderColor: theme.colors.lightGray,
-      borderRadius: 9999,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.full,
       paddingHorizontal: 10,
       paddingVertical: 4,
       alignSelf: 'center',
     },
     privateBadgeText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 11,
       fontWeight: '600',
-      color: theme.colors.darkGray,
+      color: theme.colors.onSurfaceVariant,
       letterSpacing: 0.5,
     },
     userName: {
-      fontFamily: 'Playfair Display SC',
-      fontSize: 22,
-      fontWeight: 'bold',
-      color: theme.colors.text,
+      fontFamily: theme.typography.headlineLg.fontFamily,
+      fontSize: 24,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
       textAlign: 'center',
-      letterSpacing: 0.5,
-      marginTop: 4,
+      letterSpacing: 0.6,
+      marginTop: theme.spacing.space1,
+    },
+    roleBadge: {
+      backgroundColor: theme.colors.chips.primary.background,
+      borderRadius: theme.rounded.full,
+      paddingHorizontal: 10,
+      paddingVertical: 3,
+      marginTop: theme.spacing.space1,
+      alignSelf: 'center',
     },
     userRole: {
-      fontFamily: 'Inter',
-      fontSize: 13,
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 11,
       fontWeight: '600',
-      color: theme.colors.primary,
-      marginTop: 2,
-      textAlign: 'center',
+      color: theme.colors.chips.primary.text,
+      letterSpacing: 0.5,
+      textTransform: 'uppercase',
     },
     emailRow: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 6,
-      marginTop: 6,
+      marginTop: theme.spacing.space2,
     },
     email: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 13,
-      color: theme.colors.darkGray,
+      color: theme.colors.onSurfaceVariant,
       textAlign: 'center',
     },
     locationRow: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 4,
-      marginTop: 4,
+      marginTop: theme.spacing.space1,
     },
     locationText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 13,
-      color: theme.colors.text,
-      opacity: 0.8,
+      color: theme.colors.onSurface,
     },
     cardActions: {
       width: '100%',
-      marginTop: 16,
+      marginTop: theme.spacing.space4,
       alignItems: 'center',
-      gap: 10,
+      gap: theme.spacing.space2,
     },
     cardButton: {
       width: '100%',
       margin: 0,
-      height: 50,
-      borderRadius: 10,
+      height: 48,
+      borderRadius: theme.rounded.default,
     },
     activatePromptContainer: {
       width: '100%',
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.parchment,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      borderRadius: 10,
-      padding: 12,
-      marginTop: 6,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.md,
+      padding: theme.spacing.space3,
+      marginTop: theme.spacing.space1,
       alignItems: 'center',
-      gap: 8,
+      gap: theme.spacing.space2,
     },
     activatePromptText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
       textAlign: 'center',
       lineHeight: 18,
-      opacity: 0.85,
     },
     menuSection: {
       width: '100%',
-      gap: 12,
+      gap: theme.spacing.space3,
     },
     menuSectionTitle: {
-      fontFamily: 'Inter',
-      fontSize: 12,
-      fontWeight: '700',
-      color: theme.colors.darkGray,
-      textTransform: 'uppercase',
-      letterSpacing: 0.8,
-      marginLeft: 4,
+      fontFamily: theme.typography.headlineMd.fontFamily,
+      fontSize: 18,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
+      letterSpacing: 0.5,
+      marginLeft: theme.spacing.space1,
       marginBottom: 2,
     },
     loadingIndicator: {
-      paddingVertical: 12,
+      paddingVertical: theme.spacing.space3,
       alignItems: 'center',
     },
   });

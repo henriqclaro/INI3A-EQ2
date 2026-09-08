@@ -50,7 +50,7 @@ export const MenuOptionButton = ({
             <MaterialCommunityIcons
               name={icon}
               size={22}
-              color={isDestructive ? theme.colors.danger : theme.colors.primary}
+              color={isDestructive ? theme.colors.error : theme.colors.primary}
             />
           </View>
         ) : null}
@@ -80,8 +80,8 @@ export const MenuOptionButton = ({
 
         <MaterialCommunityIcons
           name={rightIcon}
-          size={22}
-          color={isDestructive ? theme.colors.danger : theme.colors.text}
+          size={20}
+          color={isDestructive ? theme.colors.error : theme.colors.placeholder}
           style={styles.rightIcon}
         />
       </View>
@@ -95,24 +95,30 @@ const createStyles = (theme: AppTheme, isDestructive: boolean) =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
-      borderColor: isDestructive ? theme.colors.danger : theme.colors.secBorder,
-      borderRadius: 12,
-      minHeight: 52,
-      paddingVertical: 12,
-      paddingHorizontal: 16,
+      borderColor: isDestructive ? theme.colors.errorContainer : theme.colors.outlineVariant,
+      borderRadius: theme.rounded.md,
+      minHeight: 56,
+      paddingVertical: theme.spacing.space3,
+      paddingHorizontal: theme.spacing.space4,
       width: '100%',
+      ...theme.shadows.soft,
     },
     leftContent: {
       flexDirection: 'row',
       alignItems: 'center',
       flex: 1,
-      marginRight: 8,
+      marginRight: theme.spacing.space2,
     },
     iconContainer: {
-      marginRight: 12,
-      width: 28,
+      marginRight: theme.spacing.space3,
+      width: 38,
+      height: 38,
+      borderRadius: theme.rounded.default,
+      backgroundColor: isDestructive
+        ? theme.colors.errorContainer
+        : theme.colors.surfaceContainerLow,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -121,39 +127,38 @@ const createStyles = (theme: AppTheme, isDestructive: boolean) =>
       justifyContent: 'center',
     },
     title: {
-      fontFamily: 'Inter',
-      fontSize: 16,
+      fontFamily: theme.typography.bodyMd.fontFamily,
+      fontSize: 15,
       fontWeight: '600',
-      color: isDestructive ? theme.colors.danger : theme.colors.text,
-      lineHeight: 22,
+      color: isDestructive ? theme.colors.error : theme.colors.espressoDark,
+      lineHeight: 20,
     },
     subtitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
-      color: theme.colors.mediumGray,
+      fontWeight: '400',
+      color: theme.colors.onSurfaceVariant,
       marginTop: 2,
       lineHeight: 16,
     },
     rightContent: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 8,
+      gap: theme.spacing.space2,
     },
     badge: {
-      backgroundColor: theme.colors.pitchBackground,
-      borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      borderRadius: 9999,
-      paddingHorizontal: 8,
+      backgroundColor: theme.colors.primaryFixed,
+      borderRadius: theme.rounded.full,
+      paddingHorizontal: theme.spacing.space2,
       paddingVertical: 2,
     },
     badgeText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 11,
       fontWeight: '600',
-      color: theme.colors.primary,
+      color: theme.colors.onPrimaryFixed,
     },
     rightIcon: {
-      color: isDestructive ? theme.colors.danger : theme.colors.darkGray,
+      color: isDestructive ? theme.colors.error : theme.colors.placeholder,
     },
   });

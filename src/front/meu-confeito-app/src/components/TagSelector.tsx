@@ -41,19 +41,31 @@ export function TagSelector({
 
   const hasMaxTags = selectedTags.length >= maxTags;
 
-  const getTagColor = useCallback(
+  const getTagStyle = useCallback(
     (type?: string) => {
       const normalized = (type || '').toLowerCase();
       if (normalized === 'product') {
-        return theme.colors.tags.product;
+        return {
+          background: theme.colors.chips.primary.background,
+          color: theme.colors.chips.primary.text,
+        };
       }
       if (normalized === 'variety') {
-        return theme.colors.tags.variety;
+        return {
+          background: theme.colors.chips.accent.background,
+          color: theme.colors.chips.accent.text,
+        };
       }
       if (normalized === 'attribute') {
-        return theme.colors.tags.attribute;
+        return {
+          background: theme.colors.chips.secondary.background,
+          color: theme.colors.chips.secondary.text,
+        };
       }
-      return theme.colors.secondary;
+      return {
+        background: theme.colors.chips.secondary.background,
+        color: theme.colors.chips.secondary.text,
+      };
     },
     [theme],
   );
@@ -154,22 +166,25 @@ export function TagSelector({
       {/* Selected Tags Chips */}
       <View style={styles.chipsContainer}>
         {selectedTags.length > 0 ? (
-          selectedTags.map((tag) => (
-            <View key={tag.id} style={[styles.tagChip, { backgroundColor: getTagColor(tag.type) }]}>
-              <Text style={styles.tagChipText}>{tag.name}</Text>
-              {!isDisabled && (
-                <TouchableOpacity
-                  onPress={() => handleRemoveTag(tag.id)}
-                  style={styles.removeTagBtn}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Remover tag ${tag.name}`}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <MaterialCommunityIcons name="close" size={16} color={theme.colors.text} />
-                </TouchableOpacity>
-              )}
-            </View>
-          ))
+          selectedTags.map((tag) => {
+            const tagStyle = getTagStyle(tag.type);
+            return (
+              <View key={tag.id} style={[styles.tagChip, { backgroundColor: tagStyle.background }]}>
+                <Text style={[styles.tagChipText, { color: tagStyle.color }]}>{tag.name}</Text>
+                {!isDisabled && (
+                  <TouchableOpacity
+                    onPress={() => handleRemoveTag(tag.id)}
+                    style={styles.removeTagBtn}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Remover tag ${tag.name}`}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  >
+                    <MaterialCommunityIcons name="close" size={14} color={tagStyle.color} />
+                  </TouchableOpacity>
+                )}
+              </View>
+            );
+          })
         ) : (
           <Text style={styles.emptyTagsText}>Nenhuma tag selecionada.</Text>
         )}
@@ -231,31 +246,36 @@ export function TagSelector({
                   keyboardShouldPersistTaps="handled"
                   nestedScrollEnabled
                   style={styles.dropdownList}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      style={styles.dropdownItem}
-                      onPress={() => handleSelectTag(item)}
-                      activeOpacity={0.7}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Adicionar tag ${item.name}`}
-                    >
-                      <View style={styles.dropdownItemContent}>
-                        <View
-                          style={[
-                            styles.itemTypeIndicator,
-                            { backgroundColor: getTagColor(item.type) },
-                          ]}
+                  renderItem={({ item }) => {
+                    const itemTagStyle = getTagStyle(item.type);
+                    return (
+                      <TouchableOpacity
+                        style={styles.dropdownItem}
+                        onPress={() => handleSelectTag(item)}
+                        activeOpacity={0.7}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Adicionar tag ${item.name}`}
+                      >
+                        <View style={styles.dropdownItemContent}>
+                          <View
+                            style={[
+                              styles.itemTypeIndicator,
+                              { backgroundColor: itemTagStyle.background },
+                            ]}
+                          />
+                          <Text style={styles.dropdownItemText}>{item.name}</Text>
+                          <Text style={styles.dropdownItemTypeText}>
+                            ({item.type.toLowerCase()})
+                          </Text>
+                        </View>
+                        <MaterialCommunityIcons
+                          name="plus-circle-outline"
+                          size={22}
+                          color={theme.colors.primary}
                         />
-                        <Text style={styles.dropdownItemText}>{item.name}</Text>
-                        <Text style={styles.dropdownItemTypeText}>({item.type.toLowerCase()})</Text>
-                      </View>
-                      <MaterialCommunityIcons
-                        name="plus-circle-outline"
-                        size={22}
-                        color={theme.colors.primary}
-                      />
-                    </TouchableOpacity>
-                  )}
+                      </TouchableOpacity>
+                    );
+                  }}
                 />
               ) : isSearching ? (
                 <View style={styles.dropdownEmptyState}>
@@ -297,49 +317,52 @@ const createStyles = (theme: AppTheme) =>
       marginBottom: 6,
     },
     label: {
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
     },
     counterBadge: {
-      paddingHorizontal: 8,
+      paddingHorizontal: theme.spacing.space2,
       paddingVertical: 2,
-      borderRadius: 9999,
+      borderRadius: theme.rounded.full,
       borderWidth: 1,
     },
     counterBadgeActive: {
-      backgroundColor: theme.colors.secondary,
-      borderColor: theme.colors.secBorder,
+      backgroundColor: theme.colors.chips.secondary.background,
+      borderColor: theme.colors.outlineVariant,
     },
     counterBadgeFull: {
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.chips.primary.background,
       borderColor: theme.colors.primary,
     },
     counterBadgeText: {
-      fontFamily: 'Inter',
-      fontSize: 12,
-      fontWeight: 'bold',
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 11,
+      fontWeight: '700',
     },
     counterBadgeTextActive: {
-      color: theme.colors.primary,
+      color: theme.colors.chips.secondary.text,
     },
     counterBadgeTextFull: {
-      color: theme.colors.primary,
+      color: theme.colors.chips.primary.text,
     },
     helperText: {
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 13,
-      color: theme.colors.placeholder,
-      marginBottom: 12,
+      color: theme.colors.onSurfaceVariant,
+      marginBottom: theme.spacing.space3,
     },
     chipsContainer: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 8,
-      marginBottom: 14,
+      gap: theme.spacing.space2,
+      marginBottom: theme.spacing.space3,
       minHeight: 36,
       alignItems: 'center',
     },
     emptyTagsText: {
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 13,
       color: theme.colors.placeholder,
       fontStyle: 'italic',
@@ -347,26 +370,23 @@ const createStyles = (theme: AppTheme) =>
     tagChip: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: 6,
+      paddingVertical: 4,
       paddingLeft: 12,
       paddingRight: 6,
-      borderRadius: 9999,
-      borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderRadius: theme.rounded.full,
       gap: 6,
     },
     tagChipText: {
-      fontFamily: 'Inter',
-      fontSize: 13,
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 12,
       fontWeight: '600',
-      color: theme.colors.text,
     },
     removeTagBtn: {
-      minWidth: 28,
-      minHeight: 28,
+      minWidth: 24,
+      minHeight: 24,
       alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: 14,
+      borderRadius: 12,
     },
     searchSection: {
       position: 'relative',
@@ -375,20 +395,21 @@ const createStyles = (theme: AppTheme) =>
     inputWrapper: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
-      borderColor: theme.colors.lightGray,
-      borderRadius: 8,
-      paddingHorizontal: 10,
-      minHeight: 48,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.default,
+      paddingHorizontal: theme.spacing.space3,
+      minHeight: theme.spacing.touchable,
     },
     searchIcon: {
       marginRight: 6,
     },
     searchInput: {
       flex: 1,
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
       minHeight: 44,
     },
     loadingSpinner: {
@@ -402,13 +423,14 @@ const createStyles = (theme: AppTheme) =>
       marginLeft: 4,
     },
     dropdownContainer: {
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      borderRadius: 8,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.md,
       marginTop: 4,
       maxHeight: 200,
       overflow: 'hidden',
+      ...theme.shadows.modal,
     },
     dropdownList: {
       maxHeight: 200,
@@ -417,11 +439,11 @@ const createStyles = (theme: AppTheme) =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingVertical: 12,
-      paddingHorizontal: 14,
-      minHeight: 48,
+      paddingVertical: theme.spacing.space3,
+      paddingHorizontal: theme.spacing.space4,
+      minHeight: theme.spacing.touchable,
       borderBottomWidth: 1,
-      borderBottomColor: theme.colors.lightGray,
+      borderBottomColor: theme.colors.outlineVariant,
     },
     dropdownItemContent: {
       flexDirection: 'row',
@@ -435,13 +457,13 @@ const createStyles = (theme: AppTheme) =>
       borderRadius: 5,
     },
     dropdownItemText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
     },
     dropdownItemTypeText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
       color: theme.colors.placeholder,
     },
@@ -451,7 +473,7 @@ const createStyles = (theme: AppTheme) =>
       justifyContent: 'center',
     },
     dropdownEmptyText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 13,
       color: theme.colors.placeholder,
       fontStyle: 'italic',
@@ -459,18 +481,18 @@ const createStyles = (theme: AppTheme) =>
     limitBanner: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.surfaceContainerLow,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      borderRadius: 8,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.default,
       paddingVertical: 10,
       paddingHorizontal: 14,
       gap: 8,
     },
     limitBannerText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 13,
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
       fontWeight: '500',
     },
   });

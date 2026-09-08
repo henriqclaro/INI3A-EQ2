@@ -82,43 +82,51 @@ export default function EditRecipeScreen() {
           </View>
         ) : !recipe || recipeError ? (
           <View style={styles.centerContainer}>
-            <MaterialCommunityIcons
-              name="book-remove-outline"
-              size={56}
-              color={theme.colors.placeholder}
-            />
-            <Text style={styles.errorTitle}>Receita não encontrada</Text>
-            <Text style={styles.errorSubtitle}>
-              Não foi possível encontrar a receita para edição.
-            </Text>
-            <TouchableOpacity
-              style={styles.actionBtn}
-              onPress={() => router.back()}
-              accessibilityRole="button"
-              accessibilityLabel="Voltar"
-            >
-              <Text style={styles.actionBtnText}>Voltar</Text>
-            </TouchableOpacity>
+            <View style={styles.errorCard}>
+              <View style={styles.iconCircle}>
+                <MaterialCommunityIcons
+                  name="book-remove-outline"
+                  size={40}
+                  color={theme.colors.onSurfaceVariant}
+                />
+              </View>
+              <Text style={styles.errorTitle}>Receita não encontrada</Text>
+              <Text style={styles.errorSubtitle}>
+                Não foi possível encontrar a receita para edição.
+              </Text>
+              <TouchableOpacity
+                style={styles.actionBtn}
+                onPress={() => router.back()}
+                accessibilityRole="button"
+                accessibilityLabel="Voltar"
+              >
+                <Text style={styles.actionBtnText}>Voltar</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ) : !isOwner ? (
           <View style={styles.centerContainer}>
-            <MaterialCommunityIcons
-              name="shield-lock-outline"
-              size={56}
-              color={theme.colors.danger || theme.colors.primary}
-            />
-            <Text style={styles.errorTitle}>Acesso Negado</Text>
-            <Text style={styles.errorSubtitle}>
-              Você não tem permissão para editar esta receita.
-            </Text>
-            <TouchableOpacity
-              style={styles.actionBtn}
-              onPress={() => router.back()}
-              accessibilityRole="button"
-              accessibilityLabel="Voltar"
-            >
-              <Text style={styles.actionBtnText}>Voltar</Text>
-            </TouchableOpacity>
+            <View style={styles.errorCard}>
+              <View style={styles.iconCircle}>
+                <MaterialCommunityIcons
+                  name="shield-lock-outline"
+                  size={40}
+                  color={theme.colors.error}
+                />
+              </View>
+              <Text style={styles.errorTitle}>Acesso Negado</Text>
+              <Text style={styles.errorSubtitle}>
+                Você não tem permissão para editar esta receita.
+              </Text>
+              <TouchableOpacity
+                style={styles.actionBtn}
+                onPress={() => router.back()}
+                accessibilityRole="button"
+                accessibilityLabel="Voltar"
+              >
+                <Text style={styles.actionBtnText}>Voltar</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ) : (
           <RecipeForm
@@ -145,41 +153,64 @@ const createStyles = (theme: AppTheme) =>
       justifyContent: 'center',
       alignItems: 'center',
       paddingHorizontal: 24,
+    },
+    errorCard: {
+      width: '100%',
+      maxWidth: 400,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderRadius: theme.rounded.lg,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      padding: 24,
+      alignItems: 'center',
       gap: 12,
+      ...theme.shadows.soft,
+    },
+    iconCircle: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 4,
     },
     loadingText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
-      color: theme.colors.text,
+      color: theme.colors.onSurfaceVariant,
       marginTop: 8,
     },
     errorTitle: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 22,
       fontWeight: 'bold',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
       textAlign: 'center',
     },
     errorSubtitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
-      color: theme.colors.text,
-      opacity: 0.8,
+      color: theme.colors.onSurfaceVariant,
       textAlign: 'center',
+      lineHeight: 20,
     },
     actionBtn: {
       marginTop: 8,
       backgroundColor: theme.colors.primary,
       paddingVertical: 12,
       paddingHorizontal: 24,
-      borderRadius: 8,
+      borderRadius: theme.rounded.default,
       minHeight: 48,
       alignItems: 'center',
       justifyContent: 'center',
+      ...theme.shadows.soft,
     },
     actionBtnText: {
-      color: theme.colors.secondaryText,
-      fontFamily: 'Inter',
+      color: theme.colors.onPrimary,
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 15,
       fontWeight: '600',
     },

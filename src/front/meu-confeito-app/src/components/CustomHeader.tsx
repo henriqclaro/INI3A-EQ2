@@ -48,7 +48,7 @@ export const CustomHeader = ({ navigation, route, options, back }: CustomHeaderP
     }
   };
 
-  const backColor = options?.headerTintColor ?? theme.colors.text;
+  const backColor = options?.headerTintColor ?? theme.colors.espressoDark;
 
   return (
     <Appbar.Header mode="small" elevated={false} style={[styles.header, options?.headerStyle]}>
@@ -80,9 +80,9 @@ export const CustomHeader = ({ navigation, route, options, back }: CustomHeaderP
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     header: {
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surface,
       borderBottomWidth: 1,
-      borderBottomColor: theme.colors.lightGray,
+      borderBottomColor: theme.colors.outlineVariant,
       height: 64,
       justifyContent: 'center',
     },
@@ -96,14 +96,15 @@ const createStyles = (theme: AppTheme) =>
       marginLeft: 4,
     },
     headerTitleContainerNoBack: {
-      marginLeft: 12,
+      marginLeft: 16,
     },
     headerText: {
-      fontSize: 28,
-      lineHeight: 34,
-      fontFamily: 'Playfair Display SC',
-      fontWeight: 'bold',
-      color: theme.colors.primary,
+      fontSize: 22,
+      lineHeight: 28,
+      fontFamily: theme.typography.headlineMd.fontFamily,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
+      letterSpacing: 0.5,
       textAlign: 'left',
     },
     headerRight: {

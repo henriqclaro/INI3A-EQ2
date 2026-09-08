@@ -83,7 +83,11 @@ export default function SavedRecipesScreen() {
             onChangeText={setSearch}
             containerStyle={styles.searchInput}
             leftIcon={
-              <MaterialCommunityIcons name="magnify" size={22} color={theme.colors.placeholder} />
+              <MaterialCommunityIcons
+                name="magnify"
+                size={22}
+                color={theme.colors.onSurfaceVariant}
+              />
             }
             isClearable={true}
             onClear={() => setSearch('')}
@@ -216,18 +220,18 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 6,
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.surfaceContainerLow,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
       paddingHorizontal: 10,
       paddingVertical: 4,
-      borderRadius: 9999,
+      borderRadius: theme.rounded.full,
     },
     badgeText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 12,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
     },
     scrollView: {
       flex: 1,
@@ -256,26 +260,25 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       width: 80,
       height: 80,
       borderRadius: 40,
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.surfaceContainerLow,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: 16,
     },
     emptyTitle: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 20,
       fontWeight: 'bold',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
       textAlign: 'center',
       marginBottom: 8,
     },
     emptySubtitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
-      color: theme.colors.text,
-      opacity: 0.75,
+      color: theme.colors.onSurfaceVariant,
       textAlign: 'center',
       lineHeight: 20,
       marginBottom: 24,
@@ -292,7 +295,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       paddingHorizontal: 16,
     },
     clearSearchText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
       fontWeight: '600',
       color: theme.colors.primary,

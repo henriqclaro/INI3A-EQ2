@@ -238,15 +238,15 @@ export default function RecipeScreen() {
         return {
           label: 'Pública',
           icon: 'earth' as const,
-          color: theme.colors.success || '#2E7D32',
-          bgColor: '#E8F5E9',
+          color: theme.colors.tertiary,
+          bgColor: theme.colors.tertiaryContainer,
         };
       case 'ARCHIVED':
         return {
           label: 'Arquivada',
           icon: 'archive-outline' as const,
-          color: theme.colors.placeholder,
-          bgColor: theme.colors.lightGray,
+          color: theme.colors.onSurfaceVariant,
+          bgColor: theme.colors.surfaceContainerHigh,
         };
       case 'DRAFT':
       default:
@@ -254,7 +254,7 @@ export default function RecipeScreen() {
           label: 'Rascunho',
           icon: 'file-document-edit-outline' as const,
           color: theme.colors.primary,
-          bgColor: theme.colors.secondary,
+          bgColor: theme.colors.primaryContainer,
         };
     }
   };
@@ -467,7 +467,7 @@ export default function RecipeScreen() {
                     <MaterialCommunityIcons
                       name="pot-steam"
                       size={20}
-                      color={theme.colors.secondaryText}
+                      color={theme.colors.onPrimary}
                     />
                     <Text style={styles.btnActionTextProduce}>Produzir Receita</Text>
                   </TouchableOpacity>
@@ -507,7 +507,7 @@ export default function RecipeScreen() {
                         <MaterialCommunityIcons
                           name="lock-outline"
                           size={18}
-                          color={theme.colors.text}
+                          color={theme.colors.onSurfaceVariant}
                         />
                         <Text style={styles.btnActionTextDraft}>Despublicar</Text>
                       </TouchableOpacity>
@@ -523,7 +523,7 @@ export default function RecipeScreen() {
                         <MaterialCommunityIcons
                           name="earth"
                           size={18}
-                          color={theme.colors.secondaryText}
+                          color={theme.colors.onTertiary}
                         />
                         <Text style={styles.btnActionTextPublish}>Publicar</Text>
                       </TouchableOpacity>
@@ -558,7 +558,7 @@ export default function RecipeScreen() {
                         <MaterialCommunityIcons
                           name="archive-arrow-down-outline"
                           size={18}
-                          color={theme.colors.text}
+                          color={theme.colors.onSurfaceVariant}
                         />
                         <Text style={styles.btnActionTextArchive}>Arquivar</Text>
                       </TouchableOpacity>
@@ -638,7 +638,7 @@ export default function RecipeScreen() {
                       <MaterialCommunityIcons
                         name="pot-steam"
                         size={18}
-                        color={theme.colors.secondaryText}
+                        color={theme.colors.onPrimary}
                       />
                       <Text style={styles.btnActionTextProduceGuest}>Produzir</Text>
                     </TouchableOpacity>
@@ -661,7 +661,9 @@ export default function RecipeScreen() {
                   <MaterialCommunityIcons
                     name="book-open-outline"
                     size={18}
-                    color={viewMode === 'recipe' ? theme.colors.secondaryText : theme.colors.text}
+                    color={
+                      viewMode === 'recipe' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant
+                    }
                   />
                   <Text
                     style={[
@@ -686,7 +688,11 @@ export default function RecipeScreen() {
                   <MaterialCommunityIcons
                     name="cash-multiple"
                     size={18}
-                    color={viewMode === 'pricing' ? theme.colors.secondaryText : theme.colors.text}
+                    color={
+                      viewMode === 'pricing'
+                        ? theme.colors.onPrimary
+                        : theme.colors.onSurfaceVariant
+                    }
                   />
                   <Text
                     style={[
@@ -747,7 +753,7 @@ export default function RecipeScreen() {
                                   <MaterialCommunityIcons
                                     name="check"
                                     size={14}
-                                    color={theme.colors.secondaryText}
+                                    color={theme.colors.onPrimary}
                                   />
                                 )}
                               </View>
@@ -1029,32 +1035,33 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       gap: 12,
     },
     notFoundTitle: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 22,
       fontWeight: 'bold',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
       textAlign: 'center',
     },
     notFoundSubtitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
-      color: theme.colors.text,
-      opacity: 0.8,
+      color: theme.colors.onSurfaceVariant,
       textAlign: 'center',
+      lineHeight: 20,
     },
     backButton: {
       marginTop: 12,
       backgroundColor: theme.colors.primary,
       paddingVertical: 12,
       paddingHorizontal: 24,
-      borderRadius: 8,
+      borderRadius: theme.rounded.default,
       minHeight: 48,
       alignItems: 'center',
       justifyContent: 'center',
+      ...theme.shadows.soft,
     },
     backButtonText: {
-      color: theme.colors.secondaryText,
-      fontFamily: 'Inter',
+      color: theme.colors.onPrimary,
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 15,
       fontWeight: '600',
     },
@@ -1063,18 +1070,18 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     heroImage: {
       width: '100%',
       aspectRatio: 16 / 9,
-      borderRadius: 16,
+      borderRadius: theme.rounded.lg,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
       marginBottom: 20,
     },
     heroPlaceholder: {
       width: '100%',
       aspectRatio: 16 / 9,
-      borderRadius: 16,
+      borderRadius: theme.rounded.lg,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      backgroundColor: theme.colors.pitchBackground,
+      borderColor: theme.colors.outlineVariant,
+      backgroundColor: theme.colors.surfaceContainerLow,
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: 20,
@@ -1084,23 +1091,22 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       width: 72,
       height: 72,
       borderRadius: 36,
-      backgroundColor: theme.colors.secondary,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       alignItems: 'center',
       justifyContent: 'center',
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
     },
     heroPlaceholderTitle: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 18,
       fontWeight: 'bold',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
     },
     heroPlaceholderSubtitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
-      color: theme.colors.text,
-      opacity: 0.7,
+      color: theme.colors.onSurfaceVariant,
     },
 
     // Header Details
@@ -1116,8 +1122,8 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     },
     primaryTitle: {
       flex: 1,
-      color: theme.colors.text,
-      fontFamily: 'Playfair Display SC',
+      color: theme.colors.espressoDark,
+      fontFamily: theme.typography.headlineLg.fontFamily,
       fontSize: 26,
       lineHeight: 32,
       fontWeight: 'bold',
@@ -1127,11 +1133,11 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       alignItems: 'center',
       paddingVertical: 5,
       paddingHorizontal: 10,
-      borderRadius: 9999,
+      borderRadius: theme.rounded.full,
       gap: 5,
     },
     statusBadgeText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 12,
       fontWeight: '700',
     },
@@ -1155,13 +1161,14 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       padding: 8,
     },
     ownerControlCard: {
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 14,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderRadius: theme.rounded.lg,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      padding: 14,
+      borderColor: theme.colors.outlineVariant,
+      padding: 16,
       marginBottom: 20,
       gap: 12,
+      ...theme.shadows.soft,
     },
     ownerControlHeader: {
       flexDirection: 'row',
@@ -1174,10 +1181,10 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       gap: 6,
     },
     ownerControlTitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
       fontWeight: 'bold',
-      color: theme.colors.primary,
+      color: theme.colors.espressoDark,
     },
     ownerActionButtons: {
       flexDirection: isSmallScreen ? 'column' : 'row',
@@ -1189,15 +1196,16 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: theme.colors.primary,
-      borderRadius: 8,
+      borderRadius: theme.rounded.default,
       paddingHorizontal: 16,
       gap: 8,
+      ...theme.shadows.soft,
     },
     btnActionTextProduce: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
       fontWeight: '700',
-      color: theme.colors.secondaryText,
+      color: theme.colors.onPrimary,
     },
     btnActionEdit: {
       flex: 1,
@@ -1205,15 +1213,15 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
-      borderColor: theme.colors.primary,
-      borderRadius: 8,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.default,
       paddingHorizontal: 12,
       gap: 6,
     },
     btnActionTextEdit: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
       color: theme.colors.primary,
@@ -1224,16 +1232,17 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: theme.colors.primary,
-      borderRadius: 8,
+      backgroundColor: theme.colors.tertiary,
+      borderRadius: theme.rounded.default,
       paddingHorizontal: 12,
       gap: 6,
+      ...theme.shadows.soft,
     },
     btnActionTextPublish: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.secondaryText,
+      color: theme.colors.onTertiary,
     },
     btnActionDraft: {
       flex: 1.2,
@@ -1241,18 +1250,18 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      borderRadius: 8,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.default,
       paddingHorizontal: 12,
       gap: 6,
     },
     btnActionTextDraft: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
     },
     btnActionArchive: {
       flex: 1,
@@ -1260,18 +1269,18 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
-      borderColor: theme.colors.lightGray,
-      borderRadius: 8,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.default,
       paddingHorizontal: 12,
       gap: 6,
     },
     btnActionTextArchive: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
     },
     btnActionUnarchive: {
       flex: 1,
@@ -1279,13 +1288,13 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: theme.colors.secondary,
-      borderRadius: 8,
+      backgroundColor: theme.colors.primaryContainer,
+      borderRadius: theme.rounded.default,
       paddingHorizontal: 12,
       gap: 6,
     },
     btnActionTextUnarchive: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
       color: theme.colors.primary,
@@ -1296,42 +1305,43 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       alignItems: 'center',
       justifyContent: 'center',
       borderTopWidth: 1,
-      borderTopColor: theme.colors.secBorder,
+      borderTopColor: theme.colors.outlineVariant,
       paddingTop: 8,
       gap: 6,
     },
     historyLinkText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
       color: theme.colors.primary,
     },
     guestProduceCard: {
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 14,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderRadius: theme.rounded.lg,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      padding: 14,
+      borderColor: theme.colors.outlineVariant,
+      padding: 16,
       marginBottom: 20,
       flexDirection: isSmallScreen ? 'column' : 'row',
       alignItems: isSmallScreen ? 'stretch' : 'center',
       justifyContent: 'space-between',
       gap: 12,
+      ...theme.shadows.soft,
     },
     guestProduceInfo: {
       flex: 1,
     },
     guestProduceTitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
       fontWeight: 'bold',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
       marginBottom: 2,
     },
     guestProduceSubtitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
-      color: theme.colors.lightGray,
+      color: theme.colors.onSurfaceVariant,
     },
     guestProduceButtons: {
       flexDirection: 'row',
@@ -1343,19 +1353,19 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
-      borderColor: theme.colors.primary,
-      borderRadius: 8,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.default,
       paddingHorizontal: 14,
       gap: 6,
     },
     btnActionSaveGuestActive: {
-      backgroundColor: theme.colors.secondary,
-      borderColor: theme.colors.secBorder,
+      backgroundColor: theme.colors.primaryContainer,
+      borderColor: theme.colors.primary,
     },
     btnActionTextSaveGuest: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
       color: theme.colors.primary,
@@ -1366,15 +1376,16 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: theme.colors.primary,
-      borderRadius: 8,
+      borderRadius: theme.rounded.default,
       paddingHorizontal: 16,
       gap: 6,
+      ...theme.shadows.soft,
     },
     btnActionTextProduceGuest: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.secondaryText,
+      color: theme.colors.onPrimary,
     },
     metaRow: {
       flexDirection: 'row',
@@ -1384,19 +1395,19 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     metaBadge: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.surfaceContainerLow,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
       paddingVertical: 5,
       paddingHorizontal: 12,
-      borderRadius: 9999,
+      borderRadius: theme.rounded.full,
       gap: 6,
     },
     metaBadgeText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.onSurfaceVariant,
     },
     tagsRow: {
       flexDirection: 'row',
@@ -1407,22 +1418,22 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     tagPill: {
       paddingVertical: 4,
       paddingHorizontal: 10,
-      borderRadius: 9999,
+      borderRadius: theme.rounded.full,
     },
     tagPillText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 12,
-      fontWeight: 'bold',
-      color: theme.colors.text,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
     },
 
     // Segmented Mode Switcher
     segmentedControl: {
       flexDirection: 'row',
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLow,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      borderRadius: 12,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.md,
       padding: 4,
       marginBottom: 20,
       gap: 6,
@@ -1433,21 +1444,22 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: 8,
+      borderRadius: theme.rounded.sm,
       gap: 8,
       paddingHorizontal: 8,
     },
     segmentButtonActive: {
       backgroundColor: theme.colors.primary,
+      ...theme.shadows.soft,
     },
     segmentButtonText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: isSmallScreen ? 12 : 14,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.onSurfaceVariant,
     },
     segmentButtonTextActive: {
-      color: theme.colors.secondaryText,
+      color: theme.colors.onPrimary,
     },
 
     modeContainer: {
@@ -1457,32 +1469,33 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
 
     // Cards (Flat-First)
     cardBox: {
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 16,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderRadius: theme.rounded.lg,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
       padding: 18,
-      gap: 12,
+      gap: 14,
+      ...theme.shadows.soft,
     },
     cardHeader: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 10,
       borderBottomWidth: 1,
-      borderBottomColor: theme.colors.secBorder,
+      borderBottomColor: theme.colors.outlineVariant,
       paddingBottom: 10,
     },
     cardTitle: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 19,
       fontWeight: 'bold',
-      color: theme.colors.primary,
+      color: theme.colors.espressoDark,
     },
     emptyCardText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 14,
       fontStyle: 'italic',
-      color: theme.colors.placeholder,
+      color: theme.colors.onSurfaceVariant,
       textAlign: 'center',
       paddingVertical: 12,
     },
@@ -1495,7 +1508,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       minHeight: 48,
       paddingVertical: 8,
       borderBottomWidth: 1,
-      borderBottomColor: theme.colors.lightGray,
+      borderBottomColor: theme.colors.outlineVariant,
     },
     ingredientLeft: {
       flexDirection: 'row',
@@ -1517,17 +1530,18 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       width: 22,
       height: 22,
       borderWidth: 1.5,
-      borderColor: theme.colors.primary,
-      borderRadius: 6,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.sm,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.surfaceContainerLowest,
     },
     checkedCheckbox: {
       backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
     },
     ingredientName: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
       color: theme.colors.text,
       flexShrink: 1,
@@ -1537,30 +1551,30 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       opacity: 0.5,
     },
     subRecipeBadge: {
-      backgroundColor: theme.colors.secondary,
+      backgroundColor: theme.colors.parchment,
       paddingHorizontal: 8,
       paddingVertical: 2,
-      borderRadius: 9999,
+      borderRadius: theme.rounded.full,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
     },
     subRecipeBadgeText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 10,
       fontWeight: '700',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
     },
     ingredientNotes: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
-      color: theme.colors.placeholder,
+      color: theme.colors.onSurfaceVariant,
       marginTop: 2,
     },
     ingredientQuantity: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
       fontWeight: 'bold',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
     },
 
     // Preparation Step Row
@@ -1574,7 +1588,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       width: 28,
       height: 28,
       borderRadius: 14,
-      backgroundColor: theme.colors.secondary,
+      backgroundColor: theme.colors.surfaceContainerLow,
       alignItems: 'center',
       justifyContent: 'center',
       marginTop: 2,
@@ -1582,14 +1596,14 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       borderColor: theme.colors.outlineVariant,
     },
     stepText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontWeight: 'bold',
       fontSize: 14,
       color: theme.colors.primary,
     },
     stepContent: {
       flex: 1,
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
       lineHeight: 22,
       color: theme.colors.text,
@@ -1602,46 +1616,46 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       alignItems: 'center',
       paddingVertical: 10,
       borderBottomWidth: 1,
-      borderBottomColor: theme.colors.lightGray,
+      borderBottomColor: theme.colors.outlineVariant,
     },
     pricingLeft: {
       flex: 1,
     },
     pricingItemName: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
       color: theme.colors.text,
     },
     pricingWarningText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 11,
-      color: theme.colors.primary,
+      color: theme.colors.error,
       marginTop: 2,
     },
     pricingItemValue: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
       fontWeight: 'bold',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
       marginLeft: 10,
     },
     pricingItemValueMissing: {
-      color: theme.colors.placeholder,
+      color: theme.colors.onSurfaceVariant,
     },
     totalRow: {
       borderTopWidth: 1.5,
-      borderTopColor: theme.colors.secBorder,
+      borderTopColor: theme.colors.outlineVariant,
       paddingTop: 12,
       marginTop: 4,
     },
     totalLabel: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 15,
       fontWeight: 'bold',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
     },
     totalValue: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 16,
       fontWeight: 'bold',
       color: theme.colors.primary,
@@ -1649,12 +1663,13 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
 
     // Suggested Price Card
     suggestionHighlightCard: {
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 16,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderRadius: theme.rounded.lg,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
       padding: 18,
-      gap: 12,
+      gap: 14,
+      ...theme.shadows.soft,
     },
     markupDetailsRow: {
       flexDirection: 'row',
@@ -1663,50 +1678,48 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       paddingVertical: 6,
     },
     markupLabel: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
     },
     markupValueHighlight: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
       fontWeight: 'bold',
-      color: theme.colors.primary,
+      color: theme.colors.tertiary,
     },
     priceContainer: {
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.parchment,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      borderRadius: 12,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.md,
       padding: 16,
       alignItems: 'center',
       gap: 4,
       marginTop: 4,
     },
     priceSubtitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 13,
-      color: theme.colors.text,
-      opacity: 0.8,
+      color: theme.colors.onSurfaceVariant,
     },
     priceValueText: {
-      fontFamily: 'Playfair Display SC',
-      fontSize: 26,
+      fontFamily: theme.typography.headlineLg.fontFamily,
+      fontSize: 28,
       fontWeight: 'bold',
-      color: theme.colors.primary,
+      color: theme.colors.tertiary,
     },
     priceSubContainer: {
       alignItems: 'center',
       paddingTop: 4,
     },
     priceSubText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 13,
-      color: theme.colors.text,
-      opacity: 0.85,
+      color: theme.colors.onSurfaceVariant,
     },
     priceSubTextBold: {
       fontWeight: 'bold',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
     },
   });

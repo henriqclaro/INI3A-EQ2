@@ -31,12 +31,15 @@ export const Input = ({
   rightIcon,
   isClearable,
   onClear,
+  onFocus,
+  onBlur,
   ...rest
 }: InputProps) => {
   const { theme } = useThemeMode();
 
   const [internalValue, setInternalValue] = useState(rest.defaultValue?.toString() || '');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   const isControlled = value !== undefined;
   const currentValue = isControlled ? value?.toString() || '' : internalValue;
@@ -58,7 +61,21 @@ export const Input = ({
     }
   };
 
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const handleFocus = (event: Parameters<NonNullable<TextInputProps['onFocus']>>[0]) => {
+    setIsFocused(true);
+    if (onFocus) {
+      onFocus(event);
+    }
+  };
+
+  const handleBlur = (event: Parameters<NonNullable<TextInputProps['onBlur']>>[0]) => {
+    setIsFocused(false);
+    if (onBlur) {
+      onBlur(event);
+    }
+  };
+
+  const styles = useMemo(() => createStyles(theme, isFocused), [theme, isFocused]);
 
   const hasClearButton = Boolean(isClearable && currentValue.length > 0 && !rest.secureTextEntry);
 
@@ -69,6 +86,8 @@ export const Input = ({
       <TextInput
         value={currentValue}
         onChangeText={handleTextChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         style={[styles.input, style]}
         placeholderTextColor={rest.placeholderTextColor || theme.colors.placeholder}
         {...rest}
@@ -86,7 +105,7 @@ export const Input = ({
           <MaterialCommunityIcons
             name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
             size={22}
-            color={theme.colors.text}
+            color={theme.colors.onSurfaceVariant}
           />
         </TouchableOpacity>
       )}
@@ -114,36 +133,38 @@ export const Input = ({
   );
 };
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = (theme: AppTheme, isFocused: boolean) =>
   StyleSheet.create({
     container: {
       width: 275,
-      height: 52,
+      minHeight: theme.spacing.touchable,
+      height: 48,
       borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 10,
+      borderColor: isFocused ? theme.colors.primary : theme.colors.outlineVariant,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderRadius: theme.rounded.default,
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: 12,
-      margin: 12,
+      paddingHorizontal: theme.spacing.space3,
+      margin: theme.spacing.space3,
     },
     input: {
       flex: 1,
       height: '100%',
-      fontSize: 16,
-      color: theme.colors.text,
+      fontFamily: theme.typography.bodyMd.fontFamily,
+      fontSize: 15,
+      color: theme.colors.onSurface,
       paddingVertical: 0,
     },
     iconSlot: {
       justifyContent: 'center',
       alignItems: 'center',
-      marginRight: 8,
+      marginRight: theme.spacing.space2,
     },
     actionButton: {
       alignSelf: 'stretch',
       justifyContent: 'center',
       alignItems: 'center',
-      paddingLeft: 8,
+      paddingLeft: theme.spacing.space2,
     },
   });

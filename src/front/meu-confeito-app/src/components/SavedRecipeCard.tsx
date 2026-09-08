@@ -50,11 +50,24 @@ export const SavedRecipeCard = ({
     if (!Array.isArray(item.recipe.tags)) return [];
     return item.recipe.tags.map((t) => {
       const tagType = (t?.tag?.type || '').toLowerCase();
-      const backgroundColor =
-        theme.colors.tags[tagType as keyof typeof theme.colors.tags] || theme.colors.secondary;
+      let backgroundColor: string = theme.colors.chips.secondary.background;
+      let textColor: string = theme.colors.chips.secondary.text;
+
+      if (tagType === 'product') {
+        backgroundColor = theme.colors.chips.primary.background;
+        textColor = theme.colors.chips.primary.text;
+      } else if (tagType === 'variety') {
+        backgroundColor = theme.colors.chips.accent.background;
+        textColor = theme.colors.chips.accent.text;
+      } else if (tagType === 'attribute') {
+        backgroundColor = theme.colors.chips.secondary.background;
+        textColor = theme.colors.chips.secondary.text;
+      }
+
       return {
         ...t,
         backgroundColor,
+        textColor,
       };
     });
   }, [item.recipe.tags, theme]);
@@ -100,7 +113,9 @@ export const SavedRecipeCard = ({
                 key={tagObj?.tag?.id || tagObj?.tag?.name}
                 style={[styles.tagBadge, { backgroundColor: tagObj.backgroundColor }]}
               >
-                <Text style={styles.tagText}>{tagObj?.tag?.name}</Text>
+                <Text style={[styles.tagText, { color: tagObj.textColor }]}>
+                  {tagObj?.tag?.name}
+                </Text>
               </View>
             ))}
             {styledTags.length > 3 && (
@@ -113,7 +128,11 @@ export const SavedRecipeCard = ({
           <View style={styles.metaContainer}>
             {item.recipe.prepTimeMinutes > 0 && (
               <View style={styles.prepTimeBadge}>
-                <MaterialCommunityIcons name="timer-outline" size={14} color={theme.colors.text} />
+                <MaterialCommunityIcons
+                  name="timer-outline"
+                  size={14}
+                  color={theme.colors.onSurfaceVariant}
+                />
                 <Text style={styles.metaText}>{item.recipe.prepTimeMinutes} min</Text>
               </View>
             )}
@@ -140,13 +159,13 @@ export const SavedRecipeCard = ({
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             {isRemoving ? (
-              <ActivityIndicator size="small" color={theme.colors.danger} />
+              <ActivityIndicator size="small" color={theme.colors.error} />
             ) : (
               <>
                 <MaterialCommunityIcons
                   name="bookmark-remove-outline"
                   size={18}
-                  color={theme.colors.danger}
+                  color={theme.colors.error}
                 />
                 <Text style={styles.removeBtnText}>Remover</Text>
               </>
@@ -162,18 +181,19 @@ const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     card: {
       flexDirection: 'row',
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      borderRadius: 14,
-      padding: 12,
-      gap: 12,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.lg,
+      padding: theme.spacing.space3,
+      gap: theme.spacing.space3,
       alignItems: 'center',
+      ...theme.shadows.soft,
     },
     imageWrapper: {
       width: 90,
       height: 90,
-      borderRadius: 10,
+      borderRadius: theme.rounded.default,
       overflow: 'hidden',
     },
     image: {
@@ -183,12 +203,12 @@ const createStyles = (theme: AppTheme) =>
     placeholder: {
       width: '100%',
       height: '100%',
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLow,
       alignItems: 'center',
       justifyContent: 'center',
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      borderRadius: 10,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.default,
     },
     content: {
       flex: 1,
@@ -201,10 +221,10 @@ const createStyles = (theme: AppTheme) =>
       justifyContent: 'space-between',
     },
     title: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 16,
-      fontWeight: 'bold',
-      color: theme.colors.text,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
       flex: 1,
     },
     tagsContainer: {
@@ -214,18 +234,17 @@ const createStyles = (theme: AppTheme) =>
       alignItems: 'center',
     },
     tagBadge: {
-      paddingHorizontal: 6,
+      paddingHorizontal: 8,
       paddingVertical: 2,
-      borderRadius: 4,
+      borderRadius: theme.rounded.full,
     },
     tagText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 10,
       fontWeight: '600',
-      color: theme.colors.text,
     },
     tagMoreText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 10,
       color: theme.colors.placeholder,
     },
@@ -245,10 +264,9 @@ const createStyles = (theme: AppTheme) =>
       gap: 4,
     },
     metaText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
-      color: theme.colors.text,
-      opacity: 0.85,
+      color: theme.colors.onSurfaceVariant,
     },
     dateBadge: {
       flexDirection: 'row',
@@ -256,7 +274,7 @@ const createStyles = (theme: AppTheme) =>
       gap: 4,
     },
     dateText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 11,
       color: theme.colors.placeholder,
     },
@@ -266,17 +284,17 @@ const createStyles = (theme: AppTheme) =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      paddingHorizontal: 8,
+      paddingHorizontal: theme.spacing.space2,
       gap: 4,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      borderRadius: 8,
-      backgroundColor: theme.colors.background,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.default,
+      backgroundColor: theme.colors.surfaceContainerLow,
     },
     removeBtnText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 12,
       fontWeight: '600',
-      color: theme.colors.danger,
+      color: theme.colors.error,
     },
   });

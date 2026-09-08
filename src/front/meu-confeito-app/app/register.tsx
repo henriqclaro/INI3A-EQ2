@@ -231,7 +231,9 @@ export default function RegisterScreen() {
                   <MaterialCommunityIcons
                     name="chef-hat"
                     size={20}
-                    color={role === 'BAKER' ? theme.colors.secondaryText : theme.colors.text}
+                    color={
+                      role === 'BAKER' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant
+                    }
                   />
                   <Text
                     style={[styles.roleButtonText, role === 'BAKER' && styles.roleButtonTextActive]}
@@ -248,7 +250,9 @@ export default function RegisterScreen() {
                   <MaterialCommunityIcons
                     name="account-outline"
                     size={20}
-                    color={role === 'CUSTOMER' ? theme.colors.secondaryText : theme.colors.text}
+                    color={
+                      role === 'CUSTOMER' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant
+                    }
                   />
                   <Text
                     style={[
@@ -273,7 +277,7 @@ export default function RegisterScreen() {
                 <MaterialCommunityIcons
                   name="account-circle-outline"
                   size={24}
-                  color={theme.colors.text}
+                  color={theme.colors.espressoDark}
                   style={styles.icon}
                 />
                 <Text style={styles.title}>Dados pessoais</Text>
@@ -289,7 +293,7 @@ export default function RegisterScreen() {
                     <MaterialCommunityIcons
                       name="check-circle-outline"
                       size={16}
-                      color={theme.colors.success}
+                      color={theme.colors.tertiary}
                     />
                   )}
                 </View>
@@ -306,7 +310,7 @@ export default function RegisterScreen() {
                     touched.name && isNameValid && styles.inputSuccess,
                   ]}
                   style={styles.inputText}
-                  placeholderTextColor={theme.colors.placeholder}
+                  placeholderTextColor={theme.colors.onSurfaceVariant}
                 />
                 <View style={styles.helperRow}>
                   {nameError ? (
@@ -314,7 +318,7 @@ export default function RegisterScreen() {
                       <MaterialCommunityIcons
                         name="alert-circle-outline"
                         size={14}
-                        color={theme.colors.primary}
+                        color={theme.colors.error}
                         style={styles.helperIcon}
                       />
                       <Text style={styles.errorText}>{nameError}</Text>
@@ -335,7 +339,7 @@ export default function RegisterScreen() {
                     <MaterialCommunityIcons
                       name="check-circle-outline"
                       size={16}
-                      color={theme.colors.success}
+                      color={theme.colors.tertiary}
                     />
                   )}
                 </View>
@@ -353,7 +357,7 @@ export default function RegisterScreen() {
                     touched.email && isEmailValid && styles.inputSuccess,
                   ]}
                   style={styles.inputText}
-                  placeholderTextColor={theme.colors.placeholder}
+                  placeholderTextColor={theme.colors.onSurfaceVariant}
                 />
                 <View style={styles.helperRow}>
                   {emailError ? (
@@ -361,7 +365,7 @@ export default function RegisterScreen() {
                       <MaterialCommunityIcons
                         name="alert-circle-outline"
                         size={14}
-                        color={theme.colors.primary}
+                        color={theme.colors.error}
                         style={styles.helperIcon}
                       />
                       <Text style={styles.errorText}>{emailError}</Text>
@@ -382,7 +386,7 @@ export default function RegisterScreen() {
                     <MaterialCommunityIcons
                       name="check-circle-outline"
                       size={16}
-                      color={theme.colors.success}
+                      color={theme.colors.tertiary}
                     />
                   )}
                 </View>
@@ -399,7 +403,7 @@ export default function RegisterScreen() {
                     touched.password && isPasswordValid && styles.inputSuccess,
                   ]}
                   style={[styles.inputText, styles.passwordInput]}
-                  placeholderTextColor={theme.colors.placeholder}
+                  placeholderTextColor={theme.colors.onSurfaceVariant}
                 />
                 <View style={styles.helperRow}>
                   {passwordError ? (
@@ -407,7 +411,7 @@ export default function RegisterScreen() {
                       <MaterialCommunityIcons
                         name="alert-circle-outline"
                         size={14}
-                        color={theme.colors.primary}
+                        color={theme.colors.error}
                         style={styles.helperIcon}
                       />
                       <Text style={styles.errorText}>{passwordError}</Text>
@@ -428,7 +432,7 @@ export default function RegisterScreen() {
                     <MaterialCommunityIcons
                       name="check-circle-outline"
                       size={16}
-                      color={theme.colors.success}
+                      color={theme.colors.tertiary}
                     />
                   )}
                 </View>
@@ -445,7 +449,7 @@ export default function RegisterScreen() {
                     touched.passVef && isPassVefValid && styles.inputSuccess,
                   ]}
                   style={[styles.inputText, styles.passwordInput]}
-                  placeholderTextColor={theme.colors.placeholder}
+                  placeholderTextColor={theme.colors.onSurfaceVariant}
                 />
                 <View style={styles.helperRow}>
                   {passVefError ? (
@@ -453,7 +457,7 @@ export default function RegisterScreen() {
                       <MaterialCommunityIcons
                         name="alert-circle-outline"
                         size={14}
-                        color={theme.colors.primary}
+                        color={theme.colors.error}
                         style={styles.helperIcon}
                       />
                       <Text style={styles.errorText}>{passVefError}</Text>
@@ -473,7 +477,7 @@ export default function RegisterScreen() {
                     <MaterialCommunityIcons
                       name="phone-outline"
                       size={24}
-                      color={theme.colors.text}
+                      color={theme.colors.espressoDark}
                       style={styles.icon}
                     />
                     <Text style={styles.title}>Contato</Text>
@@ -486,7 +490,7 @@ export default function RegisterScreen() {
                         <MaterialCommunityIcons
                           name="check-circle-outline"
                           size={16}
-                          color={theme.colors.success}
+                          color={theme.colors.tertiary}
                         />
                       )}
                     </View>
@@ -505,7 +509,7 @@ export default function RegisterScreen() {
                           styles.inputSuccess,
                       ]}
                       style={styles.inputText}
-                      placeholderTextColor={theme.colors.placeholder}
+                      placeholderTextColor={theme.colors.onSurfaceVariant}
                     />
                     <View style={styles.helperRow}>
                       {phoneError ? (
@@ -513,7 +517,7 @@ export default function RegisterScreen() {
                           <MaterialCommunityIcons
                             name="alert-circle-outline"
                             size={14}
-                            color={theme.colors.primary}
+                            color={theme.colors.error}
                             style={styles.helperIcon}
                           />
                           <Text style={styles.errorText}>{phoneError}</Text>
@@ -582,44 +586,46 @@ const createStyles = (theme: AppTheme) =>
     card: {
       width: '100%',
       maxWidth: 460,
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 16,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderRadius: theme.rounded.lg,
       padding: 20,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
       gap: 16,
+      ...theme.shadows.soft,
     },
     headerArea: {
       alignItems: 'center',
       marginBottom: 2,
     },
     headline: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineLg.fontFamily,
       fontSize: 24,
-      fontWeight: 'bold',
-      color: theme.colors.text,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
       textAlign: 'center',
       marginBottom: 4,
     },
     subheadline: {
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 14,
-      color: theme.colors.text,
-      opacity: 0.8,
+      color: theme.colors.onSurfaceVariant,
       textAlign: 'center',
       lineHeight: 20,
     },
     roleContainer: {
       width: '100%',
-      backgroundColor: theme.colors.background,
-      borderRadius: 12,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderRadius: theme.rounded.md,
       padding: 12,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
     },
     roleLabel: {
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 12,
       fontWeight: '700',
-      color: theme.colors.text,
+      color: theme.colors.onSurfaceVariant,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
       marginBottom: 8,
@@ -630,33 +636,36 @@ const createStyles = (theme: AppTheme) =>
     },
     roleButton: {
       flex: 1,
+      minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
       paddingVertical: 10,
       paddingHorizontal: 8,
-      borderRadius: 9999,
-      backgroundColor: theme.colors.pitchBackground,
+      borderRadius: theme.rounded.full,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
-      borderColor: theme.colors.lightGray,
+      borderColor: theme.colors.outlineVariant,
       gap: 6,
     },
     roleButtonActive: {
       backgroundColor: theme.colors.primary,
       borderColor: theme.colors.primary,
+      ...theme.shadows.glow,
     },
     roleButtonText: {
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.onSurfaceVariant,
     },
     roleButtonTextActive: {
-      color: theme.colors.secondaryText,
+      color: theme.colors.onPrimary,
     },
     roleDescription: {
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
-      color: theme.colors.text,
-      opacity: 0.8,
+      color: theme.colors.onSurfaceVariant,
       marginTop: 8,
       lineHeight: 16,
     },
@@ -668,16 +677,17 @@ const createStyles = (theme: AppTheme) =>
       flexDirection: 'row',
       alignItems: 'center',
       borderBottomWidth: 1,
-      borderBottomColor: theme.colors.lightGray,
+      borderBottomColor: theme.colors.outlineVariant,
       paddingBottom: 6,
     },
     icon: {
       marginRight: 8,
     },
     title: {
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 17,
-      fontWeight: 'bold',
-      color: theme.colors.text,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
     },
     fieldWrapper: {
       width: '100%',
@@ -689,35 +699,37 @@ const createStyles = (theme: AppTheme) =>
       marginBottom: 2,
     },
     label: {
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
     },
     required: {
       color: theme.colors.primary,
     },
     inputContainer: {
       width: '100%',
-      height: 52,
+      height: 48,
       margin: 0,
       marginTop: 4,
       paddingLeft: 14,
       paddingRight: 14,
-      borderRadius: 8,
+      borderRadius: theme.rounded.sm,
       borderWidth: 1,
-      borderColor: theme.colors.lightGray,
-      backgroundColor: theme.colors.pitchBackground,
+      borderColor: theme.colors.outlineVariant,
+      backgroundColor: theme.colors.surfaceContainerLowest,
     },
     inputError: {
-      borderColor: theme.colors.primary,
+      borderColor: theme.colors.error,
       borderWidth: 1.5,
     },
     inputSuccess: {
-      borderColor: theme.colors.success,
+      borderColor: theme.colors.tertiary,
     },
     inputText: {
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 15,
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
     },
     passwordInput: {
       paddingRight: 36,
@@ -732,12 +744,14 @@ const createStyles = (theme: AppTheme) =>
       marginRight: 4,
     },
     helperText: {
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 11,
-      color: theme.colors.placeholder,
+      color: theme.colors.onSurfaceVariant,
     },
     errorText: {
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 11,
-      color: theme.colors.primary,
+      color: theme.colors.error,
       fontWeight: '500',
     },
     btnRegister: {
@@ -749,15 +763,17 @@ const createStyles = (theme: AppTheme) =>
     button: {
       width: '100%',
       margin: 0,
-      borderRadius: 8,
-      height: 52,
+      borderRadius: theme.rounded.default,
+      height: 48,
     },
     txtLogIn: {
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 14,
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
     },
     linkLogIn: {
+      fontFamily: theme.typography.labelMd.fontFamily,
       color: theme.colors.primary,
-      fontWeight: 'bold',
+      fontWeight: '700',
     },
   });

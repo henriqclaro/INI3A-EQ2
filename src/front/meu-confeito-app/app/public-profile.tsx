@@ -196,11 +196,7 @@ export default function PublicProfileScreen() {
                   />
                 ) : (
                   <View style={[styles.avatar, styles.placeholderAvatar]}>
-                    <MaterialCommunityIcons
-                      name="account"
-                      size={64}
-                      color={theme.colors.mediumGray}
-                    />
+                    <MaterialCommunityIcons name="account" size={64} color={theme.colors.outline} />
                   </View>
                 )}
 
@@ -208,7 +204,7 @@ export default function PublicProfileScreen() {
                   <MaterialCommunityIcons
                     name="storefront-outline"
                     size={14}
-                    color={theme.colors.primary}
+                    color={theme.colors.tertiary}
                   />
                   <Text style={styles.publicBadgeText}>Perfil Público</Text>
                 </View>
@@ -246,7 +242,7 @@ export default function PublicProfileScreen() {
                     <MaterialCommunityIcons
                       name="whatsapp"
                       size={20}
-                      color={theme.colors.secondaryText}
+                      color={theme.colors.onPrimary}
                     />
                     <Text style={styles.actionBtnPrimaryText}>WhatsApp</Text>
                   </TouchableOpacity>
@@ -260,7 +256,11 @@ export default function PublicProfileScreen() {
                     accessibilityRole="button"
                     accessibilityLabel="Visitar perfil no Instagram"
                   >
-                    <MaterialCommunityIcons name="instagram" size={20} color={theme.colors.text} />
+                    <MaterialCommunityIcons
+                      name="instagram"
+                      size={20}
+                      color={theme.colors.onSurface}
+                    />
                     <Text style={styles.actionBtnSecondaryText}>
                       {publicProfile.instagram.startsWith('@')
                         ? publicProfile.instagram
@@ -289,7 +289,7 @@ export default function PublicProfileScreen() {
                   <MaterialCommunityIcons
                     name="book-open-page-variant-outline"
                     size={36}
-                    color={theme.colors.placeholder}
+                    color={theme.colors.onSurfaceVariant}
                   />
                   <Text style={styles.emptyRecipesTitle}>Nenhuma receita disponível</Text>
                   <Text style={styles.emptyRecipesSubtitle}>
@@ -341,10 +341,10 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
     previewBanner: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.parchment,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      borderRadius: 12,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.md,
       padding: 14,
       marginBottom: 16,
       gap: 12,
@@ -353,27 +353,26 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       width: 40,
       height: 40,
       borderRadius: 20,
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       alignItems: 'center',
       justifyContent: 'center',
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
     },
     previewTextContainer: {
       flex: 1,
     },
     previewTitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
       fontWeight: '700',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
       marginBottom: 2,
     },
     previewSubtitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
-      color: theme.colors.text,
-      opacity: 0.8,
+      color: theme.colors.onSurfaceVariant,
       lineHeight: 16,
     },
     previewEditBtn: {
@@ -382,14 +381,14 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       gap: 4,
       paddingHorizontal: 12,
       paddingVertical: 8,
-      borderRadius: 8,
+      borderRadius: theme.rounded.sm,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      backgroundColor: theme.colors.background,
+      borderColor: theme.colors.outlineVariant,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       minHeight: 48,
     },
     previewEditText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
       color: theme.colors.primary,
@@ -404,36 +403,36 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       justifyContent: 'center',
       paddingVertical: 60,
       paddingHorizontal: 24,
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 16,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderRadius: theme.rounded.lg,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
       marginTop: 16,
+      ...theme.shadows.soft,
     },
     errorIconWrapper: {
       width: 72,
       height: 72,
       borderRadius: 36,
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLow,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: 16,
     },
     errorTitle: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 20,
-      fontWeight: 'bold',
-      color: theme.colors.text,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
       marginBottom: 8,
       textAlign: 'center',
     },
     errorSubtitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
-      color: theme.colors.text,
-      opacity: 0.75,
+      color: theme.colors.onSurfaceVariant,
       textAlign: 'center',
       lineHeight: 20,
       marginBottom: 20,
@@ -443,28 +442,30 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       backgroundColor: theme.colors.primary,
       paddingHorizontal: 20,
       paddingVertical: 12,
-      borderRadius: 8,
+      borderRadius: theme.rounded.default,
       minHeight: 48,
       justifyContent: 'center',
       alignItems: 'center',
+      ...theme.shadows.glow,
     },
     activateBtnText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
       fontWeight: '600',
-      color: theme.colors.secondaryText,
+      color: theme.colors.onPrimary,
     },
     contentWrapper: {
       gap: 20,
     },
     bakerCard: {
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 16,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderRadius: theme.rounded.lg,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
       padding: 24,
       alignItems: 'center',
       width: '100%',
+      ...theme.shadows.soft,
     },
     avatarContainer: {
       position: 'relative',
@@ -478,7 +479,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       borderColor: theme.colors.primary,
     },
     placeholderAvatar: {
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLow,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -486,28 +487,28 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 4,
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.chips.success.background,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.tertiary,
       paddingHorizontal: 10,
       paddingVertical: 4,
-      borderRadius: 9999,
+      borderRadius: theme.rounded.full,
       alignSelf: 'center',
       marginTop: 8,
     },
     publicBadgeText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 11,
       fontWeight: '700',
-      color: theme.colors.primary,
+      color: theme.colors.chips.success.text,
       letterSpacing: 0.5,
       textTransform: 'uppercase',
     },
     bakerName: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineLg.fontFamily,
       fontSize: 24,
-      fontWeight: 'bold',
-      color: theme.colors.text,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
       textAlign: 'center',
       marginTop: 8,
     },
@@ -518,10 +519,9 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       marginTop: 6,
     },
     locationText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
-      color: theme.colors.text,
-      opacity: 0.8,
+      color: theme.colors.onSurfaceVariant,
     },
     bioContainer: {
       marginTop: 14,
@@ -530,13 +530,12 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       maxWidth: 520,
     },
     bioText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
       textAlign: 'center',
       lineHeight: 22,
       fontStyle: 'italic',
-      opacity: 0.9,
     },
     actionsContainer: {
       flexDirection: 'row',
@@ -553,29 +552,30 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       gap: 8,
       paddingHorizontal: 20,
       paddingVertical: 12,
-      borderRadius: 8,
+      borderRadius: theme.rounded.default,
       minHeight: 48,
       minWidth: 140,
     },
     actionBtnPrimary: {
       backgroundColor: theme.colors.primary,
+      ...theme.shadows.glow,
     },
     actionBtnPrimaryText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
       fontWeight: '600',
-      color: theme.colors.secondaryText,
+      color: theme.colors.onPrimary,
     },
     actionBtnSecondary: {
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
-      borderColor: theme.colors.border,
+      borderColor: theme.colors.outlineVariant,
     },
     actionBtnSecondaryText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.onSurface,
     },
     recipesSection: {
       width: '100%',
@@ -589,40 +589,41 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       paddingHorizontal: 4,
     },
     sectionTitle: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 18,
-      fontWeight: 'bold',
-      color: theme.colors.text,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
     },
     recipeCountBadge: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 12,
-      color: theme.colors.darkGray,
+      color: theme.colors.onSurfaceVariant,
     },
     recipesLoading: {
       paddingVertical: 24,
       alignItems: 'center',
     },
     emptyRecipesCard: {
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 12,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderRadius: theme.rounded.md,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.outlineVariant,
       padding: 24,
       alignItems: 'center',
       justifyContent: 'center',
       gap: 8,
+      ...theme.shadows.soft,
     },
     emptyRecipesTitle: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 16,
-      fontWeight: 'bold',
-      color: theme.colors.text,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
     },
     emptyRecipesSubtitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 13,
-      color: theme.colors.mediumGray,
+      color: theme.colors.onSurfaceVariant,
       textAlign: 'center',
     },
     recipesGrid: {

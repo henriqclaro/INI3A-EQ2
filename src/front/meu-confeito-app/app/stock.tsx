@@ -208,7 +208,7 @@ export default function StockScreen() {
                   <MaterialCommunityIcons
                     name="magnify"
                     size={20}
-                    color={theme.colors.placeholder}
+                    color={theme.colors.onSurfaceVariant}
                   />
                 }
               />
@@ -220,6 +220,8 @@ export default function StockScreen() {
                 style={[styles.filterPill, selectedFilter === 'all' && styles.filterPillActive]}
                 onPress={() => setSelectedFilter('all')}
                 activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel="Filtrar todos os insumos"
               >
                 <Text
                   style={[
@@ -238,6 +240,8 @@ export default function StockScreen() {
                 ]}
                 onPress={() => setSelectedFilter('in_stock')}
                 activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel="Filtrar insumos em estoque"
               >
                 <Text
                   style={[
@@ -256,6 +260,8 @@ export default function StockScreen() {
                 ]}
                 onPress={() => setSelectedFilter('out_of_stock')}
                 activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel="Filtrar insumos em falta"
               >
                 <Text
                   style={[
@@ -275,6 +281,8 @@ export default function StockScreen() {
                   ]}
                   onPress={() => setSelectedFilter('expiring')}
                   activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Filtrar insumos vencendo em breve"
                 >
                   <Text
                     style={[
@@ -299,7 +307,7 @@ export default function StockScreen() {
                 <MaterialCommunityIcons
                   name="alert-circle-outline"
                   size={40}
-                  color={theme.colors.primary}
+                  color={theme.colors.error}
                 />
                 <Text style={styles.errorText}>{error}</Text>
                 <CustomButton
@@ -314,7 +322,7 @@ export default function StockScreen() {
                 <MaterialCommunityIcons
                   name="package-variant"
                   size={48}
-                  color={theme.colors.placeholder}
+                  color={theme.colors.onSurfaceVariant}
                 />
                 <Text style={styles.emptyTitle}>
                   {search.trim() || selectedFilter !== 'all'
@@ -361,7 +369,7 @@ export default function StockScreen() {
             accessibilityRole="button"
             accessibilityLabel="Cadastrar novo insumo no estoque"
           >
-            <MaterialCommunityIcons name="plus" size={28} color={theme.colors.secondaryText} />
+            <MaterialCommunityIcons name="plus" size={28} color={theme.colors.onPrimary} />
           </TouchableOpacity>
         )}
 
@@ -406,23 +414,23 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       gap: 12,
     },
     pageTitle: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineLg.fontFamily,
       fontSize: isMobile ? 24 : 30,
       fontWeight: '700',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
       marginBottom: 4,
     },
     pageSubtitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 13,
-      color: theme.colors.text,
-      opacity: 0.8,
+      color: theme.colors.onSurfaceVariant,
       lineHeight: 18,
     },
     desktopAddButton: {
       height: 48,
+      minHeight: 48,
       margin: 0,
-      borderRadius: 8,
+      borderRadius: theme.rounded.default,
       paddingHorizontal: 20,
       width: undefined,
     },
@@ -433,9 +441,10 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
     searchInput: {
       width: '100%',
       height: 52,
+      minHeight: 48,
       margin: 0,
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 12,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderRadius: theme.rounded.default,
       borderColor: theme.colors.outlineVariant,
     },
     filterPillsRow: {
@@ -445,11 +454,11 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       marginBottom: 8,
     },
     filterPill: {
-      minHeight: 36,
-      paddingHorizontal: 14,
-      paddingVertical: 6,
-      borderRadius: 9999,
-      backgroundColor: theme.colors.pitchBackground,
+      minHeight: 48,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      borderRadius: theme.rounded.full,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
       justifyContent: 'center',
@@ -458,15 +467,16 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
     filterPillActive: {
       backgroundColor: theme.colors.primary,
       borderColor: theme.colors.primary,
+      ...theme.shadows.soft,
     },
     filterPillText: {
-      fontFamily: 'Inter',
-      fontSize: 12,
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.onSurfaceVariant,
     },
     filterPillTextActive: {
-      color: theme.colors.secondaryText,
+      color: theme.colors.onPrimary,
       fontWeight: '700',
     },
     cardsGrid: {
@@ -483,38 +493,38 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       gap: 10,
     },
     feedbackText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 15,
-      color: theme.colors.text,
+      color: theme.colors.onSurfaceVariant,
       marginTop: 8,
     },
     errorText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 15,
-      color: theme.colors.primary,
+      color: theme.colors.error,
       textAlign: 'center',
       paddingHorizontal: 20,
     },
     retryButton: {
       width: 200,
-      height: 44,
+      height: 48,
+      minHeight: 48,
       margin: 0,
       marginTop: 8,
-      borderRadius: 8,
+      borderRadius: theme.rounded.default,
     },
     emptyTitle: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 20,
       fontWeight: '700',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
       textAlign: 'center',
       marginTop: 8,
     },
     emptySubtitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 13,
-      color: theme.colors.text,
-      opacity: 0.75,
+      color: theme.colors.onSurfaceVariant,
       textAlign: 'center',
       maxWidth: 340,
       lineHeight: 18,
@@ -522,10 +532,11 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
     emptyButton: {
       width: undefined,
       height: 48,
+      minHeight: 48,
       margin: 0,
       marginTop: 12,
       paddingHorizontal: 24,
-      borderRadius: 8,
+      borderRadius: theme.rounded.default,
     },
     mobileFab: {
       position: 'absolute',
@@ -538,10 +549,6 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 40,
-      elevation: 4,
-      shadowColor: theme.colors.border,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.15,
-      shadowRadius: 8,
+      ...theme.shadows.glow,
     },
   });

@@ -56,7 +56,11 @@ export default function PublicRecipesScreen() {
             onChangeText={setSearch}
             containerStyle={styles.searchInput}
             leftIcon={
-              <MaterialCommunityIcons name="magnify" size={22} color={theme.colors.placeholder} />
+              <MaterialCommunityIcons
+                name="magnify"
+                size={22}
+                color={theme.colors.onSurfaceVariant}
+              />
             }
             isClearable={true}
             onClear={() => setSearch('')}
@@ -185,10 +189,11 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       width: '100%',
       maxWidth: 600,
       height: 52,
-      borderRadius: 12,
+      minHeight: 48,
+      borderRadius: theme.rounded.default,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      backgroundColor: theme.colors.pitchBackground,
+      borderColor: theme.colors.outlineVariant,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       margin: 0,
     },
     metaRow: {
@@ -202,10 +207,9 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       marginBottom: 4,
     },
     resultCountText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 13,
-      color: theme.colors.text,
-      opacity: 0.75,
+      color: theme.colors.onSurfaceVariant,
     },
     savedLinkBtn: {
       flexDirection: 'row',
@@ -213,14 +217,14 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       gap: 4,
       paddingVertical: 4,
       paddingHorizontal: 8,
-      borderRadius: 6,
+      borderRadius: theme.rounded.sm,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      backgroundColor: theme.colors.pitchBackground,
+      borderColor: theme.colors.outlineVariant,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       minHeight: 48,
     },
     savedLinkText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 12,
       fontWeight: '600',
       color: theme.colors.primary,
@@ -259,7 +263,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       width: 72,
       height: 72,
       borderRadius: 36,
-      backgroundColor: theme.colors.secondary,
+      backgroundColor: theme.colors.surfaceContainerLow,
       alignItems: 'center',
       justifyContent: 'center',
       borderWidth: 1,
@@ -267,19 +271,18 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       marginBottom: 16,
     },
     emptyTitle: {
-      color: theme.colors.text,
-      fontFamily: 'Playfair Display SC',
+      color: theme.colors.espressoDark,
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 20,
       fontWeight: 'bold',
       textAlign: 'center',
       marginBottom: 8,
     },
     emptySubtitle: {
-      color: theme.colors.text,
-      fontFamily: 'Inter',
+      color: theme.colors.onSurfaceVariant,
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
       lineHeight: 20,
-      opacity: 0.8,
       textAlign: 'center',
       marginBottom: 20,
     },
@@ -287,16 +290,17 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 6,
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
-      borderColor: theme.colors.primary,
+      borderColor: theme.colors.outlineVariant,
       paddingVertical: 10,
       paddingHorizontal: 16,
-      borderRadius: 8,
+      borderRadius: theme.rounded.default,
       minHeight: 48,
+      ...theme.shadows.soft,
     },
     clearSearchBtnText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
       fontWeight: '600',
       color: theme.colors.primary,

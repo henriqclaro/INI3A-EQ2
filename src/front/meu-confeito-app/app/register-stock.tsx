@@ -378,7 +378,7 @@ export default function RegisterStockScreen() {
                     <MaterialCommunityIcons
                       name="magnify"
                       size={18}
-                      color={theme.colors.placeholder}
+                      color={theme.colors.onSurfaceVariant}
                     />
                   }
                 />
@@ -434,7 +434,7 @@ export default function RegisterStockScreen() {
                     <MaterialCommunityIcons
                       name="alert-circle-outline"
                       size={14}
-                      color={theme.colors.primary}
+                      color={theme.colors.error}
                     />
                     <Text style={styles.errorText}>{ingredientError}</Text>
                   </View>
@@ -515,7 +515,7 @@ export default function RegisterStockScreen() {
                         handlePackageValuesChange(val, packageSize);
                       }}
                       placeholder="Ex: 2"
-                      placeholderTextColor={theme.colors.placeholder}
+                      placeholderTextColor={theme.colors.onSurfaceVariant}
                       keyboardType="numeric"
                     />
                   </View>
@@ -531,7 +531,7 @@ export default function RegisterStockScreen() {
                           handlePackageValuesChange(packageCount, val);
                         }}
                         placeholder="Ex: 500"
-                        placeholderTextColor={theme.colors.placeholder}
+                        placeholderTextColor={theme.colors.onSurfaceVariant}
                         keyboardType="numeric"
                       />
                       <View style={styles.suffixBadge}>
@@ -555,7 +555,7 @@ export default function RegisterStockScreen() {
                     value={quantityInput}
                     onChangeText={setQuantityInput}
                     placeholder="0"
-                    placeholderTextColor={theme.colors.placeholder}
+                    placeholderTextColor={theme.colors.onSurfaceVariant}
                     keyboardType="numeric"
                   />
                   <View style={styles.suffixBadge}>
@@ -582,7 +582,7 @@ export default function RegisterStockScreen() {
                       value={totalCostInput}
                       onChangeText={setTotalCostInput}
                       placeholder="0,00"
-                      placeholderTextColor={theme.colors.placeholder}
+                      placeholderTextColor={theme.colors.onSurfaceVariant}
                       keyboardType="numeric"
                     />
                   </View>
@@ -626,7 +626,7 @@ export default function RegisterStockScreen() {
                     value={expirationDateInput}
                     onChangeText={setExpirationDateInput}
                     placeholder="DD/MM/AAAA ou AAAA-MM-DD"
-                    placeholderTextColor={theme.colors.placeholder}
+                    placeholderTextColor={theme.colors.onSurfaceVariant}
                   />
                   <Text style={styles.helperText}>
                     Se informada, você receberá avisos automáticos na tela de Estoque antes do
@@ -644,7 +644,7 @@ export default function RegisterStockScreen() {
                     value={notesInput}
                     onChangeText={setNotesInput}
                     placeholder="Ex: Contagem inicial de estoque, acerto de inventário..."
-                    placeholderTextColor={theme.colors.placeholder}
+                    placeholderTextColor={theme.colors.onSurfaceVariant}
                     maxLength={255}
                     multiline
                   />
@@ -656,7 +656,11 @@ export default function RegisterStockScreen() {
             {previewItem && (
               <View style={styles.previewSection}>
                 <View style={styles.previewHeaderRow}>
-                  <MaterialCommunityIcons name="eye-outline" size={18} color={theme.colors.text} />
+                  <MaterialCommunityIcons
+                    name="eye-outline"
+                    size={18}
+                    color={theme.colors.espressoDark}
+                  />
                   <Text style={styles.previewSectionTitle}>Prévia no Estoque</Text>
                 </View>
                 <Text style={styles.previewSubtitle}>
@@ -719,11 +723,12 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
     card: {
       width: '100%',
       maxWidth: 620,
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 16,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderRadius: theme.rounded.lg,
       padding: isMobile ? 16 : 24,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
+      ...theme.shadows.soft,
       gap: 18,
     },
     headerArea: {
@@ -734,7 +739,7 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       width: 52,
       height: 52,
       borderRadius: 26,
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLow,
       alignItems: 'center',
       justifyContent: 'center',
       borderWidth: 1,
@@ -742,49 +747,50 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       marginBottom: 10,
     },
     headline: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 22,
       fontWeight: 'bold',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
       textAlign: 'center',
       marginBottom: 4,
     },
     subheadline: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 13,
-      color: theme.colors.text,
-      opacity: 0.8,
+      color: theme.colors.onSurfaceVariant,
       textAlign: 'center',
       lineHeight: 18,
       paddingHorizontal: 8,
     },
     modeTabs: {
       flexDirection: 'row',
-      backgroundColor: theme.colors.background,
-      borderRadius: 10,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderRadius: theme.rounded.md,
       padding: 4,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
     },
     modeTab: {
       flex: 1,
-      height: 42,
+      minHeight: 48,
+      height: 48,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: 8,
+      borderRadius: theme.rounded.sm,
       gap: 8,
     },
     modeTabActive: {
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
+      ...theme.shadows.soft,
     },
     modeTabText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.onSurfaceVariant,
     },
     modeTabTextActive: {
       color: theme.colors.primary,
@@ -792,8 +798,8 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
     },
     fieldset: {
       width: '100%',
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 12,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderRadius: theme.rounded.md,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
       padding: 16,
@@ -808,10 +814,10 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       paddingBottom: 8,
     },
     fieldsetSectionTitle: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 15,
       fontWeight: '700',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
     },
     fieldWrapper: {
       width: '100%',
@@ -823,10 +829,10 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       marginBottom: 4,
     },
     label: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
       marginBottom: 4,
     },
     required: {
@@ -834,25 +840,27 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
     },
     filterInput: {
       width: '100%',
-      height: 46,
+      height: 48,
+      minHeight: 48,
       margin: 0,
-      borderRadius: 8,
+      borderRadius: theme.rounded.default,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.surfaceContainerLowest,
     },
     pickerWrapper: {
       width: '100%',
       height: 50,
-      borderRadius: 8,
+      minHeight: 48,
+      borderRadius: theme.rounded.default,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       justifyContent: 'center',
       overflow: 'hidden',
     },
     pickerError: {
-      borderColor: theme.colors.primary,
+      borderColor: theme.colors.error,
       borderWidth: 1.5,
     },
     pickerSuccess: {
@@ -868,43 +876,43 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       marginTop: 6,
     },
     categoryChip: {
-      backgroundColor: theme.colors.background,
-      borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      paddingHorizontal: 10,
-      paddingVertical: 4,
-      borderRadius: 9999,
-    },
-    categoryChipText: {
-      fontFamily: 'Inter',
-      fontSize: 11,
-      fontWeight: '600',
-      color: theme.colors.text,
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
-    },
-    unitChip: {
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLow,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
       paddingHorizontal: 10,
       paddingVertical: 4,
-      borderRadius: 9999,
+      borderRadius: theme.rounded.full,
     },
-    unitChipText: {
-      fontFamily: 'Inter',
+    categoryChipText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 11,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    unitChip: {
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: theme.rounded.full,
+    },
+    unitChipText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 11,
+      fontWeight: '600',
+      color: theme.colors.onSurfaceVariant,
     },
     existingStockBanner: {
       flexDirection: 'row',
       alignItems: 'flex-start',
       gap: 8,
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.parchment,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      borderRadius: 8,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.default,
       padding: 10,
       marginTop: 8,
     },
@@ -912,16 +920,15 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       flex: 1,
     },
     existingStockTitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 12,
       fontWeight: '700',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
     },
     existingStockDetail: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 11,
-      color: theme.colors.text,
-      opacity: 0.8,
+      color: theme.colors.onSurfaceVariant,
       marginTop: 2,
     },
     helperRow: {
@@ -931,29 +938,30 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       gap: 4,
     },
     helperText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 11,
-      color: theme.colors.placeholder,
+      color: theme.colors.onSurfaceVariant,
       marginTop: 4,
       lineHeight: 15,
     },
     errorText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 11,
-      color: theme.colors.primary,
+      color: theme.colors.error,
       fontWeight: '500',
     },
     packageHelperToggle: {
+      minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
       paddingVertical: 4,
     },
     packageHelperToggleText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
     },
     rowTwoCols: {
       flexDirection: isMobile ? 'column' : 'row',
@@ -967,38 +975,42 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       flexDirection: 'row',
       alignItems: 'center',
       height: 48,
+      minHeight: 48,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      borderRadius: 8,
-      backgroundColor: theme.colors.pitchBackground,
+      borderRadius: theme.rounded.default,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       overflow: 'hidden',
     },
     inputWithPrefix: {
       flexDirection: 'row',
       alignItems: 'center',
       height: 48,
+      minHeight: 48,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      borderRadius: 8,
-      backgroundColor: theme.colors.pitchBackground,
+      borderRadius: theme.rounded.default,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       paddingLeft: 12,
       overflow: 'hidden',
     },
     singleInput: {
       height: 48,
+      minHeight: 48,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      borderRadius: 8,
-      backgroundColor: theme.colors.pitchBackground,
+      borderRadius: theme.rounded.default,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       paddingHorizontal: 12,
       fontSize: 15,
       color: theme.colors.text,
+      fontFamily: theme.typography.bodyMd.fontFamily,
     },
     prefixText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
       fontWeight: '600',
-      color: theme.colors.placeholder,
+      color: theme.colors.onSurfaceVariant,
       marginRight: 4,
     },
     textInputFlex: {
@@ -1007,9 +1019,10 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       paddingHorizontal: 12,
       fontSize: 15,
       color: theme.colors.text,
+      fontFamily: theme.typography.bodyMd.fontFamily,
     },
     suffixBadge: {
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLow,
       height: '100%',
       paddingHorizontal: 12,
       justifyContent: 'center',
@@ -1018,25 +1031,26 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       borderLeftColor: theme.colors.outlineVariant,
     },
     suffixText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 12,
       fontWeight: '700',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
     },
     textArea: {
       minHeight: 70,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      borderRadius: 8,
-      backgroundColor: theme.colors.pitchBackground,
+      borderRadius: theme.rounded.default,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       padding: 10,
       fontSize: 14,
       color: theme.colors.text,
+      fontFamily: theme.typography.bodyMd.fontFamily,
       textAlignVertical: 'top',
     },
     costSummaryBox: {
-      backgroundColor: theme.colors.background,
-      borderRadius: 8,
+      backgroundColor: theme.colors.parchment,
+      borderRadius: theme.rounded.default,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
       padding: 12,
@@ -1048,31 +1062,30 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       gap: 6,
     },
     costSummaryTitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 12,
       fontWeight: '700',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
     },
     costSummaryValue: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 18,
       fontWeight: 'bold',
-      color: theme.colors.primary,
+      color: theme.colors.tertiary,
       marginVertical: 2,
     },
     costSummaryExplainer: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 11,
-      color: theme.colors.text,
-      opacity: 0.75,
+      color: theme.colors.onSurfaceVariant,
       lineHeight: 15,
     },
     previewSection: {
       width: '100%',
-      backgroundColor: theme.colors.background,
-      borderRadius: 12,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderRadius: theme.rounded.md,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
       padding: 14,
@@ -1084,18 +1097,17 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       gap: 6,
     },
     previewSectionTitle: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 14,
       fontWeight: 'bold',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
     },
     previewSubtitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
-      color: theme.colors.text,
-      opacity: 0.7,
+      color: theme.colors.onSurfaceVariant,
       marginBottom: 4,
     },
     actionButtonsContainer: {
@@ -1106,13 +1118,15 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
     btnSubmit: {
       width: '100%',
       height: 50,
-      borderRadius: 8,
+      minHeight: 48,
+      borderRadius: theme.rounded.default,
       margin: 0,
     },
     btnCancel: {
       width: '100%',
       height: 50,
-      borderRadius: 8,
+      minHeight: 48,
+      borderRadius: theme.rounded.default,
       margin: 0,
     },
   });

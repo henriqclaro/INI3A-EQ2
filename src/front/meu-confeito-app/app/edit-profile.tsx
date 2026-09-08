@@ -497,7 +497,7 @@ export default function EditProfileScreen() {
                     <MaterialCommunityIcons
                       name="account"
                       size={64}
-                      color={theme.colors.placeholder}
+                      color={theme.colors.onSurfaceVariant}
                     />
                   </View>
                 )}
@@ -534,7 +534,7 @@ export default function EditProfileScreen() {
                     touched.name && isNameFieldValid && styles.inputSuccess,
                   ]}
                   style={styles.inputText}
-                  placeholderTextColor={theme.colors.mediumGray}
+                  placeholderTextColor={theme.colors.onSurfaceVariant}
                 />
                 <View style={styles.helperRow}>
                   {nameError ? (
@@ -542,7 +542,7 @@ export default function EditProfileScreen() {
                       <MaterialCommunityIcons
                         name="alert-circle-outline"
                         size={14}
-                        color={theme.colors.primary}
+                        color={theme.colors.error}
                         style={styles.helperIcon}
                       />
                       <Text style={styles.errorText}>{nameError}</Text>
@@ -563,7 +563,7 @@ export default function EditProfileScreen() {
                     <MaterialCommunityIcons
                       name="lock-outline"
                       size={14}
-                      color={theme.colors.mediumGray}
+                      color={theme.colors.onSurfaceVariant}
                     />
                   </View>
                   {touched.email && isEmailFieldValid && (
@@ -588,7 +588,7 @@ export default function EditProfileScreen() {
                     touched.email && isEmailFieldValid && styles.inputSuccess,
                   ]}
                   style={styles.inputText}
-                  placeholderTextColor={theme.colors.mediumGray}
+                  placeholderTextColor={theme.colors.onSurfaceVariant}
                 />
                 <View style={styles.helperRow}>
                   {emailError ? (
@@ -596,7 +596,7 @@ export default function EditProfileScreen() {
                       <MaterialCommunityIcons
                         name="alert-circle-outline"
                         size={14}
-                        color={theme.colors.primary}
+                        color={theme.colors.error}
                         style={styles.helperIcon}
                       />
                       <Text style={styles.errorText}>{emailError}</Text>
@@ -634,7 +634,7 @@ export default function EditProfileScreen() {
                     touched.phone && phone.trim() && isPhoneFieldValid && styles.inputSuccess,
                   ]}
                   style={styles.inputText}
-                  placeholderTextColor={theme.colors.mediumGray}
+                  placeholderTextColor={theme.colors.onSurfaceVariant}
                 />
                 <View style={styles.helperRow}>
                   {phoneError ? (
@@ -642,7 +642,7 @@ export default function EditProfileScreen() {
                       <MaterialCommunityIcons
                         name="alert-circle-outline"
                         size={14}
-                        color={theme.colors.primary}
+                        color={theme.colors.error}
                         style={styles.helperIcon}
                       />
                       <Text style={styles.errorText}>{phoneError}</Text>
@@ -673,10 +673,12 @@ export default function EditProfileScreen() {
                     value={isPublicProfile}
                     onValueChange={handleTogglePublicProfile}
                     disabled={isTogglingPublic}
-                    thumbColor={isPublicProfile ? theme.colors.primary : theme.colors.placeholder}
+                    thumbColor={
+                      isPublicProfile ? theme.colors.primary : theme.colors.surfaceContainerHighest
+                    }
                     trackColor={{
-                      false: theme.colors.lightGray,
-                      true: theme.colors.secondary,
+                      false: theme.colors.outlineVariant,
+                      true: theme.colors.primaryContainer,
                     }}
                   />
                 </View>
@@ -703,7 +705,7 @@ export default function EditProfileScreen() {
                     <MaterialCommunityIcons
                       name="lock-outline"
                       size={20}
-                      color={theme.colors.darkGray}
+                      color={theme.colors.onSurfaceVariant}
                       style={styles.alertBannerIcon}
                     />
                     <View style={styles.alertBannerTextContainer}>
@@ -829,12 +831,12 @@ export default function EditProfileScreen() {
                         onChangeText={setCity}
                         containerStyle={styles.inputContainer}
                         style={styles.inputText}
-                        placeholderTextColor={theme.colors.mediumGray}
+                        placeholderTextColor={theme.colors.onSurfaceVariant}
                         leftIcon={
                           <MaterialCommunityIcons
                             name="city-variant-outline"
                             size={20}
-                            color={theme.colors.mediumGray}
+                            color={theme.colors.onSurfaceVariant}
                           />
                         }
                       />
@@ -853,12 +855,12 @@ export default function EditProfileScreen() {
                         onChangeText={setNeighborhood}
                         containerStyle={styles.inputContainer}
                         style={styles.inputText}
-                        placeholderTextColor={theme.colors.mediumGray}
+                        placeholderTextColor={theme.colors.onSurfaceVariant}
                         leftIcon={
                           <MaterialCommunityIcons
                             name="map-marker-outline"
                             size={20}
-                            color={theme.colors.mediumGray}
+                            color={theme.colors.onSurfaceVariant}
                           />
                         }
                       />
@@ -879,7 +881,7 @@ export default function EditProfileScreen() {
                         onChangeText={setBio}
                         containerStyle={styles.textAreaContainer}
                         style={styles.textArea}
-                        placeholderTextColor={theme.colors.mediumGray}
+                        placeholderTextColor={theme.colors.onSurfaceVariant}
                       />
                       <Text style={styles.helperText}>Máximo de 500 caracteres</Text>
                     </View>
@@ -898,12 +900,12 @@ export default function EditProfileScreen() {
                         onChangeText={setInstagram}
                         containerStyle={styles.inputContainer}
                         style={styles.inputText}
-                        placeholderTextColor={theme.colors.mediumGray}
+                        placeholderTextColor={theme.colors.onSurfaceVariant}
                         leftIcon={
                           <MaterialCommunityIcons
                             name="instagram"
                             size={20}
-                            color={theme.colors.mediumGray}
+                            color={theme.colors.onSurfaceVariant}
                           />
                         }
                       />
@@ -920,7 +922,7 @@ export default function EditProfileScreen() {
                   <MaterialCommunityIcons
                     name="store-outline"
                     size={20}
-                    color={theme.colors.darkGray}
+                    color={theme.colors.onSurfaceVariant}
                     style={styles.alertBannerIcon}
                   />
                   <View style={styles.alertBannerTextContainer}>
@@ -975,12 +977,13 @@ const createStyles = (theme: AppTheme) =>
     },
     card: {
       width: '100%',
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 16,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderRadius: theme.rounded.lg,
       padding: 20,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      gap: 14,
+      borderColor: theme.colors.outlineVariant,
+      ...theme.shadows.soft,
+      gap: 16,
     },
     avatarContainer: {
       alignItems: 'center',
@@ -995,29 +998,29 @@ const createStyles = (theme: AppTheme) =>
       marginBottom: 8,
     },
     placeholderImage: {
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLow,
       justifyContent: 'center',
       alignItems: 'center',
     },
     userName: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 20,
       fontWeight: 'bold',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
       textAlign: 'center',
     },
     userRole: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 13,
       color: theme.colors.primary,
       fontWeight: '600',
       marginTop: 2,
     },
     cardSectionHeader: {
-      fontFamily: 'Playfair Display SC',
-      fontSize: 16,
+      fontFamily: theme.typography.headlineMd.fontFamily,
+      fontSize: 18,
       fontWeight: 'bold',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
       marginTop: 4,
     },
     publicHeaderRow: {
@@ -1030,28 +1033,28 @@ const createStyles = (theme: AppTheme) =>
       marginRight: 12,
     },
     publicSubtitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
-      color: theme.colors.darkGray,
+      color: theme.colors.onSurfaceVariant,
       marginTop: 2,
     },
     alertBannerPublic: {
       flexDirection: 'row',
       alignItems: 'flex-start',
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.parchment,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      borderRadius: 10,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.md,
       padding: 12,
       gap: 10,
     },
     alertBannerPrivate: {
       flexDirection: 'row',
       alignItems: 'flex-start',
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLow,
       borderWidth: 1,
-      borderColor: theme.colors.lightGray,
-      borderRadius: 10,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.md,
       padding: 12,
       gap: 10,
     },
@@ -1062,40 +1065,39 @@ const createStyles = (theme: AppTheme) =>
       flex: 1,
     },
     alertBannerTitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '700',
-      color: theme.colors.primary,
+      color: theme.colors.espressoDark,
       marginBottom: 2,
     },
     alertBannerTitlePrivate: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '700',
-      color: theme.colors.darkGray,
+      color: theme.colors.espressoDark,
       marginBottom: 2,
     },
     alertBannerText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
-      color: theme.colors.text,
-      opacity: 0.85,
+      color: theme.colors.onSurfaceVariant,
       lineHeight: 16,
     },
     previewBtn: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surfaceContainerLow,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      borderRadius: 8,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.default,
       paddingHorizontal: 14,
       paddingVertical: 12,
       minHeight: 48,
     },
     previewBtnText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
       color: theme.colors.primary,
@@ -1104,11 +1106,11 @@ const createStyles = (theme: AppTheme) =>
     },
     locationSection: {
       width: '100%',
-      gap: 8,
-      backgroundColor: theme.colors.background,
+      gap: 10,
+      backgroundColor: theme.colors.surfaceContainerLow,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      borderRadius: 10,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.md,
       padding: 12,
     },
     locationHeaderRow: {
@@ -1117,30 +1119,33 @@ const createStyles = (theme: AppTheme) =>
       justifyContent: 'space-between',
     },
     clearLocationBtn: {
+      minHeight: 48,
+      justifyContent: 'center',
       paddingVertical: 4,
       paddingHorizontal: 8,
     },
     clearLocationText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 12,
       fontWeight: '600',
-      color: theme.colors.danger,
+      color: theme.colors.error,
     },
     fetchLocationBtn: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
       gap: 8,
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      borderRadius: 8,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.default,
       paddingVertical: 12,
       paddingHorizontal: 16,
       minHeight: 48,
+      ...theme.shadows.soft,
     },
     fetchLocationBtnText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
       color: theme.colors.primary,
@@ -1149,19 +1154,19 @@ const createStyles = (theme: AppTheme) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 6,
-      backgroundColor: theme.colors.pitchBackground,
-      borderRadius: 6,
+      backgroundColor: theme.colors.tertiaryContainer,
+      borderRadius: theme.rounded.sm,
       paddingHorizontal: 10,
       paddingVertical: 6,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
+      borderColor: theme.colors.tertiaryFixed,
       alignSelf: 'flex-start',
     },
     gpsCoordsText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 12,
       fontWeight: '600',
-      color: theme.colors.darkGray,
+      color: theme.colors.tertiary,
     },
     fieldWrapper: {
       width: '100%',
@@ -1178,58 +1183,59 @@ const createStyles = (theme: AppTheme) =>
       gap: 4,
     },
     label: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
     },
     required: {
       color: theme.colors.primary,
     },
     charCounter: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 11,
-      color: theme.colors.darkGray,
+      color: theme.colors.onSurfaceVariant,
     },
     inputContainer: {
       width: '100%',
       height: 52,
+      minHeight: 48,
       margin: 0,
       marginTop: 4,
       paddingLeft: 14,
       paddingRight: 14,
-      borderRadius: 8,
+      borderRadius: theme.rounded.default,
       borderWidth: 1,
-      borderColor: theme.colors.lightGray,
-      backgroundColor: theme.colors.pitchBackground,
+      borderColor: theme.colors.outlineVariant,
+      backgroundColor: theme.colors.surfaceContainerLowest,
     },
     textAreaContainer: {
       width: '100%',
-      height: 100,
+      minHeight: 100,
       margin: 0,
       marginTop: 4,
       paddingLeft: 14,
       paddingRight: 14,
       paddingVertical: 10,
-      borderRadius: 8,
+      borderRadius: theme.rounded.default,
       borderWidth: 1,
-      borderColor: theme.colors.lightGray,
-      backgroundColor: theme.colors.pitchBackground,
+      borderColor: theme.colors.outlineVariant,
+      backgroundColor: theme.colors.surfaceContainerLowest,
     },
     inputError: {
-      borderColor: theme.colors.primary,
+      borderColor: theme.colors.error,
       borderWidth: 1.5,
     },
     inputSuccess: {
       borderColor: theme.colors.success,
     },
     inputText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 15,
       color: theme.colors.text,
     },
     textArea: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
       color: theme.colors.text,
       textAlignVertical: 'top',
@@ -1245,15 +1251,15 @@ const createStyles = (theme: AppTheme) =>
       marginRight: 4,
     },
     helperText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 11,
-      color: theme.colors.mediumGray,
+      color: theme.colors.onSurfaceVariant,
       marginTop: 2,
     },
     errorText: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 11,
-      color: theme.colors.primary,
+      color: theme.colors.error,
       fontWeight: '500',
     },
     btnActionContainer: {
@@ -1264,7 +1270,8 @@ const createStyles = (theme: AppTheme) =>
     button: {
       width: '100%',
       margin: 0,
-      borderRadius: 8,
+      borderRadius: theme.rounded.default,
+      minHeight: 48,
       height: 52,
     },
   });

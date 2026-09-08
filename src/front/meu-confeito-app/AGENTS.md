@@ -16,9 +16,11 @@
 - Format modified files with Prettier: `npx prettier --write <modified-file>` (or `npx prettier . --write` if multiple files changed).
 - Avoid the usage of `any` when typing; explicit type definitions, interfaces, or proper generic inferences are required.
 - Follow the design guidelines in `DESIGN.md`:
-  - **Flat-First Policy:** No elevation or drop shadows on standard containers/cards (rely on background contrast and 1px borders); elevation is strictly reserved for Floating Action Buttons (FAB).
-  - **Touch Targets:** Maintain a minimum hit target of `48x48dp` for all interactive controls.
-  - **Design Tokens:** Always consume colors, typography, and spacing from the centralized theme system (`src/theme`) rather than hardcoding arbitrary values.
+  - **Soft Tactile Elevation & Subtle Borders:** Use soft, warm espresso-tinted ambient drop shadows (`rgba(37, 24, 26, 0.05)`) paired with delicate 1px rose-taupe borders (`outline-variant` / `#E0BEC1`) rather than stark dark strokes. Reserved elevations apply to hover states, interactive cards, modals, button glows, and Floating Action Buttons (FAB).
+  - **Typography Pairing:** Strictly apply `Playfair Display SC` for headlines, major section headers, and brand stamps; use `Inter` for all functional body text, tabular calculations, form fields, and utilitarian labels.
+  - **Tonal Surfaces & Semantic Colors:** Consume the tiered blush-cream surface hierarchy (`surface-container-*`), reserving `#F6EDDC` for warm artisan parchment accents/dividers, `#40242B` for high-contrast espresso headings, and tertiary green (`#006139` / `#93F7B8`) for financial profit metrics, margins, and positive statuses.
+  - **Touch Targets:** Maintain a minimum hit target of `48x48dp` for all interactive controls (buttons, chips, table row actions, checkboxes, inputs).
+  - **Design Tokens:** Always consume colors, typography, radii, shadows, and spacing from the centralized theme system (`src/theme`) rather than hardcoding arbitrary values.
 
 ## Project Architecture
 

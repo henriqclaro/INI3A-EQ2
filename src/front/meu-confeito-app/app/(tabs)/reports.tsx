@@ -65,7 +65,11 @@ export default function ReportsScreen() {
                 Consulte lotes fabricados, custos operacionais e consumo de estoque
               </Text>
             </View>
-            <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.lightGray} />
+            <MaterialCommunityIcons
+              name="chevron-right"
+              size={22}
+              color={theme.colors.onSurfaceVariant}
+            />
           </TouchableOpacity>
 
           <Text style={styles.pullHint}>Puxe para baixo para atualizar</Text>
@@ -97,26 +101,26 @@ const createStyles = (theme: AppTheme) =>
       width: 80,
       height: 80,
       borderRadius: 40,
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: 18,
+      ...theme.shadows.soft,
     },
     title: {
-      fontFamily: 'Playfair Display SC',
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 22,
-      fontWeight: 'bold',
-      color: theme.colors.text,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
       textAlign: 'center',
       marginBottom: 8,
     },
     subtitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
-      color: theme.colors.text,
-      opacity: 0.75,
+      color: theme.colors.onSurfaceVariant,
       textAlign: 'center',
       lineHeight: 20,
       marginBottom: 20,
@@ -126,20 +130,21 @@ const createStyles = (theme: AppTheme) =>
       minHeight: 64,
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: theme.colors.pitchBackground,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       borderWidth: 1,
-      borderColor: theme.colors.secBorder,
-      borderRadius: 12,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.lg,
       paddingHorizontal: 16,
       paddingVertical: 12,
       marginBottom: 24,
       gap: 12,
+      ...theme.shadows.soft,
     },
     cardIconBox: {
       width: 44,
       height: 44,
       borderRadius: 22,
-      backgroundColor: theme.colors.secondary,
+      backgroundColor: theme.colors.secondaryContainer,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -147,22 +152,22 @@ const createStyles = (theme: AppTheme) =>
       flex: 1,
     },
     cardTitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 15,
       fontWeight: '700',
-      color: theme.colors.text,
+      color: theme.colors.espressoDark,
       marginBottom: 2,
     },
     cardSubtitle: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
-      color: theme.colors.lightGray,
+      color: theme.colors.onSurfaceVariant,
       lineHeight: 16,
     },
     pullHint: {
-      fontFamily: 'Inter',
+      fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
-      color: theme.colors.placeholder,
+      color: theme.colors.outline,
       textAlign: 'center',
     },
   });
