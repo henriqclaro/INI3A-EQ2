@@ -27,3 +27,4 @@ export {
   type ProductionDetailsModalProps,
 } from '@/src/components/production';
 export { SavedRecipeCard } from '@/src/components/SavedRecipeCard';
+export { MenuOptionButton, type MenuOptionButtonProps } from '@/src/components/MenuOptionButton';

@@ -45,3 +45,10 @@ export {
   SelectUserSavesResponse,
   UserSavedRecipeItem,
 } from './saved-recipe';
+export {
+  BakerProfile,
+  BakerProfileLocation,
+  BakerProfileRegisterInput,
+  BakerProfileUpdateInput,
+  PublicBakerProfile,
+} from './baker-profile';

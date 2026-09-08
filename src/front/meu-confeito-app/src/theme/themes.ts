@@ -8,6 +8,8 @@ export const colors = {
   colorWhite: '#FFFFFF',
   colorLightGray: '#D6D6D6',
   colorGray: '#A9A9A9',
+  colorMediumGray: '#6E5D61', // High-contrast warm gray for subtitles and captions
+  colorDarkGray: '#524045', // Deep charcoal-marsala gray for crisp secondary text
 
   colorOrange: '#FFA189',
   colorYellow: '#B45309', // High contrast amber warning tone
@@ -36,6 +38,10 @@ export const lightTheme = {
     pitchBackground: colors.colorWhite,
     lightGray: colors.colorLightGray,
     placeholder: colors.colorGray,
+    mediumGray: colors.colorMediumGray,
+    darkGray: colors.colorDarkGray,
+    textMuted: colors.colorMediumGray,
+    textSecondary: colors.colorDarkGray,
     success: colors.colorGreen,
     danger: colors.colorRed,
     warning: colors.colorYellow,
