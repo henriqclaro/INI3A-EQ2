@@ -37,6 +37,14 @@ export {
 export {
   BakerCard,
   NearbyBakersExplorer,
+  BakerQuickActionsGrid,
+  BakerStockAlertCard,
+  BakerRecentProductionsCard,
+  BakerOverviewBanner,
   type BakerCardProps,
   type NearbyBakersExplorerProps,
+  type BakerQuickActionsGridProps,
+  type BakerStockAlertCardProps,
+  type BakerRecentProductionsCardProps,
+  type BakerOverviewBannerProps,
 } from '@/src/components/baker';
