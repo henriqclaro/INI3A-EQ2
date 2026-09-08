@@ -1,4 +1,9 @@
-import { PartialRecipe, UserInventoryItem } from '../types';
+import {
+  PartialRecipe,
+  SaveRecipeResponse,
+  SelectUserSavesResponse,
+  UserInventoryItem,
+} from '../types';
 import { api } from './api';
 
 export { UserInventoryItem };
@@ -112,5 +117,17 @@ export const UserService = {
         userInventory: response.data.data.inventory,
       },
     };
+  },
+  getSavedRecipes: async (userId: string) => {
+    const response = await api.get<SelectUserSavesResponse>(`/users/${userId}/saves`);
+    return response.data;
+  },
+  saveRecipe: async (userId: string, recipeId: string) => {
+    const response = await api.post<SaveRecipeResponse>(`/users/${userId}/saves`, { recipeId });
+    return response.data;
+  },
+  removeSavedRecipe: async (userId: string, recipeId: string) => {
+    const response = await api.delete(`/users/${userId}/saves`, { data: { recipeId } });
+    return response.data;
   },
 };

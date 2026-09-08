@@ -26,3 +26,4 @@ export {
   type ProductionCardProps,
   type ProductionDetailsModalProps,
 } from '@/src/components/production';
+export { SavedRecipeCard } from '@/src/components/SavedRecipeCard';

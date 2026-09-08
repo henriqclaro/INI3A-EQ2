@@ -69,6 +69,21 @@ export default function PublicRecipesScreen() {
                   ? `${recipes.length} ${recipes.length === 1 ? 'receita encontrada' : 'receitas encontradas'}`
                   : `${recipes.length} ${recipes.length === 1 ? 'receita disponível' : 'receitas disponíveis'}`}
               </Text>
+
+              <TouchableOpacity
+                style={styles.savedLinkBtn}
+                onPress={() => router.push('/saved-recipes')}
+                activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel="Ver receitas salvas"
+              >
+                <MaterialCommunityIcons
+                  name="bookmark-multiple-outline"
+                  size={16}
+                  color={theme.colors.primary}
+                />
+                <Text style={styles.savedLinkText}>Ver Salvas</Text>
+              </TouchableOpacity>
             </View>
           )}
         </View>
@@ -191,6 +206,24 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       fontSize: 13,
       color: theme.colors.text,
       opacity: 0.75,
+    },
+    savedLinkBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      paddingVertical: 4,
+      paddingHorizontal: 8,
+      borderRadius: 6,
+      borderWidth: 1,
+      borderColor: theme.colors.secBorder,
+      backgroundColor: theme.colors.pitchBackground,
+      minHeight: 48,
+    },
+    savedLinkText: {
+      fontFamily: 'Inter',
+      fontSize: 12,
+      fontWeight: '600',
+      color: theme.colors.primary,
     },
     scrollView: {
       flex: 1,

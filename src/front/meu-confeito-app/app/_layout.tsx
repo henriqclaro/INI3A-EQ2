@@ -66,6 +66,7 @@ function RootLayoutContent() {
           <Stack.Screen name="edit-recipe" options={{ title: 'Editar Receita' }} />
           <Stack.Screen name="edit-profile" options={{ title: 'Editar Perfil' }} />
           <Stack.Screen name="productions" options={{ title: 'Histórico de Produções' }} />
+          <Stack.Screen name="saved-recipes" options={{ title: 'Receitas Salvas' }} />
         </Stack>
       </PaperProvider>
     </AuthProvider>

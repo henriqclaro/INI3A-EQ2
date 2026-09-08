@@ -51,6 +51,10 @@ export default function ProfileScreen() {
           <CustomButton title="Editar Perfil" style={styles.editButton} />
         </Link>
 
+        <Link href="/saved-recipes" asChild>
+          <CustomButton title="Receitas Salvas" variant="dashed" style={styles.savedButton} />
+        </Link>
+
         <CustomButton
           title="Sair da Conta"
           variant="secondary"
@@ -106,6 +110,10 @@ const createStyles = (theme: AppTheme) =>
     editButton: {
       width: '100%',
       marginTop: theme.spacing.md,
+    },
+    savedButton: {
+      width: '100%',
+      marginTop: theme.spacing.sm,
     },
     logoutButton: {
       width: '100%',

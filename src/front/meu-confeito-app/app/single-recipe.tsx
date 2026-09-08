@@ -19,6 +19,7 @@ import { ProduceRecipeModal } from '@/src/components/production';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useSingleRecipe } from '@/src/hooks/useRecipes';
+import { useSavedRecipes } from '@/src/hooks/useSavedRecipes';
 import { AppTheme } from '@/src/theme/themes';
 import { PartialTag, RecipeItem, RecipeStatus } from '@/src/types';
 
@@ -31,6 +32,8 @@ export default function RecipeScreen() {
     recipeId,
     user?.id,
   );
+  const { isRecipeSaved, toggleSave, isTogglingSave } = useSavedRecipes(user?.id);
+  const hasSavedRecipe = isRecipeSaved(recipeId);
 
   useFocusEffect(
     useCallback(() => {
@@ -45,6 +48,19 @@ export default function RecipeScreen() {
   const [checkedIngredientMap, setCheckedIngredientMap] = useState<Record<string, boolean>>({});
   const [viewMode, setViewMode] = useState<'recipe' | 'pricing'>('recipe');
   const [isProduceModalOpen, setIsProduceModalOpen] = useState(false);
+
+  const handleToggleSave = async () => {
+    if (!user) {
+      Alert.alert('Login Necessário', 'Faça login para salvar esta receita nas suas favoritas.', [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Fazer Login', onPress: () => router.push('/login') },
+      ]);
+      return;
+    }
+
+    await toggleSave(recipeId);
+    refetch();
+  };
 
   const styles = useMemo(
     () => createStyles(theme, isDesktop, isSmallScreen),
@@ -250,29 +266,50 @@ export default function RecipeScreen() {
       <Stack.Screen
         options={{
           title: recipe?.title || 'Receita',
-          headerRight:
-            isOwner && recipe
-              ? () => (
-                  <TouchableOpacity
-                    onPress={() =>
-                      router.push({
-                        pathname: '/edit-recipe',
-                        params: { recipeId: recipe.id },
-                      })
-                    }
-                    style={styles.headerEditBtn}
-                    accessibilityRole="button"
-                    accessibilityLabel="Editar receita"
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  >
+          headerRight: () => (
+            <View style={styles.headerRightRow}>
+              {recipe && user && recipe.status === 'PUBLISHED' && (
+                <TouchableOpacity
+                  onPress={handleToggleSave}
+                  disabled={isTogglingSave}
+                  style={styles.headerSaveBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel={hasSavedRecipe ? 'Remover dos salvos' : 'Salvar receita'}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  {isTogglingSave ? (
+                    <ActivityIndicator size="small" color={theme.colors.primary} />
+                  ) : (
                     <MaterialCommunityIcons
-                      name="pencil-outline"
-                      size={22}
+                      name={hasSavedRecipe ? 'bookmark' : 'bookmark-outline'}
+                      size={24}
                       color={theme.colors.primary}
                     />
-                  </TouchableOpacity>
-                )
-              : undefined,
+                  )}
+                </TouchableOpacity>
+              )}
+              {isOwner && recipe && (
+                <TouchableOpacity
+                  onPress={() =>
+                    router.push({
+                      pathname: '/edit-recipe',
+                      params: { recipeId: recipe.id },
+                    })
+                  }
+                  style={styles.headerEditBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel="Editar receita"
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <MaterialCommunityIcons
+                    name="pencil-outline"
+                    size={22}
+                    color={theme.colors.primary}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          ),
         }}
       />
 
@@ -371,6 +408,19 @@ export default function RecipeScreen() {
                         color={theme.colors.text}
                       />
                       <Text style={styles.metaBadgeText}>{recipe.prepTimeMinutes} min</Text>
+                    </View>
+                  )}
+
+                  {typeof recipe.totalSaves === 'number' && recipe.totalSaves > 0 && (
+                    <View style={styles.metaBadge}>
+                      <MaterialCommunityIcons
+                        name="bookmark-outline"
+                        size={15}
+                        color={theme.colors.primary}
+                      />
+                      <Text style={styles.metaBadgeText}>
+                        {recipe.totalSaves} {recipe.totalSaves === 1 ? 'salvo' : 'salvos'}
+                      </Text>
                     </View>
                   )}
                 </View>
@@ -539,25 +589,60 @@ export default function RecipeScreen() {
               {!isOwner && user && recipe.status === 'PUBLISHED' && (
                 <View style={styles.guestProduceCard}>
                   <View style={styles.guestProduceInfo}>
-                    <Text style={styles.guestProduceTitle}>Gostou desta receita?</Text>
+                    <Text style={styles.guestProduceTitle}>Receita da Comunidade</Text>
                     <Text style={styles.guestProduceSubtitle}>
-                      Produza usando os insumos do seu estoque.
+                      {hasSavedRecipe
+                        ? 'Esta receita já está salva nas suas receitas favoritas.'
+                        : 'Salve nas suas favoritas ou produza usando seus insumos.'}
                     </Text>
                   </View>
-                  <TouchableOpacity
-                    style={styles.btnActionProduceGuest}
-                    onPress={() => setIsProduceModalOpen(true)}
-                    activeOpacity={0.85}
-                    accessibilityRole="button"
-                    accessibilityLabel="Registrar produção desta receita pública"
-                  >
-                    <MaterialCommunityIcons
-                      name="pot-steam"
-                      size={18}
-                      color={theme.colors.secondaryText}
-                    />
-                    <Text style={styles.btnActionTextProduceGuest}>Produzir</Text>
-                  </TouchableOpacity>
+                  <View style={styles.guestProduceButtons}>
+                    <TouchableOpacity
+                      style={[
+                        styles.btnActionSaveGuest,
+                        hasSavedRecipe && styles.btnActionSaveGuestActive,
+                      ]}
+                      onPress={handleToggleSave}
+                      disabled={isTogglingSave}
+                      activeOpacity={0.8}
+                      accessibilityRole="button"
+                      accessibilityLabel={
+                        hasSavedRecipe
+                          ? 'Remover receita dos salvos'
+                          : 'Salvar receita nos favoritos'
+                      }
+                    >
+                      {isTogglingSave ? (
+                        <ActivityIndicator size="small" color={theme.colors.primary} />
+                      ) : (
+                        <>
+                          <MaterialCommunityIcons
+                            name={hasSavedRecipe ? 'bookmark-check' : 'bookmark-outline'}
+                            size={18}
+                            color={theme.colors.primary}
+                          />
+                          <Text style={styles.btnActionTextSaveGuest}>
+                            {hasSavedRecipe ? 'Salva' : 'Salvar'}
+                          </Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.btnActionProduceGuest}
+                      onPress={() => setIsProduceModalOpen(true)}
+                      activeOpacity={0.85}
+                      accessibilityRole="button"
+                      accessibilityLabel="Registrar produção desta receita pública"
+                    >
+                      <MaterialCommunityIcons
+                        name="pot-steam"
+                        size={18}
+                        color={theme.colors.secondaryText}
+                      />
+                      <Text style={styles.btnActionTextProduceGuest}>Produzir</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               )}
 
@@ -1050,6 +1135,18 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       fontSize: 12,
       fontWeight: '700',
     },
+    headerRightRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    headerSaveBtn: {
+      minWidth: 48,
+      minHeight: 48,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 8,
+    },
     headerEditBtn: {
       minWidth: 48,
       minHeight: 48,
@@ -1235,6 +1332,33 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       fontFamily: 'Inter',
       fontSize: 12,
       color: theme.colors.lightGray,
+    },
+    guestProduceButtons: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    btnActionSaveGuest: {
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.background,
+      borderWidth: 1,
+      borderColor: theme.colors.primary,
+      borderRadius: 8,
+      paddingHorizontal: 14,
+      gap: 6,
+    },
+    btnActionSaveGuestActive: {
+      backgroundColor: theme.colors.secondary,
+      borderColor: theme.colors.secBorder,
+    },
+    btnActionTextSaveGuest: {
+      fontFamily: 'Inter',
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.primary,
     },
     btnActionProduceGuest: {
       minHeight: 48,

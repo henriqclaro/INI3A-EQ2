@@ -54,6 +54,14 @@ export default function RecipesScreen() {
         accessibilityLabel: 'Criar nova receita',
       },
       {
+        id: 'saved-recipes',
+        label: 'Receitas Salvas',
+        icon: 'bookmark-multiple-outline',
+        variant: 'secondary',
+        onPress: () => router.push('/saved-recipes'),
+        accessibilityLabel: 'Ver receitas salvas',
+      },
+      {
         id: 'public-recipes',
         label: 'Buscar Receitas Públicas',
         icon: 'book-search-outline',
