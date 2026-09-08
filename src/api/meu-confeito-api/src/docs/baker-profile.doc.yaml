@@ -127,6 +127,117 @@ paths:
           description: Perfil de confeiteiro não encontrado
         '410':
           description: Usuário suspenso ou excluído
+  /baker-profiles/me/showcase:
+    get:
+      summary: Seleciona as receitas da vitrine do confeiteiro autenticado
+      tags:
+        - Perfil de Confeiteiro
+      responses:
+        '200':
+          description: Vitrine de receitas selecionada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShowcaseListResponse'
+        '404':
+          description: Usuário não encontrado
+        '410':
+          description: Usuário suspenso ou excluído
+    post:
+      summary: Adiciona uma receita à vitrine do confeiteiro autenticado
+      tags:
+        - Perfil de Confeiteiro
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShowcaseAddShowcaseSchema'
+      responses:
+        '201':
+          description: Receita adicionada à vitrine com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShowcaseItemResponse'
+        '400':
+          description: Erro na validação dos dados
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Receita ou usuário não encontrado
+        '409':
+          description: Receita já está na vitrine ou não está publicada
+        '410':
+          description: Usuário suspenso ou excluído
+  /baker-profiles/me/showcase/order:
+    patch:
+      summary: Reordena as receitas na vitrine do confeiteiro autenticado
+      tags:
+        - Perfil de Confeiteiro
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShowcaseReorderShowcaseSchema'
+      responses:
+        '200':
+          description: Vitrine de receitas reordenada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShowcaseListResponse'
+        '400':
+          description: Erro na validação dos dados
+        '404':
+          description: Receita ou usuário não encontrado
+        '410':
+          description: Usuário suspenso ou excluído
+  /baker-profiles/me/showcase/{recipeId}:
+    delete:
+      summary: Remove uma receita da vitrine do confeiteiro autenticado
+      tags:
+        - Perfil de Confeiteiro
+      parameters:
+        - in: path
+          name: recipeId
+          required: true
+          schema:
+            $ref: '#/components/schemas/ShowcaseParamsRecipeSchema'
+      responses:
+        '204':
+          description: Receita removida da vitrine com sucesso
+        '400':
+          description: Erro na validação dos dados
+        '404':
+          description: Receita não encontrada na vitrine
+        '410':
+          description: Usuário suspenso ou excluído
+  /baker-profiles/{id}/showcase:
+    get:
+      summary: Lista as receitas públicas em destaque da vitrine de um confeiteiro
+      tags:
+        - Perfil de Confeiteiro
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/ShowcaseParamsProfileSchema'
+      responses:
+        '200':
+          description: Vitrine de receitas selecionada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShowcaseListResponse'
+        '400':
+          description: Erro na validação dos dados
+        '404':
+          description: Perfil de confeiteiro não encontrado
+        '410':
+          description: Usuário suspenso ou excluído
   /baker-profiles/{id}:
     get:
       summary: Seleciona as informações públicas de um perfil de confeiteiro

@@ -1,12 +1,15 @@
 import { Router } from 'express';
 
 import { BakerProfileController } from '../controllers/baker-profile.controller';
+import { ShowcaseController } from '../controllers/showcase.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
 import { validate } from '../middlewares/validate.middleware';
 import * as bakerProfile from '../validation/baker-profile.schema';
+import * as showcase from '../validation/showcase.schema';
 
 const bakerProfileRoutes = Router();
 const bakerProfileController = new BakerProfileController();
+const showcaseController = new ShowcaseController();
 
 bakerProfileRoutes.use(authMiddleware);
 
@@ -31,6 +34,32 @@ bakerProfileRoutes.patch(
 );
 
 bakerProfileRoutes.delete('/me', bakerProfileController.deleteMe.bind(bakerProfileController));
+
+bakerProfileRoutes.get('/me/showcase', showcaseController.listMine.bind(showcaseController));
+
+bakerProfileRoutes.post(
+  '/me/showcase',
+  validate({ body: showcase.addShowcaseSchema }),
+  showcaseController.add.bind(showcaseController),
+);
+
+bakerProfileRoutes.patch(
+  '/me/showcase/order',
+  validate({ body: showcase.reorderShowcaseSchema }),
+  showcaseController.reorder.bind(showcaseController),
+);
+
+bakerProfileRoutes.delete(
+  '/me/showcase/:recipeId',
+  validate({ params: showcase.paramsRecipeSchema }),
+  showcaseController.remove.bind(showcaseController),
+);
+
+bakerProfileRoutes.get(
+  '/:id/showcase',
+  validate({ params: showcase.paramsProfileSchema }),
+  showcaseController.listPublic.bind(showcaseController),
+);
 
 bakerProfileRoutes.get(
   '/:id',

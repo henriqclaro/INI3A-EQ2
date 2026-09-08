@@ -1,0 +1,78 @@
+components:
+  schemas:
+    ShowcaseItemResponse:
+      type: object
+      properties:
+        showcaseItem:
+          type: object
+          properties:
+            userId:
+              type: string
+              format: uuid
+            recipeId:
+              type: string
+              format: uuid
+            order:
+              type: integer
+              nullable: true
+            createdAt:
+              type: string
+              format: date-time
+            recipe:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                title:
+                  type: string
+                coverUrl:
+                  type: string
+                  format: url
+                  nullable: true
+                averageRating:
+                  type: number
+                totalReviews:
+                  type: integer
+                status:
+                  type: string
+                  nullable: true
+    ShowcaseListResponse:
+      type: object
+      properties:
+        showcase:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: string
+                format: uuid
+              recipeId:
+                type: string
+                format: uuid
+              order:
+                type: integer
+                nullable: true
+              createdAt:
+                type: string
+                format: date-time
+              recipe:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  title:
+                    type: string
+                  coverUrl:
+                    type: string
+                    format: url
+                    nullable: true
+                  averageRating:
+                    type: number
+                  totalReviews:
+                    type: integer
+                  status:
+                    type: string
+                    nullable: true
