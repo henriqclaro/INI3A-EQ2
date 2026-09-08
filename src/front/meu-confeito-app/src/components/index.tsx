@@ -31,6 +31,7 @@ export { MenuOptionButton, type MenuOptionButtonProps } from '@/src/components/M
 export {
   SettingsSection,
   ThemeToggleCard,
+  InteractionSettingsCard,
   type SettingsSectionProps,
 } from '@/src/components/settings';
 export {

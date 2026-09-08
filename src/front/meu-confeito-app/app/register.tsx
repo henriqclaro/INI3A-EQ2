@@ -229,7 +229,7 @@ export default function RegisterScreen() {
                   activeOpacity={0.8}
                 >
                   <MaterialCommunityIcons
-                    name="chef-hat"
+                    name="cake-variant-outline"
                     size={20}
                     color={
                       role === 'BAKER' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant

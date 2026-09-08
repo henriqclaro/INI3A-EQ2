@@ -1,48 +1,36 @@
 import { useEffect, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { Slot, Stack, useRouter, useSegments } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
 import { ActivityIndicator, PaperProvider } from 'react-native-paper';
 
 import { CustomHeader } from '@/src/components';
 import { AuthProvider, useAuth } from '@/src/contexts/AuthContext';
+import { SettingsProvider } from '@/src/contexts/SettingsContext';
 import { ThemeProvider, useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
-function RootNavigation() {
+function useProtectedRoute() {
   const { user, isLoadingStorage } = useAuth();
-  const { theme } = useThemeMode();
   const segments = useSegments();
   const router = useRouter();
-  const styles = useMemo(() => createStyles(theme), [theme]);
 
   useEffect(() => {
     if (isLoadingStorage) {
       return;
     }
 
-    const inAuthScreen =
+    const isInAuthScreen =
       segments[0] === 'login' || segments[0] === 'register' || segments[0] === undefined;
 
-    if (!user && !inAuthScreen) {
+    if (!user && !isInAuthScreen) {
       router.replace('/login');
-    } else if (user && inAuthScreen) {
+    } else if (user && isInAuthScreen) {
       router.replace('/home');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, segments]);
-
-  if (isLoadingStorage) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
-    );
-  }
-
-  return <Slot />;
+  }, [user, segments, isLoadingStorage, router]);
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -52,38 +40,50 @@ export const unstable_settings = {
 
 function RootLayoutContent() {
   const { theme, isDarkMode } = useThemeMode();
+  const { isLoadingStorage } = useAuth();
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
-  return (
-    <AuthProvider>
+  useProtectedRoute();
+
+  if (isLoadingStorage) {
+    return (
       <PaperProvider theme={theme}>
         <StatusBar style={isDarkMode ? 'light' : 'dark'} />
-        <Stack
-          screenOptions={{
-            headerShown: true,
-            header: (props) => <CustomHeader {...props} />,
-            contentStyle: { backgroundColor: theme.colors.background },
-          }}
-        >
-          <RootNavigation />
-          <Stack.Screen name="index" options={{ title: 'Bem-Vindo' }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="login" options={{ title: 'Login' }} />
-          <Stack.Screen name="register" options={{ title: 'Cadastro' }} />
-          <Stack.Screen name="single-recipe" options={{ title: 'Receita' }} />
-          <Stack.Screen name="public-recipes" options={{ title: 'Receitas Públicas' }} />
-          <Stack.Screen name="stock" options={{ title: 'Estoque' }} />
-          <Stack.Screen name="register-stock" options={{ title: 'Cadastrar no Estoque' }} />
-          <Stack.Screen name="create-recipe" options={{ title: 'Cadastrar Receita' }} />
-          <Stack.Screen name="edit-recipe" options={{ title: 'Editar Receita' }} />
-          <Stack.Screen name="edit-profile" options={{ title: 'Editar Perfil' }} />
-          <Stack.Screen name="public-profile" options={{ title: 'Perfil Público' }} />
-          <Stack.Screen name="productions" options={{ title: 'Histórico de Produções' }} />
-          <Stack.Screen name="saved-recipes" options={{ title: 'Receitas Salvas' }} />
-          <Stack.Screen name="search-bakers" options={{ title: 'Buscar Confeitarias' }} />
-          <Stack.Screen name="settings" options={{ title: 'Configurações' }} />
-        </Stack>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        </View>
       </PaperProvider>
-    </AuthProvider>
+    );
+  }
+
+  return (
+    <PaperProvider theme={theme}>
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
+      <Stack
+        screenOptions={{
+          headerShown: true,
+          header: (props) => <CustomHeader {...props} />,
+          contentStyle: { backgroundColor: theme.colors.background },
+        }}
+      >
+        <Stack.Screen name="index" options={{ title: 'Bem-Vindo' }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="login" options={{ title: 'Login' }} />
+        <Stack.Screen name="register" options={{ title: 'Cadastro' }} />
+        <Stack.Screen name="single-recipe" options={{ title: 'Receita' }} />
+        <Stack.Screen name="public-recipes" options={{ title: 'Receitas Públicas' }} />
+        <Stack.Screen name="stock" options={{ title: 'Estoque' }} />
+        <Stack.Screen name="register-stock" options={{ title: 'Cadastrar no Estoque' }} />
+        <Stack.Screen name="create-recipe" options={{ title: 'Cadastrar Receita' }} />
+        <Stack.Screen name="edit-recipe" options={{ title: 'Editar Receita' }} />
+        <Stack.Screen name="edit-profile" options={{ title: 'Editar Perfil' }} />
+        <Stack.Screen name="public-profile" options={{ title: 'Perfil Público' }} />
+        <Stack.Screen name="productions" options={{ title: 'Histórico de Produções' }} />
+        <Stack.Screen name="saved-recipes" options={{ title: 'Receitas Salvas' }} />
+        <Stack.Screen name="search-bakers" options={{ title: 'Buscar Confeitarias' }} />
+        <Stack.Screen name="settings" options={{ title: 'Configurações' }} />
+      </Stack>
+    </PaperProvider>
   );
 }
 
@@ -100,7 +100,11 @@ const createStyles = (theme: AppTheme) =>
 export default function RootLayout() {
   return (
     <ThemeProvider>
-      <RootLayoutContent />
+      <SettingsProvider>
+        <AuthProvider>
+          <RootLayoutContent />
+        </AuthProvider>
+      </SettingsProvider>
     </ThemeProvider>
   );
 }

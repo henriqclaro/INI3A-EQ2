@@ -10,11 +10,13 @@ import {
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
+import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme, colors, darkColors } from '@/src/theme/themes';
 
 export function ThemeToggleCard() {
   const { theme, currentMode, isDarkMode, setMode, toggleTheme } = useThemeMode();
+  const { triggerHaptic } = useSettings();
   const { width } = useWindowDimensions();
   const isSmallScreen = width < theme.breakpoints.sm;
 
@@ -22,6 +24,16 @@ export function ThemeToggleCard() {
 
   const isLightSelected = currentMode === 'light';
   const isDarkSelected = currentMode === 'dark';
+
+  const handleToggleTheme = () => {
+    triggerHaptic('selection');
+    toggleTheme();
+  };
+
+  const handleSetMode = (mode: 'light' | 'dark') => {
+    triggerHaptic('selection');
+    setMode(mode);
+  };
 
   return (
     <View style={styles.card}>
@@ -54,7 +66,7 @@ export function ThemeToggleCard() {
 
         <Switch
           value={isDarkMode}
-          onValueChange={toggleTheme}
+          onValueChange={handleToggleTheme}
           thumbColor={isDarkMode ? theme.colors.primary : theme.colors.surfaceContainerHighest}
           trackColor={{
             false: theme.colors.outlineVariant,
@@ -74,7 +86,7 @@ export function ThemeToggleCard() {
         {/* Light Mode Tile */}
         <TouchableOpacity
           style={[styles.themeTile, isLightSelected && styles.themeTileActive]}
-          onPress={() => setMode('light')}
+          onPress={() => handleSetMode('light')}
           accessibilityRole="radio"
           accessibilityState={{ selected: isLightSelected }}
           accessibilityLabel="Selecionar modo claro artesanal"
@@ -109,7 +121,7 @@ export function ThemeToggleCard() {
         {/* Dark Mode Tile */}
         <TouchableOpacity
           style={[styles.themeTile, isDarkSelected && styles.themeTileActive]}
-          onPress={() => setMode('dark')}
+          onPress={() => handleSetMode('dark')}
           accessibilityRole="radio"
           accessibilityState={{ selected: isDarkSelected }}
           accessibilityLabel="Selecionar modo escuro aconchegante"

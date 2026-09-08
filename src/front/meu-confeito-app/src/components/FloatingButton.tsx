@@ -153,7 +153,7 @@ export const FloatingButton = ({
           ) : (
             children || (
               <MaterialCommunityIcons
-                name="chef-hat"
+                name="cake-variant-outline"
                 size={26}
                 color={variant === 'secondary' ? theme.colors.primary : theme.colors.onPrimary}
               />

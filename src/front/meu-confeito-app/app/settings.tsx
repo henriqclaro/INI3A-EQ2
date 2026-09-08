@@ -5,7 +5,7 @@ import { Stack } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { SettingsSection, ThemeToggleCard } from '@/src/components';
+import { InteractionSettingsCard, SettingsSection, ThemeToggleCard } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
@@ -72,7 +72,16 @@ export default function SettingsScreen() {
             <ThemeToggleCard />
           </SettingsSection>
 
-          {/* Section 2: Planned Features (Extensible Architecture) */}
+          {/* Section 2: Navigation & Haptics */}
+          <SettingsSection
+            title="Gestos e Resposta Tátil"
+            description="Controle a navegação por deslizamento e o retorno de vibração do aplicativo"
+            icon="cellphone-sound"
+          >
+            <InteractionSettingsCard />
+          </SettingsSection>
+
+          {/* Section 3: Planned Features (Extensible Architecture) */}
           <SettingsSection
             title="Preferências Operacionais"
             description="Recursos e personalizações em desenvolvimento para as próximas versões"

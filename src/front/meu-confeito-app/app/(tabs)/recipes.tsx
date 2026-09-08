@@ -112,7 +112,11 @@ export default function RecipesScreen() {
         ) : recipes.length === 0 ? (
           <View style={styles.emptyContainer}>
             <View style={styles.emptyIconCircle}>
-              <MaterialCommunityIcons name="chef-hat" size={44} color={theme.colors.primary} />
+              <MaterialCommunityIcons
+                name="cake-variant-outline"
+                size={44}
+                color={theme.colors.primary}
+              />
             </View>
             <Text style={styles.emptyTitle}>Seu caderno está esperando!</Text>
             <Text style={styles.emptySubtitle}>
@@ -171,7 +175,11 @@ export default function RecipesScreen() {
             <View style={styles.bottomSuggestionCard}>
               <View style={styles.suggestionHeader}>
                 <View style={styles.suggestionIconWrapper}>
-                  <MaterialCommunityIcons name="chef-hat" size={26} color={theme.colors.primary} />
+                  <MaterialCommunityIcons
+                    name="cake-variant-outline"
+                    size={26}
+                    color={theme.colors.primary}
+                  />
                 </View>
                 <View style={styles.suggestionHeaderText}>
                   <Text style={styles.suggestionTitle}>Quer expandir seu cardápio?</Text>
