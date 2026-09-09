@@ -1,0 +1,59 @@
+paths:
+  /analytics/profit-summary:
+    get:
+      summary: Obtém resumo de lucratividade e custos operacionais
+      description: Consolida o faturamento projetado, custos de produção por categoria e deduções de desperdício para calcular o lucro líquido em um intervalo de datas.
+      tags:
+        - Análises
+      parameters:
+        - in: query
+          name: startDate
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Data inicial do período (YYYY-MM-DD)
+        - in: query
+          name: endDate
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Data final do período (YYYY-MM-DD)
+      responses:
+        '200':
+          description: Resumo de lucratividade obtido com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfitSummaryResponse'
+        '400':
+          description: Erro na validação dos dados ou intervalo de datas inválido
+        '401':
+          description: Token inválido ou expirado
+
+  /analytics/purchase-projection:
+    post:
+      summary: Gera projeção de compras e cálculo de necessidades (MRP)
+      description: Realiza a explosão recursiva da lista de materiais (BOM) das receitas planejadas, confronta com os saldos em estoque e calcula o déficit e gastos estimados.
+      tags:
+        - Análises
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyticsPurchaseProjectionSchema'
+      responses:
+        '200':
+          description: Projeção de compras gerada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseProjectionResponse'
+        '400':
+          description: Erro na validação dos dados
+        '401':
+          description: Token inválido ou expirado
+        '404':
+          description: Receita informada não encontrada

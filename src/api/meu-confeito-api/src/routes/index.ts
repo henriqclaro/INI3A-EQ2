@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import { analyticsRoutes } from './analytics.route';
 import { authRoutes } from './auth.route';
 import { bakerProfileRoutes } from './baker-profile.route';
 import { ingredientRoutes } from './ingredient.route';
@@ -34,5 +35,7 @@ routes.use('/recipes', recipeRoutes);
 routes.use('/productions', productionRoutes);
 
 routes.use('/baker-profiles', bakerProfileRoutes);
+
+routes.use('/analytics', analyticsRoutes);
 
 export { routes };

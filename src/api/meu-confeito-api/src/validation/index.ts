@@ -1,3 +1,4 @@
+export * as analytics from './analytics.schema';
 export * as auth from './auth.schema';
 export * as bakerProfile from './baker-profile.schema';
 export * as ingredient from './ingredient.schema';

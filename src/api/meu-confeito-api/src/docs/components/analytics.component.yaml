@@ -1,0 +1,112 @@
+components:
+  schemas:
+    ProfitSummaryCostBreakdown:
+      type: object
+      properties:
+        ingredientCost:
+          type: number
+          description: Custo total dos insumos e ingredientes consumidos
+        laborCost:
+          type: number
+          description: Custo total de mão de obra rateado
+        overheadCost:
+          type: number
+          description: Custos fixos e indiretos rateados
+        packagingCost:
+          type: number
+          description: Custo total de embalagens consumidas
+        totalProductionCost:
+          type: number
+          description: Custo total acumulado das fornadas produzidas
+    ProfitSummaryData:
+      type: object
+      properties:
+        startDate:
+          type: string
+          format: date
+          description: Data inicial do período avaliado (YYYY-MM-DD)
+        endDate:
+          type: string
+          format: date
+          description: Data final do período avaliado (YYYY-MM-DD)
+        totalProductions:
+          type: integer
+          description: Quantidade de fornadas concluídas no período
+        projectedRevenue:
+          type: number
+          description: Faturamento bruto projetado com base nas margens das receitas
+        totalProductionCost:
+          type: number
+          description: Soma de todos os custos de produção no período
+        wasteCost:
+          type: number
+          description: Dedução por perdas e descartes de insumos no estoque
+        netProfit:
+          type: number
+          description: Lucro líquido estimado do período
+        achievedMarginPercent:
+          type: number
+          description: Margem líquida percentual obtida sobre o faturamento
+        costBreakdown:
+          $ref: '#/components/schemas/ProfitSummaryCostBreakdown'
+    ProfitSummaryResponse:
+      type: object
+      properties:
+        summary:
+          $ref: '#/components/schemas/ProfitSummaryData'
+
+    PurchaseProjectionItem:
+      type: object
+      properties:
+        ingredientId:
+          type: integer
+          description: Identificador do ingrediente
+        name:
+          type: string
+          description: Nome do insumo ou ingrediente
+        unit:
+          type: string
+          enum:
+            - G
+            - KG
+            - ML
+            - L
+            - UN
+          description: Unidade de medida padrão em estoque
+        requiredQuantity:
+          type: number
+          description: Quantidade total demandada para as produções planejadas
+        currentQuantity:
+          type: number
+          description: Saldo disponível atualmente em estoque
+        deficitQuantity:
+          type: number
+          description: Quantidade deficitária necessária para aquisição
+        costPerBaseUnit:
+          type: number
+          description: Custo unitário de referência em estoque
+        estimatedCost:
+          type: number
+          description: Valor total estimado para aquisição do déficit
+        unestimated:
+          type: boolean
+          description: Indica se o insumo não possui histórico de custo para cálculo monetário
+    PurchaseProjectionData:
+      type: object
+      properties:
+        totalItemsToPurchase:
+          type: integer
+          description: Quantidade de insumos com déficit de estoque
+        totalEstimatedExpenditure:
+          type: number
+          description: Gasto total estimado necessário para compra de todos os insumos deficitários
+        items:
+          type: array
+          description: Lista de itens deficitários ordenada por maior valor estimado
+          items:
+            $ref: '#/components/schemas/PurchaseProjectionItem'
+    PurchaseProjectionResponse:
+      type: object
+      properties:
+        projection:
+          $ref: '#/components/schemas/PurchaseProjectionData'
