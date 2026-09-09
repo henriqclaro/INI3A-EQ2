@@ -173,18 +173,19 @@ export default function SavedRecipesScreen() {
           ) : (
             <View style={styles.listContainer}>
               {filteredSaves.map((item) => (
-                <SavedRecipeCard
-                  key={item.recipe.id}
-                  item={item}
-                  onPress={() =>
-                    router.push({
-                      pathname: '/single-recipe',
-                      params: { recipeId: item.recipe.id },
-                    })
-                  }
-                  onRemove={() => handleRemove(item.recipe.id, item.recipe.title)}
-                  isRemoving={removingId === item.recipe.id}
-                />
+                <View key={item.recipe.id} style={styles.cardWrapper}>
+                  <SavedRecipeCard
+                    item={item}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/single-recipe',
+                        params: { recipeId: item.recipe.id },
+                      })
+                    }
+                    onRemove={() => handleRemove(item.recipe.id, item.recipe.title)}
+                    isRemoving={removingId === item.recipe.id}
+                  />
+                </View>
               ))}
             </View>
           )}
@@ -204,7 +205,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       paddingHorizontal: isDesktop ? 32 : 16,
       paddingTop: 16,
       paddingBottom: 8,
-      maxWidth: 960,
+      maxWidth: isDesktop ? 1040 : 960,
       width: '100%',
       alignSelf: 'center',
     },
@@ -241,13 +242,21 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       paddingHorizontal: isDesktop ? 32 : 16,
       paddingBottom: 40,
       paddingTop: 8,
-      maxWidth: 960,
+      maxWidth: isDesktop ? 1040 : 960,
       width: '100%',
       alignSelf: 'center',
       flexGrow: 1,
     },
     listContainer: {
-      gap: 12,
+      flexDirection: isDesktop ? 'row' : 'column',
+      flexWrap: isDesktop ? 'wrap' : 'nowrap',
+      gap: 16,
+    },
+    cardWrapper: {
+      width: isDesktop ? undefined : '100%',
+      flex: isDesktop ? 1 : undefined,
+      minWidth: isDesktop ? 320 : '100%',
+      maxWidth: isDesktop ? 510 : '100%',
     },
     feedbackContainer: {
       flex: 1,

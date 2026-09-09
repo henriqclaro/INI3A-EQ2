@@ -6,7 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import { ActivityIndicator, PaperProvider } from 'react-native-paper';
 
-import { CustomHeader } from '@/src/components';
+import { CustomHeader, DesktopAlert } from '@/src/components';
 import { AuthProvider, useAuth } from '@/src/contexts/AuthContext';
 import { SettingsProvider } from '@/src/contexts/SettingsContext';
 import { ThemeProvider, useThemeMode } from '@/src/contexts/ThemeContext';
@@ -83,6 +83,7 @@ function RootLayoutContent() {
         <Stack.Screen name="search-bakers" options={{ title: 'Buscar Confeitarias' }} />
         <Stack.Screen name="settings" options={{ title: 'Configurações' }} />
       </Stack>
+      <DesktopAlert />
     </PaperProvider>
   );
 }

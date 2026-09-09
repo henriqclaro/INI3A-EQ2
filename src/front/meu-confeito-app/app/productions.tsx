@@ -8,6 +8,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from 'react-native';
 
 import { Stack, router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -24,6 +25,8 @@ import { formatCurrency } from '@/src/utils/formatters';
 export default function ProductionsScreen() {
   const { theme } = useThemeMode();
   const { recipeId } = useLocalSearchParams<{ recipeId?: string }>();
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 768;
 
   const [activeFilter, setActiveFilter] = useState<'active' | 'all'>('active');
   const [selectedProduction, setSelectedProduction] = useState<ProductionItem | null>(null);
@@ -46,7 +49,7 @@ export default function ProductionsScreen() {
     }, [refetch, queryParams]),
   );
 
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
   const handleOpenDetails = (prod: ProductionItem) => {
     setSelectedProduction(prod);
@@ -111,142 +114,144 @@ export default function ProductionsScreen() {
       <Stack.Screen options={{ title: 'Histórico de Produções' }} />
 
       <View style={styles.container}>
-        {/* Filter Tabs */}
-        <View style={styles.filterRow}>
-          <TouchableOpacity
-            style={[styles.filterBtn, activeFilter === 'active' && styles.filterBtnActive]}
-            onPress={() => setActiveFilter('active')}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel="Filtrar produções ativas"
-          >
-            <MaterialCommunityIcons
-              name="check-circle-outline"
-              size={18}
-              color={
-                activeFilter === 'active' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant
-              }
-            />
-            <Text
-              style={[
-                styles.filterBtnText,
-                activeFilter === 'active' && styles.filterBtnTextActive,
-              ]}
-            >
-              Ativas ({activeCount})
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.filterBtn, activeFilter === 'all' && styles.filterBtnActive]}
-            onPress={() => setActiveFilter('all')}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel="Filtrar todas as produções incluindo canceladas"
-          >
-            <MaterialCommunityIcons
-              name="format-list-bulleted"
-              size={18}
-              color={
-                activeFilter === 'all' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant
-              }
-            />
-            <Text
-              style={[styles.filterBtnText, activeFilter === 'all' && styles.filterBtnTextActive]}
-            >
-              Todas ({productions.length})
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Summary Card */}
-        <View style={styles.summaryCard}>
-          <View style={styles.summaryCol}>
-            <Text style={styles.summaryLabel}>Lotes Concluídos</Text>
-            <Text style={styles.summaryValue}>{activeCount}</Text>
-          </View>
-          <View style={styles.summaryDivider} />
-          <View style={styles.summaryCol}>
-            <Text style={styles.summaryLabel}>Custo Total Produzido</Text>
-            <Text style={styles.summaryValuePrimary}>{formatCurrency(totalCostSum)}</Text>
-          </View>
-        </View>
-
-        {/* Content List */}
-        {isLoading && productions.length === 0 ? (
-          <View style={styles.centerContainer}>
-            <ActivityIndicator size="large" color={theme.colors.primary} />
-            <Text style={styles.loadingText}>Carregando histórico de produções...</Text>
-          </View>
-        ) : error && productions.length === 0 ? (
-          <View style={styles.centerContainer}>
-            <MaterialCommunityIcons
-              name="alert-circle-outline"
-              size={56}
-              color={theme.colors.error}
-            />
-            <Text style={styles.emptyTitle}>Erro ao carregar produções</Text>
-            <Text style={styles.emptySubtitle}>{error}</Text>
+        <View style={styles.innerContainer}>
+          {/* Filter Tabs */}
+          <View style={styles.filterRow}>
             <TouchableOpacity
-              style={styles.retryBtn}
-              onPress={() => refetch(queryParams)}
+              style={[styles.filterBtn, activeFilter === 'active' && styles.filterBtnActive]}
+              onPress={() => setActiveFilter('active')}
+              activeOpacity={0.8}
               accessibilityRole="button"
-              accessibilityLabel="Tentar novamente"
+              accessibilityLabel="Filtrar produções ativas"
             >
-              <Text style={styles.retryBtnText}>Tentar Novamente</Text>
+              <MaterialCommunityIcons
+                name="check-circle-outline"
+                size={18}
+                color={
+                  activeFilter === 'active' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant
+                }
+              />
+              <Text
+                style={[
+                  styles.filterBtnText,
+                  activeFilter === 'active' && styles.filterBtnTextActive,
+                ]}
+              >
+                Ativas ({activeCount})
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.filterBtn, activeFilter === 'all' && styles.filterBtnActive]}
+              onPress={() => setActiveFilter('all')}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Filtrar todas as produções incluindo canceladas"
+            >
+              <MaterialCommunityIcons
+                name="format-list-bulleted"
+                size={18}
+                color={
+                  activeFilter === 'all' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant
+                }
+              />
+              <Text
+                style={[styles.filterBtnText, activeFilter === 'all' && styles.filterBtnTextActive]}
+              >
+                Todas ({productions.length})
+              </Text>
             </TouchableOpacity>
           </View>
-        ) : (
-          <FlatList
-            data={productions}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-            refreshControl={
-              <RefreshControl
-                refreshing={isLoading}
-                onRefresh={() => refetch(queryParams)}
-                tintColor={theme.colors.primary}
-                colors={[theme.colors.primary]}
+
+          {/* Summary Card */}
+          <View style={styles.summaryCard}>
+            <View style={styles.summaryCol}>
+              <Text style={styles.summaryLabel}>Lotes Concluídos</Text>
+              <Text style={styles.summaryValue}>{activeCount}</Text>
+            </View>
+            <View style={styles.summaryDivider} />
+            <View style={styles.summaryCol}>
+              <Text style={styles.summaryLabel}>Custo Total Produzido</Text>
+              <Text style={styles.summaryValuePrimary}>{formatCurrency(totalCostSum)}</Text>
+            </View>
+          </View>
+
+          {/* Content List */}
+          {isLoading && productions.length === 0 ? (
+            <View style={styles.centerContainer}>
+              <ActivityIndicator size="large" color={theme.colors.primary} />
+              <Text style={styles.loadingText}>Carregando histórico de produções...</Text>
+            </View>
+          ) : error && productions.length === 0 ? (
+            <View style={styles.centerContainer}>
+              <MaterialCommunityIcons
+                name="alert-circle-outline"
+                size={56}
+                color={theme.colors.error}
               />
-            }
-            renderItem={({ item }) => (
-              <ProductionCard
-                production={item}
-                onViewDetails={handleOpenDetails}
-                onCancel={handleCancelProduction}
-                isCanceling={isCanceling}
-              />
-            )}
-            ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <MaterialCommunityIcons
-                  name="pot-steam-outline"
-                  size={56}
-                  color={theme.colors.outline}
+              <Text style={styles.emptyTitle}>Erro ao carregar produções</Text>
+              <Text style={styles.emptySubtitle}>{error}</Text>
+              <TouchableOpacity
+                style={styles.retryBtn}
+                onPress={() => refetch(queryParams)}
+                accessibilityRole="button"
+                accessibilityLabel="Tentar novamente"
+              >
+                <Text style={styles.retryBtnText}>Tentar Novamente</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <FlatList
+              data={productions}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={isLoading}
+                  onRefresh={() => refetch(queryParams)}
+                  tintColor={theme.colors.primary}
+                  colors={[theme.colors.primary]}
                 />
-                <Text style={styles.emptyTitle}>Nenhuma produção encontrada</Text>
-                <Text style={styles.emptySubtitle}>
-                  Quando você registrar a produção de uma receita, os lotes aparecerão listados aqui
-                  com o detalhamento de custos e consumo de insumos.
-                </Text>
-                <TouchableOpacity
-                  style={styles.actionBtn}
-                  onPress={() => router.push('/(tabs)/recipes')}
-                  accessibilityRole="button"
-                  accessibilityLabel="Ir para Receitas"
-                >
+              }
+              renderItem={({ item }) => (
+                <ProductionCard
+                  production={item}
+                  onViewDetails={handleOpenDetails}
+                  onCancel={handleCancelProduction}
+                  isCanceling={isCanceling}
+                />
+              )}
+              ListEmptyComponent={
+                <View style={styles.emptyContainer}>
                   <MaterialCommunityIcons
-                    name="book-open-outline"
-                    size={18}
-                    color={theme.colors.onPrimary}
+                    name="pot-steam-outline"
+                    size={56}
+                    color={theme.colors.outline}
                   />
-                  <Text style={styles.actionBtnText}>Ver Minhas Receitas</Text>
-                </TouchableOpacity>
-              </View>
-            }
-          />
-        )}
+                  <Text style={styles.emptyTitle}>Nenhuma produção encontrada</Text>
+                  <Text style={styles.emptySubtitle}>
+                    Quando você registrar a produção de uma receita, os lotes aparecerão listados
+                    aqui com o detalhamento de custos e consumo de insumos.
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.actionBtn}
+                    onPress={() => router.push('/(tabs)/recipes')}
+                    accessibilityRole="button"
+                    accessibilityLabel="Ir para Receitas"
+                  >
+                    <MaterialCommunityIcons
+                      name="book-open-outline"
+                      size={18}
+                      color={theme.colors.onPrimary}
+                    />
+                    <Text style={styles.actionBtnText}>Ver Minhas Receitas</Text>
+                  </TouchableOpacity>
+                </View>
+              }
+            />
+          )}
+        </View>
 
         {/* Details Modal */}
         <ProductionDetailsModal
@@ -261,13 +266,19 @@ export default function ProductionsScreen() {
   );
 }
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = (theme: AppTheme, isDesktop: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
-      paddingHorizontal: 16,
-      paddingTop: 14,
+      alignItems: 'center',
+    },
+    innerContainer: {
+      flex: 1,
+      width: '100%',
+      maxWidth: isDesktop ? 960 : undefined,
+      paddingHorizontal: isDesktop ? 32 : 16,
+      paddingTop: isDesktop ? 20 : 14,
     },
     filterRow: {
       flexDirection: 'row',

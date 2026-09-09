@@ -60,18 +60,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signOut() {
-    const refreshToken = await Storage.getItem('refresh_token');
+    try {
+      const refreshToken = await Storage.getItem('refresh_token');
 
-    if (refreshToken) {
-      await AuthService.logOut(refreshToken);
+      if (refreshToken) {
+        await AuthService.logOut(refreshToken).catch((err) => {
+          console.warn('Remote logout failed, proceeding with local logout:', err);
+        });
+      }
+    } catch (error) {
+      console.warn('Error during signOut process:', error);
+    } finally {
+      await Storage.removeItem('session_id');
+      await Storage.removeItem('access_token');
+      await Storage.removeItem('refresh_token');
+      await Storage.removeItem('user_profile');
+
+      setUser(null);
     }
-
-    await Storage.removeItem('session_id');
-    await Storage.removeItem('access_token');
-    await Storage.removeItem('refresh_token');
-    await Storage.removeItem('user_profile');
-
-    setUser(null);
   }
 
   async function updateUser(updatedData: Partial<UserProfile>) {

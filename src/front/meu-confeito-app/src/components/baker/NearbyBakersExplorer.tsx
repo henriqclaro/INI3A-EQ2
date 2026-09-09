@@ -11,6 +11,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from 'react-native';
 
 import * as Location from 'expo-location';
@@ -58,7 +59,9 @@ export function NearbyBakersExplorer({
   headerContent,
 }: NearbyBakersExplorerProps) {
   const { theme } = useThemeMode();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 768;
+  const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
   // Location state
   const [userCoords, setUserCoords] = useState<{ latitude: number; longitude: number } | null>(
@@ -561,11 +564,9 @@ export function NearbyBakersExplorer({
           ) : bakers.length > 0 ? (
             <View style={styles.bakersList}>
               {bakers.map((baker) => (
-                <BakerCard
-                  key={baker.userId}
-                  baker={baker}
-                  onPress={() => handleBakerPress(baker)}
-                />
+                <View key={baker.userId} style={styles.bakerCardWrapper}>
+                  <BakerCard baker={baker} onPress={() => handleBakerPress(baker)} />
+                </View>
               ))}
             </View>
           ) : hasSearched ? (
@@ -628,21 +629,21 @@ export function NearbyBakersExplorer({
   );
 }
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = (theme: AppTheme, isDesktop: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
     },
     scrollContent: {
-      paddingHorizontal: theme.spacing.marginMobile,
-      paddingTop: theme.spacing.space4,
+      paddingHorizontal: isDesktop ? 32 : theme.spacing.marginMobile,
+      paddingTop: isDesktop ? theme.spacing.space6 : theme.spacing.space4,
       paddingBottom: theme.spacing.space16,
       alignItems: 'center',
     },
     contentWrapper: {
       width: '100%',
-      maxWidth: 480,
+      maxWidth: isDesktop ? 1040 : 480,
       gap: theme.spacing.space4,
     },
     filterCard: {
@@ -910,7 +911,15 @@ const createStyles = (theme: AppTheme) =>
     },
     bakersList: {
       width: '100%',
-      gap: theme.spacing.space3,
+      flexDirection: isDesktop ? 'row' : 'column',
+      flexWrap: isDesktop ? 'wrap' : 'nowrap',
+      gap: isDesktop ? 16 : theme.spacing.space3,
+    },
+    bakerCardWrapper: {
+      width: isDesktop ? undefined : '100%',
+      flex: isDesktop ? 1 : undefined,
+      minWidth: isDesktop ? 300 : '100%',
+      maxWidth: isDesktop ? 510 : '100%',
     },
     loadingContainer: {
       paddingVertical: 40,

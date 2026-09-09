@@ -29,19 +29,6 @@ export default function PublicRecipesScreen() {
   const isDesktop = width >= 768;
   const hasActiveSearch = Boolean(search.trim().length > 0);
 
-  const cardWidth = useMemo(() => {
-    if (width >= 1200) {
-      return (1200 - 48 - 48) / 4; // 4 columns on large desktop
-    }
-    if (width >= 960) {
-      return (width - 48 - 32) / 3; // 3 columns on tablet / small desktop
-    }
-    if (width >= 768) {
-      return (width - 48 - 16) / 2; // 2 columns on tablets
-    }
-    return undefined; // full width on mobile
-  }, [width]);
-
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
   return (
@@ -147,10 +134,7 @@ export default function PublicRecipesScreen() {
           ) : (
             <View style={styles.gridContainer}>
               {recipes.map((recipe) => (
-                <View
-                  key={recipe.id}
-                  style={[styles.cardWrapper, cardWidth ? { width: cardWidth } : null]}
-                >
+                <View key={recipe.id} style={styles.cardWrapper}>
                   <RecipeView
                     title={recipe.title}
                     coverUrl={recipe.coverUrl}
@@ -249,8 +233,10 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       maxWidth: 1200,
     },
     cardWrapper: {
-      width: '100%',
-      maxWidth: isDesktop ? undefined : 480,
+      width: isDesktop ? undefined : '100%',
+      flex: isDesktop ? 1 : undefined,
+      minWidth: isDesktop ? 260 : undefined,
+      maxWidth: isDesktop ? 360 : 480,
     },
     feedbackContainer: {
       paddingTop: 48,

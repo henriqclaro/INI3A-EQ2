@@ -36,19 +36,6 @@ export default function RecipesScreen() {
 
   const isDesktop = width >= 768;
 
-  const cardWidth = useMemo(() => {
-    if (width >= 1200) {
-      return (1200 - 48 - 48) / 4; // 4 columns on large desktop
-    }
-    if (width >= 960) {
-      return (width - 48 - 32) / 3; // 3 columns on tablet / small desktop
-    }
-    if (width >= 768) {
-      return (width - 48 - 16) / 2; // 2 columns on tablets
-    }
-    return undefined; // full width on mobile
-  }, [width]);
-
   const speedDialActions: FloatingActionItem[] = useMemo(
     () => [
       {
@@ -152,12 +139,65 @@ export default function RecipesScreen() {
           </View>
         ) : (
           <View style={styles.contentWrapper}>
+            {isDesktop && (
+              <View style={styles.desktopHeader}>
+                <View style={styles.desktopHeaderTitleCol}>
+                  <Text style={styles.desktopHeaderTitle}>Suas Receitas</Text>
+                  <Text style={styles.desktopHeaderSubtitle}>
+                    {recipes.length}{' '}
+                    {recipes.length === 1 ? 'receita cadastrada' : 'receitas cadastradas'}
+                  </Text>
+                </View>
+                <View style={styles.desktopHeaderActions}>
+                  <TouchableOpacity
+                    style={styles.desktopHeaderSecondaryBtn}
+                    onPress={() => router.push('/saved-recipes')}
+                    activeOpacity={0.85}
+                    accessibilityRole="button"
+                    accessibilityLabel="Ver receitas salvas"
+                  >
+                    <MaterialCommunityIcons
+                      name="bookmark-multiple-outline"
+                      size={18}
+                      color={theme.colors.onSurface}
+                    />
+                    <Text style={styles.desktopHeaderSecondaryBtnText}>Salvas</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.desktopHeaderSecondaryBtn}
+                    onPress={() => router.push('/public-recipes')}
+                    activeOpacity={0.85}
+                    accessibilityRole="button"
+                    accessibilityLabel="Buscar receitas públicas"
+                  >
+                    <MaterialCommunityIcons
+                      name="book-search-outline"
+                      size={18}
+                      color={theme.colors.onSurface}
+                    />
+                    <Text style={styles.desktopHeaderSecondaryBtnText}>Públicas</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.desktopHeaderPrimaryBtn}
+                    onPress={() => router.push('/create-recipe')}
+                    activeOpacity={0.85}
+                    accessibilityRole="button"
+                    accessibilityLabel="Criar nova receita"
+                  >
+                    <MaterialCommunityIcons
+                      name="notebook-plus-outline"
+                      size={18}
+                      color={theme.colors.onPrimary}
+                    />
+                    <Text style={styles.desktopHeaderPrimaryBtnText}>Nova Receita</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
             <View style={styles.gridContainer}>
               {recipes.map((recipe) => (
-                <View
-                  key={recipe.id}
-                  style={[styles.cardWrapper, cardWidth ? { width: cardWidth } : null]}
-                >
+                <View key={recipe.id} style={styles.cardWrapper}>
                   <RecipeView
                     title={recipe.title}
                     coverUrl={recipe.coverUrl}
@@ -220,14 +260,16 @@ export default function RecipesScreen() {
         )}
       </ScrollView>
 
-      <FloatingButton
-        variant="primary"
-        containerStyle={styles.button}
-        actions={speedDialActions}
-        isOpen={isSpeedDialOpen}
-        onToggleOpen={setIsSpeedDialOpen}
-        accessibilityLabel="Opções de receita"
-      />
+      {!isDesktop && (
+        <FloatingButton
+          variant="primary"
+          containerStyle={styles.button}
+          actions={speedDialActions}
+          isOpen={isSpeedDialOpen}
+          onToggleOpen={setIsSpeedDialOpen}
+          accessibilityLabel="Opções de receita"
+        />
+      )}
     </View>
   );
 }
@@ -259,6 +301,69 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       alignItems: 'center',
       gap: 24,
     },
+    desktopHeader: {
+      width: '100%',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 8,
+      paddingHorizontal: 4,
+      marginBottom: 4,
+    },
+    desktopHeaderTitleCol: {
+      gap: 4,
+    },
+    desktopHeaderTitle: {
+      fontFamily: theme.typography.headlineLg.fontFamily,
+      fontSize: 26,
+      fontWeight: '700',
+      color: theme.colors.espressoDark,
+    },
+    desktopHeaderSubtitle: {
+      fontFamily: theme.typography.bodySm.fontFamily,
+      fontSize: 13,
+      color: theme.colors.onSurfaceVariant,
+    },
+    desktopHeaderActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    desktopHeaderSecondaryBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      minHeight: 48,
+      paddingHorizontal: 16,
+      borderRadius: theme.rounded.default,
+      gap: 8,
+    },
+    desktopHeaderSecondaryBtnText: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.colors.onSurface,
+    },
+    desktopHeaderPrimaryBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.primary,
+      minHeight: 48,
+      paddingHorizontal: 20,
+      borderRadius: theme.rounded.default,
+      gap: 8,
+      ...theme.shadows.glow,
+    },
+    desktopHeaderPrimaryBtnText: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.colors.onPrimary,
+    },
     gridContainer: {
       flexDirection: isDesktop ? 'row' : 'column',
       flexWrap: isDesktop ? 'wrap' : 'nowrap',
@@ -268,8 +373,10 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       width: '100%',
     },
     cardWrapper: {
-      width: '100%',
-      maxWidth: isDesktop ? undefined : 480,
+      width: isDesktop ? undefined : '100%',
+      flex: isDesktop ? 1 : undefined,
+      minWidth: isDesktop ? 260 : undefined,
+      maxWidth: isDesktop ? 360 : 480,
     },
     loadingContainer: {
       paddingTop: 80,

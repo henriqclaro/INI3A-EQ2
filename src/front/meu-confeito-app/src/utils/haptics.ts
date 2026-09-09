@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+
 import * as Haptics from 'expo-haptics';
 
 export type HapticFeedbackType =
@@ -20,7 +22,7 @@ export const getIsGlobalHapticsEnabled = (): boolean => isGlobalHapticsEnabled;
 export const triggerGlobalHaptic = async (
   type: HapticFeedbackType = 'selection',
 ): Promise<void> => {
-  if (!isGlobalHapticsEnabled) {
+  if (Platform.OS === 'web' || !isGlobalHapticsEnabled) {
     return;
   }
 

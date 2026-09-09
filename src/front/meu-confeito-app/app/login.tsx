@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import * as Crypto from 'expo-crypto';
+import { Image } from 'expo-image';
 import { Link, Stack, router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -23,7 +24,7 @@ import { AppTheme } from '@/src/theme/themes';
 import { isEmailValid } from '@/src/utils/validation';
 
 export default function LogInScreen() {
-  const { theme } = useThemeMode();
+  const { theme, isDarkMode } = useThemeMode();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const [email, setEmail] = useState('');
@@ -99,6 +100,15 @@ export default function LogInScreen() {
           <View style={styles.card}>
             {/* Header section */}
             <View style={styles.headerArea}>
+              <Image
+                source={
+                  isDarkMode
+                    ? require('@/assets/images/logo-dark.png')
+                    : require('@/assets/images/logo-light.png')
+                }
+                style={styles.logo}
+                contentFit="contain"
+              />
               <Text style={styles.headline}>Entrar</Text>
               <Text style={styles.subheadline}>
                 Digite seus dados de acesso para entrar na sua conta
@@ -262,6 +272,11 @@ const createStyles = (theme: AppTheme) =>
     headerArea: {
       alignItems: 'center',
       marginBottom: 6,
+    },
+    logo: {
+      width: 80,
+      height: 80,
+      marginBottom: 8,
     },
     headline: {
       fontFamily: theme.typography.headlineLg.fontFamily,

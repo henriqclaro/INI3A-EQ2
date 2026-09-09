@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from 'react-native';
 
 import { Image } from 'expo-image';
@@ -23,10 +24,12 @@ import { AppTheme } from '@/src/theme/themes';
 export default function ProfileScreen() {
   const { theme } = useThemeMode();
   const { user, signOut } = useAuth();
+  const { width } = useWindowDimensions();
   const isBakerRole = user?.role?.trim().toUpperCase() === 'BAKER';
+  const isDesktop = width >= 768;
   const { bakerProfile, hasBakerProfile, isLoading, refetch } = useMyBakerProfile(isBakerRole);
 
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
   useFocusEffect(
     useCallback(() => {
@@ -247,22 +250,24 @@ export default function ProfileScreen() {
   );
 }
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = (theme: AppTheme, isDesktop: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
     },
     scrollContent: {
-      paddingHorizontal: theme.spacing.marginMobile,
-      paddingTop: theme.spacing.marginMobile,
-      paddingBottom: theme.spacing.space16,
+      paddingHorizontal: isDesktop ? 32 : theme.spacing.marginMobile,
+      paddingTop: isDesktop ? 32 : theme.spacing.marginMobile,
+      paddingBottom: isDesktop ? 40 : theme.spacing.space16,
       alignItems: 'center',
     },
     contentWrapper: {
       width: '100%',
-      maxWidth: 480,
-      gap: theme.spacing.space5,
+      maxWidth: isDesktop ? 960 : 480,
+      flexDirection: isDesktop ? 'row' : 'column',
+      alignItems: isDesktop ? 'flex-start' : 'center',
+      gap: isDesktop ? 24 : theme.spacing.space5,
     },
     card: {
       backgroundColor: theme.colors.surfaceContainerLowest,
@@ -272,7 +277,8 @@ const createStyles = (theme: AppTheme) =>
       paddingVertical: theme.spacing.space6,
       paddingHorizontal: theme.spacing.space5,
       alignItems: 'center',
-      width: '100%',
+      width: isDesktop ? undefined : '100%',
+      flex: isDesktop ? 0.44 : undefined,
       ...theme.shadows.soft,
     },
     avatarWrapper: {
@@ -416,7 +422,8 @@ const createStyles = (theme: AppTheme) =>
       lineHeight: 18,
     },
     menuSection: {
-      width: '100%',
+      width: isDesktop ? undefined : '100%',
+      flex: isDesktop ? 0.56 : undefined,
       gap: theme.spacing.space3,
     },
     menuSectionTitle: {

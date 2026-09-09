@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { GestureResponderEvent, Keyboard, useWindowDimensions } from 'react-native';
+import { GestureResponderEvent, Keyboard, Platform, useWindowDimensions } from 'react-native';
 
 import { router } from 'expo-router';
 
@@ -70,6 +70,7 @@ export function useTabSwipe({ activeTab, isCustomerRole }: UseTabSwipeOptions) {
 
   const onMoveShouldSetResponderCapture = useCallback((evt: GestureResponderEvent) => {
     if (
+      Platform.OS === 'web' ||
       !isSwipeNavigationEnabledRef.current ||
       isKeyboardVisibleRef.current ||
       isTransitioningRef.current

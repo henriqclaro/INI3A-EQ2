@@ -9,7 +9,7 @@ import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
 export default function WelcomeScreen() {
-  const { theme } = useThemeMode();
+  const { theme, isDarkMode } = useThemeMode();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 768;
 
@@ -25,7 +25,15 @@ export default function WelcomeScreen() {
           showsHorizontalScrollIndicator={false}
         >
           <View style={styles.contentContainer}>
-            <Image source={require('../assets/images/logo-light.svg')} style={styles.logo} />
+            <Image
+              source={
+                isDarkMode
+                  ? require('@/assets/images/logo-dark.png')
+                  : require('@/assets/images/logo-light.png')
+              }
+              style={styles.logo}
+              contentFit="contain"
+            />
 
             <Text style={styles.mainText}>Seja bem-vindo(a) ao MeuConfeito!</Text>
             <Text style={styles.text}>

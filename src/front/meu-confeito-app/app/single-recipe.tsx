@@ -1012,14 +1012,14 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       width: '100%',
     },
     scrollContent: {
-      paddingHorizontal: isDesktop ? 24 : 16,
+      paddingHorizontal: isDesktop ? 32 : 16,
       paddingTop: 16,
       paddingBottom: 60,
       alignItems: 'center',
     },
     innerWrapper: {
       width: '100%',
-      maxWidth: 720,
+      maxWidth: isDesktop ? 960 : 720,
     },
     loadingContainer: {
       flex: 1,
@@ -1069,7 +1069,8 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     // Hero Cover or Placeholder
     heroImage: {
       width: '100%',
-      aspectRatio: 16 / 9,
+      aspectRatio: isDesktop ? 21 / 9 : 16 / 9,
+      maxHeight: isDesktop ? 380 : undefined,
       borderRadius: theme.rounded.lg,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
@@ -1077,7 +1078,8 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     },
     heroPlaceholder: {
       width: '100%',
-      aspectRatio: 16 / 9,
+      aspectRatio: isDesktop ? 21 / 9 : 16 / 9,
+      maxHeight: isDesktop ? 360 : undefined,
       borderRadius: theme.rounded.lg,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,

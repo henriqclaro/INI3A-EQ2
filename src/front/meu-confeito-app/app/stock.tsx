@@ -55,17 +55,6 @@ export default function StockScreen() {
 
   const isMobile = width < 768;
 
-  // Responsive card width calculation for tablet/desktop
-  const cardWidth = useMemo(() => {
-    if (width >= 1200) {
-      return (1200 - 48 - 48) / 3; // 3 columns on wide desktop
-    }
-    if (width >= 768) {
-      return (width - 48 - 24) / 2; // 2 columns on tablet
-    }
-    return undefined; // Full width fluid on mobile
-  }, [width]);
-
   // Calculations for summary metrics
   const summaryMetrics = useMemo(() => {
     let totalValue = 0;
@@ -346,14 +335,14 @@ export default function StockScreen() {
             ) : (
               <View style={styles.cardsGrid}>
                 {filteredInventory.map((item) => (
-                  <StockCard
-                    key={item.ingredientId}
-                    item={item}
-                    cardWidth={cardWidth}
-                    onAdjust={handleOpenAdjust}
-                    onPurchase={handleOpenPurchase}
-                    onWaste={handleOpenWaste}
-                  />
+                  <View key={item.ingredientId} style={styles.cardWrapper}>
+                    <StockCard
+                      item={item}
+                      onAdjust={handleOpenAdjust}
+                      onPurchase={handleOpenPurchase}
+                      onWaste={handleOpenWaste}
+                    />
+                  </View>
                 ))}
               </View>
             )}
@@ -483,7 +472,13 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       width: '100%',
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 14,
+      gap: 16,
+    },
+    cardWrapper: {
+      width: isMobile ? '100%' : undefined,
+      flex: isMobile ? undefined : 1,
+      minWidth: isMobile ? '100%' : 300,
+      maxWidth: isMobile ? '100%' : 380,
     },
     feedbackContainer: {
       width: '100%',

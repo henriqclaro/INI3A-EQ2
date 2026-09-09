@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 
+import { Image } from 'expo-image';
 import { Link, Stack, router, useLocalSearchParams } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -50,7 +51,7 @@ export default function RegisterScreen() {
   });
 
   const { registerUser, isLoading } = useUserRegister();
-  const { theme } = useThemeMode();
+  const { theme, isDarkMode } = useThemeMode();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const handlePhoneChange = (text: string) => {
@@ -211,6 +212,15 @@ export default function RegisterScreen() {
           <View style={styles.card}>
             {/* Header section */}
             <View style={styles.headerArea}>
+              <Image
+                source={
+                  isDarkMode
+                    ? require('@/assets/images/logo-dark.png')
+                    : require('@/assets/images/logo-light.png')
+                }
+                style={styles.logo}
+                contentFit="contain"
+              />
               <Text style={styles.headline}>Criar Conta</Text>
               <Text style={styles.subheadline}>
                 {role === 'BAKER'
@@ -597,6 +607,11 @@ const createStyles = (theme: AppTheme) =>
     headerArea: {
       alignItems: 'center',
       marginBottom: 2,
+    },
+    logo: {
+      width: 80,
+      height: 80,
+      marginBottom: 8,
     },
     headline: {
       fontFamily: theme.typography.headlineLg.fontFamily,

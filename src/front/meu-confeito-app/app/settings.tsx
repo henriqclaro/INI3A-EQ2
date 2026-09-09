@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
+import { Image } from 'expo-image';
 import { Stack } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -38,9 +39,10 @@ const PLANNED_FEATURES: PlannedFeatureItem[] = [
 ];
 
 export default function SettingsScreen() {
-  const { theme } = useThemeMode();
+  const { theme, isDarkMode } = useThemeMode();
   const { width } = useWindowDimensions();
   const isSmallScreen = width < theme.breakpoints.sm;
+  const isDesktop = Platform.OS === 'web' || width >= theme.breakpoints.md;
 
   const styles = useMemo(() => createStyles(theme, isSmallScreen), [theme, isSmallScreen]);
 
@@ -72,14 +74,16 @@ export default function SettingsScreen() {
             <ThemeToggleCard />
           </SettingsSection>
 
-          {/* Section 2: Navigation & Haptics */}
-          <SettingsSection
-            title="Gestos e Resposta Tátil"
-            description="Controle a navegação por deslizamento e o retorno de vibração do aplicativo"
-            icon="cellphone-sound"
-          >
-            <InteractionSettingsCard />
-          </SettingsSection>
+          {/* Section 2: Navigation & Haptics (Mobile only) */}
+          {!isDesktop && (
+            <SettingsSection
+              title="Gestos e Resposta Tátil"
+              description="Controle a navegação por deslizamento e o retorno de vibração do aplicativo"
+              icon="cellphone-sound"
+            >
+              <InteractionSettingsCard />
+            </SettingsSection>
+          )}
 
           {/* Section 3: Planned Features (Extensible Architecture) */}
           <SettingsSection
@@ -136,10 +140,14 @@ export default function SettingsScreen() {
             <View style={styles.aboutCard}>
               <View style={styles.aboutHeader}>
                 <View style={styles.brandBadge}>
-                  <MaterialCommunityIcons
-                    name="cake-variant-outline"
-                    size={24}
-                    color={theme.colors.primary}
+                  <Image
+                    source={
+                      isDarkMode
+                        ? require('@/assets/images/logo-dark.png')
+                        : require('@/assets/images/logo-light.png')
+                    }
+                    style={styles.brandLogoImage}
+                    contentFit="contain"
                   />
                 </View>
                 <View style={styles.brandTextWrapper}>
@@ -305,6 +313,11 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       borderColor: theme.colors.outlineVariant,
       alignItems: 'center',
       justifyContent: 'center',
+      overflow: 'hidden',
+    },
+    brandLogoImage: {
+      width: 34,
+      height: 34,
     },
     brandTextWrapper: {
       flex: 1,
