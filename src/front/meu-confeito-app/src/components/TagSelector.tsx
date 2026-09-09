@@ -22,6 +22,7 @@ export interface TagSelectorProps {
   onSelectedTagsChange: (tags: Tag[]) => void;
   maxTags?: number;
   isDisabled?: boolean;
+  shouldHideUserTags?: boolean;
 }
 
 export function TagSelector({
@@ -29,6 +30,7 @@ export function TagSelector({
   onSelectedTagsChange,
   maxTags = 5,
   isDisabled = false,
+  shouldHideUserTags = true,
 }: TagSelectorProps) {
   const { theme } = useThemeMode();
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -49,18 +51,25 @@ export function TagSelector({
     [theme],
   );
 
-  const fetchSuggestions = useCallback(async (searchTerm: string) => {
-    setIsSearching(true);
-    try {
-      const res = await TagService.search(searchTerm.trim());
-      setSearchResults(res.data.tags || []);
-    } catch (err) {
-      console.error('Error searching tags:', err);
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  }, []);
+  const fetchSuggestions = useCallback(
+    async (searchTerm: string) => {
+      setIsSearching(true);
+      try {
+        const res = await TagService.search(searchTerm.trim());
+        const rawTags = res.data.tags || [];
+        const filteredTags = shouldHideUserTags
+          ? rawTags.filter((tag) => tag.type?.toUpperCase() !== 'USER')
+          : rawTags;
+        setSearchResults(filteredTags);
+      } catch (err) {
+        console.error('Error searching tags:', err);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    },
+    [shouldHideUserTags],
+  );
 
   const handleQueryChange = (text: string) => {
     setQuery(text);
@@ -111,11 +120,19 @@ export function TagSelector({
     };
   }, []);
 
-  // Filter out already selected tags from the dropdown
+  // Filter out already selected tags and excluded tag types from the dropdown
   const availableSuggestions = useMemo(() => {
     const selectedIds = new Set(selectedTags.map((t) => t.id));
-    return searchResults.filter((tag) => !selectedIds.has(tag.id));
-  }, [searchResults, selectedTags]);
+    return searchResults.filter((tag) => {
+      if (selectedIds.has(tag.id)) {
+        return false;
+      }
+      if (shouldHideUserTags && tag.type?.toUpperCase() === 'USER') {
+        return false;
+      }
+      return true;
+    });
+  }, [searchResults, selectedTags, shouldHideUserTags]);
 
   return (
     <View style={styles.container}>

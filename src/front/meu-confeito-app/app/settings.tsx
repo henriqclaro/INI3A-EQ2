@@ -29,6 +29,9 @@ import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useUserDelete } from '@/src/hooks/useUsers';
 import { AppTheme } from '@/src/theme/themes';
 
+// Operational Preferences (Planned Features) - Temporarily commented out as it is not currently in use, will be used in future versions.
+// "Unidades de Medida Padrão" was removed as requested.
+/*
 interface PlannedFeatureItem {
   id: string;
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
@@ -37,12 +40,6 @@ interface PlannedFeatureItem {
 }
 
 const PLANNED_FEATURES: PlannedFeatureItem[] = [
-  {
-    id: 'units',
-    icon: 'scale',
-    title: 'Unidades de Medida Padrão',
-    subtitle: 'Definir unidades padrão (g, kg, ml, xícaras) para novos cadastros',
-  },
   {
     id: 'notifications',
     icon: 'bell-outline',
@@ -56,6 +53,7 @@ const PLANNED_FEATURES: PlannedFeatureItem[] = [
     subtitle: 'Valores sugeridos automaticamente ao criar novas fichas técnicas',
   },
 ];
+*/
 
 export default function SettingsScreen() {
   const { theme, isDarkMode } = useThemeMode();
@@ -201,7 +199,8 @@ export default function SettingsScreen() {
             </SettingsSection>
           )}
 
-          {/* Section 4: Planned Features (Extensible Architecture) */}
+          {/* Section 4: Planned Features (Extensible Architecture) - Temporarily commented out as it is not currently in use, will be used in the future */}
+          {/*
           <SettingsSection
             title="Preferências Operacionais"
             description="Recursos e personalizações em desenvolvimento para as próximas versões"
@@ -246,6 +245,7 @@ export default function SettingsScreen() {
               </View>
             </View>
           </SettingsSection>
+          */}
 
           {/* Section 5: App Info & About */}
           <SettingsSection
@@ -714,8 +714,8 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
     },
     deleteAccountBtn: {
       width: '100%',
-      maxWidth: 320,
-      alignSelf: 'flex-start',
+      maxWidth: isSmallScreen ? undefined : 320,
+      alignSelf: isSmallScreen ? 'center' : 'flex-start',
       marginVertical: 0,
     },
     modalBackdrop: {

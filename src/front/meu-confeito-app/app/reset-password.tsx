@@ -176,6 +176,10 @@ export default function ResetPasswordScreen() {
                       setTouched((prev) => ({ ...prev, oldPassword: true }));
                     }
                   }}
+                  containerStyle={[
+                    styles.inputContainer,
+                    Boolean(oldPasswordError) && styles.inputError,
+                  ]}
                   leftIcon={
                     <MaterialCommunityIcons
                       name="lock-outline"
@@ -200,6 +204,10 @@ export default function ResetPasswordScreen() {
                       setTouched((prev) => ({ ...prev, newPassword: true }));
                     }
                   }}
+                  containerStyle={[
+                    styles.inputContainer,
+                    Boolean(newPasswordError) && styles.inputError,
+                  ]}
                   leftIcon={
                     <MaterialCommunityIcons
                       name="lock-plus-outline"
@@ -224,6 +232,10 @@ export default function ResetPasswordScreen() {
                       setTouched((prev) => ({ ...prev, confirmPassword: true }));
                     }
                   }}
+                  containerStyle={[
+                    styles.inputContainer,
+                    Boolean(confirmPasswordError) && styles.inputError,
+                  ]}
                   leftIcon={
                     <MaterialCommunityIcons
                       name="lock-check-outline"
@@ -371,6 +383,15 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
     fieldGroup: {
       width: '100%',
       gap: 4,
+    },
+    inputContainer: {
+      width: '100%',
+      margin: 0,
+      alignSelf: 'center',
+    },
+    inputError: {
+      borderColor: theme.colors.error,
+      borderWidth: 1.5,
     },
     label: {
       fontFamily: theme.typography.labelMd.fontFamily,

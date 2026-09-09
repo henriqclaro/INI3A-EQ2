@@ -1,5 +1,12 @@
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  GestureResponderEvent,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { Image } from 'expo-image';
 
@@ -60,12 +67,16 @@ export const SavedRecipeCard = ({
     });
   }, [item.recipe.tags, theme]);
 
+  const handleRemovePress = (e: GestureResponderEvent) => {
+    e.stopPropagation();
+    onRemove();
+  };
+
   return (
     <TouchableOpacity
       style={styles.card}
       onPress={onPress}
       activeOpacity={0.85}
-      accessibilityRole="button"
       accessibilityLabel={`Receita salva: ${item.recipe.title}`}
     >
       <View style={styles.imageWrapper}>
@@ -145,7 +156,7 @@ export const SavedRecipeCard = ({
 
           <TouchableOpacity
             style={styles.removeBtn}
-            onPress={onRemove}
+            onPress={handleRemovePress}
             disabled={isRemoving}
             activeOpacity={0.7}
             accessibilityRole="button"

@@ -480,6 +480,7 @@ export function RecipeForm({
             onSelectedTagsChange={setSelectedTags}
             maxTags={5}
             isDisabled={isSubmitting}
+            shouldHideUserTags={true}
           />
         </View>
 
