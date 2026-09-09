@@ -9,6 +9,7 @@ import {
   NearbyBakersQuery,
   PublicBakerProfile,
 } from '../types/baker-profile';
+import { ReorderShowcaseItem, ShowcaseRecipeItem } from '../types/showcase';
 
 interface ApiError {
   response?: {
@@ -295,5 +296,243 @@ export function useNearbyBakers() {
     errorMessage,
     searchBakers,
     setBakers,
+  };
+}
+
+export function useMyShowcase(isEnabled: boolean = true) {
+  const [showcase, setShowcase] = useState<ShowcaseRecipeItem[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(isEnabled);
+  const [isMutating, setIsMutating] = useState<boolean>(false);
+  const [hasError, setHasError] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const fetchShowcase = useCallback(async () => {
+    if (!isEnabled) {
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setHasError(false);
+    setErrorMessage(null);
+    try {
+      const response = await BakerProfileService.getMyShowcase();
+      const list = response?.data?.showcase || [];
+      setShowcase(list);
+    } catch (err: unknown) {
+      console.error('Error fetching my showcase:', err);
+      const apiErr = err as ApiError;
+      setHasError(true);
+      setErrorMessage(
+        apiErr?.response?.data?.message ||
+          apiErr?.message ||
+          'Não foi possível carregar as receitas da vitrine.',
+      );
+      setShowcase([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isEnabled]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!isEnabled) {
+      return;
+    }
+
+    async function load() {
+      try {
+        const response = await BakerProfileService.getMyShowcase();
+        if (isMounted) {
+          setShowcase(response?.data?.showcase || []);
+        }
+      } catch (err: unknown) {
+        if (isMounted) {
+          console.error('Error loading my showcase:', err);
+          const apiErr = err as ApiError;
+          setHasError(true);
+          setErrorMessage(
+            apiErr?.response?.data?.message ||
+              apiErr?.message ||
+              'Não foi possível carregar as receitas da vitrine.',
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    load();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isEnabled]);
+
+  const addToShowcase = useCallback(
+    async (recipeId: string, order?: number) => {
+      setIsMutating(true);
+      setHasError(false);
+      setErrorMessage(null);
+      try {
+        await BakerProfileService.addShowcaseRecipe({ recipeId, order });
+        await fetchShowcase();
+      } catch (err: unknown) {
+        console.error('Error adding recipe to showcase:', err);
+        const apiErr = err as ApiError;
+        const msg =
+          apiErr?.response?.data?.message ||
+          apiErr?.message ||
+          'Não foi possível adicionar a receita à vitrine.';
+        setHasError(true);
+        setErrorMessage(msg);
+        throw err;
+      } finally {
+        setIsMutating(false);
+      }
+    },
+    [fetchShowcase],
+  );
+
+  const removeFromShowcase = useCallback(
+    async (recipeId: string) => {
+      setIsMutating(true);
+      setHasError(false);
+      setErrorMessage(null);
+      try {
+        await BakerProfileService.removeShowcaseRecipe(recipeId);
+        await fetchShowcase();
+      } catch (err: unknown) {
+        console.error('Error removing recipe from showcase:', err);
+        const apiErr = err as ApiError;
+        const msg =
+          apiErr?.response?.data?.message ||
+          apiErr?.message ||
+          'Não foi possível remover a receita da vitrine.';
+        setHasError(true);
+        setErrorMessage(msg);
+        throw err;
+      } finally {
+        setIsMutating(false);
+      }
+    },
+    [fetchShowcase],
+  );
+
+  const reorderShowcase = useCallback(async (items: ReorderShowcaseItem[]) => {
+    setIsMutating(true);
+    setHasError(false);
+    setErrorMessage(null);
+    try {
+      const response = await BakerProfileService.reorderShowcase({ items });
+      setShowcase(response?.data?.showcase || []);
+    } catch (err: unknown) {
+      console.error('Error reordering showcase:', err);
+      const apiErr = err as ApiError;
+      const msg =
+        apiErr?.response?.data?.message ||
+        apiErr?.message ||
+        'Não foi possível reordenar a vitrine.';
+      setHasError(true);
+      setErrorMessage(msg);
+      throw err;
+    } finally {
+      setIsMutating(false);
+    }
+  }, []);
+
+  return {
+    showcase,
+    isLoading,
+    isMutating,
+    hasError,
+    errorMessage,
+    refetch: fetchShowcase,
+    addToShowcase,
+    removeFromShowcase,
+    reorderShowcase,
+  };
+}
+
+export function usePublicShowcase(userId: string | undefined) {
+  const [showcase, setShowcase] = useState<ShowcaseRecipeItem[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(Boolean(userId));
+  const [hasError, setHasError] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const fetchPublicShowcase = useCallback(async () => {
+    if (!userId) {
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setHasError(false);
+    setErrorMessage(null);
+    try {
+      const response = await BakerProfileService.getPublicShowcase(userId);
+      setShowcase(response?.data?.showcase || []);
+    } catch (err: unknown) {
+      console.error('Error fetching public showcase:', err);
+      const apiErr = err as ApiError;
+      setHasError(true);
+      setErrorMessage(
+        apiErr?.response?.data?.message ||
+          apiErr?.message ||
+          'Não foi possível carregar a vitrine de receitas.',
+      );
+      setShowcase([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!userId) {
+      return;
+    }
+
+    async function load() {
+      try {
+        const response = await BakerProfileService.getPublicShowcase(userId!);
+        if (isMounted) {
+          setShowcase(response?.data?.showcase || []);
+        }
+      } catch (err: unknown) {
+        if (isMounted) {
+          console.error('Error loading public showcase:', err);
+          const apiErr = err as ApiError;
+          setHasError(true);
+          setErrorMessage(
+            apiErr?.response?.data?.message ||
+              apiErr?.message ||
+              'Não foi possível carregar a vitrine de receitas.',
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    load();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [userId]);
+
+  return {
+    showcase,
+    isLoading,
+    hasError,
+    errorMessage,
+    refetch: fetchPublicShowcase,
   };
 }

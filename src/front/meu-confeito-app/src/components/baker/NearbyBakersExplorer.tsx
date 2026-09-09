@@ -21,6 +21,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { CustomButton } from '@/src/components/CustomButton';
 import { BakerCard } from '@/src/components/baker/BakerCard';
+import { DEFAULT_POPULAR_TAGS } from '@/src/constants/bakerTags';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useNearbyBakers } from '@/src/hooks/useBakerProfile';
 import { useTags } from '@/src/hooks/useTags';
@@ -36,17 +37,6 @@ const RADIUS_OPTIONS: RadiusOption[] = [
   { label: '5 km', meters: 5000 },
   { label: '10 km', meters: 10000 },
   { label: '15 km', meters: 15000 },
-];
-
-const DEFAULT_POPULAR_TAGS = [
-  'Bolos',
-  'Doces Finos',
-  'Tortas',
-  'Brigadeiros',
-  'Pães Artesanais',
-  'Sem Glúten',
-  'Vegano',
-  'Cupcakes',
 ];
 
 export interface NearbyBakersExplorerProps {

@@ -3,6 +3,11 @@ export interface BakerProfileLocation {
   longitude: number;
 }
 
+export interface BakerTag {
+  id: number;
+  name: string;
+}
+
 export interface BakerProfile {
   userId: string;
   name: string;
@@ -14,6 +19,7 @@ export interface BakerProfile {
   neighborhood: string | null;
   city: string | null;
   location: BakerProfileLocation | null;
+  tags: BakerTag[];
   createdAt: Date | string;
   updatedAt: Date | string;
 }
@@ -27,6 +33,7 @@ export interface PublicBakerProfile {
   instagram: string | null;
   neighborhood: string | null;
   city: string | null;
+  tags: BakerTag[];
 }
 
 export interface BakerProfileRegisterInput {
@@ -35,6 +42,7 @@ export interface BakerProfileRegisterInput {
   neighborhood?: string | null;
   city?: string | null;
   location?: BakerProfileLocation | null;
+  tagIds?: number[];
 }
 
 export interface BakerProfileUpdateInput {
@@ -43,6 +51,7 @@ export interface BakerProfileUpdateInput {
   neighborhood?: string | null;
   city?: string | null;
   location?: BakerProfileLocation | null;
+  tagIds?: number[];
 }
 
 export interface NearbyBakerItem {
@@ -52,6 +61,7 @@ export interface NearbyBakerItem {
   distance: number;
   neighborhood: string | null;
   city: string | null;
+  tags?: BakerTag[];
 }
 
 export interface NearbyBakersQuery {

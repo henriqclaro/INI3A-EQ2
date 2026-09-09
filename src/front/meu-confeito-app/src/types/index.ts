@@ -50,8 +50,21 @@ export {
   BakerProfileLocation,
   BakerProfileRegisterInput,
   BakerProfileUpdateInput,
+  BakerTag,
+  NearbyBakerItem,
+  NearbyBakersQuery,
+  NearbyBakersResponse,
   PublicBakerProfile,
 } from './baker-profile';
+export {
+  AddShowcaseInput,
+  ReorderShowcaseInput,
+  ReorderShowcaseItem,
+  ShowcaseItemResponse,
+  ShowcaseListResponse,
+  ShowcaseRecipeData,
+  ShowcaseRecipeItem,
+} from './showcase';
 export {
   PlannedProductionItem,
   ProfitSummaryCostBreakdown,

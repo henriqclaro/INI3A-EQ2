@@ -17,11 +17,10 @@ import { Stack, router, useLocalSearchParams } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { RecipeView } from '@/src/components';
+import { RecipeSmallView } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
-import { usePublicBakerProfile } from '@/src/hooks/useBakerProfile';
-import { useUserRecipes } from '@/src/hooks/useRecipes';
+import { usePublicBakerProfile, usePublicShowcase } from '@/src/hooks/useBakerProfile';
 import { AppTheme } from '@/src/theme/themes';
 import { formatPhoneInput } from '@/src/utils/validation';
 
@@ -32,6 +31,7 @@ export default function PublicProfileScreen() {
   const { width } = useWindowDimensions();
 
   const isDesktop = width >= 768;
+  const isBakerRole = user?.role?.trim().toUpperCase() === 'BAKER';
 
   const targetUserId = id || user?.id;
   const isOwnProfile = Boolean(user?.id && targetUserId === user.id);
@@ -45,17 +45,17 @@ export default function PublicProfileScreen() {
   } = usePublicBakerProfile(targetUserId);
 
   const {
-    recipes,
-    isLoading: isLoadingRecipes,
-    refetch: refetchRecipes,
-  } = useUserRecipes(targetUserId);
+    showcase,
+    isLoading: isLoadingShowcase,
+    refetch: refetchShowcase,
+  } = usePublicShowcase(targetUserId);
 
-  const isLoading = isLoadingProfile || isLoadingRecipes;
+  const isLoading = isLoadingProfile || isLoadingShowcase;
 
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
   const handleRefresh = async () => {
-    await Promise.all([refetchProfile(), refetchRecipes()]);
+    await Promise.all([refetchProfile(), refetchShowcase()]);
   };
 
   const handleOpenWhatsApp = async () => {
@@ -229,6 +229,22 @@ export default function PublicProfileScreen() {
                 </View>
               ) : null}
 
+              {/* Baker Tags & Specialties */}
+              {publicProfile.tags && publicProfile.tags.length > 0 ? (
+                <View style={styles.tagsContainer}>
+                  {publicProfile.tags.map((tag) => (
+                    <View key={tag.id} style={styles.tagChip}>
+                      <MaterialCommunityIcons
+                        name="tag-outline"
+                        size={12}
+                        color={theme.colors.secondary}
+                      />
+                      <Text style={styles.tagChipText}>{tag.name}</Text>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
+
               {/* Action buttons (WhatsApp, Instagram) */}
               <View style={styles.actionsContainer}>
                 {publicProfile.phone ? (
@@ -271,46 +287,96 @@ export default function PublicProfileScreen() {
               </View>
             </View>
 
-            {/* Recipes Section */}
+            {/* Showcase Section */}
             <View style={styles.recipesSection}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Receitas Publicadas</Text>
-                <Text style={styles.recipeCountBadge}>
-                  {recipes.length} {recipes.length === 1 ? 'receita' : 'receitas'}
-                </Text>
+                <View style={styles.sectionTitleGroup}>
+                  <MaterialCommunityIcons
+                    name="storefront-outline"
+                    size={20}
+                    color={theme.colors.primary}
+                  />
+                  <Text style={styles.sectionTitle}>Vitrine de Destaques</Text>
+                </View>
+
+                <View style={styles.sectionHeaderActions}>
+                  <Text style={styles.recipeCountBadge}>
+                    {showcase.length} {showcase.length === 1 ? 'destaque' : 'destaques'}
+                  </Text>
+
+                  {isOwnProfile ? (
+                    <TouchableOpacity
+                      style={styles.manageShowcaseBtn}
+                      onPress={() => router.push('/edit-profile')}
+                      activeOpacity={0.8}
+                      accessibilityRole="button"
+                      accessibilityLabel="Gerenciar vitrine de receitas"
+                    >
+                      <MaterialCommunityIcons
+                        name="pencil-outline"
+                        size={14}
+                        color={theme.colors.primary}
+                      />
+                      <Text style={styles.manageShowcaseBtnText}>Gerenciar</Text>
+                    </TouchableOpacity>
+                  ) : null}
+                </View>
               </View>
 
-              {isLoadingRecipes ? (
+              {isLoadingShowcase ? (
                 <View style={styles.recipesLoading}>
                   <ActivityIndicator size="small" color={theme.colors.primary} />
                 </View>
-              ) : recipes.length === 0 ? (
+              ) : showcase.length === 0 ? (
                 <View style={styles.emptyRecipesCard}>
                   <MaterialCommunityIcons
-                    name="book-open-page-variant-outline"
+                    name="storefront-outline"
                     size={36}
                     color={theme.colors.onSurfaceVariant}
                   />
-                  <Text style={styles.emptyRecipesTitle}>Nenhuma receita disponível</Text>
+                  <Text style={styles.emptyRecipesTitle}>Nenhum produto na vitrine</Text>
                   <Text style={styles.emptyRecipesSubtitle}>
-                    Este confeiteiro ainda não publicou receitas na comunidade.
+                    {isOwnProfile
+                      ? 'Adicione receitas na vitrine através da edição de perfil para exibi-las em destaque aqui.'
+                      : 'Este confeiteiro ainda não configurou uma vitrine de produtos.'}
                   </Text>
+                  {isOwnProfile ? (
+                    <TouchableOpacity
+                      style={styles.addShowcaseEmptyBtn}
+                      onPress={() => router.push('/edit-profile')}
+                      activeOpacity={0.8}
+                      accessibilityRole="button"
+                      accessibilityLabel="Configurar vitrine de produtos"
+                    >
+                      <MaterialCommunityIcons
+                        name="plus"
+                        size={16}
+                        color={theme.colors.onPrimary}
+                      />
+                      <Text style={styles.addShowcaseEmptyBtnText}>Configurar Vitrine</Text>
+                    </TouchableOpacity>
+                  ) : null}
                 </View>
               ) : (
                 <View style={styles.recipesGrid}>
-                  {recipes.map((recipe) => (
-                    <View key={recipe.id} style={styles.recipeCardWrapper}>
-                      <RecipeView
-                        title={recipe.title}
-                        coverUrl={recipe.coverUrl}
-                        tags={recipe.tags}
-                        prepTimeMinutes={recipe.prepTimeMinutes}
-                        onPress={() => {
-                          router.push({
-                            pathname: '/single-recipe',
-                            params: { recipeId: recipe.id },
-                          });
-                        }}
+                  {showcase.map((item) => (
+                    <View key={item.recipeId} style={styles.recipeCardWrapper}>
+                      <RecipeSmallView
+                        title={item.recipe.title}
+                        coverUrl={item.recipe.coverUrl}
+                        rating={item.recipe.averageRating}
+                        totalReviews={item.recipe.totalReviews}
+                        isClickable={isBakerRole}
+                        onPress={
+                          isBakerRole
+                            ? () => {
+                                router.push({
+                                  pathname: '/single-recipe',
+                                  params: { recipeId: item.recipeId },
+                                });
+                              }
+                            : undefined
+                        }
                       />
                     </View>
                   ))}
@@ -541,6 +607,32 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       lineHeight: 22,
       fontStyle: 'italic',
     },
+    tagsContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+      gap: 6,
+      marginTop: 14,
+      paddingHorizontal: 8,
+      maxWidth: 520,
+    },
+    tagChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      paddingVertical: 4,
+      paddingHorizontal: 10,
+      borderRadius: theme.rounded.full,
+      gap: 4,
+    },
+    tagChipText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 12,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
+    },
     actionsContainer: {
       flexDirection: 'row',
       flexWrap: 'wrap',
@@ -598,10 +690,37 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       fontWeight: '600',
       color: theme.colors.espressoDark,
     },
+    sectionTitleGroup: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    sectionHeaderActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
     recipeCountBadge: {
       fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 12,
       color: theme.colors.onSurfaceVariant,
+    },
+    manageShowcaseBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      paddingVertical: 4,
+      paddingHorizontal: 10,
+      borderRadius: theme.rounded.full,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      backgroundColor: theme.colors.surfaceContainerLow,
+    },
+    manageShowcaseBtnText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 12,
+      fontWeight: '600',
+      color: theme.colors.primary,
     },
     recipesLoading: {
       paddingVertical: 24,
@@ -629,6 +748,25 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       fontSize: 13,
       color: theme.colors.onSurfaceVariant,
       textAlign: 'center',
+      lineHeight: 18,
+    },
+    addShowcaseEmptyBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: theme.colors.primary,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      borderRadius: theme.rounded.default,
+      minHeight: 48,
+      marginTop: 8,
+      ...theme.shadows.glow,
+    },
+    addShowcaseEmptyBtnText: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 13,
+      fontWeight: '700',
+      color: theme.colors.onPrimary,
     },
     recipesGrid: {
       gap: 16,

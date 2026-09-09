@@ -55,3 +55,11 @@ export {
 } from '@/src/components/baker';
 export { DesktopSidebar, type DesktopSidebarProps } from '@/src/components/DesktopSidebar';
 export { DesktopAlert } from '@/src/components/DesktopAlert';
+export {
+  BakerTagSelector,
+  ShowcaseManager,
+  ShowcaseRecipePickerModal,
+  type BakerTagSelectorProps,
+  type ShowcaseManagerProps,
+  type ShowcaseRecipePickerModalProps,
+} from '@/src/components/profile';

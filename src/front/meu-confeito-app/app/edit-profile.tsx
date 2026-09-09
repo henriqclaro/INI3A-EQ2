@@ -18,7 +18,7 @@ import { Stack, router } from 'expo-router';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { ActivityIndicator } from 'react-native-paper';
 
-import { CustomButton, Input } from '@/src/components';
+import { BakerTagSelector, CustomButton, Input, ShowcaseManager } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useDeleteBakerProfile, useSaveBakerProfile } from '@/src/hooks/useBakerProfile';
@@ -30,6 +30,7 @@ import {
   BakerProfileLocation,
   BakerProfileRegisterInput,
   BakerProfileUpdateInput,
+  BakerTag,
 } from '@/src/types/baker-profile';
 import {
   E164_REGEX,
@@ -65,6 +66,7 @@ export default function EditProfileScreen() {
   const [city, setCity] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
   const [locationCoords, setLocationCoords] = useState<BakerProfileLocation | null>(null);
+  const [selectedTags, setSelectedTags] = useState<BakerTag[]>([]);
 
   const [touched, setTouched] = useState({
     name: false,
@@ -97,11 +99,15 @@ export default function EditProfileScreen() {
               longitude: profile.location.longitude,
             });
           }
+          if (profile.tags && Array.isArray(profile.tags)) {
+            setSelectedTags(profile.tags);
+          }
         }
       } catch {
         if (isMounted) {
           setIsPublicProfile(false);
           setHasInitialBakerProfile(false);
+          setSelectedTags([]);
         }
       } finally {
         if (isMounted) {
@@ -304,6 +310,7 @@ export default function EditProfileScreen() {
                   city: city.trim() || null,
                   neighborhood: neighborhood.trim() || null,
                   location: locationCoords || null,
+                  tagIds: selectedTags.map((t) => t.id),
                 };
 
                 await saveBakerProfile(createData, false);
@@ -447,6 +454,7 @@ export default function EditProfileScreen() {
           city: city.trim() || null,
           neighborhood: neighborhood.trim() || null,
           location: locationCoords ?? null,
+          tagIds: selectedTags.map((t) => t.id),
         };
 
         await saveBakerProfile(profileUpdate, true);
@@ -918,6 +926,16 @@ export default function EditProfileScreen() {
                         Ex: @atelierdedoces (link direto para seu perfil)
                       </Text>
                     </View>
+
+                    {/* Baker Tags & Specialties */}
+                    <BakerTagSelector
+                      selectedTags={selectedTags}
+                      onTagsChange={setSelectedTags}
+                      userId={user?.id}
+                    />
+
+                    {/* Showcase Manager Section */}
+                    {hasInitialBakerProfile && <ShowcaseManager userId={user?.id} />}
                   </>
                 )}
               </View>

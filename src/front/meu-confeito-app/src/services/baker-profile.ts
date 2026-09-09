@@ -6,6 +6,12 @@ import {
   NearbyBakersResponse,
   PublicBakerProfile,
 } from '../types/baker-profile';
+import {
+  AddShowcaseInput,
+  ReorderShowcaseInput,
+  ShowcaseItemResponse,
+  ShowcaseListResponse,
+} from '../types/showcase';
 import { api } from './api';
 
 export interface BakerProfileResponse {
@@ -72,6 +78,33 @@ export const BakerProfileService = {
     const response = await api.get<NearbyBakersResponse>('/baker-profiles', {
       params: queryParams,
     });
+    return response.data;
+  },
+
+  getMyShowcase: async (): Promise<ShowcaseListResponse> => {
+    const response = await api.get<ShowcaseListResponse>('/baker-profiles/me/showcase');
+    return response.data;
+  },
+
+  addShowcaseRecipe: async (data: AddShowcaseInput): Promise<ShowcaseItemResponse> => {
+    const response = await api.post<ShowcaseItemResponse>('/baker-profiles/me/showcase', data);
+    return response.data;
+  },
+
+  reorderShowcase: async (data: ReorderShowcaseInput): Promise<ShowcaseListResponse> => {
+    const response = await api.patch<ShowcaseListResponse>(
+      '/baker-profiles/me/showcase/order',
+      data,
+    );
+    return response.data;
+  },
+
+  removeShowcaseRecipe: async (recipeId: string): Promise<void> => {
+    await api.delete(`/baker-profiles/me/showcase/${recipeId}`);
+  },
+
+  getPublicShowcase: async (userId: string): Promise<ShowcaseListResponse> => {
+    const response = await api.get<ShowcaseListResponse>(`/baker-profiles/${userId}/showcase`);
     return response.data;
   },
 };
