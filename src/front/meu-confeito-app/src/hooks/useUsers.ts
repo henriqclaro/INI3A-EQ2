@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { AuthService, ResetPasswordData } from '../services/auth';
 import {
   RegisterUserInventoryData,
   UserEditData,
@@ -143,4 +144,57 @@ export function useUserInventoryRegister() {
   };
 
   return { registerInventory, isLoading, error };
+}
+
+export function useUserDelete() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const deleteUser = async (userId: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await UserService.delete(userId);
+      return response;
+    } catch (err: unknown) {
+      console.error('Error deleting user:', err);
+      const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
+      const apiMessage =
+        apiErr?.response?.data?.message || apiErr?.message || 'Erro ao excluir conta.';
+      setError(apiMessage);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { deleteUser, isLoading, error };
+}
+
+export function useResetPassword() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const resetPassword = async (data: ResetPasswordData) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await AuthService.resetPassword(data);
+      return response;
+    } catch (err: unknown) {
+      console.error('Error resetting password:', err);
+      const apiErr = err as {
+        response?: { data?: { message?: string; code?: string } };
+        message?: string;
+      };
+      const apiMessage =
+        apiErr?.response?.data?.message || apiErr?.message || 'Erro ao alterar senha.';
+      setError(apiMessage);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { resetPassword, isLoading, error };
 }

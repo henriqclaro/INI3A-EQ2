@@ -16,7 +16,8 @@ interface CustomButtonProps {
   onPress?: (event: GestureResponderEvent) => void | Promise<void>;
   children?: ReactNode;
   style?: StyleProp<ViewStyle>;
-  variant?: 'primary' | 'secondary' | 'neutral' | 'dashed' | 'outline';
+  variant?: 'primary' | 'secondary' | 'neutral' | 'dashed' | 'outline' | 'danger';
+  isDisabled?: boolean;
   testID?: string;
   accessibilityLabel?: string;
 }
@@ -26,6 +27,7 @@ export const CustomButton = ({
   onPress,
   children,
   variant = 'primary',
+  isDisabled = false,
   style,
   testID,
   accessibilityLabel,
@@ -40,10 +42,13 @@ export const CustomButton = ({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel || title}
       activeOpacity={0.8}
-      style={[styles.button, style]}
+      disabled={isDisabled}
+      style={[styles.button, isDisabled && styles.disabledButton, style]}
       onPress={onPress}
     >
-      {title ? <Text style={styles.btnText}>{title}</Text> : null}
+      {title ? (
+        <Text style={[styles.btnText, isDisabled && styles.disabledBtnText]}>{title}</Text>
+      ) : null}
       {children}
     </TouchableOpacity>
   );
@@ -51,12 +56,13 @@ export const CustomButton = ({
 
 const createStyles = (
   theme: AppTheme,
-  variant: 'primary' | 'secondary' | 'neutral' | 'dashed' | 'outline',
+  variant: 'primary' | 'secondary' | 'neutral' | 'dashed' | 'outline' | 'danger',
 ) => {
   const isPrimary = variant === 'primary';
   const isSecondary = variant === 'secondary';
   const isDashed = variant === 'dashed';
   const isOutline = variant === 'outline';
+  const isDanger = variant === 'danger';
 
   let backgroundColor: string = theme.colors.surfaceContainerLowest;
   let borderColor: string = theme.colors.outlineVariant;
@@ -70,6 +76,10 @@ const createStyles = (
     backgroundColor = theme.colors.secondaryContainer;
     borderColor = theme.colors.secondaryContainer;
     textColor = theme.colors.onSecondaryContainer;
+  } else if (isDanger) {
+    backgroundColor = theme.colors.error;
+    borderColor = theme.colors.error;
+    textColor = theme.colors.onError;
   } else if (isDashed) {
     backgroundColor = theme.colors.surfaceContainerLowest;
     borderColor = theme.colors.primary;
@@ -105,6 +115,12 @@ const createStyles = (
       letterSpacing: theme.typography.labelMd.letterSpacing,
       textTransform: 'uppercase',
       color: textColor,
+    },
+    disabledButton: {
+      opacity: 0.5,
+    },
+    disabledBtnText: {
+      opacity: 0.7,
     },
   });
 };

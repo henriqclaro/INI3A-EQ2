@@ -32,6 +32,11 @@ export interface LogInResponse {
   };
 }
 
+export interface ResetPasswordData {
+  oldPassword: string;
+  newPassword: string;
+}
+
 export const AuthService = {
   logIn: async (data: LogInData) => {
     const response = await api.post<LogInResponse>('/auth/sessions', data);
@@ -39,6 +44,10 @@ export const AuthService = {
   },
   logOut: async (refreshToken: string) => {
     const response = await api.delete('/auth/sessions', { data: { refreshToken: refreshToken } });
+    return response.data;
+  },
+  resetPassword: async (data: ResetPasswordData) => {
+    const response = await api.patch('/auth/password', data);
     return response.data;
   },
 };

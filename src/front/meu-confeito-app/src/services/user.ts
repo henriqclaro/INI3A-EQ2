@@ -86,7 +86,7 @@ export const UserService = {
     return response.data;
   },
   delete: async (userId: string) => {
-    const response = await api.delete(`/user/${userId}`, { data: { state: 'DELETED' } });
+    const response = await api.delete(`/users/${userId}`, { data: { state: 'DELETED' } });
     return response.data;
   },
   getRecipes: async (userId: string) => {

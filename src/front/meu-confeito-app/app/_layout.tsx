@@ -82,6 +82,7 @@ function RootLayoutContent() {
         <Stack.Screen name="saved-recipes" options={{ title: 'Receitas Salvas' }} />
         <Stack.Screen name="search-bakers" options={{ title: 'Buscar Confeitarias' }} />
         <Stack.Screen name="settings" options={{ title: 'Configurações' }} />
+        <Stack.Screen name="reset-password" options={{ title: 'Alterar Senha' }} />
       </Stack>
       <DesktopAlert />
     </PaperProvider>
