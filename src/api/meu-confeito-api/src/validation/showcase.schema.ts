@@ -1,15 +1,15 @@
 import { z } from 'zod';
 
 export const paramsRecipeSchema = z.object({
-  recipeId: z.string().uuid('Invalid Recipe ID'),
+  recipeId: z.uuid('Invalid Recipe ID'),
 });
 
 export const paramsProfileSchema = z.object({
-  id: z.string().uuid('Invalid Profile ID'),
+  id: z.uuid('Invalid Profile ID'),
 });
 
 export const addShowcaseSchema = z.object({
-  recipeId: z.string().uuid('Invalid Recipe ID'),
+  recipeId: z.uuid('Invalid Recipe ID'),
   order: z.number().int().positive('Order must be a positive integer').optional(),
 });
 
@@ -17,7 +17,7 @@ export const reorderShowcaseSchema = z.object({
   items: z
     .array(
       z.object({
-        recipeId: z.string().uuid('Invalid Recipe ID'),
+        recipeId: z.uuid('Invalid Recipe ID'),
         order: z.number().int().positive('Order must be a positive integer'),
       }),
     )
