@@ -59,6 +59,8 @@ export interface PartialRecipe {
   prepTimeMinutes: number;
   createdAt: Date | string;
   updatedAt: Date | string;
+  baseYield?: number | string;
+  yieldUnit?: string;
   tags: {
     tag: PartialTag;
   }[];

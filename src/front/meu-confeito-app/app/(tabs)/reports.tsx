@@ -13,14 +13,23 @@ import { router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
+import {
+  ProductionShortcutCard,
+  ProfitSummarySection,
+  PurchaseProjectionSection,
+} from '@/src/components/analytics';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { useProfitSummary, usePurchaseProjection } from '@/src/hooks/useAnalytics';
 import { AppTheme } from '@/src/theme/themes';
+
+type AnalyticsTab = 'profit' | 'projection';
 
 export default function ReportsScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
   const { width } = useWindowDimensions();
+  const [activeTab, setActiveTab] = useState<AnalyticsTab>('profit');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const isDesktop = width >= 768;
@@ -31,13 +40,42 @@ export default function ReportsScreen() {
     }
   }, [user]);
 
+  const {
+    summary,
+    isLoading: isProfitLoading,
+    hasError: hasProfitError,
+    errorMessage: profitErrorMessage,
+    activePreset,
+    dateRange,
+    changePreset,
+    refetch: refetchProfit,
+  } = useProfitSummary('30d');
+
+  const {
+    plannedProductions,
+    projection,
+    isCalculating: isProjectionCalculating,
+    hasError: hasProjectionError,
+    errorMessage: projectionErrorMessage,
+    addPlannedProduction,
+    updatePlannedProductionYield,
+    removePlannedProduction,
+    clearPlannedProductions,
+    calculateProjection,
+  } = usePurchaseProjection();
+
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
-    // Placeholder delay for future API reports integration
-    setTimeout(() => {
+    try {
+      if (activeTab === 'profit') {
+        await refetchProfit();
+      } else if (plannedProductions.length > 0) {
+        await calculateProjection();
+      }
+    } finally {
       setIsRefreshing(false);
-    }, 600);
-  }, []);
+    }
+  }, [activeTab, refetchProfit, plannedProductions.length, calculateProjection]);
 
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
@@ -61,113 +99,94 @@ export default function ReportsScreen() {
             <View style={styles.iconCircle}>
               <MaterialCommunityIcons
                 name="chart-timeline-variant"
-                size={isDesktop ? 40 : 36}
+                size={isDesktop ? 36 : 30}
                 color={theme.colors.primary}
               />
             </View>
             <View style={styles.headerTextCol}>
-              <Text style={styles.title}>Relatórios & Métricas</Text>
+              <Text style={styles.title}>Centro de Análises & Métricas</Text>
               <Text style={styles.subtitle}>
-                Acompanhe a fabricação das suas receitas, custos operacionais e consumo de insumos
-                em tempo real.
+                Monitore o lucro líquido real, decomponha seus custos de produção e simule compras
+                estratégicas para suas próximas receitas.
               </Text>
             </View>
           </View>
 
-          {/* Action Dashboard Grid */}
-          <View style={styles.dashboardGrid}>
-            {/* Card 1: Produções */}
+          {/* Quick Production History Card (Kept per request) */}
+          <ProductionShortcutCard isDesktop={isDesktop} />
+
+          {/* Tab Selector Buttons */}
+          <View style={styles.tabSelectorContainer}>
             <TouchableOpacity
-              style={styles.actionCard}
-              onPress={() => router.push('/productions')}
+              style={[styles.tabButton, activeTab === 'profit' && styles.tabButtonActive]}
+              onPress={() => setActiveTab('profit')}
               activeOpacity={0.8}
               accessibilityRole="button"
-              accessibilityLabel="Abrir histórico de produções de receitas"
+              accessibilityLabel="Ver resumo de rentabilidade e custos"
             >
-              <View style={styles.cardTopRow}>
-                <View style={styles.cardIconBox}>
-                  <MaterialCommunityIcons name="pot-steam" size={24} color={theme.colors.primary} />
-                </View>
-                <View style={styles.cardBadge}>
-                  <Text style={styles.cardBadgeText}>Lotes & Custos</Text>
-                </View>
-              </View>
-              <View style={styles.cardTextBox}>
-                <Text style={styles.cardTitle}>Histórico de Produções</Text>
-                <Text style={styles.cardSubtitle}>
-                  Consulte lotes fabricados, custos operacionais detalhados e consumo do estoque.
-                </Text>
-              </View>
-              <View style={styles.cardFooter}>
-                <Text style={styles.cardActionText}>Acessar produções</Text>
-                <MaterialCommunityIcons name="arrow-right" size={18} color={theme.colors.primary} />
-              </View>
+              <MaterialCommunityIcons
+                name="finance"
+                size={18}
+                color={activeTab === 'profit' ? theme.colors.white : theme.colors.espressoDark}
+              />
+              <Text
+                style={[styles.tabButtonText, activeTab === 'profit' && styles.tabButtonTextActive]}
+              >
+                Rentabilidade & Custos
+              </Text>
             </TouchableOpacity>
 
-            {/* Card 2: Estoque */}
             <TouchableOpacity
-              style={styles.actionCard}
-              onPress={() => router.push('/stock')}
+              style={[styles.tabButton, activeTab === 'projection' && styles.tabButtonActive]}
+              onPress={() => setActiveTab('projection')}
               activeOpacity={0.8}
               accessibilityRole="button"
-              accessibilityLabel="Abrir gestão de estoque"
+              accessibilityLabel="Ver projeção e demanda de compras"
             >
-              <View style={styles.cardTopRow}>
-                <View style={styles.cardIconBox}>
-                  <MaterialCommunityIcons
-                    name="package-variant-closed"
-                    size={24}
-                    color={theme.colors.primary}
-                  />
-                </View>
-                <View style={styles.cardBadge}>
-                  <Text style={styles.cardBadgeText}>Insumos & Saldos</Text>
-                </View>
-              </View>
-              <View style={styles.cardTextBox}>
-                <Text style={styles.cardTitle}>Gestão de Estoque</Text>
-                <Text style={styles.cardSubtitle}>
-                  Monitore saldo atual, custos médios, compras recentes e alertas de validade.
-                </Text>
-              </View>
-              <View style={styles.cardFooter}>
-                <Text style={styles.cardActionText}>Acessar estoque</Text>
-                <MaterialCommunityIcons name="arrow-right" size={18} color={theme.colors.primary} />
-              </View>
-            </TouchableOpacity>
-
-            {/* Card 3: Receitas & Precificação */}
-            <TouchableOpacity
-              style={styles.actionCard}
-              onPress={() => router.push('/(tabs)/recipes')}
-              activeOpacity={0.8}
-              accessibilityRole="button"
-              accessibilityLabel="Abrir fichas técnicas e precificação de receitas"
-            >
-              <View style={styles.cardTopRow}>
-                <View style={styles.cardIconBox}>
-                  <MaterialCommunityIcons
-                    name="book-open-page-variant-outline"
-                    size={24}
-                    color={theme.colors.primary}
-                  />
-                </View>
-                <View style={styles.cardBadge}>
-                  <Text style={styles.cardBadgeText}>Fichas Técnicas</Text>
-                </View>
-              </View>
-              <View style={styles.cardTextBox}>
-                <Text style={styles.cardTitle}>Fichas & Precificação</Text>
-                <Text style={styles.cardSubtitle}>
-                  Simule margens de lucro, custos de mão de obra e sugestão de preço por receita.
-                </Text>
-              </View>
-              <View style={styles.cardFooter}>
-                <Text style={styles.cardActionText}>Ver receitas</Text>
-                <MaterialCommunityIcons name="arrow-right" size={18} color={theme.colors.primary} />
-              </View>
+              <MaterialCommunityIcons
+                name="cart-outline"
+                size={18}
+                color={activeTab === 'projection' ? theme.colors.white : theme.colors.espressoDark}
+              />
+              <Text
+                style={[
+                  styles.tabButtonText,
+                  activeTab === 'projection' && styles.tabButtonTextActive,
+                ]}
+              >
+                Previsão de Compras
+              </Text>
             </TouchableOpacity>
           </View>
+
+          {/* Main Analytics View */}
+          {activeTab === 'profit' ? (
+            <ProfitSummarySection
+              summary={summary}
+              isLoading={isProfitLoading}
+              hasError={hasProfitError}
+              errorMessage={profitErrorMessage}
+              activePreset={activePreset}
+              onChangePreset={changePreset}
+              dateRange={dateRange}
+              onRefresh={refetchProfit}
+              isDesktop={isDesktop}
+            />
+          ) : (
+            <PurchaseProjectionSection
+              plannedProductions={plannedProductions}
+              projection={projection}
+              isCalculating={isProjectionCalculating}
+              hasError={hasProjectionError}
+              errorMessage={projectionErrorMessage}
+              onAddPlannedProduction={addPlannedProduction}
+              onUpdateYield={updatePlannedProductionYield}
+              onRemovePlannedProduction={removePlannedProduction}
+              onClearPlannedProductions={clearPlannedProductions}
+              onCalculate={calculateProjection}
+              isDesktop={isDesktop}
+            />
+          )}
 
           {/* Operational Advisory Banner */}
           <View style={styles.advisoryBanner}>
@@ -178,11 +197,12 @@ export default function ReportsScreen() {
               style={styles.advisoryIcon}
             />
             <View style={styles.advisoryContent}>
-              <Text style={styles.advisoryTitle}>Rastreabilidade & Fichas Técnicas</Text>
+              <Text style={styles.advisoryTitle}>Inteligência Financeira no Meu Confeito</Text>
               <Text style={styles.advisoryText}>
-                Cada lote fabricado através do Meu Confeito deduz automaticamente os insumos do seu
-                estoque e registra o custo exato dos ingredientes no momento da produção, garantindo
-                que sua margem financeira seja sempre precisa.
+                As métricas de rentabilidade consolidam o custo real dos ingredientes, perdas no
+                estoque e mão de obra em cada lote fabricado. Na previsão de compras, nosso
+                algoritmo decompõe todas as sub-receitas para comparar exatamente com o seu estoque
+                atual.
               </Text>
             </View>
           </View>
@@ -211,14 +231,13 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       alignItems: 'center',
       maxWidth: isDesktop ? 1040 : 440,
       width: '100%',
-      gap: 24,
+      gap: 20,
     },
     headerSection: {
       flexDirection: isDesktop ? 'row' : 'column',
-      alignItems: isDesktop ? 'center' : 'center',
+      alignItems: 'center',
       width: '100%',
       gap: 16,
-      textAlign: isDesktop ? 'left' : 'center',
       backgroundColor: theme.colors.surfaceContainerLowest,
       padding: isDesktop ? 24 : 20,
       borderRadius: theme.rounded.lg,
@@ -227,9 +246,9 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       ...theme.shadows.soft,
     },
     iconCircle: {
-      width: 64,
-      height: 64,
-      borderRadius: 32,
+      width: 60,
+      height: 60,
+      borderRadius: 30,
       backgroundColor: theme.colors.secondaryContainer,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
@@ -242,7 +261,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
     },
     title: {
       fontFamily: theme.typography.headlineLg.fontFamily,
-      fontSize: isDesktop ? 24 : 22,
+      fontSize: isDesktop ? 24 : 20,
       fontWeight: '700',
       color: theme.colors.espressoDark,
       textAlign: isDesktop ? 'left' : 'center',
@@ -255,81 +274,38 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       textAlign: isDesktop ? 'left' : 'center',
       lineHeight: 20,
     },
-    dashboardGrid: {
-      width: '100%',
-      flexDirection: isDesktop ? 'row' : 'column',
-      flexWrap: isDesktop ? 'wrap' : 'nowrap',
-      gap: 16,
-    },
-    actionCard: {
-      flex: isDesktop ? 1 : undefined,
-      minWidth: isDesktop ? 300 : '100%',
-      minHeight: 160,
-      backgroundColor: theme.colors.surfaceContainerLowest,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      borderRadius: theme.rounded.lg,
-      padding: 20,
-      justifyContent: 'space-between',
-      gap: 12,
-      ...theme.shadows.soft,
-    },
-    cardTopRow: {
+    tabSelectorContainer: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    },
-    cardIconBox: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
-      backgroundColor: theme.colors.secondaryContainer,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    cardBadge: {
+      width: '100%',
       backgroundColor: theme.colors.surfaceContainerLow,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      paddingHorizontal: 10,
-      paddingVertical: 4,
-      borderRadius: theme.rounded.full,
+      borderRadius: theme.rounded.default,
+      padding: 4,
+      gap: 6,
     },
-    cardBadgeText: {
-      fontFamily: theme.typography.labelSm.fontFamily,
-      fontSize: 11,
-      fontWeight: '600',
-      color: theme.colors.primary,
-    },
-    cardTextBox: {
-      gap: 4,
-    },
-    cardTitle: {
-      fontFamily: theme.typography.labelMd.fontFamily,
-      fontSize: 16,
-      fontWeight: '700',
-      color: theme.colors.espressoDark,
-    },
-    cardSubtitle: {
-      fontFamily: theme.typography.bodySm.fontFamily,
-      fontSize: 13,
-      color: theme.colors.onSurfaceVariant,
-      lineHeight: 18,
-    },
-    cardFooter: {
+    tabButton: {
+      flex: 1,
+      minHeight: theme.spacing.touchable,
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingTop: 8,
-      borderTopWidth: 1,
-      borderTopColor: theme.colors.outlineVariant,
-      minHeight: 36,
+      justifyContent: 'center',
+      gap: 8,
+      borderRadius: theme.rounded.default,
+      paddingHorizontal: 12,
     },
-    cardActionText: {
+    tabButtonActive: {
+      backgroundColor: theme.colors.primary,
+      ...theme.shadows.glow,
+    },
+    tabButtonText: {
       fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.primary,
+      color: theme.colors.espressoDark,
+    },
+    tabButtonTextActive: {
+      color: theme.colors.white,
     },
     advisoryBanner: {
       width: '100%',

@@ -52,3 +52,14 @@ export {
   BakerProfileUpdateInput,
   PublicBakerProfile,
 } from './baker-profile';
+export {
+  PlannedProductionItem,
+  ProfitSummaryCostBreakdown,
+  ProfitSummaryData,
+  ProfitSummaryQuery,
+  ProfitSummaryResponse,
+  PurchaseProjectionData,
+  PurchaseProjectionDeficitItem,
+  PurchaseProjectionRequest,
+  PurchaseProjectionResponse,
+} from './analytics';
