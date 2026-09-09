@@ -1,6 +1,12 @@
 import prisma from '../config/database';
 import { Prisma } from '../generated/prisma/client';
-import { ConflictError, ForbiddenError, GoneError, NotFoundError } from '../responses/http.error';
+import {
+  ConflictError,
+  DefaultAppError,
+  ForbiddenError,
+  GoneError,
+  NotFoundError,
+} from '../responses/http.error';
 import type { RequestContext } from '../types/context.interface';
 import type { BakerProfileDTO } from '../types/dtos/baker-profile.dto';
 
@@ -12,6 +18,41 @@ export class BakerProfileService {
     }
 
     return null;
+  }
+
+  private parseTags(rawTags: unknown): BakerProfileDTO.BakerTag[] {
+    const parsed = Array.isArray(rawTags)
+      ? rawTags
+      : typeof rawTags === 'string'
+        ? JSON.parse(rawTags)
+        : [];
+
+    return parsed.map((t: { id: number; name: string }) => ({
+      id: Number(t.id),
+      name: String(t.name),
+    }));
+  }
+
+  private async validateUserTagIds(tagIds: number[]): Promise<number[]> {
+    const uniqueTagIds = Array.from(new Set(tagIds));
+
+    if (uniqueTagIds.length > 0) {
+      const existingTags = await prisma.tag.findMany({
+        where: { id: { in: uniqueTagIds } },
+        select: { id: true, type: true },
+      });
+
+      if (existingTags.length !== uniqueTagIds.length) {
+        throw new NotFoundError('One or more tags not found', 'RESOURCE_NOT_FOUND');
+      }
+
+      const invalidTypeTag = existingTags.find((tag) => tag.type !== 'USER');
+      if (invalidTypeTag) {
+        throw new DefaultAppError('All tags must be of type USER', 'INVALID_FORMAT');
+      }
+    }
+
+    return uniqueTagIds;
   }
 
   async create(
@@ -58,6 +99,13 @@ export class BakerProfileService {
       throw new ConflictError('Baker profile already exists', 'RESOURCE_ALREADY_EXISTS');
     }
 
+    const incomingTagIds = data.tagIds !== undefined ? data.tagIds : data.tags;
+    let uniqueTagIds: number[] | undefined;
+
+    if (incomingTagIds !== undefined) {
+      uniqueTagIds = await this.validateUserTagIds(incomingTagIds);
+    }
+
     await prisma.$transaction(async (tx) => {
       await tx.bakerProfile.create({
         data: {
@@ -77,6 +125,15 @@ export class BakerProfileService {
             updated_at = NOW()
           WHERE user_id = ${context.userId}
         `;
+      }
+
+      if (uniqueTagIds && uniqueTagIds.length > 0) {
+        await tx.userTag.createMany({
+          data: uniqueTagIds.map((tagId) => ({
+            userId: context.userId,
+            tagId,
+          })),
+        });
       }
     });
 
@@ -111,7 +168,16 @@ export class BakerProfileService {
         bp.city,
         bp.created_at as "createdAt",
         bp.updated_at as "updatedAt",
-        ST_AsGeoJSON(bp.location)::json as location
+        ST_AsGeoJSON(bp.location)::json as location,
+        COALESCE(
+          (
+            SELECT json_agg(json_build_object('id', t.id, 'name', t.name) ORDER BY t.id ASC)
+            FROM "user_tag" ut
+            INNER JOIN "tag" t ON t.id = ut.tag_id
+            WHERE ut.user_id = bp.user_id
+          ),
+          '[]'::json
+        ) as tags
       FROM "baker_profile" bp
       INNER JOIN "user" ON "user".id = bp.user_id
       WHERE bp.user_id = ${context.userId}
@@ -136,6 +202,7 @@ export class BakerProfileService {
         neighborhood: rawProfile.neighborhood,
         city: rawProfile.city,
         location: this.parseLocation(rawProfile.location),
+        tags: this.parseTags(rawProfile.tags),
         createdAt: rawProfile.createdAt,
         updatedAt: rawProfile.updatedAt,
       },
@@ -167,6 +234,13 @@ export class BakerProfileService {
       throw new NotFoundError('Baker profile not found', 'RESOURCE_NOT_FOUND');
     }
 
+    const incomingTagIds = data.tagIds !== undefined ? data.tagIds : data.tags;
+    let uniqueTagIds: number[] | undefined;
+
+    if (incomingTagIds !== undefined) {
+      uniqueTagIds = await this.validateUserTagIds(incomingTagIds);
+    }
+
     const { location, bio, instagram, neighborhood, city } = data;
 
     const profileData = {
@@ -181,6 +255,11 @@ export class BakerProfileService {
         await tx.bakerProfile.update({
           where: { userId: context.userId },
           data: profileData,
+        });
+      } else if (uniqueTagIds !== undefined && location === undefined) {
+        await tx.bakerProfile.update({
+          where: { userId: context.userId },
+          data: { updatedAt: new Date() },
         });
       }
 
@@ -199,6 +278,21 @@ export class BakerProfileService {
               updated_at = NOW()
             WHERE user_id = ${context.userId}
           `;
+        }
+      }
+
+      if (uniqueTagIds !== undefined) {
+        await tx.userTag.deleteMany({
+          where: { userId: context.userId },
+        });
+
+        if (uniqueTagIds.length > 0) {
+          await tx.userTag.createMany({
+            data: uniqueTagIds.map((tagId) => ({
+              userId: context.userId,
+              tagId,
+            })),
+          });
         }
       }
     });
@@ -266,6 +360,19 @@ export class BakerProfileService {
             isActive: true,
           },
         },
+        profileTags: {
+          select: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+          orderBy: {
+            tagId: 'asc',
+          },
+        },
       },
     });
 
@@ -283,6 +390,10 @@ export class BakerProfileService {
         instagram: profile.instagram,
         neighborhood: profile.neighborhood,
         city: profile.city,
+        tags: profile.profileTags.map((pt) => ({
+          id: pt.tag.id,
+          name: pt.tag.name,
+        })),
       },
     };
   }
@@ -334,7 +445,16 @@ export class BakerProfileService {
         "user".profile_picture_url as "pfpUrl",
         bp.neighborhood,
         bp.city,
-        ROUND(ST_Distance(bp.location::geography, ST_SetSRID(ST_MakePoint(${data.lng}, ${data.lat}), 4326)::geography)::numeric, 2)::float as distance
+        ROUND(ST_Distance(bp.location::geography, ST_SetSRID(ST_MakePoint(${data.lng}, ${data.lat}), 4326)::geography)::numeric, 2)::float as distance,
+        COALESCE(
+          (
+            SELECT json_agg(json_build_object('id', t.id, 'name', t.name) ORDER BY t.id ASC)
+            FROM "user_tag" ut
+            INNER JOIN "tag" t ON t.id = ut.tag_id
+            WHERE ut.user_id = bp.user_id
+          ),
+          '[]'::json
+        ) as tags
       FROM "baker_profile" bp
       INNER JOIN "user" ON "user".id = bp.user_id
       WHERE "user".is_active = true
@@ -354,6 +474,7 @@ export class BakerProfileService {
       distance: Number(row.distance),
       neighborhood: row.neighborhood,
       city: row.city,
+      tags: this.parseTags(row.tags),
     }));
 
     return { bakerProfiles };

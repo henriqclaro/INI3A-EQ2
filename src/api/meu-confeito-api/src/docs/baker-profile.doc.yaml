@@ -111,9 +111,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/BakerProfileProfileResponse'
         '400':
-          description: Erro na validação dos dados
+          description: Erro na validação dos dados ou tipo de tag inválido
         '404':
-          description: Perfil de confeiteiro não encontrado
+          description: Perfil de confeiteiro ou tag não encontrada
         '410':
           description: Usuário suspenso ou excluído
     delete:

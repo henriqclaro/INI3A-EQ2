@@ -7,6 +7,11 @@ export namespace BakerProfileDTO {
   export type UpdateRequest = z.infer<typeof bakerProfile.updateSchema>;
   export type RequestParams = z.infer<typeof bakerProfile.paramsSchema>;
 
+  export interface BakerTag {
+    id: number;
+    name: string;
+  }
+
   export interface ProfileResponse {
     bakerProfile: {
       userId: string;
@@ -22,6 +27,7 @@ export namespace BakerProfileDTO {
         latitude: number;
         longitude: number;
       } | null;
+      tags: BakerTag[];
       createdAt: Date;
       updatedAt: Date;
     };
@@ -37,6 +43,7 @@ export namespace BakerProfileDTO {
       instagram: string | null;
       neighborhood: string | null;
       city: string | null;
+      tags: BakerTag[];
     };
   }
 
@@ -50,6 +57,7 @@ export namespace BakerProfileDTO {
       distance: number;
       neighborhood: string | null;
       city: string | null;
+      tags: BakerTag[];
     }[];
   }
 }

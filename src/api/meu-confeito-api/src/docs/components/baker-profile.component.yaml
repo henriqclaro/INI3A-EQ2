@@ -40,6 +40,15 @@ components:
                 longitude:
                   type: number
               nullable: true
+            tags:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
             createdAt:
               type: string
               format: date-time
@@ -76,6 +85,15 @@ components:
             city:
               type: string
               nullable: true
+            tags:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
     BakerProfileSelectByLocationResponse:
       type: object
       properties:
@@ -102,3 +120,12 @@ components:
               city:
                 type: string
                 nullable: true
+              tags:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string

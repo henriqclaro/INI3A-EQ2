@@ -12,6 +12,14 @@ export const registerSchema = z
     neighborhood: z.string().max(100).nullish(),
     city: z.string().max(100).nullish(),
     location: locationSchema.nullish(),
+    tagIds: z
+      .array(z.number().int().positive('Tag ID must be a positive integer'))
+      .max(7, 'A baker profile can have at most 7 tags')
+      .optional(),
+    tags: z
+      .array(z.number().int().positive('Tag ID must be a positive integer'))
+      .max(7, 'A baker profile can have at most 7 tags')
+      .optional(),
   })
   .partial();
 
@@ -22,6 +30,14 @@ export const updateSchema = z
     neighborhood: z.string().max(100).nullish(),
     city: z.string().max(100).nullish(),
     location: locationSchema.nullish(),
+    tagIds: z
+      .array(z.number().int().positive('Tag ID must be a positive integer'))
+      .max(7, 'A baker profile can have at most 7 tags')
+      .optional(),
+    tags: z
+      .array(z.number().int().positive('Tag ID must be a positive integer'))
+      .max(7, 'A baker profile can have at most 7 tags')
+      .optional(),
   })
   .partial();
 
