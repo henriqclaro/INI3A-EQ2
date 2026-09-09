@@ -21,7 +21,11 @@ import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useSingleRecipe } from '@/src/hooks/useRecipes';
 import { useSavedRecipes } from '@/src/hooks/useSavedRecipes';
 import { AppTheme } from '@/src/theme/themes';
-import { PartialTag, RecipeItem, RecipeStatus } from '@/src/types';
+import { PartialTag, RecipeInstructionStep, RecipeItem, RecipeStatus } from '@/src/types';
+import { parseRecipeInstructions } from '@/src/utils/recipe';
+import { getTagColors } from '@/src/utils/tag';
+
+export type FormattedInstructionStep = RecipeInstructionStep;
 
 export default function RecipeScreen() {
   const { theme } = useThemeMode();
@@ -89,40 +93,19 @@ export default function RecipeScreen() {
     const rawTags = (recipe as { tags?: { tag: PartialTag }[] })?.tags;
     if (!Array.isArray(rawTags)) return [];
     return rawTags.map((item: { tag: PartialTag }) => {
-      const tagType = (item?.tag?.type || '').toLowerCase();
-      const backgroundColor =
-        theme.colors.tags[tagType as keyof typeof theme.colors.tags] || theme.colors.secondary;
+      const tagColors = getTagColors(item?.tag?.type, theme);
       return {
         ...item,
-        backgroundColor,
+        backgroundColor: tagColors.backgroundColor,
+        textColor: tagColors.textColor,
+        borderColor: tagColors.borderColor,
       };
     });
   }, [recipe, theme]);
 
-  const parsedInstructions = useMemo(() => {
-    if (!recipe?.instructions) return [];
-    if (typeof recipe.instructions === 'object' && recipe.instructions !== null) {
-      const inst = recipe.instructions as { steps?: { text?: string }[] };
-      if (Array.isArray(inst.steps)) {
-        return inst.steps
-          .map((step) => (typeof step === 'string' ? step : step?.text || ''))
-          .filter(Boolean);
-      }
-    }
-    if (Array.isArray(recipe.instructions)) {
-      return (recipe.instructions as unknown[])
-        .map((step) =>
-          typeof step === 'string'
-            ? step
-            : (step as { text?: string })?.text || JSON.stringify(step),
-        )
-        .filter(Boolean);
-    }
-    if (typeof recipe.instructions === 'string') {
-      return [recipe.instructions];
-    }
-    return [];
-  }, [recipe]);
+  const parsedInstructions: FormattedInstructionStep[] = useMemo(() => {
+    return parseRecipeInstructions(recipe?.instructions);
+  }, [recipe?.instructions]);
 
   // Financial Calculations based on API inventory items
   const financialMetrics = useMemo(() => {
@@ -427,14 +410,29 @@ export default function RecipeScreen() {
 
                 {recipeTags.length > 0 && (
                   <View style={styles.tagsRow}>
-                    {recipeTags.map((item: { tag: PartialTag; backgroundColor: string }) => (
-                      <View
-                        key={item?.tag?.id || item?.tag?.name}
-                        style={[styles.tagPill, { backgroundColor: item.backgroundColor }]}
-                      >
-                        <Text style={styles.tagPillText}>{item?.tag?.name}</Text>
-                      </View>
-                    ))}
+                    {recipeTags.map(
+                      (item: {
+                        tag: PartialTag;
+                        backgroundColor: string;
+                        textColor: string;
+                        borderColor: string;
+                      }) => (
+                        <View
+                          key={item?.tag?.id || item?.tag?.name}
+                          style={[
+                            styles.tagPill,
+                            {
+                              backgroundColor: item.backgroundColor,
+                              borderColor: item.borderColor,
+                            },
+                          ]}
+                        >
+                          <Text style={[styles.tagPillText, { color: item.textColor }]}>
+                            {item?.tag?.name}
+                          </Text>
+                        </View>
+                      ),
+                    )}
                   </View>
                 )}
               </View>
@@ -613,15 +611,29 @@ export default function RecipeScreen() {
                       }
                     >
                       {isTogglingSave ? (
-                        <ActivityIndicator size="small" color={theme.colors.primary} />
+                        <ActivityIndicator
+                          size="small"
+                          color={
+                            hasSavedRecipe ? theme.colors.onPrimaryContainer : theme.colors.primary
+                          }
+                        />
                       ) : (
                         <>
                           <MaterialCommunityIcons
                             name={hasSavedRecipe ? 'bookmark-check' : 'bookmark-outline'}
                             size={18}
-                            color={theme.colors.primary}
+                            color={
+                              hasSavedRecipe
+                                ? theme.colors.onPrimaryContainer
+                                : theme.colors.primary
+                            }
                           />
-                          <Text style={styles.btnActionTextSaveGuest}>
+                          <Text
+                            style={[
+                              styles.btnActionTextSaveGuest,
+                              hasSavedRecipe && styles.btnActionTextSaveGuestActive,
+                            ]}
+                          >
                             {hasSavedRecipe ? 'Salva' : 'Salvar'}
                           </Text>
                         </>
@@ -799,12 +811,17 @@ export default function RecipeScreen() {
                     </View>
 
                     {parsedInstructions.length > 0 ? (
-                      parsedInstructions.map((instructionText, index) => (
-                        <View key={index} style={styles.stepRow}>
+                      parsedInstructions.map((instruction, index) => (
+                        <View key={instruction.step || index} style={styles.stepRow}>
                           <View style={styles.stepBadge}>
-                            <Text style={styles.stepText}>{index + 1}</Text>
+                            <Text style={styles.stepText}>{instruction.step || index + 1}</Text>
                           </View>
-                          <Text style={styles.stepContent}>{instructionText}</Text>
+                          <View style={styles.stepBody}>
+                            {Boolean(instruction.title) && (
+                              <Text style={styles.stepTitle}>{instruction.title}</Text>
+                            )}
+                            <Text style={styles.stepContent}>{instruction.description}</Text>
+                          </View>
                         </View>
                       ))
                     ) : (
@@ -1355,22 +1372,25 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: theme.colors.surfaceContainerLowest,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1.5,
+      borderColor: theme.colors.primary,
       borderRadius: theme.rounded.default,
       paddingHorizontal: 14,
       gap: 6,
     },
     btnActionSaveGuestActive: {
       backgroundColor: theme.colors.primaryContainer,
-      borderColor: theme.colors.primary,
+      borderColor: theme.colors.primaryContainer,
     },
     btnActionTextSaveGuest: {
       fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
-      fontWeight: '600',
+      fontWeight: '700',
       color: theme.colors.primary,
+    },
+    btnActionTextSaveGuestActive: {
+      color: theme.colors.onPrimaryContainer,
     },
     btnActionProduceGuest: {
       minHeight: 48,
@@ -1421,12 +1441,12 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       paddingVertical: 4,
       paddingHorizontal: 10,
       borderRadius: theme.rounded.full,
+      borderWidth: 1,
     },
     tagPillText: {
       fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 12,
       fontWeight: '600',
-      color: theme.colors.espressoDark,
     },
 
     // Segmented Mode Switcher
@@ -1603,8 +1623,17 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       fontSize: 14,
       color: theme.colors.primary,
     },
-    stepContent: {
+    stepBody: {
       flex: 1,
+      gap: 2,
+    },
+    stepTitle: {
+      fontFamily: theme.typography.bodyMd.fontFamily,
+      fontSize: 15,
+      fontWeight: '700',
+      color: theme.colors.espressoDark,
+    },
+    stepContent: {
       fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
       lineHeight: 22,

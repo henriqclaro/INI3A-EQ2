@@ -22,6 +22,7 @@ export {
   RecipeForm,
   type RecipeFormProps,
   type RecipeFormSubmitData,
+  type RecipeInstructionStepInput,
 } from '@/src/components/RecipeForm';
 export {
   ProduceRecipeModal,

@@ -8,6 +8,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useThemeMode } from '../contexts/ThemeContext';
 import { AppTheme } from '../theme/themes';
 import { PartialTag } from '../types';
+import { getTagColors } from '../utils/tag';
 
 interface TagData {
   tag: PartialTag;
@@ -36,25 +37,12 @@ export const RecipeView = ({
   const styledTags = useMemo(() => {
     if (!Array.isArray(tags)) return [];
     return tags.map((item) => {
-      const tagType = (item?.tag?.type || '').toLowerCase();
-      let backgroundColor: string = theme.colors.chips.secondary.background;
-      let textColor: string = theme.colors.chips.secondary.text;
-
-      if (tagType === 'product') {
-        backgroundColor = theme.colors.chips.primary.background;
-        textColor = theme.colors.chips.primary.text;
-      } else if (tagType === 'variety') {
-        backgroundColor = theme.colors.chips.accent.background;
-        textColor = theme.colors.chips.accent.text;
-      } else if (tagType === 'attribute') {
-        backgroundColor = theme.colors.chips.secondary.background;
-        textColor = theme.colors.chips.secondary.text;
-      }
-
+      const tagColors = getTagColors(item?.tag?.type, theme);
       return {
         ...item,
-        backgroundColor,
-        textColor,
+        backgroundColor: tagColors.backgroundColor,
+        textColor: tagColors.textColor,
+        borderColor: tagColors.borderColor,
       };
     });
   }, [tags, theme]);
@@ -99,7 +87,13 @@ export const RecipeView = ({
             {styledTags.map((item) => (
               <View
                 key={item?.tag?.id || item?.tag?.name}
-                style={[styles.tagBadge, { backgroundColor: item.backgroundColor }]}
+                style={[
+                  styles.tagBadge,
+                  {
+                    backgroundColor: item.backgroundColor,
+                    borderColor: item.borderColor,
+                  },
+                ]}
               >
                 <Text style={[styles.tagText, { color: item.textColor }]}>{item?.tag?.name}</Text>
               </View>
@@ -181,6 +175,7 @@ const createStyles = (theme: AppTheme) =>
       paddingVertical: 4,
       paddingHorizontal: 10,
       borderRadius: theme.rounded.full,
+      borderWidth: 1,
     },
     tagText: {
       fontSize: 12,

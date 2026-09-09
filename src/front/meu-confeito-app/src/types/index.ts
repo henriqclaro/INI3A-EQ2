@@ -1,6 +1,8 @@
 export {
   FullRecipe,
   PartialRecipe,
+  RecipeInstructionStep,
+  RecipeInstructionsData,
   RecipeItem,
   RecipeItemInput,
   RecipeRegisterInput,

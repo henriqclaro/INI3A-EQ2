@@ -358,7 +358,7 @@ export default function RegisterStockScreen() {
                 error={ingredientError}
                 isRequired
                 label="Insumo"
-                placeholder="Buscar insumo no catálogo (ex: Farinha, Leite, Chocolate)..."
+                placeholder="Buscar insumo (ex: Farinha)..."
                 helperText="Busque e selecione o ingrediente do catálogo para dar entrada ou ajuste de estoque."
               />
 
@@ -536,7 +536,7 @@ export default function RegisterStockScreen() {
                     style={styles.singleInput}
                     value={expirationDateInput}
                     onChangeText={setExpirationDateInput}
-                    placeholder="DD/MM/AAAA ou AAAA-MM-DD"
+                    placeholder="DD/MM/AAAA"
                     placeholderTextColor={theme.colors.placeholder}
                   />
                   <Text style={styles.helperText}>
@@ -554,7 +554,7 @@ export default function RegisterStockScreen() {
                     style={styles.textArea}
                     value={notesInput}
                     onChangeText={setNotesInput}
-                    placeholder="Ex: Contagem inicial de estoque, acerto de inventário..."
+                    placeholder="Ex: Contagem inicial de estoque..."
                     placeholderTextColor={theme.colors.placeholder}
                     maxLength={255}
                     multiline

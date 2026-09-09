@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  FlatList,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -36,7 +36,7 @@ export function IngredientSelector({
   selectedIngredient,
   onSelectIngredient,
   label = 'Ingrediente',
-  placeholder = 'Buscar insumo (ex: Leite, Farinha, Açúcar)...',
+  placeholder = 'Buscar insumo (ex: Leite, Farinha)...',
   helperText,
   error,
   isRequired = false,
@@ -318,14 +318,14 @@ export function IngredientSelector({
           {isDropdownVisible && !isDisabled && (
             <View style={styles.dropdownContainer}>
               {availableSuggestions.length > 0 ? (
-                <FlatList
-                  data={availableSuggestions}
-                  keyExtractor={(item) => String(item.id)}
+                <ScrollView
                   keyboardShouldPersistTaps="handled"
                   nestedScrollEnabled
                   style={styles.dropdownList}
-                  renderItem={({ item }) => (
+                >
+                  {availableSuggestions.map((item) => (
                     <TouchableOpacity
+                      key={item.id}
                       style={styles.dropdownItem}
                       onPress={() => handleSelect(item)}
                       activeOpacity={0.7}
@@ -365,8 +365,8 @@ export function IngredientSelector({
                         />
                       </View>
                     </TouchableOpacity>
-                  )}
-                />
+                  ))}
+                </ScrollView>
               ) : isSearching ? (
                 <View style={styles.dropdownEmptyState}>
                   <Text style={styles.dropdownEmptyText}>Buscando insumos...</Text>

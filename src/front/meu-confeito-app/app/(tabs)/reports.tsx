@@ -188,8 +188,8 @@ export default function ReportsScreen() {
             />
           )}
 
-          {/* Operational Advisory Banner */}
-          <View style={styles.advisoryBanner}>
+          {/* Operational Advisory Banner (Commented out per request) */}
+          {/* <View style={styles.advisoryBanner}>
             <MaterialCommunityIcons
               name="lightbulb-outline"
               size={24}
@@ -205,9 +205,7 @@ export default function ReportsScreen() {
                 atual.
               </Text>
             </View>
-          </View>
-
-          <Text style={styles.pullHint}>Puxe para baixo para atualizar</Text>
+          </View> */}
         </View>
       </ScrollView>
     </View>
@@ -336,12 +334,5 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       fontSize: 13,
       lineHeight: 18,
       color: theme.colors.onSurfaceVariant,
-    },
-    pullHint: {
-      fontFamily: theme.typography.bodySm.fontFamily,
-      fontSize: 12,
-      color: theme.colors.outline,
-      textAlign: 'center',
-      marginTop: 4,
     },
   });

@@ -28,14 +28,22 @@ import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useIngredients } from '@/src/hooks/useIngredients';
 import { useUserRecipes } from '@/src/hooks/useRecipes';
 import { AppTheme } from '@/src/theme/themes';
-import { FullRecipe, RecipeItemInput, StandardUnit, Tag, TagType } from '@/src/types';
+import {
+  FullRecipe,
+  RecipeInstructionStep,
+  RecipeItemInput,
+  StandardUnit,
+  Tag,
+  TagType,
+} from '@/src/types';
+import { parseRecipeInstructions } from '@/src/utils/recipe';
+
+export type RecipeInstructionStepInput = RecipeInstructionStep;
 
 export interface RecipeFormSubmitData {
   title: string;
   coverUrl: string | null;
-  instructions: {
-    steps: { text: string }[];
-  };
+  instructions: { steps: RecipeInstructionStep[] } | Record<string, unknown>;
   baseYield: number;
   yieldUnit: StandardUnit;
   profitMargin?: number;
@@ -115,31 +123,16 @@ export function RecipeForm({
     ];
   }, [initialRecipe]);
 
-  const initialSteps: string[] = useMemo(() => {
-    if (!initialRecipe?.instructions) return [''];
-    if (typeof initialRecipe.instructions === 'object' && initialRecipe.instructions !== null) {
-      const inst = initialRecipe.instructions as { steps?: { text?: string }[] };
-      if (Array.isArray(inst.steps) && inst.steps.length > 0) {
-        const parsed = inst.steps
-          .map((step) => (typeof step === 'string' ? step : step?.text || ''))
-          .filter(Boolean);
-        if (parsed.length > 0) return parsed;
-      }
+  const initialSteps: RecipeInstructionStep[] = useMemo(() => {
+    const parsed = parseRecipeInstructions(initialRecipe?.instructions);
+    if (parsed.length > 0) {
+      return parsed.map((item, idx) => ({
+        step: idx + 1,
+        title: item.title || '',
+        description: item.description || '',
+      }));
     }
-    if (Array.isArray(initialRecipe.instructions) && initialRecipe.instructions.length > 0) {
-      const parsed = initialRecipe.instructions
-        .map((step) =>
-          typeof step === 'string'
-            ? step
-            : (step as { text?: string })?.text || JSON.stringify(step),
-        )
-        .filter(Boolean);
-      if (parsed.length > 0) return parsed;
-    }
-    if (typeof initialRecipe.instructions === 'string' && initialRecipe.instructions.trim()) {
-      return [initialRecipe.instructions];
-    }
-    return [''];
+    return [{ step: 1, title: '', description: '' }];
   }, [initialRecipe]);
 
   const initialTags: Tag[] = useMemo(() => {
@@ -194,7 +187,7 @@ export function RecipeForm({
   const [items, setItems] = useState<RecipeFormItem[]>(initialItems);
 
   // Instructions / Steps State
-  const [steps, setSteps] = useState<string[]>(initialSteps);
+  const [steps, setSteps] = useState<RecipeInstructionStep[]>(initialSteps);
 
   // Tags State
   const [selectedTags, setSelectedTags] = useState<Tag[]>(initialTags);
@@ -238,7 +231,14 @@ export function RecipeForm({
 
   // Add & Remove Steps
   const handleAddStep = () => {
-    setSteps((prev) => [...prev, '']);
+    setSteps((prev) => [
+      ...prev,
+      {
+        step: prev.length + 1,
+        title: '',
+        description: '',
+      },
+    ]);
   };
 
   const handleRemoveStep = (index: number) => {
@@ -246,13 +246,22 @@ export function RecipeForm({
       Alert.alert('Aviso', 'A receita deve conter ao menos 1 etapa de preparo.');
       return;
     }
-    setSteps((prev) => prev.filter((_, i) => i !== index));
+    setSteps((prev) => {
+      const filtered = prev.filter((_, i) => i !== index);
+      return filtered.map((item, idx) => ({
+        ...item,
+        step: idx + 1,
+      }));
+    });
   };
 
-  const handleStepChange = (index: number, text: string) => {
+  const handleStepChange = (index: number, field: 'title' | 'description', value: string) => {
     setSteps((prev) => {
       const updated = [...prev];
-      updated[index] = text;
+      updated[index] = {
+        ...updated[index],
+        [field]: value,
+      };
       return updated;
     });
   };
@@ -322,9 +331,16 @@ export function RecipeForm({
 
     // Validate steps
     const validSteps = steps
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0)
-      .map((text) => ({ text }));
+      .map((s) => ({
+        title: s.title.trim(),
+        description: s.description.trim(),
+      }))
+      .filter((s) => s.title.length > 0 || s.description.length > 0)
+      .map((s, idx) => ({
+        step: idx + 1,
+        title: s.title,
+        description: s.description,
+      }));
 
     if (validSteps.length === 0) {
       Alert.alert('Modo de Preparo', 'Informe ao menos uma etapa no modo de preparo.');
@@ -393,7 +409,7 @@ export function RecipeForm({
             <Text style={styles.label}>Título da Receita *</Text>
             <TextInput
               style={styles.textInput}
-              placeholder="Ex: Bolo de Cenoura com Chocolate"
+              placeholder="Ex: Bolo de Cenoura"
               placeholderTextColor={theme.colors.placeholder}
               value={title}
               onChangeText={setTitle}
@@ -639,7 +655,7 @@ export function RecipeForm({
                     }}
                     initialIngredients={availableIngredients}
                     label="Ingrediente"
-                    placeholder="Buscar ingrediente (ex: Cacau, Açúcar, Farinha)..."
+                    placeholder="Buscar ingrediente (ex: Cacau)..."
                     isRequired
                     isDisabled={isSubmitting}
                   />
@@ -656,7 +672,7 @@ export function RecipeForm({
                     excludeRecipeId={initialRecipe?.id}
                     initialRecipes={userRecipes}
                     label="Sub-receita"
-                    placeholder="Buscar sub-receita (ex: Recheio de Brigadeiro)..."
+                    placeholder="Buscar sub-receita (ex: Brigadeiro)..."
                     isRequired
                     isDisabled={isSubmitting}
                   />
@@ -725,7 +741,7 @@ export function RecipeForm({
                 <Text style={styles.label}>Observações (opcional)</Text>
                 <TextInput
                   style={styles.textInput}
-                  placeholder="Ex: peneirado, temperatura ambiente"
+                  placeholder="Ex: peneirado"
                   placeholderTextColor={theme.colors.placeholder}
                   value={item.notes}
                   onChangeText={(val) => handleItemChange(index, 'notes', val)}
@@ -744,10 +760,10 @@ export function RecipeForm({
         <View style={styles.box}>
           <Text style={styles.secondaryTitle}>Modo de Preparo *</Text>
           <Text style={styles.boxHelperText}>
-            Descreva as etapas ordenadas para preparar a receita.
+            Descreva as etapas ordenadas para preparar a receita com título e descrição.
           </Text>
 
-          {steps.map((stepText, index) => (
+          {steps.map((stepItem, index) => (
             <View key={index} style={styles.stepContainer}>
               <View style={styles.stepHeaderRow}>
                 <View style={styles.stepBadge}>
@@ -770,15 +786,29 @@ export function RecipeForm({
                 )}
               </View>
 
-              <TextInput
-                style={styles.stepTextInput}
-                placeholder={`Descreva a etapa ${index + 1}...`}
-                placeholderTextColor={theme.colors.placeholder}
-                multiline
-                numberOfLines={3}
-                value={stepText}
-                onChangeText={(val) => handleStepChange(index, val)}
-              />
+              <View style={styles.stepInputGroup}>
+                <Text style={styles.stepInputSubLabel}>Título da Etapa (opcional)</Text>
+                <TextInput
+                  style={styles.stepTitleInput}
+                  placeholder="Ex: Preparo da Massa, Recheio..."
+                  placeholderTextColor={theme.colors.placeholder}
+                  value={stepItem.title}
+                  onChangeText={(val) => handleStepChange(index, 'title', val)}
+                />
+              </View>
+
+              <View style={styles.stepInputGroup}>
+                <Text style={styles.stepInputSubLabel}>Descrição da Etapa *</Text>
+                <TextInput
+                  style={styles.stepTextInput}
+                  placeholder={`Descreva a etapa ${index + 1}...`}
+                  placeholderTextColor={theme.colors.placeholder}
+                  multiline
+                  numberOfLines={3}
+                  value={stepItem.description}
+                  onChangeText={(val) => handleStepChange(index, 'description', val)}
+                />
+              </View>
             </View>
           ))}
 
@@ -1056,11 +1086,33 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       flex: 1,
     },
     removeStepBtn: {
-      width: 44,
-      height: 44,
+      minWidth: 48,
+      minHeight: 48,
       alignItems: 'center',
       justifyContent: 'center',
       marginRight: -4,
+    },
+    stepInputGroup: {
+      marginTop: 8,
+    },
+    stepInputSubLabel: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 12,
+      fontWeight: '600',
+      color: theme.colors.onSurfaceVariant,
+      marginBottom: 4,
+    },
+    stepTitleInput: {
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.sm,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      minHeight: 44,
+      fontSize: 14,
+      color: theme.colors.onSurface,
+      fontFamily: theme.typography.bodyMd.fontFamily,
     },
     stepTextInput: {
       backgroundColor: theme.colors.surfaceContainerLowest,
@@ -1070,7 +1122,7 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       paddingHorizontal: 12,
       paddingVertical: 10,
       minHeight: 70,
-      fontSize: 15,
+      fontSize: 14,
       color: theme.colors.onSurface,
       fontFamily: theme.typography.bodyMd.fontFamily,
       textAlignVertical: 'top',

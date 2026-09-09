@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  FlatList,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -15,6 +15,7 @@ import { useThemeMode } from '../contexts/ThemeContext';
 import { TagService } from '../services/tag';
 import { AppTheme } from '../theme/themes';
 import { Tag } from '../types/tag';
+import { getTagColors, getTagTypeLabel } from '../utils/tag';
 
 export interface TagSelectorProps {
   selectedTags: Tag[];
@@ -43,29 +44,7 @@ export function TagSelector({
 
   const getTagStyle = useCallback(
     (type?: string) => {
-      const normalized = (type || '').toLowerCase();
-      if (normalized === 'product') {
-        return {
-          background: theme.colors.chips.primary.background,
-          color: theme.colors.chips.primary.text,
-        };
-      }
-      if (normalized === 'variety') {
-        return {
-          background: theme.colors.chips.accent.background,
-          color: theme.colors.chips.accent.text,
-        };
-      }
-      if (normalized === 'attribute') {
-        return {
-          background: theme.colors.chips.secondary.background,
-          color: theme.colors.chips.secondary.text,
-        };
-      }
-      return {
-        background: theme.colors.chips.secondary.background,
-        color: theme.colors.chips.secondary.text,
-      };
+      return getTagColors(type, theme);
     },
     [theme],
   );
@@ -169,8 +148,17 @@ export function TagSelector({
           selectedTags.map((tag) => {
             const tagStyle = getTagStyle(tag.type);
             return (
-              <View key={tag.id} style={[styles.tagChip, { backgroundColor: tagStyle.background }]}>
-                <Text style={[styles.tagChipText, { color: tagStyle.color }]}>{tag.name}</Text>
+              <View
+                key={tag.id}
+                style={[
+                  styles.tagChip,
+                  {
+                    backgroundColor: tagStyle.backgroundColor,
+                    borderColor: tagStyle.borderColor,
+                  },
+                ]}
+              >
+                <Text style={[styles.tagChipText, { color: tagStyle.textColor }]}>{tag.name}</Text>
                 {!isDisabled && (
                   <TouchableOpacity
                     onPress={() => handleRemoveTag(tag.id)}
@@ -179,7 +167,7 @@ export function TagSelector({
                     accessibilityLabel={`Remover tag ${tag.name}`}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   >
-                    <MaterialCommunityIcons name="close" size={14} color={tagStyle.color} />
+                    <MaterialCommunityIcons name="close" size={14} color={tagStyle.textColor} />
                   </TouchableOpacity>
                 )}
               </View>
@@ -202,7 +190,7 @@ export function TagSelector({
             />
             <TextInput
               style={styles.searchInput}
-              placeholder="Buscar tag (ex: Bolo, Sem Glúten, Chocolate)..."
+              placeholder="Buscar tag (ex: Bolo, Doce)..."
               placeholderTextColor={theme.colors.placeholder}
               value={query}
               onChangeText={handleQueryChange}
@@ -240,16 +228,16 @@ export function TagSelector({
           {isDropdownVisible && (
             <View style={styles.dropdownContainer}>
               {availableSuggestions.length > 0 ? (
-                <FlatList
-                  data={availableSuggestions}
-                  keyExtractor={(item) => String(item.id)}
+                <ScrollView
                   keyboardShouldPersistTaps="handled"
                   nestedScrollEnabled
                   style={styles.dropdownList}
-                  renderItem={({ item }) => {
+                >
+                  {availableSuggestions.map((item) => {
                     const itemTagStyle = getTagStyle(item.type);
                     return (
                       <TouchableOpacity
+                        key={item.id}
                         style={styles.dropdownItem}
                         onPress={() => handleSelectTag(item)}
                         activeOpacity={0.7}
@@ -260,12 +248,15 @@ export function TagSelector({
                           <View
                             style={[
                               styles.itemTypeIndicator,
-                              { backgroundColor: itemTagStyle.background },
+                              {
+                                backgroundColor: itemTagStyle.backgroundColor,
+                                borderColor: itemTagStyle.borderColor,
+                              },
                             ]}
                           />
                           <Text style={styles.dropdownItemText}>{item.name}</Text>
                           <Text style={styles.dropdownItemTypeText}>
-                            ({item.type.toLowerCase()})
+                            ({getTagTypeLabel(item.type)})
                           </Text>
                         </View>
                         <MaterialCommunityIcons
@@ -275,8 +266,8 @@ export function TagSelector({
                         />
                       </TouchableOpacity>
                     );
-                  }}
-                />
+                  })}
+                </ScrollView>
               ) : isSearching ? (
                 <View style={styles.dropdownEmptyState}>
                   <Text style={styles.dropdownEmptyText}>Buscando tags...</Text>
@@ -374,6 +365,7 @@ const createStyles = (theme: AppTheme) =>
       paddingLeft: 12,
       paddingRight: 6,
       borderRadius: theme.rounded.full,
+      borderWidth: 1,
       gap: 6,
     },
     tagChipText: {
@@ -455,6 +447,7 @@ const createStyles = (theme: AppTheme) =>
       width: 10,
       height: 10,
       borderRadius: 5,
+      borderWidth: 1,
     },
     dropdownItemText: {
       fontFamily: theme.typography.bodyMd.fontFamily,

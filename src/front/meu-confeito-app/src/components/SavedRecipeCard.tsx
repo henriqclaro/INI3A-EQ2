@@ -8,6 +8,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useThemeMode } from '../contexts/ThemeContext';
 import { AppTheme } from '../theme/themes';
 import { UserSavedRecipeItem } from '../types/saved-recipe';
+import { getTagColors } from '../utils/tag';
 
 interface SavedRecipeCardProps {
   item: UserSavedRecipeItem;
@@ -49,25 +50,12 @@ export const SavedRecipeCard = ({
   const styledTags = useMemo(() => {
     if (!Array.isArray(item.recipe.tags)) return [];
     return item.recipe.tags.map((t) => {
-      const tagType = (t?.tag?.type || '').toLowerCase();
-      let backgroundColor: string = theme.colors.chips.secondary.background;
-      let textColor: string = theme.colors.chips.secondary.text;
-
-      if (tagType === 'product') {
-        backgroundColor = theme.colors.chips.primary.background;
-        textColor = theme.colors.chips.primary.text;
-      } else if (tagType === 'variety') {
-        backgroundColor = theme.colors.chips.accent.background;
-        textColor = theme.colors.chips.accent.text;
-      } else if (tagType === 'attribute') {
-        backgroundColor = theme.colors.chips.secondary.background;
-        textColor = theme.colors.chips.secondary.text;
-      }
-
+      const tagColors = getTagColors(t?.tag?.type, theme);
       return {
         ...t,
-        backgroundColor,
-        textColor,
+        backgroundColor: tagColors.backgroundColor,
+        textColor: tagColors.textColor,
+        borderColor: tagColors.borderColor,
       };
     });
   }, [item.recipe.tags, theme]);
@@ -111,7 +99,13 @@ export const SavedRecipeCard = ({
             {styledTags.slice(0, 3).map((tagObj) => (
               <View
                 key={tagObj?.tag?.id || tagObj?.tag?.name}
-                style={[styles.tagBadge, { backgroundColor: tagObj.backgroundColor }]}
+                style={[
+                  styles.tagBadge,
+                  {
+                    backgroundColor: tagObj.backgroundColor,
+                    borderColor: tagObj.borderColor,
+                  },
+                ]}
               >
                 <Text style={[styles.tagText, { color: tagObj.textColor }]}>
                   {tagObj?.tag?.name}
@@ -237,6 +231,7 @@ const createStyles = (theme: AppTheme) =>
       paddingHorizontal: 8,
       paddingVertical: 2,
       borderRadius: theme.rounded.full,
+      borderWidth: 1,
     },
     tagText: {
       fontFamily: theme.typography.labelSm.fontFamily,

@@ -66,13 +66,28 @@ export interface PartialRecipe {
   }[];
 }
 
+export interface RecipeInstructionStep {
+  step: number;
+  title: string;
+  description: string;
+}
+
+export interface RecipeInstructionsData {
+  steps: RecipeInstructionStep[];
+}
+
 export interface FullRecipe {
   id: string;
   userId: string | null;
   parentId: string | null;
   title: string;
   coverUrl: string | null;
-  instructions: { steps?: { text: string }[] } | Record<string, unknown> | string | unknown;
+  instructions:
+    | RecipeInstructionsData
+    | { steps?: { text: string }[] }
+    | Record<string, unknown>
+    | string
+    | unknown;
   baseYield: number | string;
   yieldUnit: StandardUnit | string;
 
@@ -103,7 +118,7 @@ export interface RecipeRegisterInput {
   parentId?: string | null;
   title: string;
   coverUrl?: string | null;
-  instructions: Record<string, unknown>;
+  instructions: RecipeInstructionsData | Record<string, unknown>;
   baseYield: number;
   yieldUnit: StandardUnit;
   profitMargin?: number;
@@ -118,7 +133,7 @@ export interface RecipeRegisterInput {
 export interface RecipeUpdateInput {
   title?: string;
   coverUrl?: string | null;
-  instructions?: Record<string, unknown>;
+  instructions?: RecipeInstructionsData | Record<string, unknown>;
   baseYield?: number;
   yieldUnit?: StandardUnit;
   profitMargin?: number;

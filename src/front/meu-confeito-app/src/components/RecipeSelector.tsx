@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  FlatList,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -18,6 +18,7 @@ import { RecipeService } from '../services/recipe';
 import { UserService } from '../services/user';
 import { AppTheme } from '../theme/themes';
 import { PartialRecipe } from '../types/recipe';
+import { getTagColors } from '../utils/tag';
 
 export interface RecipeSelectorProps {
   selectedRecipeId?: string | null;
@@ -44,7 +45,7 @@ export function RecipeSelector({
   onlyUserRecipes = true,
   excludeRecipeId,
   label = 'Sub-receita',
-  placeholder = 'Buscar sub-receita (ex: Brigadeiro, Massa de Baunilha)...',
+  placeholder = 'Buscar sub-receita (ex: Brigadeiro)...',
   helperText,
   error,
   isRequired = false,
@@ -227,11 +228,26 @@ export function RecipeSelector({
             </Text>
 
             <View style={styles.selectedMetaRow}>
-              {activeRecipe.tags && activeRecipe.tags.length > 0 && (
-                <View style={styles.tagChip}>
-                  <Text style={styles.tagChipText}>{activeRecipe.tags[0].tag.name}</Text>
-                </View>
-              )}
+              {activeRecipe.tags &&
+                activeRecipe.tags.length > 0 &&
+                (() => {
+                  const tagStyle = getTagColors(activeRecipe.tags[0].tag.type, theme);
+                  return (
+                    <View
+                      style={[
+                        styles.tagChip,
+                        {
+                          backgroundColor: tagStyle.backgroundColor,
+                          borderColor: tagStyle.borderColor,
+                        },
+                      ]}
+                    >
+                      <Text style={[styles.tagChipText, { color: tagStyle.textColor }]}>
+                        {activeRecipe.tags[0].tag.name}
+                      </Text>
+                    </View>
+                  );
+                })()}
               <View style={styles.subRecipeBadge}>
                 <Text style={styles.subRecipeBadgeText}>Sub-receita</Text>
               </View>
@@ -315,14 +331,14 @@ export function RecipeSelector({
           {isDropdownVisible && !isDisabled && (
             <View style={styles.dropdownContainer}>
               {availableSuggestions.length > 0 ? (
-                <FlatList
-                  data={availableSuggestions}
-                  keyExtractor={(item) => item.id}
+                <ScrollView
                   keyboardShouldPersistTaps="handled"
                   nestedScrollEnabled
                   style={styles.dropdownList}
-                  renderItem={({ item }) => (
+                >
+                  {availableSuggestions.map((item) => (
                     <TouchableOpacity
+                      key={item.id}
                       style={styles.dropdownItem}
                       onPress={() => handleSelect(item)}
                       activeOpacity={0.7}
@@ -352,13 +368,31 @@ export function RecipeSelector({
                           </Text>
 
                           <View style={styles.dropdownItemMetaRow}>
-                            {item.tags && item.tags.length > 0 ? (
-                              <View style={styles.dropdownTagChip}>
-                                <Text style={styles.dropdownTagChipText}>
-                                  {item.tags[0].tag.name}
-                                </Text>
-                              </View>
-                            ) : null}
+                            {item.tags &&
+                              item.tags.length > 0 &&
+                              (() => {
+                                const tagStyle = getTagColors(item.tags[0].tag.type, theme);
+                                return (
+                                  <View
+                                    style={[
+                                      styles.dropdownTagChip,
+                                      {
+                                        backgroundColor: tagStyle.backgroundColor,
+                                        borderColor: tagStyle.borderColor,
+                                      },
+                                    ]}
+                                  >
+                                    <Text
+                                      style={[
+                                        styles.dropdownTagChipText,
+                                        { color: tagStyle.textColor },
+                                      ]}
+                                    >
+                                      {item.tags[0].tag.name}
+                                    </Text>
+                                  </View>
+                                );
+                              })()}
                             <Text style={styles.dropdownItemSubtitle}>Sub-receita</Text>
                           </View>
                         </View>
@@ -372,8 +406,8 @@ export function RecipeSelector({
                         />
                       </View>
                     </TouchableOpacity>
-                  )}
-                />
+                  ))}
+                </ScrollView>
               ) : isSearching ? (
                 <View style={styles.dropdownEmptyState}>
                   <Text style={styles.dropdownEmptyText}>Buscando receitas...</Text>
@@ -543,6 +577,7 @@ const createStyles = (theme: AppTheme) =>
       paddingHorizontal: 6,
       paddingVertical: 1,
       borderRadius: theme.rounded.full,
+      borderWidth: 1,
     },
     dropdownTagChipText: {
       fontFamily: theme.typography.labelSm.fontFamily,
@@ -625,6 +660,7 @@ const createStyles = (theme: AppTheme) =>
       paddingHorizontal: 8,
       paddingVertical: 2,
       borderRadius: theme.rounded.full,
+      borderWidth: 1,
     },
     tagChipText: {
       fontFamily: theme.typography.labelSm.fontFamily,
