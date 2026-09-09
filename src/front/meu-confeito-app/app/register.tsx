@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 
+import * as Crypto from 'expo-crypto';
 import { Image } from 'expo-image';
 import { Link, Stack, router, useLocalSearchParams } from 'expo-router';
 
@@ -17,6 +18,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { ActivityIndicator } from 'react-native-paper';
 
 import { CustomButton, Input } from '@/src/components';
+import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useUserRegister } from '@/src/hooks/useUsers';
 import { AppTheme } from '@/src/theme/themes';
@@ -51,6 +53,10 @@ export default function RegisterScreen() {
   });
 
   const { registerUser, isLoading } = useUserRegister();
+  const { signIn } = useAuth();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const isSubmitting = isLoading || isLoggingIn;
+
   const { theme, isDarkMode } = useThemeMode();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -169,16 +175,34 @@ export default function RegisterScreen() {
         role,
       });
 
-      Alert.alert(
-        'Cadastro realizado!',
-        `Sua conta de ${role === 'BAKER' ? 'Confeiteira' : 'Cliente'} foi criada com sucesso.`,
-        [
-          {
-            text: 'Ir para o Login',
-            onPress: () => router.replace('/login'),
-          },
-        ],
-      );
+      setIsLoggingIn(true);
+      try {
+        const clientType = Platform.OS;
+        const sessionId = Crypto.randomUUID();
+
+        await signIn({
+          email: trimmedEmail,
+          password,
+          clientType,
+          sessionId,
+        });
+
+        router.replace('/home');
+      } catch (loginErr) {
+        console.error('Auto-login error after registration:', loginErr);
+        Alert.alert(
+          'Cadastro realizado com sucesso!',
+          'Sua conta foi criada. Por favor, entre com seu e-mail e senha para continuar.',
+          [
+            {
+              text: 'Ir para o Login',
+              onPress: () => router.replace('/login'),
+            },
+          ],
+        );
+      } finally {
+        setIsLoggingIn(false);
+      }
     } catch (err: unknown) {
       console.error('Registration error:', err);
       const apiError = err as { response?: { data?: { message?: string } }; message?: string };
@@ -554,7 +578,7 @@ export default function RegisterScreen() {
 
             {/* Submit button & login link */}
             <View style={styles.btnRegister}>
-              {isLoading ? (
+              {isSubmitting ? (
                 <ActivityIndicator size="large" color={theme.colors.primary} />
               ) : (
                 <CustomButton
