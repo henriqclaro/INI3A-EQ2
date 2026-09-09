@@ -52,3 +52,25 @@ paths:
                 $ref: '#/components/schemas/AuthRefreshTokenResponse'
         '401':
           description: Token inválido ou expirado
+  /auth/password:
+    patch:
+      summary: Redefine a senha do usuário
+      tags:
+        - Autenticação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthResetPasswordSchema'
+      responses:
+        '204':
+          description: Senha redefinida com sucesso
+        '400':
+          description: Erro na validação dos dados ou senha atual inválida
+        '401':
+          description: Token inválido ou expirado
+        '404':
+          description: Usuário não encontrado
+        '410':
+          description: Usuário suspenso ou excluído

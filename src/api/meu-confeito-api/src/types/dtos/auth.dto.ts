@@ -31,4 +31,6 @@ export namespace AuthDTO {
   export interface RefreshTokenResponse {
     accessToken: string;
   }
+
+  export type ResetPasswordRequest = z.infer<typeof auth.resetPasswordSchema>;
 }

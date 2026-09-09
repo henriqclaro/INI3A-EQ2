@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { AuthController } from '../controllers/auth.controller';
+import { authMiddleware } from '../middlewares/auth.middleware';
 import { validate } from '../middlewares/validate.middleware';
 import * as auth from '../validation/auth.schema';
 
@@ -23,6 +24,13 @@ authRoutes.post(
   '/tokens',
   validate({ body: auth.refreshOrDeleteSchema }),
   authController.toRefreshToken.bind(authController),
+);
+
+authRoutes.patch(
+  '/password',
+  authMiddleware,
+  validate({ body: auth.resetPasswordSchema }),
+  authController.resetPassword.bind(authController),
 );
 
 export { authRoutes };

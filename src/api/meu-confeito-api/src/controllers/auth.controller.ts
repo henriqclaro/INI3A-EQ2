@@ -1,9 +1,11 @@
 import type { Request, Response } from 'express';
 
+import type { Role } from '../generated/prisma/client';
 import { AuthError } from '../responses/http.error';
 import { DefaultSuccessResponse, NoContentResponse } from '../responses/http.success';
 import { AuthService } from '../services/auth.service';
 import type { ApiResponse } from '../types/api.response';
+import type { RequestContext } from '../types/context.interface';
 import type { AuthDTO } from '../types/dtos/auth.dto';
 
 export class AuthController {
@@ -11,6 +13,13 @@ export class AuthController {
 
   constructor() {
     this.authService = new AuthService();
+  }
+
+  private extractProps(req: { userId: string; userRole: Role }): RequestContext {
+    return {
+      userId: req.userId,
+      userRole: req.userRole,
+    };
   }
 
   async logIn(
@@ -48,5 +57,15 @@ export class AuthController {
     const tokenData = await this.authService.toRefreshToken(refreshToken);
 
     return new DefaultSuccessResponse(res, tokenData, 'Token successfully refreshed').send();
+  }
+
+  async resetPassword(
+    req: Request<unknown, unknown, AuthDTO.ResetPasswordRequest>,
+    res: Response<ApiResponse>,
+  ) {
+    const context = this.extractProps(req);
+    await this.authService.resetPassword(context, req.body);
+
+    return new NoContentResponse(res, 'Password reset successfully').send();
   }
 }

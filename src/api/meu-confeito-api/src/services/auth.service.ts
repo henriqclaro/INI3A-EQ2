@@ -5,7 +5,8 @@ import { randomBytes } from 'node:crypto';
 import prisma from '../config/database';
 import { env } from '../config/env.config';
 import type { Role } from '../generated/prisma/client';
-import { AuthError } from '../responses/http.error';
+import { AuthError, DefaultAppError, GoneError, NotFoundError } from '../responses/http.error';
+import type { RequestContext } from '../types/context.interface';
 import type { AuthDTO } from '../types/dtos/auth.dto';
 
 export class AuthService {
@@ -154,5 +155,43 @@ export class AuthService {
     };
 
     return { auth };
+  }
+
+  async resetPassword(context: RequestContext, data: AuthDTO.ResetPasswordRequest) {
+    const user = await prisma.user.findUnique({
+      where: { id: context.userId },
+      select: {
+        id: true,
+        passwordHash: true,
+        isActive: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundError('User not found', 'USER_NOT_FOUND');
+    }
+
+    if (!user.isActive) {
+      throw new GoneError('User suspended or deleted', 'USER_ACCOUNT_GONE');
+    }
+
+    if (!user.passwordHash) {
+      throw new AuthError('User has no password set', 'AUTH_UNAUTHORIZED');
+    }
+
+    const isPassValid = await bcrypt.compare(data.oldPassword, user.passwordHash);
+
+    if (!isPassValid) {
+      throw new DefaultAppError('Invalid old password', 'USER_INVALID_PASSWORD');
+    }
+
+    const newPasswordHash = await bcrypt.hash(data.newPassword, env.BCRYPT_ROUNDS);
+
+    await prisma.user.update({
+      where: { id: context.userId },
+      data: {
+        passwordHash: newPasswordHash,
+      },
+    });
   }
 }

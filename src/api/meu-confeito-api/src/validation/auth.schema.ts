@@ -18,3 +18,8 @@ export const headerSchema = z.object({
 export const refreshOrDeleteSchema = z.object({
   refreshToken: z.string('Token missing'),
 });
+
+export const resetPasswordSchema = z.object({
+  oldPassword: z.string().min(8, 'Old password must have at least 8 characters'),
+  newPassword: z.string().min(8, 'New password must have at least 8 characters'),
+});
