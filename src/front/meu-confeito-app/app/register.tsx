@@ -1,20 +1,12 @@
 import { useMemo, useState } from 'react';
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import * as Crypto from 'expo-crypto';
 import { Image } from 'expo-image';
 import { Link, Stack, router, useLocalSearchParams } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { ActivityIndicator } from 'react-native-paper';
 
 import { CustomButton, Input } from '@/src/components';
@@ -221,351 +213,345 @@ export default function RegisterScreen() {
           title: role === 'BAKER' ? 'Cadastro de Confeiteira' : 'Cadastro de Cliente',
         }}
       />
-      <KeyboardAvoidingView
+      <KeyboardAwareScrollView
         style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        bottomOffset={64}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-          automaticallyAdjustKeyboardInsets
-        >
-          <View style={styles.card}>
-            {/* Header section */}
-            <View style={styles.headerArea}>
-              <Image
-                source={
-                  isDarkMode
-                    ? require('@/assets/images/logo-dark.png')
-                    : require('@/assets/images/logo-light.png')
-                }
-                style={styles.logo}
-                contentFit="contain"
-              />
-              <Text style={styles.headline}>Criar Conta</Text>
-              <Text style={styles.subheadline}>
-                {role === 'BAKER'
-                  ? 'Cadastre-se para gerenciar produções e receitas'
-                  : 'Cadastre-se para encomendar e ver receitas'}
-              </Text>
-            </View>
+        <View style={styles.card}>
+          {/* Header section */}
+          <View style={styles.headerArea}>
+            <Image
+              source={
+                isDarkMode
+                  ? require('@/assets/images/logo-dark.png')
+                  : require('@/assets/images/logo-light.png')
+              }
+              style={styles.logo}
+              contentFit="contain"
+            />
+            <Text style={styles.headline}>Criar Conta</Text>
+            <Text style={styles.subheadline}>
+              {role === 'BAKER'
+                ? 'Cadastre-se para gerenciar produções e receitas'
+                : 'Cadastre-se para encomendar e ver receitas'}
+            </Text>
+          </View>
 
-            {/* Role selector pill tabs */}
-            <View style={styles.roleContainer}>
-              <Text style={styles.roleLabel}>Tipo de Cadastro</Text>
-              <View style={styles.roleButtonsRow}>
-                <TouchableOpacity
-                  style={[styles.roleButton, role === 'BAKER' && styles.roleButtonActive]}
-                  onPress={() => setSelectedRole('BAKER')}
-                  activeOpacity={0.8}
-                >
-                  <MaterialCommunityIcons
-                    name="cake-variant-outline"
-                    size={20}
-                    color={
-                      role === 'BAKER' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant
-                    }
-                  />
-                  <Text
-                    style={[styles.roleButtonText, role === 'BAKER' && styles.roleButtonTextActive]}
-                  >
-                    Confeiteira
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.roleButton, role === 'CUSTOMER' && styles.roleButtonActive]}
-                  onPress={() => setSelectedRole('CUSTOMER')}
-                  activeOpacity={0.8}
-                >
-                  <MaterialCommunityIcons
-                    name="account-outline"
-                    size={20}
-                    color={
-                      role === 'CUSTOMER' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant
-                    }
-                  />
-                  <Text
-                    style={[
-                      styles.roleButtonText,
-                      role === 'CUSTOMER' && styles.roleButtonTextActive,
-                    ]}
-                  >
-                    Cliente
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.roleDescription}>
-                {role === 'BAKER'
-                  ? 'Permite organizar produções, precificar receitas e controlar estoque.'
-                  : 'Permite encontrar as melhores confeiteiras perto de você'}
-              </Text>
-            </View>
-
-            {/* Fieldset: Dados Pessoais */}
-            <View style={styles.fieldset}>
-              <View style={styles.titleContainer}>
+          {/* Role selector pill tabs */}
+          <View style={styles.roleContainer}>
+            <Text style={styles.roleLabel}>Tipo de Cadastro</Text>
+            <View style={styles.roleButtonsRow}>
+              <TouchableOpacity
+                style={[styles.roleButton, role === 'BAKER' && styles.roleButtonActive]}
+                onPress={() => setSelectedRole('BAKER')}
+                activeOpacity={0.8}
+              >
                 <MaterialCommunityIcons
-                  name="account-circle-outline"
-                  size={24}
-                  color={theme.colors.espressoDark}
-                  style={styles.icon}
+                  name="cake-variant-outline"
+                  size={20}
+                  color={role === 'BAKER' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant}
                 />
-                <Text style={styles.title}>Dados pessoais</Text>
-              </View>
+                <Text
+                  style={[styles.roleButtonText, role === 'BAKER' && styles.roleButtonTextActive]}
+                >
+                  Confeiteira
+                </Text>
+              </TouchableOpacity>
 
-              {/* Name field */}
-              <View style={styles.fieldWrapper}>
-                <View style={styles.labelRow}>
-                  <Text style={styles.label}>
-                    Nome completo <Text style={styles.required}>*</Text>
-                  </Text>
-                  {touched.name && isNameValid && (
-                    <MaterialCommunityIcons
-                      name="check-circle-outline"
-                      size={16}
-                      color={theme.colors.tertiary}
-                    />
-                  )}
-                </View>
-                <Input
-                  value={name}
-                  placeholder="Nome completo (mín. 3 caracteres)"
-                  autoCapitalize="words"
-                  autoCorrect={false}
-                  onChangeText={setName}
-                  onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
-                  containerStyle={[
-                    styles.inputContainer,
-                    !!nameError && styles.inputError,
-                    touched.name && isNameValid && styles.inputSuccess,
-                  ]}
-                  style={styles.inputText}
-                  placeholderTextColor={theme.colors.placeholder}
+              <TouchableOpacity
+                style={[styles.roleButton, role === 'CUSTOMER' && styles.roleButtonActive]}
+                onPress={() => setSelectedRole('CUSTOMER')}
+                activeOpacity={0.8}
+              >
+                <MaterialCommunityIcons
+                  name="account-outline"
+                  size={20}
+                  color={
+                    role === 'CUSTOMER' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant
+                  }
                 />
-                <View style={styles.helperRow}>
-                  {nameError ? (
-                    <>
-                      <MaterialCommunityIcons
-                        name="alert-circle-outline"
-                        size={14}
-                        color={theme.colors.error}
-                        style={styles.helperIcon}
-                      />
-                      <Text style={styles.errorText}>{nameError}</Text>
-                    </>
-                  ) : (
-                    <Text style={styles.helperText}>Mínimo de 3 caracteres</Text>
-                  )}
-                </View>
-              </View>
+                <Text
+                  style={[
+                    styles.roleButtonText,
+                    role === 'CUSTOMER' && styles.roleButtonTextActive,
+                  ]}
+                >
+                  Cliente
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.roleDescription}>
+              {role === 'BAKER'
+                ? 'Permite organizar produções, precificar receitas e controlar estoque.'
+                : 'Permite encontrar as melhores confeiteiras perto de você'}
+            </Text>
+          </View>
 
-              {/* Email field */}
-              <View style={styles.fieldWrapper}>
-                <View style={styles.labelRow}>
-                  <Text style={styles.label}>
-                    E-mail <Text style={styles.required}>*</Text>
-                  </Text>
-                  {touched.email && isEmailValid && (
-                    <MaterialCommunityIcons
-                      name="check-circle-outline"
-                      size={16}
-                      color={theme.colors.tertiary}
-                    />
-                  )}
-                </View>
-                <Input
-                  value={email}
-                  placeholder="exemplo@email.com"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  onChangeText={setEmail}
-                  onBlur={() => setTouched((prev) => ({ ...prev, email: true }))}
-                  containerStyle={[
-                    styles.inputContainer,
-                    !!emailError && styles.inputError,
-                    touched.email && isEmailValid && styles.inputSuccess,
-                  ]}
-                  style={styles.inputText}
-                  placeholderTextColor={theme.colors.placeholder}
-                />
-                <View style={styles.helperRow}>
-                  {emailError ? (
-                    <>
-                      <MaterialCommunityIcons
-                        name="alert-circle-outline"
-                        size={14}
-                        color={theme.colors.error}
-                        style={styles.helperIcon}
-                      />
-                      <Text style={styles.errorText}>{emailError}</Text>
-                    </>
-                  ) : (
-                    <Text style={styles.helperText}>Informe um e-mail válido</Text>
-                  )}
-                </View>
-              </View>
+          {/* Fieldset: Dados Pessoais */}
+          <View style={styles.fieldset}>
+            <View style={styles.titleContainer}>
+              <MaterialCommunityIcons
+                name="account-circle-outline"
+                size={24}
+                color={theme.colors.espressoDark}
+                style={styles.icon}
+              />
+              <Text style={styles.title}>Dados pessoais</Text>
+            </View>
 
-              {/* Password field */}
-              <View style={styles.fieldWrapper}>
-                <View style={styles.labelRow}>
-                  <Text style={styles.label}>
-                    Senha <Text style={styles.required}>*</Text>
-                  </Text>
-                  {touched.password && isPasswordValid && (
-                    <MaterialCommunityIcons
-                      name="check-circle-outline"
-                      size={16}
-                      color={theme.colors.tertiary}
-                    />
-                  )}
-                </View>
-                <Input
-                  value={password}
-                  placeholder="Mínimo de 8 caracteres"
-                  secureTextEntry
-                  autoCapitalize="none"
-                  onChangeText={setPassword}
-                  onBlur={() => setTouched((prev) => ({ ...prev, password: true }))}
-                  containerStyle={[
-                    styles.inputContainer,
-                    !!passwordError && styles.inputError,
-                    touched.password && isPasswordValid && styles.inputSuccess,
-                  ]}
-                  style={[styles.inputText, styles.passwordInput]}
-                  placeholderTextColor={theme.colors.placeholder}
-                />
-                <View style={styles.helperRow}>
-                  {passwordError ? (
-                    <>
-                      <MaterialCommunityIcons
-                        name="alert-circle-outline"
-                        size={14}
-                        color={theme.colors.error}
-                        style={styles.helperIcon}
-                      />
-                      <Text style={styles.errorText}>{passwordError}</Text>
-                    </>
-                  ) : (
-                    <Text style={styles.helperText}>Mínimo de 8 caracteres</Text>
-                  )}
-                </View>
+            {/* Name field */}
+            <View style={styles.fieldWrapper}>
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>
+                  Nome completo <Text style={styles.required}>*</Text>
+                </Text>
+                {touched.name && isNameValid && (
+                  <MaterialCommunityIcons
+                    name="check-circle-outline"
+                    size={16}
+                    color={theme.colors.tertiary}
+                  />
+                )}
               </View>
-
-              {/* Confirm password field */}
-              <View style={styles.fieldWrapper}>
-                <View style={styles.labelRow}>
-                  <Text style={styles.label}>
-                    Confirmação da senha <Text style={styles.required}>*</Text>
-                  </Text>
-                  {touched.passVef && isPassVefValid && (
+              <Input
+                value={name}
+                placeholder="Nome completo (mín. 3 caracteres)"
+                autoCapitalize="words"
+                autoCorrect={false}
+                onChangeText={setName}
+                onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
+                containerStyle={[
+                  styles.inputContainer,
+                  !!nameError && styles.inputError,
+                  touched.name && isNameValid && styles.inputSuccess,
+                ]}
+                style={styles.inputText}
+                placeholderTextColor={theme.colors.placeholder}
+              />
+              <View style={styles.helperRow}>
+                {nameError ? (
+                  <>
                     <MaterialCommunityIcons
-                      name="check-circle-outline"
-                      size={16}
-                      color={theme.colors.tertiary}
+                      name="alert-circle-outline"
+                      size={14}
+                      color={theme.colors.error}
+                      style={styles.helperIcon}
                     />
-                  )}
-                </View>
-                <Input
-                  value={passVef}
-                  placeholder="Repita sua senha"
-                  secureTextEntry
-                  autoCapitalize="none"
-                  onChangeText={setPassVef}
-                  onBlur={() => setTouched((prev) => ({ ...prev, passVef: true }))}
-                  containerStyle={[
-                    styles.inputContainer,
-                    !!passVefError && styles.inputError,
-                    touched.passVef && isPassVefValid && styles.inputSuccess,
-                  ]}
-                  style={[styles.inputText, styles.passwordInput]}
-                  placeholderTextColor={theme.colors.placeholder}
-                />
-                <View style={styles.helperRow}>
-                  {passVefError ? (
-                    <>
-                      <MaterialCommunityIcons
-                        name="alert-circle-outline"
-                        size={14}
-                        color={theme.colors.error}
-                        style={styles.helperIcon}
-                      />
-                      <Text style={styles.errorText}>{passVefError}</Text>
-                    </>
-                  ) : (
-                    <Text style={styles.helperText}>As senhas devem ser iguais</Text>
-                  )}
-                </View>
+                    <Text style={styles.errorText}>{nameError}</Text>
+                  </>
+                ) : (
+                  <Text style={styles.helperText}>Mínimo de 3 caracteres</Text>
+                )}
               </View>
             </View>
 
-            {/* Fieldset: Contato (Only shown for BAKER) */}
-            {role === 'BAKER' && (
-              <>
-                <View style={styles.fieldset}>
-                  <View style={styles.titleContainer}>
+            {/* Email field */}
+            <View style={styles.fieldWrapper}>
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>
+                  E-mail <Text style={styles.required}>*</Text>
+                </Text>
+                {touched.email && isEmailValid && (
+                  <MaterialCommunityIcons
+                    name="check-circle-outline"
+                    size={16}
+                    color={theme.colors.tertiary}
+                  />
+                )}
+              </View>
+              <Input
+                value={email}
+                placeholder="exemplo@email.com"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                onChangeText={setEmail}
+                onBlur={() => setTouched((prev) => ({ ...prev, email: true }))}
+                containerStyle={[
+                  styles.inputContainer,
+                  !!emailError && styles.inputError,
+                  touched.email && isEmailValid && styles.inputSuccess,
+                ]}
+                style={styles.inputText}
+                placeholderTextColor={theme.colors.placeholder}
+              />
+              <View style={styles.helperRow}>
+                {emailError ? (
+                  <>
                     <MaterialCommunityIcons
-                      name="phone-outline"
-                      size={24}
-                      color={theme.colors.espressoDark}
-                      style={styles.icon}
+                      name="alert-circle-outline"
+                      size={14}
+                      color={theme.colors.error}
+                      style={styles.helperIcon}
                     />
-                    <Text style={styles.title}>Contato</Text>
-                  </View>
+                    <Text style={styles.errorText}>{emailError}</Text>
+                  </>
+                ) : (
+                  <Text style={styles.helperText}>Informe um e-mail válido</Text>
+                )}
+              </View>
+            </View>
 
-                  <View style={styles.fieldWrapper}>
-                    <View style={styles.labelRow}>
-                      <Text style={styles.label}>Telefone / WhatsApp</Text>
-                      {touched.phone && phone.trim().length > 0 && isPhoneValid && (
-                        <MaterialCommunityIcons
-                          name="check-circle-outline"
-                          size={16}
-                          color={theme.colors.tertiary}
-                        />
-                      )}
-                    </View>
-                    <Input
-                      value={phone}
-                      placeholder="(11) 99999-9999"
-                      keyboardType="phone-pad"
-                      onChangeText={handlePhoneChange}
-                      onBlur={() => setTouched((prev) => ({ ...prev, phone: true }))}
-                      containerStyle={[
-                        styles.inputContainer,
-                        !!phoneError && styles.inputError,
-                        touched.phone &&
-                          phone.trim().length > 0 &&
-                          isPhoneValid &&
-                          styles.inputSuccess,
-                      ]}
-                      style={styles.inputText}
-                      placeholderTextColor={theme.colors.placeholder}
+            {/* Password field */}
+            <View style={styles.fieldWrapper}>
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>
+                  Senha <Text style={styles.required}>*</Text>
+                </Text>
+                {touched.password && isPasswordValid && (
+                  <MaterialCommunityIcons
+                    name="check-circle-outline"
+                    size={16}
+                    color={theme.colors.tertiary}
+                  />
+                )}
+              </View>
+              <Input
+                value={password}
+                placeholder="Mínimo de 8 caracteres"
+                secureTextEntry
+                autoCapitalize="none"
+                onChangeText={setPassword}
+                onBlur={() => setTouched((prev) => ({ ...prev, password: true }))}
+                containerStyle={[
+                  styles.inputContainer,
+                  !!passwordError && styles.inputError,
+                  touched.password && isPasswordValid && styles.inputSuccess,
+                ]}
+                style={[styles.inputText, styles.passwordInput]}
+                placeholderTextColor={theme.colors.placeholder}
+              />
+              <View style={styles.helperRow}>
+                {passwordError ? (
+                  <>
+                    <MaterialCommunityIcons
+                      name="alert-circle-outline"
+                      size={14}
+                      color={theme.colors.error}
+                      style={styles.helperIcon}
                     />
-                    <View style={styles.helperRow}>
-                      {phoneError ? (
-                        <>
-                          <MaterialCommunityIcons
-                            name="alert-circle-outline"
-                            size={14}
-                            color={theme.colors.error}
-                            style={styles.helperIcon}
-                          />
-                          <Text style={styles.errorText}>{phoneError}</Text>
-                        </>
-                      ) : (
-                        <Text style={styles.helperText}>
-                          Opcional. Formato com DDD: (XX) 9XXXX-XXXX
-                        </Text>
-                      )}
-                    </View>
-                  </View>
+                    <Text style={styles.errorText}>{passwordError}</Text>
+                  </>
+                ) : (
+                  <Text style={styles.helperText}>Mínimo de 8 caracteres</Text>
+                )}
+              </View>
+            </View>
+
+            {/* Confirm password field */}
+            <View style={styles.fieldWrapper}>
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>
+                  Confirmação da senha <Text style={styles.required}>*</Text>
+                </Text>
+                {touched.passVef && isPassVefValid && (
+                  <MaterialCommunityIcons
+                    name="check-circle-outline"
+                    size={16}
+                    color={theme.colors.tertiary}
+                  />
+                )}
+              </View>
+              <Input
+                value={passVef}
+                placeholder="Repita sua senha"
+                secureTextEntry
+                autoCapitalize="none"
+                onChangeText={setPassVef}
+                onBlur={() => setTouched((prev) => ({ ...prev, passVef: true }))}
+                containerStyle={[
+                  styles.inputContainer,
+                  !!passVefError && styles.inputError,
+                  touched.passVef && isPassVefValid && styles.inputSuccess,
+                ]}
+                style={[styles.inputText, styles.passwordInput]}
+                placeholderTextColor={theme.colors.placeholder}
+              />
+              <View style={styles.helperRow}>
+                {passVefError ? (
+                  <>
+                    <MaterialCommunityIcons
+                      name="alert-circle-outline"
+                      size={14}
+                      color={theme.colors.error}
+                      style={styles.helperIcon}
+                    />
+                    <Text style={styles.errorText}>{passVefError}</Text>
+                  </>
+                ) : (
+                  <Text style={styles.helperText}>As senhas devem ser iguais</Text>
+                )}
+              </View>
+            </View>
+          </View>
+
+          {/* Fieldset: Contato (Only shown for BAKER) */}
+          {role === 'BAKER' && (
+            <>
+              <View style={styles.fieldset}>
+                <View style={styles.titleContainer}>
+                  <MaterialCommunityIcons
+                    name="phone-outline"
+                    size={24}
+                    color={theme.colors.espressoDark}
+                    style={styles.icon}
+                  />
+                  <Text style={styles.title}>Contato</Text>
                 </View>
 
-                {/*{<View style={styles.fieldset}>
+                <View style={styles.fieldWrapper}>
+                  <View style={styles.labelRow}>
+                    <Text style={styles.label}>Telefone / WhatsApp</Text>
+                    {touched.phone && phone.trim().length > 0 && isPhoneValid && (
+                      <MaterialCommunityIcons
+                        name="check-circle-outline"
+                        size={16}
+                        color={theme.colors.tertiary}
+                      />
+                    )}
+                  </View>
+                  <Input
+                    value={phone}
+                    placeholder="(11) 99999-9999"
+                    keyboardType="phone-pad"
+                    onChangeText={handlePhoneChange}
+                    onBlur={() => setTouched((prev) => ({ ...prev, phone: true }))}
+                    containerStyle={[
+                      styles.inputContainer,
+                      !!phoneError && styles.inputError,
+                      touched.phone &&
+                        phone.trim().length > 0 &&
+                        isPhoneValid &&
+                        styles.inputSuccess,
+                    ]}
+                    style={styles.inputText}
+                    placeholderTextColor={theme.colors.placeholder}
+                  />
+                  <View style={styles.helperRow}>
+                    {phoneError ? (
+                      <>
+                        <MaterialCommunityIcons
+                          name="alert-circle-outline"
+                          size={14}
+                          color={theme.colors.error}
+                          style={styles.helperIcon}
+                        />
+                        <Text style={styles.errorText}>{phoneError}</Text>
+                      </>
+                    ) : (
+                      <Text style={styles.helperText}>
+                        Opcional. Formato com DDD: (XX) 9XXXX-XXXX
+                      </Text>
+                    )}
+                  </View>
+                </View>
+              </View>
+
+              {/*{<View style={styles.fieldset}>
                   <View style={styles.titleContainer}>
                     <MaterialCommunityIcons name="map-marker" size={26} style={styles.icon} />
                     <Text style={styles.title}>Localização</Text>
@@ -573,32 +559,31 @@ export default function RegisterScreen() {
                   <Input placeholder="Cidade" />
                   <Input placeholder="Estado" />
                 </View>} */}
-              </>
+            </>
+          )}
+
+          {/* Submit button & login link */}
+          <View style={styles.btnRegister}>
+            {isSubmitting ? (
+              <ActivityIndicator size="large" color={theme.colors.primary} />
+            ) : (
+              <CustomButton
+                title={role === 'BAKER' ? 'Cadastrar como Confeiteira' : 'Cadastrar como Cliente'}
+                variant="primary"
+                style={styles.button}
+                onPress={handleRegister}
+              />
             )}
 
-            {/* Submit button & login link */}
-            <View style={styles.btnRegister}>
-              {isSubmitting ? (
-                <ActivityIndicator size="large" color={theme.colors.primary} />
-              ) : (
-                <CustomButton
-                  title={role === 'BAKER' ? 'Cadastrar como Confeiteira' : 'Cadastrar como Cliente'}
-                  variant="primary"
-                  style={styles.button}
-                  onPress={handleRegister}
-                />
-              )}
-
-              <Text style={styles.txtLogIn}>
-                Já tem uma conta?{' '}
-                <Link href="/login" asChild>
-                  <Text style={styles.linkLogIn}>Entrar</Text>
-                </Link>
-              </Text>
-            </View>
+            <Text style={styles.txtLogIn}>
+              Já tem uma conta?{' '}
+              <Link href="/login" asChild>
+                <Text style={styles.linkLogIn}>Entrar</Text>
+              </Link>
+            </Text>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </View>
+      </KeyboardAwareScrollView>
     </>
   );
 }

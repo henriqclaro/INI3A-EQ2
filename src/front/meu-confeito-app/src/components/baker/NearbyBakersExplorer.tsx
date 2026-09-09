@@ -2,10 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -18,6 +15,7 @@ import * as Location from 'expo-location';
 import { router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { CustomButton } from '@/src/components/CustomButton';
 import { BakerCard } from '@/src/components/baker/BakerCard';
@@ -268,354 +266,340 @@ export function NearbyBakersExplorer({
   };
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardAwareScrollView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      bottomOffset={64}
+      refreshControl={
+        <RefreshControl
+          refreshing={isLoadingBakers}
+          onRefresh={handleRefresh}
+          tintColor={theme.colors.primary}
+          colors={[theme.colors.primary]}
+        />
+      }
     >
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        refreshControl={
-          <RefreshControl
-            refreshing={isLoadingBakers}
-            onRefresh={handleRefresh}
-            tintColor={theme.colors.primary}
-            colors={[theme.colors.primary]}
-          />
-        }
-      >
-        <View style={styles.contentWrapper}>
-          {headerContent}
+      <View style={styles.contentWrapper}>
+        {headerContent}
 
-          {/* Header / Filter Card */}
-          <View style={styles.filterCard}>
-            {hasIntroHeader && (
-              <>
-                <View style={styles.heroHeader}>
-                  <MaterialCommunityIcons
-                    name="store-search-outline"
-                    size={32}
-                    color={theme.colors.primary}
-                  />
-                  <View style={styles.heroTextCol}>
-                    <Text style={styles.heroTitle}>Confeitarias Próximas</Text>
-                    <Text style={styles.heroSubtitle}>
-                      Encontre confeitarias e artesãos locais por proximidade e especialidades
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.sectionDivider} />
-              </>
-            )}
-
-            <Text style={styles.sectionLabel}>Sua Localização</Text>
-
-            {/* GPS Detection Button */}
-            <TouchableOpacity
-              style={styles.gpsButton}
-              onPress={handleDetectGPSLocation}
-              disabled={isLoadingLocation}
-              activeOpacity={0.8}
-              accessibilityRole="button"
-              accessibilityLabel="Usar localização GPS atual"
-            >
-              {isLoadingLocation ? (
-                <ActivityIndicator size="small" color={theme.colors.primary} />
-              ) : (
+        {/* Header / Filter Card */}
+        <View style={styles.filterCard}>
+          {hasIntroHeader && (
+            <>
+              <View style={styles.heroHeader}>
                 <MaterialCommunityIcons
-                  name="crosshairs-gps"
-                  size={20}
+                  name="store-search-outline"
+                  size={32}
                   color={theme.colors.primary}
                 />
-              )}
-              <Text style={styles.gpsButtonText}>
-                {isLoadingLocation ? 'Detectando GPS...' : 'Usar Minha Localização Atual'}
-              </Text>
-            </TouchableOpacity>
-
-            {/* Manual address input */}
-            <View style={styles.manualAddressRow}>
-              <View style={styles.manualInputWrapper}>
-                <MaterialCommunityIcons
-                  name="map-marker-outline"
-                  size={18}
-                  color={theme.colors.placeholder}
-                  style={styles.manualInputIcon}
-                />
-                <TextInput
-                  style={styles.manualInput}
-                  placeholder="Ou digite bairro / cidade..."
-                  placeholderTextColor={theme.colors.placeholder}
-                  value={addressInput}
-                  onChangeText={setAddressInput}
-                  onSubmitEditing={handleSearchByAddress}
-                  returnKeyType="search"
-                />
+                <View style={styles.heroTextCol}>
+                  <Text style={styles.heroTitle}>Confeitarias Próximas</Text>
+                  <Text style={styles.heroSubtitle}>
+                    Encontre confeitarias e artesãos locais por proximidade e especialidades
+                  </Text>
+                </View>
               </View>
-              <TouchableOpacity
-                style={styles.addressSearchBtn}
-                onPress={handleSearchByAddress}
-                disabled={isGeocodingAddress}
-                activeOpacity={0.8}
-                accessibilityRole="button"
-                accessibilityLabel="Buscar endereço digitado"
-              >
-                {isGeocodingAddress ? (
-                  <ActivityIndicator size="small" color={theme.colors.onPrimary} />
-                ) : (
-                  <MaterialCommunityIcons name="magnify" size={20} color={theme.colors.onPrimary} />
-                )}
-              </TouchableOpacity>
-            </View>
+              <View style={styles.sectionDivider} />
+            </>
+          )}
 
-            {/* Active Location Indicator */}
-            {hasLocation && (
-              <View style={styles.activeLocationBadge}>
-                <MaterialCommunityIcons
-                  name="map-marker-check"
-                  size={16}
-                  color={theme.colors.chips.success.text}
-                />
-                <Text style={styles.activeLocationText} numberOfLines={1}>
-                  Localização ativa: {locationLabel || 'Coordenadas GPS registradas'}
-                </Text>
-              </View>
-            )}
+          <Text style={styles.sectionLabel}>Sua Localização</Text>
 
-            {/* Radius Options */}
-            <View style={styles.sectionDivider} />
-
-            <View style={styles.radiusHeaderRow}>
-              <Text style={styles.sectionLabel}>Raio de Busca</Text>
-              <Text style={styles.radiusHelperText}>Distância máxima em linha reta</Text>
-            </View>
-
-            <View style={styles.radiusOptionsRow}>
-              {RADIUS_OPTIONS.map((option) => {
-                const isSelected = selectedRadius === option.meters;
-                return (
-                  <TouchableOpacity
-                    key={option.meters}
-                    style={[
-                      styles.radiusChip,
-                      isSelected ? styles.radiusChipSelected : styles.radiusChipUnselected,
-                    ]}
-                    onPress={() => handleRadiusChange(option.meters)}
-                    activeOpacity={0.7}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Raio de ${option.label}`}
-                  >
-                    <MaterialCommunityIcons
-                      name="map-marker-radius"
-                      size={16}
-                      color={isSelected ? theme.colors.onPrimary : theme.colors.espressoDark}
-                    />
-                    <Text
-                      style={[
-                        styles.radiusChipText,
-                        isSelected
-                          ? styles.radiusChipTextSelected
-                          : styles.radiusChipTextUnselected,
-                      ]}
-                    >
-                      {option.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-
-            {/* Tag Filters */}
-            <View style={styles.sectionDivider} />
-
-            <Text style={styles.sectionLabel}>Especialidades & Tags</Text>
-            <Text style={styles.tagsHelperText}>
-              Filtre por tipo de doce ou preferência gastronômica
-            </Text>
-
-            {/* Tag suggestions list */}
-            <View style={styles.tagsChipsContainer}>
-              {suggestedTags.map((tag) => {
-                const isSelected = selectedTags.some((t) => t.toLowerCase() === tag.toLowerCase());
-                return (
-                  <TouchableOpacity
-                    key={tag}
-                    style={[
-                      styles.tagPill,
-                      isSelected ? styles.tagPillSelected : styles.tagPillUnselected,
-                    ]}
-                    onPress={() => handleToggleTag(tag)}
-                    activeOpacity={0.7}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Filtrar por ${tag}`}
-                  >
-                    {isSelected && (
-                      <MaterialCommunityIcons
-                        name="check"
-                        size={14}
-                        color={theme.colors.onPrimary}
-                      />
-                    )}
-                    <Text
-                      style={[
-                        styles.tagPillText,
-                        isSelected ? styles.tagPillTextSelected : styles.tagPillTextUnselected,
-                      ]}
-                    >
-                      {tag}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-
-            {/* Custom tag input */}
-            <View style={styles.customTagRow}>
-              <TextInput
-                style={styles.customTagInput}
-                placeholder="Adicionar outra tag (ex: Macarons)..."
-                placeholderTextColor={theme.colors.placeholder}
-                value={customTagInput}
-                onChangeText={setCustomTagInput}
-                onSubmitEditing={handleAddCustomTag}
-                returnKeyType="done"
+          {/* GPS Detection Button */}
+          <TouchableOpacity
+            style={styles.gpsButton}
+            onPress={handleDetectGPSLocation}
+            disabled={isLoadingLocation}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Usar localização GPS atual"
+          >
+            {isLoadingLocation ? (
+              <ActivityIndicator size="small" color={theme.colors.primary} />
+            ) : (
+              <MaterialCommunityIcons
+                name="crosshairs-gps"
+                size={20}
+                color={theme.colors.primary}
               />
+            )}
+            <Text style={styles.gpsButtonText}>
+              {isLoadingLocation ? 'Detectando GPS...' : 'Usar Minha Localização Atual'}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Manual address input */}
+          <View style={styles.manualAddressRow}>
+            <View style={styles.manualInputWrapper}>
+              <MaterialCommunityIcons
+                name="map-marker-outline"
+                size={18}
+                color={theme.colors.placeholder}
+                style={styles.manualInputIcon}
+              />
+              <TextInput
+                style={styles.manualInput}
+                placeholder="Ou digite bairro / cidade..."
+                placeholderTextColor={theme.colors.placeholder}
+                value={addressInput}
+                onChangeText={setAddressInput}
+                onSubmitEditing={handleSearchByAddress}
+                returnKeyType="search"
+              />
+            </View>
+            <TouchableOpacity
+              style={styles.addressSearchBtn}
+              onPress={handleSearchByAddress}
+              disabled={isGeocodingAddress}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Buscar endereço digitado"
+            >
+              {isGeocodingAddress ? (
+                <ActivityIndicator size="small" color={theme.colors.onPrimary} />
+              ) : (
+                <MaterialCommunityIcons name="magnify" size={20} color={theme.colors.onPrimary} />
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Active Location Indicator */}
+          {hasLocation && (
+            <View style={styles.activeLocationBadge}>
+              <MaterialCommunityIcons
+                name="map-marker-check"
+                size={16}
+                color={theme.colors.chips.success.text}
+              />
+              <Text style={styles.activeLocationText} numberOfLines={1}>
+                Localização ativa: {locationLabel || 'Coordenadas GPS registradas'}
+              </Text>
+            </View>
+          )}
+
+          {/* Radius Options */}
+          <View style={styles.sectionDivider} />
+
+          <View style={styles.radiusHeaderRow}>
+            <Text style={styles.sectionLabel}>Raio de Busca</Text>
+            <Text style={styles.radiusHelperText}>Distância máxima em linha reta</Text>
+          </View>
+
+          <View style={styles.radiusOptionsRow}>
+            {RADIUS_OPTIONS.map((option) => {
+              const isSelected = selectedRadius === option.meters;
+              return (
+                <TouchableOpacity
+                  key={option.meters}
+                  style={[
+                    styles.radiusChip,
+                    isSelected ? styles.radiusChipSelected : styles.radiusChipUnselected,
+                  ]}
+                  onPress={() => handleRadiusChange(option.meters)}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Raio de ${option.label}`}
+                >
+                  <MaterialCommunityIcons
+                    name="map-marker-radius"
+                    size={16}
+                    color={isSelected ? theme.colors.onPrimary : theme.colors.espressoDark}
+                  />
+                  <Text
+                    style={[
+                      styles.radiusChipText,
+                      isSelected ? styles.radiusChipTextSelected : styles.radiusChipTextUnselected,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Tag Filters */}
+          <View style={styles.sectionDivider} />
+
+          <Text style={styles.sectionLabel}>Especialidades & Tags</Text>
+          <Text style={styles.tagsHelperText}>
+            Filtre por tipo de doce ou preferência gastronômica
+          </Text>
+
+          {/* Tag suggestions list */}
+          <View style={styles.tagsChipsContainer}>
+            {suggestedTags.map((tag) => {
+              const isSelected = selectedTags.some((t) => t.toLowerCase() === tag.toLowerCase());
+              return (
+                <TouchableOpacity
+                  key={tag}
+                  style={[
+                    styles.tagPill,
+                    isSelected ? styles.tagPillSelected : styles.tagPillUnselected,
+                  ]}
+                  onPress={() => handleToggleTag(tag)}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Filtrar por ${tag}`}
+                >
+                  {isSelected && (
+                    <MaterialCommunityIcons name="check" size={14} color={theme.colors.onPrimary} />
+                  )}
+                  <Text
+                    style={[
+                      styles.tagPillText,
+                      isSelected ? styles.tagPillTextSelected : styles.tagPillTextUnselected,
+                    ]}
+                  >
+                    {tag}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Custom tag input */}
+          <View style={styles.customTagRow}>
+            <TextInput
+              style={styles.customTagInput}
+              placeholder="Adicionar outra tag (ex: Macarons)..."
+              placeholderTextColor={theme.colors.placeholder}
+              value={customTagInput}
+              onChangeText={setCustomTagInput}
+              onSubmitEditing={handleAddCustomTag}
+              returnKeyType="done"
+            />
+            <TouchableOpacity
+              style={styles.addTagBtn}
+              onPress={handleAddCustomTag}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Adicionar tag"
+            >
+              <MaterialCommunityIcons name="plus" size={20} color={theme.colors.primary} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Active Filters Summary */}
+          {selectedTags.length > 0 && (
+            <View style={styles.selectedTagsRow}>
+              <Text style={styles.selectedTagsCount}>
+                {selectedTags.length}{' '}
+                {selectedTags.length === 1 ? 'filtro ativo' : 'filtros ativos'}:
+              </Text>
               <TouchableOpacity
-                style={styles.addTagBtn}
-                onPress={handleAddCustomTag}
-                activeOpacity={0.8}
+                onPress={() => {
+                  setSelectedTags([]);
+                  if (userCoords) performSearch(userCoords, selectedRadius, []);
+                }}
+                style={styles.clearTagsBtn}
                 accessibilityRole="button"
-                accessibilityLabel="Adicionar tag"
+                accessibilityLabel="Limpar todos os filtros de tag"
               >
-                <MaterialCommunityIcons name="plus" size={20} color={theme.colors.primary} />
+                <Text style={styles.clearTagsText}>Limpar filtros</Text>
               </TouchableOpacity>
             </View>
+          )}
+        </View>
 
-            {/* Active Filters Summary */}
-            {selectedTags.length > 0 && (
-              <View style={styles.selectedTagsRow}>
-                <Text style={styles.selectedTagsCount}>
-                  {selectedTags.length}{' '}
-                  {selectedTags.length === 1 ? 'filtro ativo' : 'filtros ativos'}:
-                </Text>
-                <TouchableOpacity
+        {/* Results Header */}
+        <View style={styles.resultsHeaderRow}>
+          <Text style={styles.resultsTitle}>
+            {hasSearched ? `Confeitarias Encontradas (${bakers.length})` : 'Confeitarias na Região'}
+          </Text>
+          {hasSearched && (
+            <Text style={styles.resultsSubtitle}>Até {(selectedRadius / 1000).toFixed(0)} km</Text>
+          )}
+        </View>
+
+        {/* Baker Cards List */}
+        {isLoadingBakers ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
+            <Text style={styles.loadingText}>Buscando confeitarias próximas...</Text>
+          </View>
+        ) : hasError ? (
+          <View style={styles.errorCard}>
+            <MaterialCommunityIcons
+              name="alert-circle-outline"
+              size={36}
+              color={theme.colors.error}
+            />
+            <Text style={styles.errorTitle}>Erro na busca</Text>
+            <Text style={styles.errorMessage}>{errorMessage}</Text>
+            <CustomButton
+              title="Tentar Novamente"
+              variant="primary"
+              style={styles.retryBtn}
+              onPress={() => performSearch()}
+            />
+          </View>
+        ) : bakers.length > 0 ? (
+          <View style={styles.bakersList}>
+            {bakers.map((baker) => (
+              <View key={baker.userId} style={styles.bakerCardWrapper}>
+                <BakerCard baker={baker} onPress={() => handleBakerPress(baker)} />
+              </View>
+            ))}
+          </View>
+        ) : hasSearched ? (
+          <View style={styles.emptyCard}>
+            <MaterialCommunityIcons
+              name="store-off-outline"
+              size={48}
+              color={theme.colors.placeholder}
+            />
+            <Text style={styles.emptyTitle}>Nenhuma confeitaria encontrada</Text>
+            <Text style={styles.emptyDescription}>
+              Não encontramos nenhuma confeitaria num raio de {(selectedRadius / 1000).toFixed(0)}{' '}
+              km{selectedTags.length > 0 ? ' com as tags selecionadas' : ''}.
+            </Text>
+            <View style={styles.emptyActions}>
+              {selectedRadius < 15000 && (
+                <CustomButton
+                  title="Aumentar raio para 15 km"
+                  variant="primary"
+                  style={styles.emptyActionBtn}
+                  onPress={() => handleRadiusChange(15000)}
+                />
+              )}
+              {selectedTags.length > 0 && (
+                <CustomButton
+                  title="Limpar filtros de tags"
+                  variant="secondary"
+                  style={styles.emptyActionBtn}
                   onPress={() => {
                     setSelectedTags([]);
                     if (userCoords) performSearch(userCoords, selectedRadius, []);
                   }}
-                  style={styles.clearTagsBtn}
-                  accessibilityRole="button"
-                  accessibilityLabel="Limpar todos os filtros de tag"
-                >
-                  <Text style={styles.clearTagsText}>Limpar filtros</Text>
-                </TouchableOpacity>
-              </View>
-            )}
+                />
+              )}
+            </View>
           </View>
-
-          {/* Results Header */}
-          <View style={styles.resultsHeaderRow}>
-            <Text style={styles.resultsTitle}>
-              {hasSearched
-                ? `Confeitarias Encontradas (${bakers.length})`
-                : 'Confeitarias na Região'}
+        ) : !hasLocation ? (
+          <View style={styles.emptyCard}>
+            <MaterialCommunityIcons
+              name="map-marker-question-outline"
+              size={48}
+              color={theme.colors.primary}
+            />
+            <Text style={styles.emptyTitle}>Defina sua localização</Text>
+            <Text style={styles.emptyDescription}>
+              Ative o GPS ou informe seu bairro/cidade acima para listar as confeitarias mais
+              próximas.
             </Text>
-            {hasSearched && (
-              <Text style={styles.resultsSubtitle}>
-                Até {(selectedRadius / 1000).toFixed(0)} km
-              </Text>
-            )}
+            <CustomButton
+              title="Detectar Localização Atual"
+              variant="primary"
+              style={styles.emptyActionBtn}
+              onPress={handleDetectGPSLocation}
+            />
           </View>
-
-          {/* Baker Cards List */}
-          {isLoadingBakers ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={theme.colors.primary} />
-              <Text style={styles.loadingText}>Buscando confeitarias próximas...</Text>
-            </View>
-          ) : hasError ? (
-            <View style={styles.errorCard}>
-              <MaterialCommunityIcons
-                name="alert-circle-outline"
-                size={36}
-                color={theme.colors.error}
-              />
-              <Text style={styles.errorTitle}>Erro na busca</Text>
-              <Text style={styles.errorMessage}>{errorMessage}</Text>
-              <CustomButton
-                title="Tentar Novamente"
-                variant="primary"
-                style={styles.retryBtn}
-                onPress={() => performSearch()}
-              />
-            </View>
-          ) : bakers.length > 0 ? (
-            <View style={styles.bakersList}>
-              {bakers.map((baker) => (
-                <View key={baker.userId} style={styles.bakerCardWrapper}>
-                  <BakerCard baker={baker} onPress={() => handleBakerPress(baker)} />
-                </View>
-              ))}
-            </View>
-          ) : hasSearched ? (
-            <View style={styles.emptyCard}>
-              <MaterialCommunityIcons
-                name="store-off-outline"
-                size={48}
-                color={theme.colors.placeholder}
-              />
-              <Text style={styles.emptyTitle}>Nenhuma confeitaria encontrada</Text>
-              <Text style={styles.emptyDescription}>
-                Não encontramos nenhuma confeitaria num raio de {(selectedRadius / 1000).toFixed(0)}{' '}
-                km{selectedTags.length > 0 ? ' com as tags selecionadas' : ''}.
-              </Text>
-              <View style={styles.emptyActions}>
-                {selectedRadius < 15000 && (
-                  <CustomButton
-                    title="Aumentar raio para 15 km"
-                    variant="primary"
-                    style={styles.emptyActionBtn}
-                    onPress={() => handleRadiusChange(15000)}
-                  />
-                )}
-                {selectedTags.length > 0 && (
-                  <CustomButton
-                    title="Limpar filtros de tags"
-                    variant="secondary"
-                    style={styles.emptyActionBtn}
-                    onPress={() => {
-                      setSelectedTags([]);
-                      if (userCoords) performSearch(userCoords, selectedRadius, []);
-                    }}
-                  />
-                )}
-              </View>
-            </View>
-          ) : !hasLocation ? (
-            <View style={styles.emptyCard}>
-              <MaterialCommunityIcons
-                name="map-marker-question-outline"
-                size={48}
-                color={theme.colors.primary}
-              />
-              <Text style={styles.emptyTitle}>Defina sua localização</Text>
-              <Text style={styles.emptyDescription}>
-                Ative o GPS ou informe seu bairro/cidade acima para listar as confeitarias mais
-                próximas.
-              </Text>
-              <CustomButton
-                title="Detectar Localização Atual"
-                variant="primary"
-                style={styles.emptyActionBtn}
-                onPress={handleDetectGPSLocation}
-              />
-            </View>
-          ) : null}
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        ) : null}
+      </View>
+    </KeyboardAwareScrollView>
   );
 }
 

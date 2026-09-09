@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { ActivityIndicator, PaperProvider } from 'react-native-paper';
 
 import { CustomHeader, DesktopAlert } from '@/src/components';
@@ -104,7 +105,9 @@ export default function RootLayout() {
     <ThemeProvider>
       <SettingsProvider>
         <AuthProvider>
-          <RootLayoutContent />
+          <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
+            <RootLayoutContent />
+          </KeyboardProvider>
         </AuthProvider>
       </SettingsProvider>
     </ThemeProvider>

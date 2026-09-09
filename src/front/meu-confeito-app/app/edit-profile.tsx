@@ -1,21 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 
 import { Image } from 'expo-image';
 import * as Location from 'expo-location';
 import { Stack, router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { ActivityIndicator } from 'react-native-paper';
 
 import { BakerTagSelector, CustomButton, Input, ShowcaseManager } from '@/src/components';
@@ -482,481 +473,474 @@ export default function EditProfileScreen() {
     <>
       <Stack.Screen options={{ title: 'Editar Perfil' }} />
 
-      <KeyboardAvoidingView
+      <KeyboardAwareScrollView
         style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        bottomOffset={64}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-          automaticallyAdjustKeyboardInsets
-        >
-          <View style={styles.formWrapper}>
-            {/* Account Information Card */}
-            <View style={styles.card}>
-              <View style={styles.avatarContainer}>
-                {user?.pfpUrl ? (
-                  <Image
-                    source={{ uri: user?.pfpUrl }}
-                    alt="Foto de Perfil"
-                    style={styles.image}
-                    contentFit="cover"
+        <View style={styles.formWrapper}>
+          {/* Account Information Card */}
+          <View style={styles.card}>
+            <View style={styles.avatarContainer}>
+              {user?.pfpUrl ? (
+                <Image
+                  source={{ uri: user?.pfpUrl }}
+                  alt="Foto de Perfil"
+                  style={styles.image}
+                  contentFit="cover"
+                />
+              ) : (
+                <View style={[styles.image, styles.placeholderImage]}>
+                  <MaterialCommunityIcons
+                    name="account"
+                    size={64}
+                    color={theme.colors.onSurfaceVariant}
                   />
-                ) : (
-                  <View style={[styles.image, styles.placeholderImage]}>
-                    <MaterialCommunityIcons
-                      name="account"
-                      size={64}
-                      color={theme.colors.onSurfaceVariant}
-                    />
-                  </View>
+                </View>
+              )}
+              <Text style={styles.userName}>{user?.name}</Text>
+              <Text style={styles.userRole}>{isBakerRole ? 'Confeiteira(o)' : 'Cliente'}</Text>
+            </View>
+
+            <Text style={styles.cardSectionHeader}>Informações da Conta</Text>
+
+            {/* Name input */}
+            <View style={styles.fieldWrapper}>
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>
+                  Nome completo <Text style={styles.required}>*</Text>
+                </Text>
+                {touched.name && isNameFieldValid && (
+                  <MaterialCommunityIcons
+                    name="check-circle-outline"
+                    size={16}
+                    color={theme.colors.success}
+                  />
                 )}
-                <Text style={styles.userName}>{user?.name}</Text>
-                <Text style={styles.userRole}>{isBakerRole ? 'Confeiteira(o)' : 'Cliente'}</Text>
               </View>
-
-              <Text style={styles.cardSectionHeader}>Informações da Conta</Text>
-
-              {/* Name input */}
-              <View style={styles.fieldWrapper}>
-                <View style={styles.labelRow}>
-                  <Text style={styles.label}>
-                    Nome completo <Text style={styles.required}>*</Text>
-                  </Text>
-                  {touched.name && isNameFieldValid && (
+              <Input
+                value={name}
+                placeholder="Nome completo (mín. 3 caracteres)"
+                autoCapitalize="words"
+                autoCorrect={false}
+                onChangeText={setName}
+                onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
+                containerStyle={[
+                  styles.inputContainer,
+                  !!nameError && styles.inputError,
+                  touched.name && isNameFieldValid && styles.inputSuccess,
+                ]}
+                style={styles.inputText}
+                placeholderTextColor={theme.colors.placeholder}
+              />
+              <View style={styles.helperRow}>
+                {nameError ? (
+                  <>
                     <MaterialCommunityIcons
-                      name="check-circle-outline"
-                      size={16}
-                      color={theme.colors.success}
-                    />
-                  )}
-                </View>
-                <Input
-                  value={name}
-                  placeholder="Nome completo (mín. 3 caracteres)"
-                  autoCapitalize="words"
-                  autoCorrect={false}
-                  onChangeText={setName}
-                  onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
-                  containerStyle={[
-                    styles.inputContainer,
-                    !!nameError && styles.inputError,
-                    touched.name && isNameFieldValid && styles.inputSuccess,
-                  ]}
-                  style={styles.inputText}
-                  placeholderTextColor={theme.colors.placeholder}
-                />
-                <View style={styles.helperRow}>
-                  {nameError ? (
-                    <>
-                      <MaterialCommunityIcons
-                        name="alert-circle-outline"
-                        size={14}
-                        color={theme.colors.error}
-                        style={styles.helperIcon}
-                      />
-                      <Text style={styles.errorText}>{nameError}</Text>
-                    </>
-                  ) : (
-                    <Text style={styles.helperText}>Mínimo de 3 caracteres</Text>
-                  )}
-                </View>
-              </View>
-
-              {/* Email input (Private account data) */}
-              <View style={styles.fieldWrapper}>
-                <View style={styles.labelRow}>
-                  <View style={styles.labelWithIcon}>
-                    <Text style={styles.label}>
-                      E-mail <Text style={styles.required}>*</Text>
-                    </Text>
-                    <MaterialCommunityIcons
-                      name="lock-outline"
+                      name="alert-circle-outline"
                       size={14}
-                      color={theme.colors.onSurfaceVariant}
+                      color={theme.colors.error}
+                      style={styles.helperIcon}
                     />
-                  </View>
-                  {touched.email && isEmailFieldValid && (
-                    <MaterialCommunityIcons
-                      name="check-circle-outline"
-                      size={16}
-                      color={theme.colors.success}
-                    />
-                  )}
-                </View>
-                <Input
-                  value={email}
-                  placeholder="exemplo@email.com"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  onChangeText={setEmail}
-                  onBlur={() => setTouched((prev) => ({ ...prev, email: true }))}
-                  containerStyle={[
-                    styles.inputContainer,
-                    !!emailError && styles.inputError,
-                    touched.email && isEmailFieldValid && styles.inputSuccess,
-                  ]}
-                  style={styles.inputText}
-                  placeholderTextColor={theme.colors.placeholder}
-                />
-                <View style={styles.helperRow}>
-                  {emailError ? (
-                    <>
-                      <MaterialCommunityIcons
-                        name="alert-circle-outline"
-                        size={14}
-                        color={theme.colors.error}
-                        style={styles.helperIcon}
-                      />
-                      <Text style={styles.errorText}>{emailError}</Text>
-                    </>
-                  ) : (
-                    <Text style={styles.helperText}>Confidencial: nunca exibido publicamente</Text>
-                  )}
-                </View>
-              </View>
-
-              {/* Phone input */}
-              <View style={styles.fieldWrapper}>
-                <View style={styles.labelRow}>
-                  <Text style={styles.label}>
-                    {isBakerRole ? 'Telefone / WhatsApp Comercial' : 'Telefone'}{' '}
-                    {isBakerRole && isPublicProfile ? <Text style={styles.required}>*</Text> : null}
-                  </Text>
-                  {touched.phone && phone.trim() && isPhoneFieldValid && (
-                    <MaterialCommunityIcons
-                      name="check-circle-outline"
-                      size={16}
-                      color={theme.colors.success}
-                    />
-                  )}
-                </View>
-                <Input
-                  value={phone}
-                  placeholder="(11) 99999-9999"
-                  keyboardType="phone-pad"
-                  onChangeText={handlePhoneChange}
-                  onBlur={() => setTouched((prev) => ({ ...prev, phone: true }))}
-                  containerStyle={[
-                    styles.inputContainer,
-                    !!phoneError && styles.inputError,
-                    touched.phone && phone.trim() && isPhoneFieldValid && styles.inputSuccess,
-                  ]}
-                  style={styles.inputText}
-                  placeholderTextColor={theme.colors.placeholder}
-                />
-                <View style={styles.helperRow}>
-                  {phoneError ? (
-                    <>
-                      <MaterialCommunityIcons
-                        name="alert-circle-outline"
-                        size={14}
-                        color={theme.colors.error}
-                        style={styles.helperIcon}
-                      />
-                      <Text style={styles.errorText}>{phoneError}</Text>
-                    </>
-                  ) : (
-                    <Text style={styles.helperText}>
-                      {isBakerRole && isPublicProfile
-                        ? 'Obrigatório: clientes poderão enviar mensagem no WhatsApp'
-                        : 'Opcional. Formato com DDD: (XX) 9XXXX-XXXX'}
-                    </Text>
-                  )}
-                </View>
+                    <Text style={styles.errorText}>{nameError}</Text>
+                  </>
+                ) : (
+                  <Text style={styles.helperText}>Mínimo de 3 caracteres</Text>
+                )}
               </View>
             </View>
 
-            {/* Baker Profile / Public Profile Card */}
-            {isBakerRole ? (
-              <View style={styles.card}>
-                <View style={styles.publicHeaderRow}>
-                  <View style={styles.publicTitleWrapper}>
-                    <Text style={styles.cardSectionHeader}>Perfil Comercial de Confeiteiro</Text>
-                    <Text style={styles.publicSubtitle}>
-                      Tornar seu perfil público para clientes
-                    </Text>
-                  </View>
-
-                  <Switch
-                    value={isPublicProfile}
-                    onValueChange={handleTogglePublicProfile}
-                    disabled={isTogglingPublic}
-                    thumbColor={
-                      isPublicProfile ? theme.colors.primary : theme.colors.surfaceContainerHighest
-                    }
-                    trackColor={{
-                      false: theme.colors.outlineVariant,
-                      true: theme.colors.primaryContainer,
-                    }}
+            {/* Email input (Private account data) */}
+            <View style={styles.fieldWrapper}>
+              <View style={styles.labelRow}>
+                <View style={styles.labelWithIcon}>
+                  <Text style={styles.label}>
+                    E-mail <Text style={styles.required}>*</Text>
+                  </Text>
+                  <MaterialCommunityIcons
+                    name="lock-outline"
+                    size={14}
+                    color={theme.colors.onSurfaceVariant}
                   />
                 </View>
-
-                {/* Status Alert Banner */}
-                {isPublicProfile ? (
-                  <View style={styles.alertBannerPublic}>
-                    <MaterialCommunityIcons
-                      name="earth"
-                      size={20}
-                      color={theme.colors.primary}
-                      style={styles.alertBannerIcon}
-                    />
-                    <View style={styles.alertBannerTextContainer}>
-                      <Text style={styles.alertBannerTitle}>Seu perfil está público</Text>
-                      <Text style={styles.alertBannerText}>
-                        As informações abaixo e suas receitas estão visíveis para todos os clientes
-                        no Meu Confeito. Seu e-mail permanece estritamente privado.
-                      </Text>
-                    </View>
-                  </View>
-                ) : (
-                  <View style={styles.alertBannerPrivate}>
-                    <MaterialCommunityIcons
-                      name="lock-outline"
-                      size={20}
-                      color={theme.colors.onSurfaceVariant}
-                      style={styles.alertBannerIcon}
-                    />
-                    <View style={styles.alertBannerTextContainer}>
-                      <Text style={styles.alertBannerTitlePrivate}>Perfil Privado</Text>
-                      <Text style={styles.alertBannerText}>
-                        Ative o botão acima para criar e publicar seu perfil de confeiteiro,
-                        permitindo que clientes encontrem suas receitas e façam encomendas.
-                      </Text>
-                    </View>
-                  </View>
-                )}
-
-                {/* Preview button */}
-                {isPublicProfile && (
-                  <TouchableOpacity
-                    style={styles.previewBtn}
-                    onPress={() =>
-                      router.push({
-                        pathname: '/public-profile',
-                        params: { id: user?.id },
-                      })
-                    }
-                    activeOpacity={0.8}
-                    accessibilityRole="button"
-                    accessibilityLabel="Visualizar perfil público"
-                  >
-                    <MaterialCommunityIcons
-                      name="eye-outline"
-                      size={18}
-                      color={theme.colors.primary}
-                    />
-                    <Text style={styles.previewBtnText}>Visualizar como os clientes veem</Text>
-                    <MaterialCommunityIcons
-                      name="chevron-right"
-                      size={18}
-                      color={theme.colors.primary}
-                    />
-                  </TouchableOpacity>
-                )}
-
-                {/* Fields for public profile */}
-                {isPublicProfile && (
-                  <>
-                    {/* Location Section handled by expo-location */}
-                    <View style={styles.locationSection}>
-                      <View style={styles.locationHeaderRow}>
-                        <View style={styles.labelWithIcon}>
-                          <MaterialCommunityIcons
-                            name="crosshairs-gps"
-                            size={16}
-                            color={theme.colors.primary}
-                          />
-                          <Text style={styles.label}>Localização Geográfica (GPS)</Text>
-                        </View>
-                        {hasLocationCoords ? (
-                          <TouchableOpacity
-                            onPress={handleClearLocation}
-                            style={styles.clearLocationBtn}
-                            accessibilityRole="button"
-                            accessibilityLabel="Remover coordenadas GPS"
-                          >
-                            <Text style={styles.clearLocationText}>Remover GPS</Text>
-                          </TouchableOpacity>
-                        ) : null}
-                      </View>
-
-                      <TouchableOpacity
-                        style={styles.fetchLocationBtn}
-                        onPress={handleFetchLocation}
-                        disabled={isFetchingLocation}
-                        activeOpacity={0.8}
-                        accessibilityRole="button"
-                        accessibilityLabel="Obter localização atual via GPS"
-                      >
-                        {isFetchingLocation ? (
-                          <ActivityIndicator size="small" color={theme.colors.primary} />
-                        ) : (
-                          <MaterialCommunityIcons
-                            name="map-marker-radius-outline"
-                            size={20}
-                            color={theme.colors.primary}
-                          />
-                        )}
-                        <Text style={styles.fetchLocationBtnText}>
-                          {isFetchingLocation
-                            ? 'Detectando localização...'
-                            : hasLocationCoords
-                              ? 'Atualizar Localização via GPS'
-                              : 'Obter Localização Atual via GPS'}
-                        </Text>
-                      </TouchableOpacity>
-
-                      {locationCoords ? (
-                        <View style={styles.gpsCoordsBadge}>
-                          <MaterialCommunityIcons
-                            name="check-circle"
-                            size={14}
-                            color={theme.colors.chips.success.text}
-                          />
-                          <Text style={styles.gpsCoordsText}>
-                            GPS ativo: {locationCoords.latitude.toFixed(4)},{' '}
-                            {locationCoords.longitude.toFixed(4)}
-                          </Text>
-                        </View>
-                      ) : (
-                        <Text style={styles.helperText}>
-                          O GPS preenche Cidade e Bairro e permite que clientes encontrem sua
-                          confeitaria por proximidade.
-                        </Text>
-                      )}
-                    </View>
-
-                    {/* City input */}
-                    <View style={styles.fieldWrapper}>
-                      <View style={styles.labelRow}>
-                        <Text style={styles.label}>Cidade</Text>
-                      </View>
-                      <Input
-                        value={city}
-                        placeholder="Ex: São Paulo"
-                        autoCapitalize="words"
-                        maxLength={100}
-                        onChangeText={setCity}
-                        containerStyle={styles.inputContainer}
-                        style={styles.inputText}
-                        placeholderTextColor={theme.colors.placeholder}
-                        leftIcon={
-                          <MaterialCommunityIcons
-                            name="city-variant-outline"
-                            size={20}
-                            color={theme.colors.onSurfaceVariant}
-                          />
-                        }
-                      />
-                    </View>
-
-                    {/* Neighborhood input */}
-                    <View style={styles.fieldWrapper}>
-                      <View style={styles.labelRow}>
-                        <Text style={styles.label}>Bairro</Text>
-                      </View>
-                      <Input
-                        value={neighborhood}
-                        placeholder="Ex: Pinheiros"
-                        autoCapitalize="words"
-                        maxLength={100}
-                        onChangeText={setNeighborhood}
-                        containerStyle={styles.inputContainer}
-                        style={styles.inputText}
-                        placeholderTextColor={theme.colors.placeholder}
-                        leftIcon={
-                          <MaterialCommunityIcons
-                            name="map-marker-outline"
-                            size={20}
-                            color={theme.colors.onSurfaceVariant}
-                          />
-                        }
-                      />
-                    </View>
-
-                    {/* Bio input */}
-                    <View style={styles.fieldWrapper}>
-                      <View style={styles.labelRow}>
-                        <Text style={styles.label}>Sobre a Confeitaria / Bio</Text>
-                        <Text style={styles.charCounter}>{bio.length}/500</Text>
-                      </View>
-                      <Input
-                        value={bio}
-                        placeholder="Conte aos clientes sobre sua história, receitas especiais, encomendas e paixão pela confeitaria..."
-                        multiline
-                        numberOfLines={4}
-                        maxLength={500}
-                        onChangeText={setBio}
-                        containerStyle={styles.textAreaContainer}
-                        style={styles.textArea}
-                        placeholderTextColor={theme.colors.placeholder}
-                      />
-                      <Text style={styles.helperText}>Máximo de 500 caracteres</Text>
-                    </View>
-
-                    {/* Instagram handle */}
-                    <View style={styles.fieldWrapper}>
-                      <View style={styles.labelRow}>
-                        <Text style={styles.label}>Instagram Comercial</Text>
-                      </View>
-                      <Input
-                        value={instagram}
-                        placeholder="@suaconfeitaria"
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        maxLength={100}
-                        onChangeText={setInstagram}
-                        containerStyle={styles.inputContainer}
-                        style={styles.inputText}
-                        placeholderTextColor={theme.colors.placeholder}
-                        leftIcon={
-                          <MaterialCommunityIcons
-                            name="instagram"
-                            size={20}
-                            color={theme.colors.onSurfaceVariant}
-                          />
-                        }
-                      />
-                      <Text style={styles.helperText}>
-                        Ex: @atelierdedoces (link direto para seu perfil)
-                      </Text>
-                    </View>
-
-                    {/* Baker Tags & Specialties */}
-                    <BakerTagSelector
-                      selectedTags={selectedTags}
-                      onTagsChange={setSelectedTags}
-                      userId={user?.id}
-                    />
-
-                    {/* Showcase Manager Section */}
-                    {hasInitialBakerProfile && <ShowcaseManager userId={user?.id} />}
-                  </>
+                {touched.email && isEmailFieldValid && (
+                  <MaterialCommunityIcons
+                    name="check-circle-outline"
+                    size={16}
+                    color={theme.colors.success}
+                  />
                 )}
               </View>
-            ) : null}
+              <Input
+                value={email}
+                placeholder="exemplo@email.com"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                onChangeText={setEmail}
+                onBlur={() => setTouched((prev) => ({ ...prev, email: true }))}
+                containerStyle={[
+                  styles.inputContainer,
+                  !!emailError && styles.inputError,
+                  touched.email && isEmailFieldValid && styles.inputSuccess,
+                ]}
+                style={styles.inputText}
+                placeholderTextColor={theme.colors.placeholder}
+              />
+              <View style={styles.helperRow}>
+                {emailError ? (
+                  <>
+                    <MaterialCommunityIcons
+                      name="alert-circle-outline"
+                      size={14}
+                      color={theme.colors.error}
+                      style={styles.helperIcon}
+                    />
+                    <Text style={styles.errorText}>{emailError}</Text>
+                  </>
+                ) : (
+                  <Text style={styles.helperText}>Confidencial: nunca exibido publicamente</Text>
+                )}
+              </View>
+            </View>
 
-            {/* Save Button - Only serves to update information */}
-            <View style={styles.btnActionContainer}>
-              {isGlobalLoading ? (
-                <ActivityIndicator size="large" color={theme.colors.primary} />
-              ) : (
-                <CustomButton
-                  title="Salvar alterações"
-                  variant="primary"
-                  style={styles.button}
-                  onPress={handleEdit}
-                />
-              )}
+            {/* Phone input */}
+            <View style={styles.fieldWrapper}>
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>
+                  {isBakerRole ? 'Telefone / WhatsApp Comercial' : 'Telefone'}{' '}
+                  {isBakerRole && isPublicProfile ? <Text style={styles.required}>*</Text> : null}
+                </Text>
+                {touched.phone && phone.trim() && isPhoneFieldValid && (
+                  <MaterialCommunityIcons
+                    name="check-circle-outline"
+                    size={16}
+                    color={theme.colors.success}
+                  />
+                )}
+              </View>
+              <Input
+                value={phone}
+                placeholder="(11) 99999-9999"
+                keyboardType="phone-pad"
+                onChangeText={handlePhoneChange}
+                onBlur={() => setTouched((prev) => ({ ...prev, phone: true }))}
+                containerStyle={[
+                  styles.inputContainer,
+                  !!phoneError && styles.inputError,
+                  touched.phone && phone.trim() && isPhoneFieldValid && styles.inputSuccess,
+                ]}
+                style={styles.inputText}
+                placeholderTextColor={theme.colors.placeholder}
+              />
+              <View style={styles.helperRow}>
+                {phoneError ? (
+                  <>
+                    <MaterialCommunityIcons
+                      name="alert-circle-outline"
+                      size={14}
+                      color={theme.colors.error}
+                      style={styles.helperIcon}
+                    />
+                    <Text style={styles.errorText}>{phoneError}</Text>
+                  </>
+                ) : (
+                  <Text style={styles.helperText}>
+                    {isBakerRole && isPublicProfile
+                      ? 'Obrigatório: clientes poderão enviar mensagem no WhatsApp'
+                      : 'Opcional. Formato com DDD: (XX) 9XXXX-XXXX'}
+                  </Text>
+                )}
+              </View>
             </View>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+
+          {/* Baker Profile / Public Profile Card */}
+          {isBakerRole ? (
+            <View style={styles.card}>
+              <View style={styles.publicHeaderRow}>
+                <View style={styles.publicTitleWrapper}>
+                  <Text style={styles.cardSectionHeader}>Perfil Comercial de Confeiteiro</Text>
+                  <Text style={styles.publicSubtitle}>Tornar seu perfil público para clientes</Text>
+                </View>
+
+                <Switch
+                  value={isPublicProfile}
+                  onValueChange={handleTogglePublicProfile}
+                  disabled={isTogglingPublic}
+                  thumbColor={
+                    isPublicProfile ? theme.colors.primary : theme.colors.surfaceContainerHighest
+                  }
+                  trackColor={{
+                    false: theme.colors.outlineVariant,
+                    true: theme.colors.primaryContainer,
+                  }}
+                />
+              </View>
+
+              {/* Status Alert Banner */}
+              {isPublicProfile ? (
+                <View style={styles.alertBannerPublic}>
+                  <MaterialCommunityIcons
+                    name="earth"
+                    size={20}
+                    color={theme.colors.primary}
+                    style={styles.alertBannerIcon}
+                  />
+                  <View style={styles.alertBannerTextContainer}>
+                    <Text style={styles.alertBannerTitle}>Seu perfil está público</Text>
+                    <Text style={styles.alertBannerText}>
+                      As informações abaixo e suas receitas estão visíveis para todos os clientes no
+                      Meu Confeito. Seu e-mail permanece estritamente privado.
+                    </Text>
+                  </View>
+                </View>
+              ) : (
+                <View style={styles.alertBannerPrivate}>
+                  <MaterialCommunityIcons
+                    name="lock-outline"
+                    size={20}
+                    color={theme.colors.onSurfaceVariant}
+                    style={styles.alertBannerIcon}
+                  />
+                  <View style={styles.alertBannerTextContainer}>
+                    <Text style={styles.alertBannerTitlePrivate}>Perfil Privado</Text>
+                    <Text style={styles.alertBannerText}>
+                      Ative o botão acima para criar e publicar seu perfil de confeiteiro,
+                      permitindo que clientes encontrem suas receitas e façam encomendas.
+                    </Text>
+                  </View>
+                </View>
+              )}
+
+              {/* Preview button */}
+              {isPublicProfile && (
+                <TouchableOpacity
+                  style={styles.previewBtn}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/public-profile',
+                      params: { id: user?.id },
+                    })
+                  }
+                  activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Visualizar perfil público"
+                >
+                  <MaterialCommunityIcons
+                    name="eye-outline"
+                    size={18}
+                    color={theme.colors.primary}
+                  />
+                  <Text style={styles.previewBtnText}>Visualizar como os clientes veem</Text>
+                  <MaterialCommunityIcons
+                    name="chevron-right"
+                    size={18}
+                    color={theme.colors.primary}
+                  />
+                </TouchableOpacity>
+              )}
+
+              {/* Fields for public profile */}
+              {isPublicProfile && (
+                <>
+                  {/* Location Section handled by expo-location */}
+                  <View style={styles.locationSection}>
+                    <View style={styles.locationHeaderRow}>
+                      <View style={styles.labelWithIcon}>
+                        <MaterialCommunityIcons
+                          name="crosshairs-gps"
+                          size={16}
+                          color={theme.colors.primary}
+                        />
+                        <Text style={styles.label}>Localização Geográfica (GPS)</Text>
+                      </View>
+                      {hasLocationCoords ? (
+                        <TouchableOpacity
+                          onPress={handleClearLocation}
+                          style={styles.clearLocationBtn}
+                          accessibilityRole="button"
+                          accessibilityLabel="Remover coordenadas GPS"
+                        >
+                          <Text style={styles.clearLocationText}>Remover GPS</Text>
+                        </TouchableOpacity>
+                      ) : null}
+                    </View>
+
+                    <TouchableOpacity
+                      style={styles.fetchLocationBtn}
+                      onPress={handleFetchLocation}
+                      disabled={isFetchingLocation}
+                      activeOpacity={0.8}
+                      accessibilityRole="button"
+                      accessibilityLabel="Obter localização atual via GPS"
+                    >
+                      {isFetchingLocation ? (
+                        <ActivityIndicator size="small" color={theme.colors.primary} />
+                      ) : (
+                        <MaterialCommunityIcons
+                          name="map-marker-radius-outline"
+                          size={20}
+                          color={theme.colors.primary}
+                        />
+                      )}
+                      <Text style={styles.fetchLocationBtnText}>
+                        {isFetchingLocation
+                          ? 'Detectando localização...'
+                          : hasLocationCoords
+                            ? 'Atualizar Localização via GPS'
+                            : 'Obter Localização Atual via GPS'}
+                      </Text>
+                    </TouchableOpacity>
+
+                    {locationCoords ? (
+                      <View style={styles.gpsCoordsBadge}>
+                        <MaterialCommunityIcons
+                          name="check-circle"
+                          size={14}
+                          color={theme.colors.chips.success.text}
+                        />
+                        <Text style={styles.gpsCoordsText}>
+                          GPS ativo: {locationCoords.latitude.toFixed(4)},{' '}
+                          {locationCoords.longitude.toFixed(4)}
+                        </Text>
+                      </View>
+                    ) : (
+                      <Text style={styles.helperText}>
+                        O GPS preenche Cidade e Bairro e permite que clientes encontrem sua
+                        confeitaria por proximidade.
+                      </Text>
+                    )}
+                  </View>
+
+                  {/* City input */}
+                  <View style={styles.fieldWrapper}>
+                    <View style={styles.labelRow}>
+                      <Text style={styles.label}>Cidade</Text>
+                    </View>
+                    <Input
+                      value={city}
+                      placeholder="Ex: São Paulo"
+                      autoCapitalize="words"
+                      maxLength={100}
+                      onChangeText={setCity}
+                      containerStyle={styles.inputContainer}
+                      style={styles.inputText}
+                      placeholderTextColor={theme.colors.placeholder}
+                      leftIcon={
+                        <MaterialCommunityIcons
+                          name="city-variant-outline"
+                          size={20}
+                          color={theme.colors.onSurfaceVariant}
+                        />
+                      }
+                    />
+                  </View>
+
+                  {/* Neighborhood input */}
+                  <View style={styles.fieldWrapper}>
+                    <View style={styles.labelRow}>
+                      <Text style={styles.label}>Bairro</Text>
+                    </View>
+                    <Input
+                      value={neighborhood}
+                      placeholder="Ex: Pinheiros"
+                      autoCapitalize="words"
+                      maxLength={100}
+                      onChangeText={setNeighborhood}
+                      containerStyle={styles.inputContainer}
+                      style={styles.inputText}
+                      placeholderTextColor={theme.colors.placeholder}
+                      leftIcon={
+                        <MaterialCommunityIcons
+                          name="map-marker-outline"
+                          size={20}
+                          color={theme.colors.onSurfaceVariant}
+                        />
+                      }
+                    />
+                  </View>
+
+                  {/* Bio input */}
+                  <View style={styles.fieldWrapper}>
+                    <View style={styles.labelRow}>
+                      <Text style={styles.label}>Sobre a Confeitaria / Bio</Text>
+                      <Text style={styles.charCounter}>{bio.length}/500</Text>
+                    </View>
+                    <Input
+                      value={bio}
+                      placeholder="Conte aos clientes sobre sua história, receitas especiais, encomendas e paixão pela confeitaria..."
+                      multiline
+                      numberOfLines={4}
+                      maxLength={500}
+                      onChangeText={setBio}
+                      containerStyle={styles.textAreaContainer}
+                      style={styles.textArea}
+                      placeholderTextColor={theme.colors.placeholder}
+                    />
+                    <Text style={styles.helperText}>Máximo de 500 caracteres</Text>
+                  </View>
+
+                  {/* Instagram handle */}
+                  <View style={styles.fieldWrapper}>
+                    <View style={styles.labelRow}>
+                      <Text style={styles.label}>Instagram Comercial</Text>
+                    </View>
+                    <Input
+                      value={instagram}
+                      placeholder="@suaconfeitaria"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      maxLength={100}
+                      onChangeText={setInstagram}
+                      containerStyle={styles.inputContainer}
+                      style={styles.inputText}
+                      placeholderTextColor={theme.colors.placeholder}
+                      leftIcon={
+                        <MaterialCommunityIcons
+                          name="instagram"
+                          size={20}
+                          color={theme.colors.onSurfaceVariant}
+                        />
+                      }
+                    />
+                    <Text style={styles.helperText}>
+                      Ex: @atelierdedoces (link direto para seu perfil)
+                    </Text>
+                  </View>
+
+                  {/* Baker Tags & Specialties */}
+                  <BakerTagSelector
+                    selectedTags={selectedTags}
+                    onTagsChange={setSelectedTags}
+                    userId={user?.id}
+                  />
+
+                  {/* Showcase Manager Section */}
+                  {hasInitialBakerProfile && <ShowcaseManager userId={user?.id} />}
+                </>
+              )}
+            </View>
+          ) : null}
+
+          {/* Save Button - Only serves to update information */}
+          <View style={styles.btnActionContainer}>
+            {isGlobalLoading ? (
+              <ActivityIndicator size="large" color={theme.colors.primary} />
+            ) : (
+              <CustomButton
+                title="Salvar alterações"
+                variant="primary"
+                style={styles.button}
+                onPress={handleEdit}
+              />
+            )}
+          </View>
+        </View>
+      </KeyboardAwareScrollView>
     </>
   );
 }

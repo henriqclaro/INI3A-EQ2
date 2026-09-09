@@ -1,10 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   Alert,
-  KeyboardAvoidingView,
-  Platform,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -16,6 +13,7 @@ import {
 import { Stack, router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { ActivityIndicator } from 'react-native-paper';
 
 import { CustomButton, IngredientSelector, StockCard } from '@/src/components';
@@ -263,357 +261,345 @@ export default function RegisterStockScreen() {
     <>
       <Stack.Screen options={{ title: 'Cadastrar no Estoque' }} />
 
-      <KeyboardAvoidingView
+      <KeyboardAwareScrollView
         style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        bottomOffset={64}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            tintColor={theme.colors.primary}
+            colors={[theme.colors.primary]}
+          />
+        }
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={handleRefresh}
-              tintColor={theme.colors.primary}
-              colors={[theme.colors.primary]}
+        <View style={styles.card}>
+          {/* Header section */}
+          <View style={styles.headerArea}>
+            <View style={styles.headerIconContainer}>
+              <MaterialCommunityIcons
+                name="package-variant-closed-plus"
+                size={30}
+                color={theme.colors.primary}
+              />
+            </View>
+            <Text style={styles.headline}>Entrada no Estoque</Text>
+            <Text style={styles.subheadline}>
+              Cadastre a compra ou o saldo inicial dos insumos que você utiliza na cozinha.
+            </Text>
+          </View>
+
+          {/* Entry Mode Selector */}
+          <View style={styles.modeTabs}>
+            <TouchableOpacity
+              style={[styles.modeTab, entryMode === 'purchase' && styles.modeTabActive]}
+              onPress={() => setEntryMode('purchase')}
+              activeOpacity={0.8}
+            >
+              <MaterialCommunityIcons
+                name="cart-plus"
+                size={18}
+                color={entryMode === 'purchase' ? theme.colors.primary : theme.colors.text}
+              />
+              <Text
+                style={[styles.modeTabText, entryMode === 'purchase' && styles.modeTabTextActive]}
+              >
+                Registrar Compra
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.modeTab, entryMode === 'adjustment' && styles.modeTabActive]}
+              onPress={() => setEntryMode('adjustment')}
+              activeOpacity={0.8}
+            >
+              <MaterialCommunityIcons
+                name="tune-variant"
+                size={18}
+                color={entryMode === 'adjustment' ? theme.colors.primary : theme.colors.text}
+              />
+              <Text
+                style={[styles.modeTabText, entryMode === 'adjustment' && styles.modeTabTextActive]}
+              >
+                Ajuste de Saldo
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Section 1: Insumo / Ingrediente */}
+          <View style={styles.fieldset}>
+            <View style={styles.fieldsetHeader}>
+              <MaterialCommunityIcons
+                name="food-apple-outline"
+                size={20}
+                color={theme.colors.primary}
+              />
+              <Text style={styles.fieldsetSectionTitle}>1. Seleção do Insumo</Text>
+            </View>
+
+            <IngredientSelector
+              selectedIngredientId={selectedIngredientId}
+              selectedIngredient={selectedIngredient}
+              onSelectIngredient={(ing) => {
+                setSelectedIngredientId(ing ? String(ing.id) : '');
+                setHasTouchedIngredient(true);
+              }}
+              initialIngredients={availableIngredients}
+              error={ingredientError}
+              isRequired
+              label="Insumo"
+              placeholder="Buscar insumo (ex: Farinha)..."
+              helperText="Busque e selecione o ingrediente do catálogo para dar entrada ou ajuste de estoque."
             />
-          }
-        >
-          <View style={styles.card}>
-            {/* Header section */}
-            <View style={styles.headerArea}>
-              <View style={styles.headerIconContainer}>
+
+            {/* Existing Stock Alert */}
+            {isAlreadyInStock && existingStockItem && (
+              <View style={styles.existingStockBanner}>
                 <MaterialCommunityIcons
-                  name="package-variant-closed-plus"
-                  size={30}
+                  name="information-outline"
+                  size={18}
                   color={theme.colors.primary}
                 />
+                <View style={styles.existingStockTextContainer}>
+                  <Text style={styles.existingStockTitle}>Item já possui estoque:</Text>
+                  <Text style={styles.existingStockDetail}>
+                    Saldo atual: {formatQuantity(existingStockItem.currentQuantity, baseUnit)} |
+                    Custo médio: {formatCurrency(Number(existingStockItem.costPerBaseUnit) || 0)} /{' '}
+                    {baseUnit}
+                  </Text>
+                </View>
               </View>
-              <Text style={styles.headline}>Entrada no Estoque</Text>
-              <Text style={styles.subheadline}>
-                Cadastre a compra ou o saldo inicial dos insumos que você utiliza na cozinha.
+            )}
+          </View>
+
+          {/* Section 2: Quantidade e Custo */}
+          <View style={styles.fieldset}>
+            <View style={styles.fieldsetHeader}>
+              <MaterialCommunityIcons name="scale-balance" size={20} color={theme.colors.primary} />
+              <Text style={styles.fieldsetSectionTitle}>
+                {entryMode === 'purchase' ? '2. Dados da Compra' : '2. Quantidade Física Real'}
               </Text>
             </View>
 
-            {/* Entry Mode Selector */}
-            <View style={styles.modeTabs}>
+            {/* Package Helper Toggle */}
+            {entryMode === 'purchase' && (
               <TouchableOpacity
-                style={[styles.modeTab, entryMode === 'purchase' && styles.modeTabActive]}
-                onPress={() => setEntryMode('purchase')}
+                style={styles.packageHelperToggle}
+                onPress={() => setIsPackageHelperEnabled(!isPackageHelperEnabled)}
                 activeOpacity={0.8}
               >
                 <MaterialCommunityIcons
-                  name="cart-plus"
-                  size={18}
-                  color={entryMode === 'purchase' ? theme.colors.primary : theme.colors.text}
-                />
-                <Text
-                  style={[styles.modeTabText, entryMode === 'purchase' && styles.modeTabTextActive]}
-                >
-                  Registrar Compra
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.modeTab, entryMode === 'adjustment' && styles.modeTabActive]}
-                onPress={() => setEntryMode('adjustment')}
-                activeOpacity={0.8}
-              >
-                <MaterialCommunityIcons
-                  name="tune-variant"
-                  size={18}
-                  color={entryMode === 'adjustment' ? theme.colors.primary : theme.colors.text}
-                />
-                <Text
-                  style={[
-                    styles.modeTabText,
-                    entryMode === 'adjustment' && styles.modeTabTextActive,
-                  ]}
-                >
-                  Ajuste de Saldo
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Section 1: Insumo / Ingrediente */}
-            <View style={styles.fieldset}>
-              <View style={styles.fieldsetHeader}>
-                <MaterialCommunityIcons
-                  name="food-apple-outline"
+                  name={isPackageHelperEnabled ? 'checkbox-marked' : 'checkbox-blank-outline'}
                   size={20}
                   color={theme.colors.primary}
                 />
-                <Text style={styles.fieldsetSectionTitle}>1. Seleção do Insumo</Text>
-              </View>
-
-              <IngredientSelector
-                selectedIngredientId={selectedIngredientId}
-                selectedIngredient={selectedIngredient}
-                onSelectIngredient={(ing) => {
-                  setSelectedIngredientId(ing ? String(ing.id) : '');
-                  setHasTouchedIngredient(true);
-                }}
-                initialIngredients={availableIngredients}
-                error={ingredientError}
-                isRequired
-                label="Insumo"
-                placeholder="Buscar insumo (ex: Farinha)..."
-                helperText="Busque e selecione o ingrediente do catálogo para dar entrada ou ajuste de estoque."
-              />
-
-              {/* Existing Stock Alert */}
-              {isAlreadyInStock && existingStockItem && (
-                <View style={styles.existingStockBanner}>
-                  <MaterialCommunityIcons
-                    name="information-outline"
-                    size={18}
-                    color={theme.colors.primary}
-                  />
-                  <View style={styles.existingStockTextContainer}>
-                    <Text style={styles.existingStockTitle}>Item já possui estoque:</Text>
-                    <Text style={styles.existingStockDetail}>
-                      Saldo atual: {formatQuantity(existingStockItem.currentQuantity, baseUnit)} |
-                      Custo médio: {formatCurrency(Number(existingStockItem.costPerBaseUnit) || 0)}{' '}
-                      / {baseUnit}
-                    </Text>
-                  </View>
-                </View>
-              )}
-            </View>
-
-            {/* Section 2: Quantidade e Custo */}
-            <View style={styles.fieldset}>
-              <View style={styles.fieldsetHeader}>
-                <MaterialCommunityIcons
-                  name="scale-balance"
-                  size={20}
-                  color={theme.colors.primary}
-                />
-                <Text style={styles.fieldsetSectionTitle}>
-                  {entryMode === 'purchase' ? '2. Dados da Compra' : '2. Quantidade Física Real'}
+                <Text style={styles.packageHelperToggleText}>
+                  Calcular quantidade por pacotes / fardos
                 </Text>
-              </View>
+              </TouchableOpacity>
+            )}
 
-              {/* Package Helper Toggle */}
-              {entryMode === 'purchase' && (
-                <TouchableOpacity
-                  style={styles.packageHelperToggle}
-                  onPress={() => setIsPackageHelperEnabled(!isPackageHelperEnabled)}
-                  activeOpacity={0.8}
-                >
-                  <MaterialCommunityIcons
-                    name={isPackageHelperEnabled ? 'checkbox-marked' : 'checkbox-blank-outline'}
-                    size={20}
-                    color={theme.colors.primary}
-                  />
-                  <Text style={styles.packageHelperToggleText}>
-                    Calcular quantidade por pacotes / fardos
-                  </Text>
-                </TouchableOpacity>
-              )}
-
-              {/* Package Helper Inputs */}
-              {entryMode === 'purchase' && isPackageHelperEnabled && (
-                <View style={styles.rowTwoCols}>
-                  <View style={[styles.fieldWrapper, styles.colFlex]}>
-                    <Text style={styles.label}>Nº de Pacotes</Text>
-                    <TextInput
-                      style={styles.singleInput}
-                      value={packageCount}
-                      onChangeText={(val) => {
-                        setPackageCount(val);
-                        handlePackageValuesChange(val, packageSize);
-                      }}
-                      placeholder="Ex: 2"
-                      placeholderTextColor={theme.colors.placeholder}
-                      keyboardType="numeric"
-                    />
-                  </View>
-
-                  <View style={[styles.fieldWrapper, styles.colFlex]}>
-                    <Text style={styles.label}>Tamanho por Pacote ({baseUnit})</Text>
-                    <View style={styles.inputWithSuffix}>
-                      <TextInput
-                        style={styles.textInputFlex}
-                        value={packageSize}
-                        onChangeText={(val) => {
-                          setPackageSize(val);
-                          handlePackageValuesChange(packageCount, val);
-                        }}
-                        placeholder="Ex: 500"
-                        placeholderTextColor={theme.colors.placeholder}
-                        keyboardType="numeric"
-                      />
-                      <View style={styles.suffixBadge}>
-                        <Text style={styles.suffixText}>{baseUnit}</Text>
-                      </View>
-                    </View>
-                  </View>
-                </View>
-              )}
-
-              {/* Quantity Input */}
-              <View style={styles.fieldWrapper}>
-                <Text style={styles.label}>
-                  {entryMode === 'purchase'
-                    ? `Quantidade Comprada (${baseUnit}) *`
-                    : `Saldo Físico Real (${baseUnit}) *`}
-                </Text>
-                <View style={styles.inputWithSuffix}>
+            {/* Package Helper Inputs */}
+            {entryMode === 'purchase' && isPackageHelperEnabled && (
+              <View style={styles.rowTwoCols}>
+                <View style={[styles.fieldWrapper, styles.colFlex]}>
+                  <Text style={styles.label}>Nº de Pacotes</Text>
                   <TextInput
-                    style={styles.textInputFlex}
-                    value={quantityInput}
-                    onChangeText={setQuantityInput}
-                    placeholder="0"
+                    style={styles.singleInput}
+                    value={packageCount}
+                    onChangeText={(val) => {
+                      setPackageCount(val);
+                      handlePackageValuesChange(val, packageSize);
+                    }}
+                    placeholder="Ex: 2"
                     placeholderTextColor={theme.colors.placeholder}
                     keyboardType="numeric"
                   />
-                  <View style={styles.suffixBadge}>
-                    <Text style={styles.suffixText}>{baseUnit}</Text>
-                  </View>
                 </View>
-                <Text style={styles.helperText}>
-                  {entryMode === 'purchase'
-                    ? `Total de insumo adicionado ao estoque em ${baseUnit}.`
-                    : `Contagem real de insumo disponível na cozinha em ${baseUnit}.`}
-                </Text>
-              </View>
 
-              {/* Cost Input (Purchase Mode) */}
-              {entryMode === 'purchase' && (
-                <View style={styles.fieldWrapper}>
-                  <Text style={styles.label}>
-                    Valor Total Pago (R$) <Text style={styles.required}>*</Text>
-                  </Text>
-                  <View style={styles.inputWithPrefix}>
-                    <Text style={styles.prefixText}>R$</Text>
+                <View style={[styles.fieldWrapper, styles.colFlex]}>
+                  <Text style={styles.label}>Tamanho por Pacote ({baseUnit})</Text>
+                  <View style={styles.inputWithSuffix}>
                     <TextInput
                       style={styles.textInputFlex}
-                      value={totalCostInput}
-                      onChangeText={setTotalCostInput}
-                      placeholder="0,00"
+                      value={packageSize}
+                      onChangeText={(val) => {
+                        setPackageSize(val);
+                        handlePackageValuesChange(packageCount, val);
+                      }}
+                      placeholder="Ex: 500"
                       placeholderTextColor={theme.colors.placeholder}
                       keyboardType="numeric"
                     />
+                    <View style={styles.suffixBadge}>
+                      <Text style={styles.suffixText}>{baseUnit}</Text>
+                    </View>
                   </View>
-                  <Text style={styles.helperText}>
-                    Valor total pago nesta compra (utilizado para calcular o custo unitário médio
-                    ponderado).
-                  </Text>
                 </View>
-              )}
-
-              {/* Unit Cost Preview Box */}
-              {entryMode === 'purchase' && (
-                <View style={styles.costSummaryBox}>
-                  <View style={styles.costSummaryHeader}>
-                    <MaterialCommunityIcons
-                      name="calculator-variant-outline"
-                      size={18}
-                      color={theme.colors.primary}
-                    />
-                    <Text style={styles.costSummaryTitle}>Custo por Unidade Base ({baseUnit})</Text>
-                  </View>
-                  <Text style={styles.costSummaryValue}>
-                    {calculatedUnitCost > 0
-                      ? `${formatCurrency(calculatedUnitCost)} / ${baseUnit}`
-                      : 'R$ 0,00'}
-                  </Text>
-                  <Text style={styles.costSummaryExplainer}>
-                    {calculatedUnitCost > 0
-                      ? `Calculado a partir de ${formatCurrency(parsedCost)} para ${formatQuantity(parsedQuantity, baseUnit)}.`
-                      : 'Preencha a quantidade e o valor total para visualizar o custo unitário.'}
-                  </Text>
-                </View>
-              )}
-
-              {/* Expiration Date (Purchase Mode) */}
-              {entryMode === 'purchase' && (
-                <View style={styles.fieldWrapper}>
-                  <Text style={styles.label}>Data de Validade (Opcional)</Text>
-                  <TextInput
-                    style={styles.singleInput}
-                    value={expirationDateInput}
-                    onChangeText={setExpirationDateInput}
-                    placeholder="DD/MM/AAAA"
-                    placeholderTextColor={theme.colors.placeholder}
-                  />
-                  <Text style={styles.helperText}>
-                    Se informada, você receberá avisos automáticos na tela de Estoque antes do
-                    vencimento.
-                  </Text>
-                </View>
-              )}
-
-              {/* Notes (Adjustment Mode) */}
-              {entryMode === 'adjustment' && (
-                <View style={styles.fieldWrapper}>
-                  <Text style={styles.label}>Observações / Motivo (Opcional)</Text>
-                  <TextInput
-                    style={styles.textArea}
-                    value={notesInput}
-                    onChangeText={setNotesInput}
-                    placeholder="Ex: Contagem inicial de estoque..."
-                    placeholderTextColor={theme.colors.placeholder}
-                    maxLength={255}
-                    multiline
-                  />
-                </View>
-              )}
-            </View>
-
-            {/* Live Preview Section */}
-            {previewItem && (
-              <View style={styles.previewSection}>
-                <View style={styles.previewHeaderRow}>
-                  <MaterialCommunityIcons
-                    name="eye-outline"
-                    size={18}
-                    color={theme.colors.espressoDark}
-                  />
-                  <Text style={styles.previewSectionTitle}>Prévia no Estoque</Text>
-                </View>
-                <Text style={styles.previewSubtitle}>
-                  Como o insumo será apresentado no seu painel:
-                </Text>
-
-                <StockCard
-                  item={previewItem}
-                  onAdjust={() => {}}
-                  onPurchase={() => {}}
-                  onWaste={() => {}}
-                />
               </View>
             )}
 
-            {/* Action Buttons */}
-            <View style={styles.actionButtonsContainer}>
-              {isSubmitting ? (
-                <ActivityIndicator size="large" color={theme.colors.primary} />
-              ) : (
-                <CustomButton
-                  title={
-                    entryMode === 'purchase'
-                      ? 'Salvar Compra no Estoque'
-                      : 'Salvar Ajuste de Estoque'
-                  }
-                  variant="primary"
-                  onPress={handleSubmit}
-                  style={styles.btnSubmit}
+            {/* Quantity Input */}
+            <View style={styles.fieldWrapper}>
+              <Text style={styles.label}>
+                {entryMode === 'purchase'
+                  ? `Quantidade Comprada (${baseUnit}) *`
+                  : `Saldo Físico Real (${baseUnit}) *`}
+              </Text>
+              <View style={styles.inputWithSuffix}>
+                <TextInput
+                  style={styles.textInputFlex}
+                  value={quantityInput}
+                  onChangeText={setQuantityInput}
+                  placeholder="0"
+                  placeholderTextColor={theme.colors.placeholder}
+                  keyboardType="numeric"
                 />
-              )}
+                <View style={styles.suffixBadge}>
+                  <Text style={styles.suffixText}>{baseUnit}</Text>
+                </View>
+              </View>
+              <Text style={styles.helperText}>
+                {entryMode === 'purchase'
+                  ? `Total de insumo adicionado ao estoque em ${baseUnit}.`
+                  : `Contagem real de insumo disponível na cozinha em ${baseUnit}.`}
+              </Text>
+            </View>
 
-              <CustomButton
-                title="Cancelar"
-                variant="secondary"
-                onPress={() => router.back()}
-                style={styles.btnCancel}
+            {/* Cost Input (Purchase Mode) */}
+            {entryMode === 'purchase' && (
+              <View style={styles.fieldWrapper}>
+                <Text style={styles.label}>
+                  Valor Total Pago (R$) <Text style={styles.required}>*</Text>
+                </Text>
+                <View style={styles.inputWithPrefix}>
+                  <Text style={styles.prefixText}>R$</Text>
+                  <TextInput
+                    style={styles.textInputFlex}
+                    value={totalCostInput}
+                    onChangeText={setTotalCostInput}
+                    placeholder="0,00"
+                    placeholderTextColor={theme.colors.placeholder}
+                    keyboardType="numeric"
+                  />
+                </View>
+                <Text style={styles.helperText}>
+                  Valor total pago nesta compra (utilizado para calcular o custo unitário médio
+                  ponderado).
+                </Text>
+              </View>
+            )}
+
+            {/* Unit Cost Preview Box */}
+            {entryMode === 'purchase' && (
+              <View style={styles.costSummaryBox}>
+                <View style={styles.costSummaryHeader}>
+                  <MaterialCommunityIcons
+                    name="calculator-variant-outline"
+                    size={18}
+                    color={theme.colors.primary}
+                  />
+                  <Text style={styles.costSummaryTitle}>Custo por Unidade Base ({baseUnit})</Text>
+                </View>
+                <Text style={styles.costSummaryValue}>
+                  {calculatedUnitCost > 0
+                    ? `${formatCurrency(calculatedUnitCost)} / ${baseUnit}`
+                    : 'R$ 0,00'}
+                </Text>
+                <Text style={styles.costSummaryExplainer}>
+                  {calculatedUnitCost > 0
+                    ? `Calculado a partir de ${formatCurrency(parsedCost)} para ${formatQuantity(parsedQuantity, baseUnit)}.`
+                    : 'Preencha a quantidade e o valor total para visualizar o custo unitário.'}
+                </Text>
+              </View>
+            )}
+
+            {/* Expiration Date (Purchase Mode) */}
+            {entryMode === 'purchase' && (
+              <View style={styles.fieldWrapper}>
+                <Text style={styles.label}>Data de Validade (Opcional)</Text>
+                <TextInput
+                  style={styles.singleInput}
+                  value={expirationDateInput}
+                  onChangeText={setExpirationDateInput}
+                  placeholder="DD/MM/AAAA"
+                  placeholderTextColor={theme.colors.placeholder}
+                />
+                <Text style={styles.helperText}>
+                  Se informada, você receberá avisos automáticos na tela de Estoque antes do
+                  vencimento.
+                </Text>
+              </View>
+            )}
+
+            {/* Notes (Adjustment Mode) */}
+            {entryMode === 'adjustment' && (
+              <View style={styles.fieldWrapper}>
+                <Text style={styles.label}>Observações / Motivo (Opcional)</Text>
+                <TextInput
+                  style={styles.textArea}
+                  value={notesInput}
+                  onChangeText={setNotesInput}
+                  placeholder="Ex: Contagem inicial de estoque..."
+                  placeholderTextColor={theme.colors.placeholder}
+                  maxLength={255}
+                  multiline
+                />
+              </View>
+            )}
+          </View>
+
+          {/* Live Preview Section */}
+          {previewItem && (
+            <View style={styles.previewSection}>
+              <View style={styles.previewHeaderRow}>
+                <MaterialCommunityIcons
+                  name="eye-outline"
+                  size={18}
+                  color={theme.colors.espressoDark}
+                />
+                <Text style={styles.previewSectionTitle}>Prévia no Estoque</Text>
+              </View>
+              <Text style={styles.previewSubtitle}>
+                Como o insumo será apresentado no seu painel:
+              </Text>
+
+              <StockCard
+                item={previewItem}
+                onAdjust={() => {}}
+                onPurchase={() => {}}
+                onWaste={() => {}}
               />
             </View>
+          )}
+
+          {/* Action Buttons */}
+          <View style={styles.actionButtonsContainer}>
+            {isSubmitting ? (
+              <ActivityIndicator size="large" color={theme.colors.primary} />
+            ) : (
+              <CustomButton
+                title={
+                  entryMode === 'purchase' ? 'Salvar Compra no Estoque' : 'Salvar Ajuste de Estoque'
+                }
+                variant="primary"
+                onPress={handleSubmit}
+                style={styles.btnSubmit}
+              />
+            )}
+
+            <CustomButton
+              title="Cancelar"
+              variant="secondary"
+              onPress={() => router.back()}
+              style={styles.btnCancel}
+            />
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </View>
+      </KeyboardAwareScrollView>
     </>
   );
 }

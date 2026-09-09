@@ -1,9 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   Alert,
-  KeyboardAvoidingView,
   Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -16,6 +14,7 @@ import { Image } from 'expo-image';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Picker } from '@react-native-picker/picker';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { ActivityIndicator } from 'react-native-paper';
 
 import { CustomButton } from '@/src/components/CustomButton';
@@ -376,464 +375,458 @@ export function RecipeForm({
   const resolvedButtonText = submitButtonText || defaultButtonLabel;
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardAwareScrollView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+      bottomOffset={64}
     >
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
-        automaticallyAdjustKeyboardInsets
-      >
-        <Text style={styles.primaryTitle}>{isEditMode ? 'Editar Receita' : 'Nova Receita'}</Text>
-        <Text style={styles.subtitle}>
-          {isEditMode
-            ? 'Atualize as informações da sua receita abaixo.'
-            : 'Preencha as informações abaixo para registrar sua receita no sistema.'}
-        </Text>
+      <Text style={styles.primaryTitle}>{isEditMode ? 'Editar Receita' : 'Nova Receita'}</Text>
+      <Text style={styles.subtitle}>
+        {isEditMode
+          ? 'Atualize as informações da sua receita abaixo.'
+          : 'Preencha as informações abaixo para registrar sua receita no sistema.'}
+      </Text>
 
-        {/* Cover Image Preview */}
-        {coverUrl.trim() ? (
-          <Image source={{ uri: coverUrl }} style={styles.imagePreview} contentFit="cover" />
-        ) : null}
+      {/* Cover Image Preview */}
+      {coverUrl.trim() ? (
+        <Image source={{ uri: coverUrl }} style={styles.imagePreview} contentFit="cover" />
+      ) : null}
 
-        {/* Card: Basic Data */}
-        <View style={styles.box}>
-          <Text style={styles.secondaryTitle}>Dados Básicos</Text>
+      {/* Card: Basic Data */}
+      <View style={styles.box}>
+        <Text style={styles.secondaryTitle}>Dados Básicos</Text>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Título da Receita *</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Ex: Bolo de Cenoura"
-              placeholderTextColor={theme.colors.placeholder}
-              value={title}
-              onChangeText={setTitle}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>URL da Imagem de Capa (opcional)</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="https://exemplo.com/imagem.jpg"
-              placeholderTextColor={theme.colors.placeholder}
-              value={coverUrl}
-              onChangeText={setCoverUrl}
-              autoCapitalize="none"
-              keyboardType="url"
-            />
-          </View>
-
-          <View style={styles.row}>
-            <View style={[styles.inputGroup, styles.flex1]}>
-              <Text style={styles.label}>Rendimento Base *</Text>
-              <TextInput
-                style={styles.textInput}
-                placeholder="Ex: 12"
-                placeholderTextColor={theme.colors.placeholder}
-                keyboardType="numeric"
-                value={baseYield}
-                onChangeText={setBaseYield}
-              />
-            </View>
-
-            <View style={[styles.inputGroup, styles.flex1]}>
-              <Text style={styles.label}>Unidade Rendimento *</Text>
-              <View style={styles.pickerWrapper}>
-                <Picker
-                  selectedValue={yieldUnit}
-                  onValueChange={(val) => setYieldUnit(val as StandardUnit)}
-                  style={styles.picker}
-                  dropdownIconColor={theme.colors.onSurface}
-                >
-                  {STANDARD_UNITS.map((u) => (
-                    <Picker.Item key={u.value} label={u.label} value={u.value} />
-                  ))}
-                </Picker>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Tempo de Preparo (minutos)</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Ex: 45"
-              placeholderTextColor={theme.colors.placeholder}
-              keyboardType="numeric"
-              value={prepTimeMinutes}
-              onChangeText={setPrepTimeMinutes}
-            />
-          </View>
-        </View>
-
-        {/* Card: Tags Selection (up to 5 tags) */}
-        <View style={styles.box}>
-          <Text style={styles.secondaryTitle}>Categorização por Tags</Text>
-          <TagSelector
-            selectedTags={selectedTags}
-            onSelectedTagsChange={setSelectedTags}
-            maxTags={5}
-            isDisabled={isSubmitting}
-            shouldHideUserTags={true}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Título da Receita *</Text>
+          <TextInput
+            style={styles.textInput}
+            placeholder="Ex: Bolo de Cenoura"
+            placeholderTextColor={theme.colors.placeholder}
+            value={title}
+            onChangeText={setTitle}
           />
         </View>
 
-        {/* Card: Costs and Pricing */}
-        <View style={styles.box}>
-          <Text style={styles.secondaryTitle}>Precificação e Custos</Text>
-          <Text style={styles.boxHelperText}>
-            Parâmetros opcionais para cálculo automático de custos e precificação.
-          </Text>
-
-          <View style={styles.row}>
-            <View style={[styles.inputGroup, styles.flex1]}>
-              <Text style={styles.label}>Margem de Lucro (%)</Text>
-              <TextInput
-                style={styles.textInput}
-                placeholder="Ex: 30"
-                placeholderTextColor={theme.colors.placeholder}
-                keyboardType="numeric"
-                value={profitMargin}
-                onChangeText={setProfitMargin}
-              />
-            </View>
-
-            <View style={[styles.inputGroup, styles.flex1]}>
-              <Text style={styles.label}>Custos Fixos (%)</Text>
-              <TextInput
-                style={styles.textInput}
-                placeholder="Ex: 10"
-                placeholderTextColor={theme.colors.placeholder}
-                keyboardType="numeric"
-                value={overhead}
-                onChangeText={setOverhead}
-              />
-            </View>
-          </View>
-
-          <View style={styles.row}>
-            <View style={[styles.inputGroup, styles.flex1]}>
-              <Text style={styles.label}>Mão de Obra / Hora (R$)</Text>
-              <TextInput
-                style={styles.textInput}
-                placeholder="Ex: 20.00"
-                placeholderTextColor={theme.colors.placeholder}
-                keyboardType="numeric"
-                value={hourlyLabor}
-                onChangeText={setHourlyLabor}
-              />
-            </View>
-
-            <View style={[styles.inputGroup, styles.flex1]}>
-              <Text style={styles.label}>Custo de Embalagem (R$)</Text>
-              <TextInput
-                style={styles.textInput}
-                placeholder="Ex: 2.50"
-                placeholderTextColor={theme.colors.placeholder}
-                keyboardType="numeric"
-                value={packagingCost}
-                onChangeText={setPackagingCost}
-              />
-            </View>
-          </View>
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>URL da Imagem de Capa (opcional)</Text>
+          <TextInput
+            style={styles.textInput}
+            placeholder="https://exemplo.com/imagem.jpg"
+            placeholderTextColor={theme.colors.placeholder}
+            value={coverUrl}
+            onChangeText={setCoverUrl}
+            autoCapitalize="none"
+            keyboardType="url"
+          />
         </View>
 
-        {/* Card: Recipe Items (Ingredients & Sub-recipes) */}
-        <View style={styles.box}>
-          <View style={styles.boxHeaderRow}>
-            <Text style={styles.secondaryTitle}>Itens da Receita *</Text>
-            {(isLoadingIngredients || isLoadingUserRecipes) && (
-              <ActivityIndicator size="small" color={theme.colors.primary} />
-            )}
-          </View>
-          <Text style={styles.boxHelperText}>
-            Adicione os insumos necessários. Você pode incluir ingredientes do catálogo ou
-            sub-receitas já cadastradas.
-          </Text>
-
-          {items.map((item, index) => (
-            <View key={index} style={styles.ingredientCard}>
-              <View style={styles.ingredientCardHeader}>
-                <Text style={styles.ingredientIndexText}>Item #{index + 1}</Text>
-                {items.length > 1 && (
-                  <TouchableOpacity
-                    onPress={() => handleRemoveItem(index)}
-                    style={styles.removeBtn}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Remover item ${index + 1}`}
-                  >
-                    <MaterialCommunityIcons
-                      name="trash-can-outline"
-                      size={20}
-                      color={theme.colors.error}
-                    />
-                  </TouchableOpacity>
-                )}
-              </View>
-
-              {/* Item Type Toggle */}
-              <View style={styles.itemTypeRow}>
-                <TouchableOpacity
-                  style={[
-                    styles.itemTypeBtn,
-                    item.itemType === 'INGREDIENT' && styles.itemTypeBtnActive,
-                  ]}
-                  onPress={() => handleItemChange(index, 'itemType', 'INGREDIENT')}
-                  activeOpacity={0.8}
-                >
-                  <MaterialCommunityIcons
-                    name="food-apple-outline"
-                    size={16}
-                    color={
-                      item.itemType === 'INGREDIENT'
-                        ? theme.colors.onPrimary
-                        : theme.colors.onSurfaceVariant
-                    }
-                  />
-                  <Text
-                    style={[
-                      styles.itemTypeBtnText,
-                      item.itemType === 'INGREDIENT' && styles.itemTypeBtnTextActive,
-                    ]}
-                  >
-                    Ingrediente
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[
-                    styles.itemTypeBtn,
-                    item.itemType === 'SUB_RECIPE' && styles.itemTypeBtnActive,
-                  ]}
-                  onPress={() => handleItemChange(index, 'itemType', 'SUB_RECIPE')}
-                  activeOpacity={0.8}
-                >
-                  <MaterialCommunityIcons
-                    name="cake-variant-outline"
-                    size={16}
-                    color={
-                      item.itemType === 'SUB_RECIPE'
-                        ? theme.colors.onPrimary
-                        : theme.colors.onSurfaceVariant
-                    }
-                  />
-                  <Text
-                    style={[
-                      styles.itemTypeBtnText,
-                      item.itemType === 'SUB_RECIPE' && styles.itemTypeBtnTextActive,
-                    ]}
-                  >
-                    Sub-receita
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Ingredient or Sub-recipe Selection */}
-              {item.itemType === 'INGREDIENT' ? (
-                <View style={styles.inputGroup}>
-                  <IngredientSelector
-                    selectedIngredientId={item.ingredientId}
-                    onSelectIngredient={(selectedIng) => {
-                      handleItemChange(
-                        index,
-                        'ingredientId',
-                        selectedIng ? String(selectedIng.id) : '',
-                      );
-                      if (selectedIng?.baseUnit) {
-                        const matchedUnit = STANDARD_UNITS.find(
-                          (u) => u.value.toUpperCase() === selectedIng.baseUnit?.toUpperCase(),
-                        );
-                        if (matchedUnit) {
-                          handleItemChange(index, 'unit', matchedUnit.value);
-                        }
-                      }
-                    }}
-                    initialIngredients={availableIngredients}
-                    label="Ingrediente"
-                    placeholder="Buscar ingrediente (ex: Cacau)..."
-                    isRequired
-                    isDisabled={isSubmitting}
-                  />
-                </View>
-              ) : (
-                <View style={styles.inputGroup}>
-                  <RecipeSelector
-                    selectedRecipeId={item.subRecipeId}
-                    onSelectRecipe={(selectedRec) => {
-                      handleItemChange(index, 'subRecipeId', selectedRec ? selectedRec.id : '');
-                    }}
-                    userId={user?.id}
-                    onlyUserRecipes={true}
-                    excludeRecipeId={initialRecipe?.id}
-                    initialRecipes={userRecipes}
-                    label="Sub-receita"
-                    placeholder="Buscar sub-receita (ex: Brigadeiro)..."
-                    isRequired
-                    isDisabled={isSubmitting}
-                  />
-                </View>
-              )}
-
-              {/* Standard Quantity & Unit */}
-              <View style={styles.row}>
-                <View style={[styles.inputGroup, styles.flex1]}>
-                  <Text style={styles.label}>Quantidade Padrão *</Text>
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder="Ex: 250"
-                    placeholderTextColor={theme.colors.placeholder}
-                    keyboardType="numeric"
-                    value={item.quantity}
-                    onChangeText={(val) => handleItemChange(index, 'quantity', val)}
-                  />
-                </View>
-
-                <View style={[styles.inputGroup, styles.flex1]}>
-                  <Text style={styles.label}>Unidade Padrão *</Text>
-                  <View style={styles.pickerWrapper}>
-                    <Picker
-                      selectedValue={item.unit}
-                      onValueChange={(val) => handleItemChange(index, 'unit', val as StandardUnit)}
-                      style={styles.picker}
-                      dropdownIconColor={theme.colors.onSurface}
-                    >
-                      {STANDARD_UNITS.map((u) => (
-                        <Picker.Item key={u.value} label={u.label} value={u.value} />
-                      ))}
-                    </Picker>
-                  </View>
-                </View>
-              </View>
-
-              {/* Optional Empirical Display */}
-              <View style={styles.row}>
-                <View style={[styles.inputGroup, styles.flex1]}>
-                  <Text style={styles.label}>Qtd. Exibição (opcional)</Text>
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder="Ex: 2"
-                    placeholderTextColor={theme.colors.placeholder}
-                    keyboardType="numeric"
-                    value={item.displayQuantity}
-                    onChangeText={(val) => handleItemChange(index, 'displayQuantity', val)}
-                  />
-                </View>
-
-                <View style={[styles.inputGroup, styles.flex1]}>
-                  <Text style={styles.label}>Unidade Exibição (opcional)</Text>
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder="Ex: xícaras"
-                    placeholderTextColor={theme.colors.placeholder}
-                    value={item.displayUnit}
-                    onChangeText={(val) => handleItemChange(index, 'displayUnit', val)}
-                  />
-                </View>
-              </View>
-
-              {/* Notes */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Observações (opcional)</Text>
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Ex: peneirado"
-                  placeholderTextColor={theme.colors.placeholder}
-                  value={item.notes}
-                  onChangeText={(val) => handleItemChange(index, 'notes', val)}
-                />
-              </View>
-            </View>
-          ))}
-
-          <CustomButton variant="dashed" style={styles.addBtn} onPress={handleAddItem}>
-            <MaterialCommunityIcons name="plus" size={20} color={theme.colors.primary} />
-            <Text style={styles.addBtnText}>Adicionar Item</Text>
-          </CustomButton>
-        </View>
-
-        {/* Card: Preparation Steps */}
-        <View style={styles.box}>
-          <Text style={styles.secondaryTitle}>Modo de Preparo *</Text>
-          <Text style={styles.boxHelperText}>
-            Descreva as etapas ordenadas para preparar a receita com título e descrição.
-          </Text>
-
-          {steps.map((stepItem, index) => (
-            <View key={index} style={styles.stepContainer}>
-              <View style={styles.stepHeaderRow}>
-                <View style={styles.stepBadge}>
-                  <Text style={styles.stepText}>{index + 1}</Text>
-                </View>
-                <Text style={styles.stepLabel}>Etapa {index + 1}</Text>
-                {steps.length > 1 && (
-                  <TouchableOpacity
-                    onPress={() => handleRemoveStep(index)}
-                    style={styles.removeStepBtn}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Remover etapa ${index + 1}`}
-                  >
-                    <MaterialCommunityIcons
-                      name="trash-can-outline"
-                      size={20}
-                      color={theme.colors.error}
-                    />
-                  </TouchableOpacity>
-                )}
-              </View>
-
-              <View style={styles.stepInputGroup}>
-                <Text style={styles.stepInputSubLabel}>Título da Etapa (opcional)</Text>
-                <TextInput
-                  style={styles.stepTitleInput}
-                  placeholder="Ex: Preparo da Massa, Recheio..."
-                  placeholderTextColor={theme.colors.placeholder}
-                  value={stepItem.title}
-                  onChangeText={(val) => handleStepChange(index, 'title', val)}
-                />
-              </View>
-
-              <View style={styles.stepInputGroup}>
-                <Text style={styles.stepInputSubLabel}>Descrição da Etapa *</Text>
-                <TextInput
-                  style={styles.stepTextInput}
-                  placeholder={`Descreva a etapa ${index + 1}...`}
-                  placeholderTextColor={theme.colors.placeholder}
-                  multiline
-                  numberOfLines={3}
-                  value={stepItem.description}
-                  onChangeText={(val) => handleStepChange(index, 'description', val)}
-                />
-              </View>
-            </View>
-          ))}
-
-          <CustomButton variant="dashed" style={styles.addBtn} onPress={handleAddStep}>
-            <MaterialCommunityIcons name="plus" size={20} color={theme.colors.primary} />
-            <Text style={styles.addBtnText}>Adicionar Etapa</Text>
-          </CustomButton>
-        </View>
-
-        {/* Submit Button */}
-        <View style={styles.submitContainer}>
-          {isSubmitting ? (
-            <ActivityIndicator size="large" color={theme.colors.primary} />
-          ) : (
-            <CustomButton
-              title={resolvedButtonText}
-              variant="primary"
-              style={styles.submitBtn}
-              onPress={handleSubmit}
+        <View style={styles.row}>
+          <View style={[styles.inputGroup, styles.flex1]}>
+            <Text style={styles.label}>Rendimento Base *</Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Ex: 12"
+              placeholderTextColor={theme.colors.placeholder}
+              keyboardType="numeric"
+              value={baseYield}
+              onChangeText={setBaseYield}
             />
+          </View>
+
+          <View style={[styles.inputGroup, styles.flex1]}>
+            <Text style={styles.label}>Unidade Rendimento *</Text>
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={yieldUnit}
+                onValueChange={(val) => setYieldUnit(val as StandardUnit)}
+                style={styles.picker}
+                dropdownIconColor={theme.colors.onSurface}
+              >
+                {STANDARD_UNITS.map((u) => (
+                  <Picker.Item key={u.value} label={u.label} value={u.value} />
+                ))}
+              </Picker>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Tempo de Preparo (minutos)</Text>
+          <TextInput
+            style={styles.textInput}
+            placeholder="Ex: 45"
+            placeholderTextColor={theme.colors.placeholder}
+            keyboardType="numeric"
+            value={prepTimeMinutes}
+            onChangeText={setPrepTimeMinutes}
+          />
+        </View>
+      </View>
+
+      {/* Card: Tags Selection (up to 5 tags) */}
+      <View style={styles.box}>
+        <Text style={styles.secondaryTitle}>Categorização por Tags</Text>
+        <TagSelector
+          selectedTags={selectedTags}
+          onSelectedTagsChange={setSelectedTags}
+          maxTags={5}
+          isDisabled={isSubmitting}
+          shouldHideUserTags={true}
+        />
+      </View>
+
+      {/* Card: Costs and Pricing */}
+      <View style={styles.box}>
+        <Text style={styles.secondaryTitle}>Precificação e Custos</Text>
+        <Text style={styles.boxHelperText}>
+          Parâmetros opcionais para cálculo automático de custos e precificação.
+        </Text>
+
+        <View style={styles.row}>
+          <View style={[styles.inputGroup, styles.flex1]}>
+            <Text style={styles.label}>Margem de Lucro (%)</Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Ex: 30"
+              placeholderTextColor={theme.colors.placeholder}
+              keyboardType="numeric"
+              value={profitMargin}
+              onChangeText={setProfitMargin}
+            />
+          </View>
+
+          <View style={[styles.inputGroup, styles.flex1]}>
+            <Text style={styles.label}>Custos Fixos (%)</Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Ex: 10"
+              placeholderTextColor={theme.colors.placeholder}
+              keyboardType="numeric"
+              value={overhead}
+              onChangeText={setOverhead}
+            />
+          </View>
+        </View>
+
+        <View style={styles.row}>
+          <View style={[styles.inputGroup, styles.flex1]}>
+            <Text style={styles.label}>Mão de Obra / Hora (R$)</Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Ex: 20.00"
+              placeholderTextColor={theme.colors.placeholder}
+              keyboardType="numeric"
+              value={hourlyLabor}
+              onChangeText={setHourlyLabor}
+            />
+          </View>
+
+          <View style={[styles.inputGroup, styles.flex1]}>
+            <Text style={styles.label}>Custo de Embalagem (R$)</Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Ex: 2.50"
+              placeholderTextColor={theme.colors.placeholder}
+              keyboardType="numeric"
+              value={packagingCost}
+              onChangeText={setPackagingCost}
+            />
+          </View>
+        </View>
+      </View>
+
+      {/* Card: Recipe Items (Ingredients & Sub-recipes) */}
+      <View style={styles.box}>
+        <View style={styles.boxHeaderRow}>
+          <Text style={styles.secondaryTitle}>Itens da Receita *</Text>
+          {(isLoadingIngredients || isLoadingUserRecipes) && (
+            <ActivityIndicator size="small" color={theme.colors.primary} />
           )}
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        <Text style={styles.boxHelperText}>
+          Adicione os insumos necessários. Você pode incluir ingredientes do catálogo ou
+          sub-receitas já cadastradas.
+        </Text>
+
+        {items.map((item, index) => (
+          <View key={index} style={styles.ingredientCard}>
+            <View style={styles.ingredientCardHeader}>
+              <Text style={styles.ingredientIndexText}>Item #{index + 1}</Text>
+              {items.length > 1 && (
+                <TouchableOpacity
+                  onPress={() => handleRemoveItem(index)}
+                  style={styles.removeBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Remover item ${index + 1}`}
+                >
+                  <MaterialCommunityIcons
+                    name="trash-can-outline"
+                    size={20}
+                    color={theme.colors.error}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Item Type Toggle */}
+            <View style={styles.itemTypeRow}>
+              <TouchableOpacity
+                style={[
+                  styles.itemTypeBtn,
+                  item.itemType === 'INGREDIENT' && styles.itemTypeBtnActive,
+                ]}
+                onPress={() => handleItemChange(index, 'itemType', 'INGREDIENT')}
+                activeOpacity={0.8}
+              >
+                <MaterialCommunityIcons
+                  name="food-apple-outline"
+                  size={16}
+                  color={
+                    item.itemType === 'INGREDIENT'
+                      ? theme.colors.onPrimary
+                      : theme.colors.onSurfaceVariant
+                  }
+                />
+                <Text
+                  style={[
+                    styles.itemTypeBtnText,
+                    item.itemType === 'INGREDIENT' && styles.itemTypeBtnTextActive,
+                  ]}
+                >
+                  Ingrediente
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.itemTypeBtn,
+                  item.itemType === 'SUB_RECIPE' && styles.itemTypeBtnActive,
+                ]}
+                onPress={() => handleItemChange(index, 'itemType', 'SUB_RECIPE')}
+                activeOpacity={0.8}
+              >
+                <MaterialCommunityIcons
+                  name="cake-variant-outline"
+                  size={16}
+                  color={
+                    item.itemType === 'SUB_RECIPE'
+                      ? theme.colors.onPrimary
+                      : theme.colors.onSurfaceVariant
+                  }
+                />
+                <Text
+                  style={[
+                    styles.itemTypeBtnText,
+                    item.itemType === 'SUB_RECIPE' && styles.itemTypeBtnTextActive,
+                  ]}
+                >
+                  Sub-receita
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Ingredient or Sub-recipe Selection */}
+            {item.itemType === 'INGREDIENT' ? (
+              <View style={styles.inputGroup}>
+                <IngredientSelector
+                  selectedIngredientId={item.ingredientId}
+                  onSelectIngredient={(selectedIng) => {
+                    handleItemChange(
+                      index,
+                      'ingredientId',
+                      selectedIng ? String(selectedIng.id) : '',
+                    );
+                    if (selectedIng?.baseUnit) {
+                      const matchedUnit = STANDARD_UNITS.find(
+                        (u) => u.value.toUpperCase() === selectedIng.baseUnit?.toUpperCase(),
+                      );
+                      if (matchedUnit) {
+                        handleItemChange(index, 'unit', matchedUnit.value);
+                      }
+                    }
+                  }}
+                  initialIngredients={availableIngredients}
+                  label="Ingrediente"
+                  placeholder="Buscar ingrediente (ex: Cacau)..."
+                  isRequired
+                  isDisabled={isSubmitting}
+                />
+              </View>
+            ) : (
+              <View style={styles.inputGroup}>
+                <RecipeSelector
+                  selectedRecipeId={item.subRecipeId}
+                  onSelectRecipe={(selectedRec) => {
+                    handleItemChange(index, 'subRecipeId', selectedRec ? selectedRec.id : '');
+                  }}
+                  userId={user?.id}
+                  onlyUserRecipes={true}
+                  excludeRecipeId={initialRecipe?.id}
+                  initialRecipes={userRecipes}
+                  label="Sub-receita"
+                  placeholder="Buscar sub-receita (ex: Brigadeiro)..."
+                  isRequired
+                  isDisabled={isSubmitting}
+                />
+              </View>
+            )}
+
+            {/* Standard Quantity & Unit */}
+            <View style={styles.row}>
+              <View style={[styles.inputGroup, styles.flex1]}>
+                <Text style={styles.label}>Quantidade Padrão *</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Ex: 250"
+                  placeholderTextColor={theme.colors.placeholder}
+                  keyboardType="numeric"
+                  value={item.quantity}
+                  onChangeText={(val) => handleItemChange(index, 'quantity', val)}
+                />
+              </View>
+
+              <View style={[styles.inputGroup, styles.flex1]}>
+                <Text style={styles.label}>Unidade Padrão *</Text>
+                <View style={styles.pickerWrapper}>
+                  <Picker
+                    selectedValue={item.unit}
+                    onValueChange={(val) => handleItemChange(index, 'unit', val as StandardUnit)}
+                    style={styles.picker}
+                    dropdownIconColor={theme.colors.onSurface}
+                  >
+                    {STANDARD_UNITS.map((u) => (
+                      <Picker.Item key={u.value} label={u.label} value={u.value} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+            </View>
+
+            {/* Optional Empirical Display */}
+            <View style={styles.row}>
+              <View style={[styles.inputGroup, styles.flex1]}>
+                <Text style={styles.label}>Qtd. Exibição (opcional)</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Ex: 2"
+                  placeholderTextColor={theme.colors.placeholder}
+                  keyboardType="numeric"
+                  value={item.displayQuantity}
+                  onChangeText={(val) => handleItemChange(index, 'displayQuantity', val)}
+                />
+              </View>
+
+              <View style={[styles.inputGroup, styles.flex1]}>
+                <Text style={styles.label}>Unidade Exibição (opcional)</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Ex: xícaras"
+                  placeholderTextColor={theme.colors.placeholder}
+                  value={item.displayUnit}
+                  onChangeText={(val) => handleItemChange(index, 'displayUnit', val)}
+                />
+              </View>
+            </View>
+
+            {/* Notes */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Observações (opcional)</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Ex: peneirado"
+                placeholderTextColor={theme.colors.placeholder}
+                value={item.notes}
+                onChangeText={(val) => handleItemChange(index, 'notes', val)}
+              />
+            </View>
+          </View>
+        ))}
+
+        <CustomButton variant="dashed" style={styles.addBtn} onPress={handleAddItem}>
+          <MaterialCommunityIcons name="plus" size={20} color={theme.colors.primary} />
+          <Text style={styles.addBtnText}>Adicionar Item</Text>
+        </CustomButton>
+      </View>
+
+      {/* Card: Preparation Steps */}
+      <View style={styles.box}>
+        <Text style={styles.secondaryTitle}>Modo de Preparo *</Text>
+        <Text style={styles.boxHelperText}>
+          Descreva as etapas ordenadas para preparar a receita com título e descrição.
+        </Text>
+
+        {steps.map((stepItem, index) => (
+          <View key={index} style={styles.stepContainer}>
+            <View style={styles.stepHeaderRow}>
+              <View style={styles.stepBadge}>
+                <Text style={styles.stepText}>{index + 1}</Text>
+              </View>
+              <Text style={styles.stepLabel}>Etapa {index + 1}</Text>
+              {steps.length > 1 && (
+                <TouchableOpacity
+                  onPress={() => handleRemoveStep(index)}
+                  style={styles.removeStepBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Remover etapa ${index + 1}`}
+                >
+                  <MaterialCommunityIcons
+                    name="trash-can-outline"
+                    size={20}
+                    color={theme.colors.error}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            <View style={styles.stepInputGroup}>
+              <Text style={styles.stepInputSubLabel}>Título da Etapa (opcional)</Text>
+              <TextInput
+                style={styles.stepTitleInput}
+                placeholder="Ex: Preparo da Massa, Recheio..."
+                placeholderTextColor={theme.colors.placeholder}
+                value={stepItem.title}
+                onChangeText={(val) => handleStepChange(index, 'title', val)}
+              />
+            </View>
+
+            <View style={styles.stepInputGroup}>
+              <Text style={styles.stepInputSubLabel}>Descrição da Etapa *</Text>
+              <TextInput
+                style={styles.stepTextInput}
+                placeholder={`Descreva a etapa ${index + 1}...`}
+                placeholderTextColor={theme.colors.placeholder}
+                multiline
+                numberOfLines={3}
+                value={stepItem.description}
+                onChangeText={(val) => handleStepChange(index, 'description', val)}
+              />
+            </View>
+          </View>
+        ))}
+
+        <CustomButton variant="dashed" style={styles.addBtn} onPress={handleAddStep}>
+          <MaterialCommunityIcons name="plus" size={20} color={theme.colors.primary} />
+          <Text style={styles.addBtnText}>Adicionar Etapa</Text>
+        </CustomButton>
+      </View>
+
+      {/* Submit Button */}
+      <View style={styles.submitContainer}>
+        {isSubmitting ? (
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        ) : (
+          <CustomButton
+            title={resolvedButtonText}
+            variant="primary"
+            style={styles.submitBtn}
+            onPress={handleSubmit}
+          />
+        )}
+      </View>
+    </KeyboardAwareScrollView>
   );
 }
 
@@ -842,9 +835,6 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
-    },
-    scrollView: {
-      flex: 1,
     },
     scrollContent: {
       paddingHorizontal: 20,

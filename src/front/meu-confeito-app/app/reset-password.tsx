@@ -1,19 +1,10 @@
 import { useMemo, useState } from 'react';
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  useWindowDimensions,
-} from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 
 import { Stack, router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { ActivityIndicator } from 'react-native-paper';
 
 import { CustomButton, Input } from '@/src/components';
@@ -138,190 +129,182 @@ export default function ResetPasswordScreen() {
     <>
       <Stack.Screen options={{ title: 'Alterar Senha' }} />
 
-      <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      <KeyboardAwareScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        bottomOffset={64}
       >
-        <ScrollView
-          style={styles.container}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.contentWrapper}>
-            {/* Header / Brand Stamp */}
-            <View style={styles.headerBlock}>
-              <View style={styles.iconCircle}>
-                <MaterialCommunityIcons name="lock-reset" size={28} color={theme.colors.primary} />
-              </View>
-              <Text style={styles.title}>Redefinir Senha de Acesso</Text>
-              <Text style={styles.subtitle}>
-                Escolha uma senha forte de pelo menos 8 caracteres para manter sua conta e receitas
-                sempre protegidas.
-              </Text>
+        <View style={styles.contentWrapper}>
+          {/* Header / Brand Stamp */}
+          <View style={styles.headerBlock}>
+            <View style={styles.iconCircle}>
+              <MaterialCommunityIcons name="lock-reset" size={28} color={theme.colors.primary} />
+            </View>
+            <Text style={styles.title}>Redefinir Senha de Acesso</Text>
+            <Text style={styles.subtitle}>
+              Escolha uma senha forte de pelo menos 8 caracteres para manter sua conta e receitas
+              sempre protegidas.
+            </Text>
+          </View>
+
+          {/* Form Card */}
+          <View style={styles.formCard}>
+            {/* Old Password */}
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Senha Atual *</Text>
+              <Input
+                placeholder="Digite sua senha atual"
+                secureTextEntry
+                value={oldPassword}
+                onChangeText={(val) => {
+                  setOldPassword(val);
+                  if (!touched.oldPassword) {
+                    setTouched((prev) => ({ ...prev, oldPassword: true }));
+                  }
+                }}
+                containerStyle={[
+                  styles.inputContainer,
+                  Boolean(oldPasswordError) && styles.inputError,
+                ]}
+                leftIcon={
+                  <MaterialCommunityIcons
+                    name="lock-outline"
+                    size={20}
+                    color={theme.colors.placeholder}
+                  />
+                }
+              />
+              {oldPasswordError ? <Text style={styles.errorText}>{oldPasswordError}</Text> : null}
             </View>
 
-            {/* Form Card */}
-            <View style={styles.formCard}>
-              {/* Old Password */}
-              <View style={styles.fieldGroup}>
-                <Text style={styles.label}>Senha Atual *</Text>
-                <Input
-                  placeholder="Digite sua senha atual"
-                  secureTextEntry
-                  value={oldPassword}
-                  onChangeText={(val) => {
-                    setOldPassword(val);
-                    if (!touched.oldPassword) {
-                      setTouched((prev) => ({ ...prev, oldPassword: true }));
-                    }
-                  }}
-                  containerStyle={[
-                    styles.inputContainer,
-                    Boolean(oldPasswordError) && styles.inputError,
-                  ]}
-                  leftIcon={
-                    <MaterialCommunityIcons
-                      name="lock-outline"
-                      size={20}
-                      color={theme.colors.placeholder}
-                    />
+            {/* New Password */}
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Nova Senha *</Text>
+              <Input
+                placeholder="Digite a nova senha (mínimo 8 caracteres)"
+                secureTextEntry
+                value={newPassword}
+                onChangeText={(val) => {
+                  setNewPassword(val);
+                  if (!touched.newPassword) {
+                    setTouched((prev) => ({ ...prev, newPassword: true }));
                   }
-                />
-                {oldPasswordError ? <Text style={styles.errorText}>{oldPasswordError}</Text> : null}
-              </View>
+                }}
+                containerStyle={[
+                  styles.inputContainer,
+                  Boolean(newPasswordError) && styles.inputError,
+                ]}
+                leftIcon={
+                  <MaterialCommunityIcons
+                    name="lock-plus-outline"
+                    size={20}
+                    color={theme.colors.placeholder}
+                  />
+                }
+              />
+              {newPasswordError ? <Text style={styles.errorText}>{newPasswordError}</Text> : null}
+            </View>
 
-              {/* New Password */}
-              <View style={styles.fieldGroup}>
-                <Text style={styles.label}>Nova Senha *</Text>
-                <Input
-                  placeholder="Digite a nova senha (mínimo 8 caracteres)"
-                  secureTextEntry
-                  value={newPassword}
-                  onChangeText={(val) => {
-                    setNewPassword(val);
-                    if (!touched.newPassword) {
-                      setTouched((prev) => ({ ...prev, newPassword: true }));
-                    }
-                  }}
-                  containerStyle={[
-                    styles.inputContainer,
-                    Boolean(newPasswordError) && styles.inputError,
-                  ]}
-                  leftIcon={
-                    <MaterialCommunityIcons
-                      name="lock-plus-outline"
-                      size={20}
-                      color={theme.colors.placeholder}
-                    />
+            {/* Confirm Password */}
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Confirmar Nova Senha *</Text>
+              <Input
+                placeholder="Repita a nova senha para confirmação"
+                secureTextEntry
+                value={confirmPassword}
+                onChangeText={(val) => {
+                  setConfirmPassword(val);
+                  if (!touched.confirmPassword) {
+                    setTouched((prev) => ({ ...prev, confirmPassword: true }));
                   }
+                }}
+                containerStyle={[
+                  styles.inputContainer,
+                  Boolean(confirmPasswordError) && styles.inputError,
+                ]}
+                leftIcon={
+                  <MaterialCommunityIcons
+                    name="lock-check-outline"
+                    size={20}
+                    color={theme.colors.placeholder}
+                  />
+                }
+              />
+              {confirmPasswordError ? (
+                <Text style={styles.errorText}>{confirmPasswordError}</Text>
+              ) : null}
+            </View>
+
+            {/* Requirements checklist */}
+            <View style={styles.requirementsBox}>
+              <Text style={styles.requirementsTitle}>Requisitos da nova senha:</Text>
+              <View style={styles.reqItemRow}>
+                <MaterialCommunityIcons
+                  name={isNewPasswordValid ? 'check-circle' : 'circle-outline'}
+                  size={16}
+                  color={isNewPasswordValid ? theme.colors.tertiary : theme.colors.placeholder}
                 />
-                {newPasswordError ? <Text style={styles.errorText}>{newPasswordError}</Text> : null}
+                <Text style={[styles.reqItemText, isNewPasswordValid && styles.reqItemTextMet]}>
+                  Pelo menos 8 caracteres
+                </Text>
               </View>
-
-              {/* Confirm Password */}
-              <View style={styles.fieldGroup}>
-                <Text style={styles.label}>Confirmar Nova Senha *</Text>
-                <Input
-                  placeholder="Repita a nova senha para confirmação"
-                  secureTextEntry
-                  value={confirmPassword}
-                  onChangeText={(val) => {
-                    setConfirmPassword(val);
-                    if (!touched.confirmPassword) {
-                      setTouched((prev) => ({ ...prev, confirmPassword: true }));
-                    }
-                  }}
-                  containerStyle={[
-                    styles.inputContainer,
-                    Boolean(confirmPasswordError) && styles.inputError,
-                  ]}
-                  leftIcon={
-                    <MaterialCommunityIcons
-                      name="lock-check-outline"
-                      size={20}
-                      color={theme.colors.placeholder}
-                    />
-                  }
+              <View style={styles.reqItemRow}>
+                <MaterialCommunityIcons
+                  name={isDifferentFromOld ? 'check-circle' : 'circle-outline'}
+                  size={16}
+                  color={isDifferentFromOld ? theme.colors.tertiary : theme.colors.placeholder}
                 />
-                {confirmPasswordError ? (
-                  <Text style={styles.errorText}>{confirmPasswordError}</Text>
-                ) : null}
+                <Text style={[styles.reqItemText, isDifferentFromOld && styles.reqItemTextMet]}>
+                  Diferente da senha atual
+                </Text>
               </View>
+              <View style={styles.reqItemRow}>
+                <MaterialCommunityIcons
+                  name={isConfirmValid ? 'check-circle' : 'circle-outline'}
+                  size={16}
+                  color={isConfirmValid ? theme.colors.tertiary : theme.colors.placeholder}
+                />
+                <Text style={[styles.reqItemText, isConfirmValid && styles.reqItemTextMet]}>
+                  Confirmação idêntica à nova senha
+                </Text>
+              </View>
+            </View>
 
-              {/* Requirements checklist */}
-              <View style={styles.requirementsBox}>
-                <Text style={styles.requirementsTitle}>Requisitos da nova senha:</Text>
-                <View style={styles.reqItemRow}>
-                  <MaterialCommunityIcons
-                    name={isNewPasswordValid ? 'check-circle' : 'circle-outline'}
-                    size={16}
-                    color={isNewPasswordValid ? theme.colors.tertiary : theme.colors.placeholder}
+            {/* Submit & Cancel Actions */}
+            <View style={styles.actionsContainer}>
+              {isLoading ? (
+                <ActivityIndicator size="large" color={theme.colors.primary} />
+              ) : (
+                <>
+                  <CustomButton
+                    title="Salvar Nova Senha"
+                    variant="primary"
+                    style={styles.submitBtn}
+                    onPress={handleSubmit}
                   />
-                  <Text style={[styles.reqItemText, isNewPasswordValid && styles.reqItemTextMet]}>
-                    Pelo menos 8 caracteres
-                  </Text>
-                </View>
-                <View style={styles.reqItemRow}>
-                  <MaterialCommunityIcons
-                    name={isDifferentFromOld ? 'check-circle' : 'circle-outline'}
-                    size={16}
-                    color={isDifferentFromOld ? theme.colors.tertiary : theme.colors.placeholder}
-                  />
-                  <Text style={[styles.reqItemText, isDifferentFromOld && styles.reqItemTextMet]}>
-                    Diferente da senha atual
-                  </Text>
-                </View>
-                <View style={styles.reqItemRow}>
-                  <MaterialCommunityIcons
-                    name={isConfirmValid ? 'check-circle' : 'circle-outline'}
-                    size={16}
-                    color={isConfirmValid ? theme.colors.tertiary : theme.colors.placeholder}
-                  />
-                  <Text style={[styles.reqItemText, isConfirmValid && styles.reqItemTextMet]}>
-                    Confirmação idêntica à nova senha
-                  </Text>
-                </View>
-              </View>
-
-              {/* Submit & Cancel Actions */}
-              <View style={styles.actionsContainer}>
-                {isLoading ? (
-                  <ActivityIndicator size="large" color={theme.colors.primary} />
-                ) : (
-                  <>
-                    <CustomButton
-                      title="Salvar Nova Senha"
-                      variant="primary"
-                      style={styles.submitBtn}
-                      onPress={handleSubmit}
-                    />
-                    <TouchableOpacity
-                      style={styles.cancelBtn}
-                      onPress={() => router.back()}
-                      activeOpacity={0.7}
-                      accessibilityRole="button"
-                      accessibilityLabel="Cancelar alteração de senha"
-                    >
-                      <Text style={styles.cancelBtnText}>Cancelar</Text>
-                    </TouchableOpacity>
-                  </>
-                )}
-              </View>
+                  <TouchableOpacity
+                    style={styles.cancelBtn}
+                    onPress={() => router.back()}
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel="Cancelar alteração de senha"
+                  >
+                    <Text style={styles.cancelBtnText}>Cancelar</Text>
+                  </TouchableOpacity>
+                </>
+              )}
             </View>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </View>
+      </KeyboardAwareScrollView>
     </>
   );
 }
 
 const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
   StyleSheet.create({
-    keyboardView: {
-      flex: 1,
-      backgroundColor: theme.colors.background,
-    },
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,

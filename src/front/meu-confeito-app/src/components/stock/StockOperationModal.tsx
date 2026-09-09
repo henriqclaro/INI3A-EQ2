@@ -2,10 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -14,6 +11,7 @@ import {
 } from 'react-native';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { KeyboardAvoidingView, KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
@@ -188,10 +186,7 @@ const StockOperationModalForm = ({
 
   return (
     <View style={styles.overlay}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.avoidContainer}
-      >
+      <KeyboardAvoidingView behavior="padding" automaticOffset style={styles.avoidContainer}>
         <View style={styles.modalCard}>
           {/* Modal Header */}
           <View style={styles.header}>
@@ -266,10 +261,11 @@ const StockOperationModalForm = ({
             </TouchableOpacity>
           </View>
 
-          <ScrollView
+          <KeyboardAwareScrollView
             style={styles.scrollArea}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
+            bottomOffset={24}
           >
             {/* TAB 1: ADJUSTMENT */}
             {isAdjustMode && (
@@ -452,7 +448,7 @@ const StockOperationModalForm = ({
                 </View>
               </View>
             )}
-          </ScrollView>
+          </KeyboardAwareScrollView>
 
           {/* Modal Actions */}
           <View style={styles.footerActions}>

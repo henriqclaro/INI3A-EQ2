@@ -2,10 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -14,6 +11,7 @@ import {
 } from 'react-native';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { KeyboardAvoidingView, KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useRegisterProduction } from '@/src/hooks/useProductions';
@@ -107,10 +105,7 @@ function ProduceRecipeModalContent({ recipe, onClose, onSuccess }: ProduceRecipe
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.modalOverlay}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoidingView style={styles.modalOverlay} behavior="padding" automaticOffset>
       <View style={styles.modalContent}>
         <View style={styles.modalHeader}>
           <View style={styles.modalHeaderTitleGroup}>
@@ -129,10 +124,11 @@ function ProduceRecipeModalContent({ recipe, onClose, onSuccess }: ProduceRecipe
           </TouchableOpacity>
         </View>
 
-        <ScrollView
+        <KeyboardAwareScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          bottomOffset={24}
         >
           <View style={styles.recipeBanner}>
             <Text style={styles.recipeBannerTitle}>{recipe.title}</Text>
@@ -192,7 +188,7 @@ function ProduceRecipeModalContent({ recipe, onClose, onSuccess }: ProduceRecipe
               </Text>
             </View>
           </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
 
         <View style={styles.buttonRow}>
           <TouchableOpacity

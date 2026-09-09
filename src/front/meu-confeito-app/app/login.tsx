@@ -1,20 +1,12 @@
 import { useMemo, useState } from 'react';
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import * as Crypto from 'expo-crypto';
 import { Image } from 'expo-image';
 import { Link, Stack, router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { ActivityIndicator } from 'react-native-paper';
 
 import { CustomButton, Input } from '@/src/components';
@@ -85,161 +77,156 @@ export default function LogInScreen() {
     <>
       <Stack.Screen options={{ title: 'Login' }} />
 
-      <KeyboardAvoidingView
+      <KeyboardAwareScrollView
         style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        bottomOffset={64}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-          automaticallyAdjustKeyboardInsets
-        >
-          <View style={styles.card}>
-            {/* Header section */}
-            <View style={styles.headerArea}>
-              <Image
-                source={
-                  isDarkMode
-                    ? require('@/assets/images/logo-dark.png')
-                    : require('@/assets/images/logo-light.png')
-                }
-                style={styles.logo}
-                contentFit="contain"
-              />
-              <Text style={styles.headline}>Entrar</Text>
-              <Text style={styles.subheadline}>
-                Digite seus dados de acesso para entrar na sua conta
+        <View style={styles.card}>
+          {/* Header section */}
+          <View style={styles.headerArea}>
+            <Image
+              source={
+                isDarkMode
+                  ? require('@/assets/images/logo-dark.png')
+                  : require('@/assets/images/logo-light.png')
+              }
+              style={styles.logo}
+              contentFit="contain"
+            />
+            <Text style={styles.headline}>Entrar</Text>
+            <Text style={styles.subheadline}>
+              Digite seus dados de acesso para entrar na sua conta
+            </Text>
+          </View>
+
+          {/* Email input field */}
+          <View style={styles.fieldWrapper}>
+            <View style={styles.labelRow}>
+              <Text style={styles.label}>
+                E-mail <Text style={styles.required}>*</Text>
               </Text>
-            </View>
-
-            {/* Email input field */}
-            <View style={styles.fieldWrapper}>
-              <View style={styles.labelRow}>
-                <Text style={styles.label}>
-                  E-mail <Text style={styles.required}>*</Text>
-                </Text>
-                {touched.email && isEmailFormatValid && (
-                  <MaterialCommunityIcons
-                    name="check-circle-outline"
-                    size={16}
-                    color={theme.colors.tertiary}
-                  />
-                )}
-              </View>
-              <Input
-                value={email}
-                placeholder="exemplo@email.com"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                onChangeText={setEmail}
-                onBlur={() => setTouched((prev) => ({ ...prev, email: true }))}
-                containerStyle={[
-                  styles.inputContainer,
-                  !!emailError && styles.inputError,
-                  touched.email && !emailError && isEmailFormatValid && styles.inputSuccess,
-                ]}
-                style={styles.inputText}
-                placeholderTextColor={theme.colors.placeholder}
-              />
-              <View style={styles.helperRow}>
-                {emailError ? (
-                  <>
-                    <MaterialCommunityIcons
-                      name="alert-circle-outline"
-                      size={14}
-                      color={theme.colors.error}
-                      style={styles.helperIcon}
-                    />
-                    <Text style={styles.errorText}>{emailError}</Text>
-                  </>
-                ) : (
-                  <Text style={styles.helperText}>Seu e-mail cadastrado</Text>
-                )}
-              </View>
-            </View>
-
-            {/* Password input field */}
-            <View style={styles.fieldWrapper}>
-              <View style={styles.labelRow}>
-                <Text style={styles.label}>
-                  Senha <Text style={styles.required}>*</Text>
-                </Text>
-                {touched.password && !passwordError && password.length >= 8 && (
-                  <MaterialCommunityIcons
-                    name="check-circle-outline"
-                    size={16}
-                    color={theme.colors.tertiary}
-                  />
-                )}
-              </View>
-              <Input
-                value={password}
-                placeholder="Digite sua senha"
-                secureTextEntry
-                autoCapitalize="none"
-                onChangeText={setPassword}
-                onBlur={() => setTouched((prev) => ({ ...prev, password: true }))}
-                containerStyle={[
-                  styles.inputContainer,
-                  !!passwordError && styles.inputError,
-                  touched.password && !passwordError && password.length >= 8 && styles.inputSuccess,
-                ]}
-                style={[styles.inputText, styles.passwordInput]}
-                placeholderTextColor={theme.colors.placeholder}
-              />
-              <View style={styles.helperRow}>
-                {passwordError ? (
-                  <>
-                    <MaterialCommunityIcons
-                      name="alert-circle-outline"
-                      size={14}
-                      color={theme.colors.error}
-                      style={styles.helperIcon}
-                    />
-                    <Text style={styles.errorText}>{passwordError}</Text>
-                  </>
-                ) : (
-                  <Text style={styles.helperText}>Sua senha de acesso</Text>
-                )}
-              </View>
-            </View>
-
-            {/* Forgot password */}
-            <View style={styles.forgotRow}>
-              <Link href="/" asChild>
-                <TouchableOpacity activeOpacity={0.7}>
-                  <Text style={styles.forgotText}>Esqueci a Senha</Text>
-                </TouchableOpacity>
-              </Link>
-            </View>
-
-            {/* Action buttons */}
-            <View style={styles.btnActionContainer}>
-              {isLoading ? (
-                <ActivityIndicator size="large" color={theme.colors.primary} />
-              ) : (
-                <CustomButton
-                  title="Entrar"
-                  variant="primary"
-                  style={styles.button}
-                  onPress={handleLogIn}
+              {touched.email && isEmailFormatValid && (
+                <MaterialCommunityIcons
+                  name="check-circle-outline"
+                  size={16}
+                  color={theme.colors.tertiary}
                 />
               )}
-
-              <Text style={styles.txtRegister}>
-                Ainda não tem uma conta?{' '}
-                <Link href="/register" asChild>
-                  <Text style={styles.linkRegister}>Cadastre-se</Text>
-                </Link>
-              </Text>
+            </View>
+            <Input
+              value={email}
+              placeholder="exemplo@email.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              onChangeText={setEmail}
+              onBlur={() => setTouched((prev) => ({ ...prev, email: true }))}
+              containerStyle={[
+                styles.inputContainer,
+                !!emailError && styles.inputError,
+                touched.email && !emailError && isEmailFormatValid && styles.inputSuccess,
+              ]}
+              style={styles.inputText}
+              placeholderTextColor={theme.colors.placeholder}
+            />
+            <View style={styles.helperRow}>
+              {emailError ? (
+                <>
+                  <MaterialCommunityIcons
+                    name="alert-circle-outline"
+                    size={14}
+                    color={theme.colors.error}
+                    style={styles.helperIcon}
+                  />
+                  <Text style={styles.errorText}>{emailError}</Text>
+                </>
+              ) : (
+                <Text style={styles.helperText}>Seu e-mail cadastrado</Text>
+              )}
             </View>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+
+          {/* Password input field */}
+          <View style={styles.fieldWrapper}>
+            <View style={styles.labelRow}>
+              <Text style={styles.label}>
+                Senha <Text style={styles.required}>*</Text>
+              </Text>
+              {touched.password && !passwordError && password.length >= 8 && (
+                <MaterialCommunityIcons
+                  name="check-circle-outline"
+                  size={16}
+                  color={theme.colors.tertiary}
+                />
+              )}
+            </View>
+            <Input
+              value={password}
+              placeholder="Digite sua senha"
+              secureTextEntry
+              autoCapitalize="none"
+              onChangeText={setPassword}
+              onBlur={() => setTouched((prev) => ({ ...prev, password: true }))}
+              containerStyle={[
+                styles.inputContainer,
+                !!passwordError && styles.inputError,
+                touched.password && !passwordError && password.length >= 8 && styles.inputSuccess,
+              ]}
+              style={[styles.inputText, styles.passwordInput]}
+              placeholderTextColor={theme.colors.placeholder}
+            />
+            <View style={styles.helperRow}>
+              {passwordError ? (
+                <>
+                  <MaterialCommunityIcons
+                    name="alert-circle-outline"
+                    size={14}
+                    color={theme.colors.error}
+                    style={styles.helperIcon}
+                  />
+                  <Text style={styles.errorText}>{passwordError}</Text>
+                </>
+              ) : (
+                <Text style={styles.helperText}>Sua senha de acesso</Text>
+              )}
+            </View>
+          </View>
+
+          {/* Forgot password */}
+          <View style={styles.forgotRow}>
+            <Link href="/" asChild>
+              <TouchableOpacity activeOpacity={0.7}>
+                <Text style={styles.forgotText}>Esqueci a Senha</Text>
+              </TouchableOpacity>
+            </Link>
+          </View>
+
+          {/* Action buttons */}
+          <View style={styles.btnActionContainer}>
+            {isLoading ? (
+              <ActivityIndicator size="large" color={theme.colors.primary} />
+            ) : (
+              <CustomButton
+                title="Entrar"
+                variant="primary"
+                style={styles.button}
+                onPress={handleLogIn}
+              />
+            )}
+
+            <Text style={styles.txtRegister}>
+              Ainda não tem uma conta?{' '}
+              <Link href="/register" asChild>
+                <Text style={styles.linkRegister}>Cadastre-se</Text>
+              </Link>
+            </Text>
+          </View>
+        </View>
+      </KeyboardAwareScrollView>
     </>
   );
 }

@@ -1,17 +1,8 @@
 import { useMemo, useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { KeyboardAvoidingView, KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { RecipeSelector } from '@/src/components/RecipeSelector';
 import { useAuth } from '@/src/contexts/AuthContext';
@@ -85,10 +76,7 @@ export function AddPlannedRecipeModal({
 
   return (
     <Modal visible={isVisible} animationType="fade" transparent onRequestClose={handleCancel}>
-      <KeyboardAvoidingView
-        style={styles.modalOverlay}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+      <KeyboardAvoidingView style={styles.modalOverlay} behavior="padding" automaticOffset>
         <View style={styles.modalContent}>
           {/* Header */}
           <View style={styles.modalHeader}>
@@ -111,10 +99,11 @@ export function AddPlannedRecipeModal({
             </TouchableOpacity>
           </View>
 
-          <ScrollView
+          <KeyboardAwareScrollView
             contentContainerStyle={styles.scrollBody}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
+            bottomOffset={24}
           >
             <Text style={styles.modalSubtitle}>
               Selecione uma das suas receitas e informe o rendimento que você planeja produzir.
@@ -188,7 +177,7 @@ export function AddPlannedRecipeModal({
                 </View>
               </View>
             )}
-          </ScrollView>
+          </KeyboardAwareScrollView>
 
           {/* Footer Actions */}
           <View style={styles.modalFooter}>

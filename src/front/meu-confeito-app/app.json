@@ -20,7 +20,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.meuconfeitoapp"
+      "package": "com.anonymous.meuconfeitoapp",
+      "softwareKeyboardLayoutMode": "pan"
     },
     "web": {
       "output": "static",
