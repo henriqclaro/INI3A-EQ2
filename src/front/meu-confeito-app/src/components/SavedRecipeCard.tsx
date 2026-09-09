@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   GestureResponderEvent,
@@ -24,12 +24,12 @@ interface SavedRecipeCardProps {
   isRemoving?: boolean;
 }
 
-export const SavedRecipeCard = ({
+export const SavedRecipeCard = memo(function SavedRecipeCard({
   item,
   onPress,
   onRemove,
   isRemoving = false,
-}: SavedRecipeCardProps) => {
+}: SavedRecipeCardProps) {
   const { theme } = useThemeMode();
   const [hasImageError, setHasImageError] = useState(false);
 
@@ -85,6 +85,9 @@ export const SavedRecipeCard = ({
             source={{ uri: item.recipe.coverUrl! }}
             style={styles.image}
             contentFit="cover"
+            cachePolicy="memory-disk"
+            recyclingKey={item.recipe.coverUrl!}
+            transition={150}
             onError={() => setHasImageError(true)}
           />
         ) : (
@@ -180,7 +183,7 @@ export const SavedRecipeCard = ({
       </View>
     </TouchableOpacity>
   );
-};
+});
 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({

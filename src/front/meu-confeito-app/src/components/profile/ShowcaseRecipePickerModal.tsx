@@ -168,6 +168,9 @@ export function ShowcaseRecipePickerModal({
                         source={{ uri: recipe.coverUrl! }}
                         style={styles.recipeImage}
                         contentFit="cover"
+                        cachePolicy="memory-disk"
+                        recyclingKey={recipe.coverUrl!}
+                        transition={150}
                       />
                     ) : (
                       <View style={[styles.recipeImage, styles.recipePlaceholder]}>

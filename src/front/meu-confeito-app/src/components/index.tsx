@@ -38,7 +38,9 @@ export {
   SettingsSection,
   ThemeToggleCard,
   InteractionSettingsCard,
+  DeleteAccountModal,
   type SettingsSectionProps,
+  type DeleteAccountModalProps,
 } from '@/src/components/settings';
 export {
   BakerCard,

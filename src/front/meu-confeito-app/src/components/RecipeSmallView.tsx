@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { Image } from 'expo-image';
@@ -18,7 +18,7 @@ export interface RecipeSmallViewProps {
   isClickable?: boolean;
 }
 
-export const RecipeSmallView = ({
+export const RecipeSmallView = memo(function RecipeSmallView({
   title,
   coverUrl,
   prepTimeMinutes,
@@ -26,7 +26,7 @@ export const RecipeSmallView = ({
   totalReviews,
   onPress,
   isClickable,
-}: RecipeSmallViewProps) => {
+}: RecipeSmallViewProps) {
   const { theme } = useThemeMode();
   const [hasImageError, setHasImageError] = useState(false);
 
@@ -50,6 +50,9 @@ export const RecipeSmallView = ({
           source={{ uri: coverUrl! }}
           style={styles.image}
           contentFit="cover"
+          cachePolicy="memory-disk"
+          recyclingKey={coverUrl!}
+          transition={150}
           onError={() => setHasImageError(true)}
         />
       ) : (
@@ -125,7 +128,7 @@ export const RecipeSmallView = ({
       {cardContent}
     </View>
   );
-};
+});
 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({

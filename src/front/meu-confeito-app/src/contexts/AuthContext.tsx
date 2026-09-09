@@ -1,4 +1,12 @@
-import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import {
+  ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 import { AuthService, LogInData, LogInResponse } from '../services/auth';
 import { Storage } from '../utils/storage';
@@ -29,6 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function loadStorageData() {
       try {
+        await Storage.prewarmTokens();
         const storedToken = await Storage.getItem('access_token');
         const storedUser = await Storage.getItem('user_profile');
 
@@ -45,21 +54,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loadStorageData();
   }, []);
 
-  async function signIn(data: LogInData) {
+  const signIn = useCallback(async (data: LogInData) => {
     const res: LogInResponse = await AuthService.logIn(data);
 
-    const { user, auth } = res.data;
+    const { user: loggedUser, auth } = res.data;
 
     await Storage.setItem('session_id', data.sessionId);
     await Storage.setItem('access_token', auth.accessToken);
     await Storage.setItem('refresh_token', auth.refreshToken);
 
-    await Storage.setItem('user_profile', JSON.stringify(user));
+    await Storage.setItem('user_profile', JSON.stringify(loggedUser));
 
-    setUser(user);
-  }
+    setUser(loggedUser);
+  }, []);
 
-  async function signOut() {
+  const signOut = useCallback(async () => {
     try {
       const refreshToken = await Storage.getItem('refresh_token');
 
@@ -78,41 +87,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setUser(null);
     }
-  }
+  }, []);
 
-  async function updateUser(updatedData: Partial<UserProfile>) {
-    // Filter out undefined keys so partial updates don't overwrite existing user data
-    const cleanUpdates: Partial<UserProfile> = {};
-    for (const [key, value] of Object.entries(updatedData)) {
-      if (value !== undefined) {
-        (cleanUpdates as any)[key] = value;
-      }
-    }
-
-    let currentUser = user;
-    if (!currentUser) {
-      const stored = await Storage.getItem('user_profile');
-      if (stored) {
-        try {
-          currentUser = JSON.parse(stored);
-        } catch (e) {
-          console.error('Error parsing stored user profile:', e);
+  const updateUser = useCallback(
+    async (updatedData: Partial<UserProfile>) => {
+      // Filter out undefined keys so partial updates don't overwrite existing user data
+      const cleanUpdates: Partial<UserProfile> = {};
+      for (const [key, value] of Object.entries(updatedData)) {
+        if (value !== undefined) {
+          cleanUpdates[key as keyof UserProfile] = value as never;
         }
       }
-    }
 
-    if (!currentUser) return;
+      let currentUser = user;
+      if (!currentUser) {
+        const stored = await Storage.getItem('user_profile');
+        if (stored) {
+          try {
+            currentUser = JSON.parse(stored);
+          } catch (e) {
+            console.error('Error parsing stored user profile:', e);
+          }
+        }
+      }
 
-    const newUser: UserProfile = { ...currentUser, ...cleanUpdates };
-    await Storage.setItem('user_profile', JSON.stringify(newUser));
-    setUser(newUser);
-  }
+      if (!currentUser) return;
 
-  return (
-    <AuthContext.Provider value={{ user, isLoadingStorage, signIn, signOut, updateUser }}>
-      {children}
-    </AuthContext.Provider>
+      const newUser: UserProfile = { ...currentUser, ...cleanUpdates };
+      await Storage.setItem('user_profile', JSON.stringify(newUser));
+      setUser(newUser);
+    },
+    [user],
   );
+
+  const contextValue = useMemo(
+    () => ({ user, isLoadingStorage, signIn, signOut, updateUser }),
+    [user, isLoadingStorage, signIn, signOut, updateUser],
+  );
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

@@ -211,6 +211,8 @@ export function RecipeSelector({
               source={{ uri: activeRecipe.coverUrl }}
               style={styles.selectedImage}
               contentFit="cover"
+              cachePolicy="memory-disk"
+              transition={150}
             />
           ) : (
             <View style={styles.selectedIconBox}>
@@ -351,6 +353,9 @@ export function RecipeSelector({
                             source={{ uri: item.coverUrl }}
                             style={styles.dropdownItemImage}
                             contentFit="cover"
+                            cachePolicy="memory-disk"
+                            recyclingKey={item.coverUrl}
+                            transition={150}
                           />
                         ) : (
                           <View style={styles.dropdownItemIconContainer}>

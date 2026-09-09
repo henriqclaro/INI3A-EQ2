@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  FlatList,
+  Platform,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -18,6 +19,7 @@ import { Input, RecipeView } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useManyRecipes } from '@/src/hooks/useRecipes';
 import { AppTheme } from '@/src/theme/themes';
+import { PartialRecipe } from '@/src/types';
 
 export default function PublicRecipesScreen() {
   const [search, setSearch] = useState('');
@@ -30,6 +32,84 @@ export default function PublicRecipesScreen() {
   const hasActiveSearch = Boolean(search.trim().length > 0);
 
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
+
+  const renderRecipeItem = useCallback(
+    ({ item }: { item: PartialRecipe }) => (
+      <View style={styles.cardWrapper}>
+        <RecipeView
+          title={item.title}
+          coverUrl={item.coverUrl}
+          tags={item.tags}
+          prepTimeMinutes={item.prepTimeMinutes}
+          onPress={() => {
+            router.push({ pathname: '/single-recipe', params: { recipeId: item.id } });
+          }}
+        />
+      </View>
+    ),
+    [styles.cardWrapper],
+  );
+
+  const listEmpty = useMemo(() => {
+    if (isLoading) {
+      return (
+        <View style={styles.feedbackContainer}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        </View>
+      );
+    }
+    return (
+      <View style={styles.emptyWrapper}>
+        <View style={styles.feedbackContainer}>
+          <View style={styles.emptyIconWrapper}>
+            <MaterialCommunityIcons
+              name="book-search-outline"
+              size={44}
+              color={theme.colors.primary}
+            />
+          </View>
+          <Text style={styles.emptyTitle}>
+            {hasActiveSearch ? 'Nenhuma receita encontrada' : 'Nenhuma receita pública no momento'}
+          </Text>
+          <Text style={styles.emptySubtitle}>
+            {hasActiveSearch
+              ? `Não encontramos resultados para "${search}". Tente buscar por outros termos ou ingredientes.`
+              : 'Explore novamente mais tarde para descobrir novas receitas compartilhadas.'}
+          </Text>
+
+          {hasActiveSearch && (
+            <TouchableOpacity
+              style={styles.clearSearchBtn}
+              onPress={() => setSearch('')}
+              activeOpacity={0.85}
+            >
+              <MaterialCommunityIcons
+                name="close-circle-outline"
+                size={18}
+                color={theme.colors.primary}
+              />
+              <Text style={styles.clearSearchBtnText}>Limpar busca</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    );
+  }, [
+    hasActiveSearch,
+    isLoading,
+    search,
+    styles.clearSearchBtn,
+    styles.clearSearchBtnText,
+    styles.emptyIconWrapper,
+    styles.emptySubtitle,
+    styles.emptyTitle,
+    styles.emptyWrapper,
+    styles.feedbackContainer,
+    theme.colors.primary,
+  ]);
+
+  const itemSeparator = useCallback(() => <View style={styles.separator} />, [styles.separator]);
+  const keyExtractor = useCallback((item: PartialRecipe) => item.id, []);
 
   return (
     <>
@@ -79,10 +159,22 @@ export default function PublicRecipesScreen() {
           )}
         </View>
 
-        <ScrollView
+        <FlatList
+          data={isLoading ? [] : recipes}
+          keyExtractor={keyExtractor}
+          renderItem={renderRecipeItem}
+          numColumns={isDesktop ? 3 : 1}
+          key={isDesktop ? 'desktop-grid' : 'mobile-list'}
+          columnWrapperStyle={isDesktop ? styles.columnWrapper : undefined}
+          ItemSeparatorComponent={itemSeparator}
+          ListEmptyComponent={listEmpty}
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContainer}
           showsVerticalScrollIndicator={false}
+          initialNumToRender={6}
+          maxToRenderPerBatch={8}
+          windowSize={5}
+          removeClippedSubviews={Platform.OS === 'android'}
           refreshControl={
             <RefreshControl
               refreshing={isLoading}
@@ -91,64 +183,7 @@ export default function PublicRecipesScreen() {
               colors={[theme.colors.primary]}
             />
           }
-        >
-          {isLoading ? (
-            <View style={styles.feedbackContainer}>
-              <ActivityIndicator size="large" color={theme.colors.primary} />
-            </View>
-          ) : recipes.length === 0 ? (
-            <View style={styles.feedbackContainer}>
-              <View style={styles.emptyIconWrapper}>
-                <MaterialCommunityIcons
-                  name="book-search-outline"
-                  size={44}
-                  color={theme.colors.primary}
-                />
-              </View>
-              <Text style={styles.emptyTitle}>
-                {hasActiveSearch
-                  ? 'Nenhuma receita encontrada'
-                  : 'Nenhuma receita pública no momento'}
-              </Text>
-              <Text style={styles.emptySubtitle}>
-                {hasActiveSearch
-                  ? `Não encontramos resultados para "${search}". Tente buscar por outros termos ou ingredientes.`
-                  : 'Explore novamente mais tarde para descobrir novas receitas compartilhadas.'}
-              </Text>
-
-              {hasActiveSearch && (
-                <TouchableOpacity
-                  style={styles.clearSearchBtn}
-                  onPress={() => setSearch('')}
-                  activeOpacity={0.85}
-                >
-                  <MaterialCommunityIcons
-                    name="close-circle-outline"
-                    size={18}
-                    color={theme.colors.primary}
-                  />
-                  <Text style={styles.clearSearchBtnText}>Limpar busca</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          ) : (
-            <View style={styles.gridContainer}>
-              {recipes.map((recipe) => (
-                <View key={recipe.id} style={styles.cardWrapper}>
-                  <RecipeView
-                    title={recipe.title}
-                    coverUrl={recipe.coverUrl}
-                    tags={recipe.tags}
-                    prepTimeMinutes={recipe.prepTimeMinutes}
-                    onPress={() => {
-                      router.push({ pathname: '/single-recipe', params: { recipeId: recipe.id } });
-                    }}
-                  />
-                </View>
-              ))}
-            </View>
-          )}
-        </ScrollView>
+        />
       </View>
     </>
   );
@@ -223,20 +258,27 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       paddingBottom: 60,
       alignItems: 'center',
     },
-    gridContainer: {
-      flexDirection: isDesktop ? 'row' : 'column',
-      flexWrap: isDesktop ? 'wrap' : 'nowrap',
+    columnWrapper: {
       gap: 16,
-      justifyContent: isDesktop ? 'flex-start' : 'center',
-      alignItems: 'center',
       width: '100%',
       maxWidth: 1200,
+      alignSelf: 'center',
+      justifyContent: 'flex-start',
+    },
+    separator: {
+      height: 16,
     },
     cardWrapper: {
       width: isDesktop ? undefined : '100%',
       flex: isDesktop ? 1 : undefined,
       minWidth: isDesktop ? 260 : undefined,
       maxWidth: isDesktop ? 360 : 480,
+      alignSelf: 'center',
+    },
+    emptyWrapper: {
+      width: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     feedbackContainer: {
       paddingTop: 48,

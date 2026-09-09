@@ -1,4 +1,12 @@
-import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import {
+  ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 import { AppTheme, darkTheme, lightTheme } from '../theme/themes';
 import { Storage } from '../utils/storage';
@@ -35,34 +43,38 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     loadStoredTheme();
   }, []);
 
-  const handleSetMode = (mode: ThemeMode) => {
+  const handleSetMode = useCallback((mode: ThemeMode) => {
     setThemeMode(mode);
     Storage.setItem(THEME_STORAGE_KEY, mode).catch((error) => {
       console.error('Error saving theme mode to storage:', error);
     });
-  };
+  }, []);
 
-  const toggleTheme = () => {
-    const nextMode: ThemeMode = themeMode === 'dark' ? 'light' : 'dark';
-    handleSetMode(nextMode);
-  };
+  const toggleTheme = useCallback(() => {
+    setThemeMode((prev) => {
+      const nextMode: ThemeMode = prev === 'dark' ? 'light' : 'dark';
+      Storage.setItem(THEME_STORAGE_KEY, nextMode).catch((error) => {
+        console.error('Error saving theme mode to storage:', error);
+      });
+      return nextMode;
+    });
+  }, []);
 
   const isDarkMode = themeMode === 'dark';
   const theme = isDarkMode ? darkTheme : lightTheme;
 
-  return (
-    <ThemeContext.Provider
-      value={{
-        theme,
-        currentMode: themeMode,
-        isDarkMode,
-        setMode: handleSetMode,
-        toggleTheme,
-      }}
-    >
-      {children}
-    </ThemeContext.Provider>
+  const contextValue = useMemo(
+    () => ({
+      theme,
+      currentMode: themeMode,
+      isDarkMode,
+      setMode: handleSetMode,
+      toggleTheme,
+    }),
+    [theme, themeMode, isDarkMode, handleSetMode, toggleTheme],
   );
+
+  return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>;
 }
 
 export function useThemeMode() {

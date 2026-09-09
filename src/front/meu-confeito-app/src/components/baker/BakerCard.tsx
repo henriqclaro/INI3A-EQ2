@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { Image } from 'expo-image';
@@ -15,7 +15,7 @@ export interface BakerCardProps {
   onPress?: () => void;
 }
 
-export function BakerCard({ baker, onPress }: BakerCardProps) {
+export const BakerCard = memo(function BakerCard({ baker, onPress }: BakerCardProps) {
   const { theme } = useThemeMode();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -59,6 +59,9 @@ export function BakerCard({ baker, onPress }: BakerCardProps) {
             alt={baker.name}
             style={styles.avatar}
             contentFit="cover"
+            cachePolicy="memory-disk"
+            recyclingKey={baker.pfpUrl}
+            transition={150}
           />
         ) : (
           <View style={[styles.avatar, styles.placeholderAvatar]}>
@@ -105,7 +108,7 @@ export function BakerCard({ baker, onPress }: BakerCardProps) {
       </View>
     </TouchableOpacity>
   );
-}
+});
 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({

@@ -152,6 +152,9 @@ export function ShowcaseManager({ userId }: ShowcaseManagerProps) {
                     source={{ uri: item.recipe.coverUrl! }}
                     style={styles.thumbnail}
                     contentFit="cover"
+                    cachePolicy="memory-disk"
+                    recyclingKey={item.recipe.coverUrl!}
+                    transition={150}
                   />
                 ) : (
                   <View style={[styles.thumbnail, styles.placeholderThumbnail]}>

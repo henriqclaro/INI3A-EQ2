@@ -193,6 +193,9 @@ export default function PublicProfileScreen() {
                     alt="Foto do Confeiteiro"
                     style={styles.avatar}
                     contentFit="cover"
+                    cachePolicy="memory-disk"
+                    recyclingKey={publicProfile.pfpUrl}
+                    transition={150}
                   />
                 ) : (
                   <View style={[styles.avatar, styles.placeholderAvatar]}>

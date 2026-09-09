@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  FlatList,
+  Platform,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -15,7 +16,7 @@ import { Stack, router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { CustomButton, Input, SavedRecipeCard } from '@/src/components';
+import { Input, SavedRecipeCard } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useSavedRecipes } from '@/src/hooks/useSavedRecipes';
@@ -49,27 +50,123 @@ export default function SavedRecipesScreen() {
     });
   }, [savedRecipes, search]);
 
-  const handleRemove = (recipeId: string, recipeTitle: string) => {
-    Alert.alert(
-      'Remover dos Salvos',
-      `Deseja remover "${recipeTitle}" da sua lista de receitas salvas?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Remover',
-          style: 'destructive',
-          onPress: async () => {
-            setRemovingId(recipeId);
-            try {
-              await removeSave(recipeId);
-            } finally {
-              setRemovingId(null);
-            }
+  const handleRemove = useCallback(
+    (recipeId: string, recipeTitle: string) => {
+      Alert.alert(
+        'Remover dos Salvos',
+        `Deseja remover "${recipeTitle}" da sua lista de receitas salvas?`,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Remover',
+            style: 'destructive',
+            onPress: async () => {
+              setRemovingId(recipeId);
+              try {
+                await removeSave(recipeId);
+              } finally {
+                setRemovingId(null);
+              }
+            },
           },
-        },
-      ],
+        ],
+      );
+    },
+    [removeSave],
+  );
+
+  const renderSavedItem = useCallback(
+    ({ item }: { item: UserSavedRecipeItem }) => (
+      <View style={styles.cardWrapper}>
+        <SavedRecipeCard
+          item={item}
+          onPress={() =>
+            router.push({
+              pathname: '/single-recipe',
+              params: { recipeId: item.recipe.id },
+            })
+          }
+          onRemove={() => handleRemove(item.recipe.id, item.recipe.title)}
+          isRemoving={removingId === item.recipe.id}
+        />
+      </View>
+    ),
+    [handleRemove, removingId, styles.cardWrapper],
+  );
+
+  const listEmpty = useMemo(() => {
+    if (isLoading) {
+      return (
+        <View style={styles.feedbackContainer}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        </View>
+      );
+    }
+    if (savedRecipes.length === 0) {
+      return (
+        <View style={styles.feedbackContainer}>
+          <View style={styles.emptyIconWrapper}>
+            <MaterialCommunityIcons
+              name="bookmark-multiple-outline"
+              size={48}
+              color={theme.colors.primary}
+            />
+          </View>
+          <Text style={styles.emptyTitle}>Nenhuma receita salva ainda</Text>
+          <Text style={styles.emptySubtitle}>
+            Toque no ícone de salvar em qualquer receita que encontrar para consultá-la rapidamente
+            aqui mais tarde.
+          </Text>
+          <TouchableOpacity
+            style={styles.emptyActionBtn}
+            onPress={() => router.push('/public-recipes')}
+            accessibilityRole="button"
+            accessibilityLabel="Explorar receitas públicas"
+          >
+            <MaterialCommunityIcons
+              name="book-search-outline"
+              size={18}
+              color={theme.colors.onPrimary}
+            />
+            <Text style={styles.emptyActionBtnText}>Explorar Receitas</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    return (
+      <View style={styles.feedbackContainer}>
+        <View style={styles.emptyIconWrapper}>
+          <MaterialCommunityIcons
+            name="magnify-remove-outline"
+            size={48}
+            color={theme.colors.primary}
+          />
+        </View>
+        <Text style={styles.emptyTitle}>Nenhuma receita encontrada</Text>
+        <Text style={styles.emptySubtitle}>
+          Não encontramos nenhuma receita salva com o termo &quot;{search}&quot;.
+        </Text>
+        <TouchableOpacity
+          style={styles.clearSearchBtn}
+          onPress={() => setSearch('')}
+          accessibilityRole="button"
+          accessibilityLabel="Limpar filtro de busca"
+        >
+          <Text style={styles.clearSearchText}>Limpar busca</Text>
+        </TouchableOpacity>
+      </View>
     );
-  };
+  }, [
+    isLoading,
+    savedRecipes.length,
+    search,
+    styles,
+    theme.colors.onPrimary,
+    theme.colors.primary,
+  ]);
+
+  const itemSeparator = useCallback(() => <View style={styles.separator} />, [styles.separator]);
+  const keyExtractor = useCallback((item: UserSavedRecipeItem) => item.recipe.id, []);
 
   return (
     <>
@@ -111,10 +208,22 @@ export default function SavedRecipesScreen() {
           )}
         </View>
 
-        <ScrollView
+        <FlatList
+          data={isLoading ? [] : filteredSaves}
+          keyExtractor={keyExtractor}
+          renderItem={renderSavedItem}
+          numColumns={isDesktop ? 2 : 1}
+          key={isDesktop ? 'desktop-grid' : 'mobile-list'}
+          columnWrapperStyle={isDesktop ? styles.columnWrapper : undefined}
+          ItemSeparatorComponent={itemSeparator}
+          ListEmptyComponent={listEmpty}
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          initialNumToRender={6}
+          maxToRenderPerBatch={8}
+          windowSize={5}
+          removeClippedSubviews={Platform.OS === 'android'}
           refreshControl={
             <RefreshControl
               refreshing={isLoading}
@@ -123,73 +232,7 @@ export default function SavedRecipesScreen() {
               colors={[theme.colors.primary]}
             />
           }
-        >
-          {isLoading ? (
-            <View style={styles.feedbackContainer}>
-              <ActivityIndicator size="large" color={theme.colors.primary} />
-            </View>
-          ) : savedRecipes.length === 0 ? (
-            <View style={styles.feedbackContainer}>
-              <View style={styles.emptyIconWrapper}>
-                <MaterialCommunityIcons
-                  name="bookmark-multiple-outline"
-                  size={48}
-                  color={theme.colors.primary}
-                />
-              </View>
-              <Text style={styles.emptyTitle}>Nenhuma receita salva ainda</Text>
-              <Text style={styles.emptySubtitle}>
-                Quando você encontrar receitas incríveis na comunidade, salve-as aqui para consultar
-                os passos e produzir com o seu estoque.
-              </Text>
-              <CustomButton
-                title="Explorar Receitas Públicas"
-                onPress={() => router.push('/public-recipes')}
-                style={styles.exploreBtn}
-              />
-            </View>
-          ) : filteredSaves.length === 0 ? (
-            <View style={styles.feedbackContainer}>
-              <View style={styles.emptyIconWrapper}>
-                <MaterialCommunityIcons
-                  name="magnify-remove-outline"
-                  size={48}
-                  color={theme.colors.primary}
-                />
-              </View>
-              <Text style={styles.emptyTitle}>Nenhuma receita encontrada</Text>
-              <Text style={styles.emptySubtitle}>
-                Não encontramos nenhuma receita salva com o termo &quot;{search}&quot;.
-              </Text>
-              <TouchableOpacity
-                style={styles.clearSearchBtn}
-                onPress={() => setSearch('')}
-                accessibilityRole="button"
-                accessibilityLabel="Limpar filtro de busca"
-              >
-                <Text style={styles.clearSearchText}>Limpar busca</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={styles.listContainer}>
-              {filteredSaves.map((item) => (
-                <View key={item.recipe.id} style={styles.cardWrapper}>
-                  <SavedRecipeCard
-                    item={item}
-                    onPress={() =>
-                      router.push({
-                        pathname: '/single-recipe',
-                        params: { recipeId: item.recipe.id },
-                      })
-                    }
-                    onRemove={() => handleRemove(item.recipe.id, item.recipe.title)}
-                    isRemoving={removingId === item.recipe.id}
-                  />
-                </View>
-              ))}
-            </View>
-          )}
-        </ScrollView>
+        />
       </View>
     </>
   );
@@ -224,8 +267,8 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       backgroundColor: theme.colors.surfaceContainerLow,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      paddingHorizontal: 10,
-      paddingVertical: 4,
+      paddingHorizontal: 12,
+      paddingVertical: 5,
       borderRadius: theme.rounded.full,
     },
     badgeText: {
@@ -247,10 +290,12 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       alignSelf: 'center',
       flexGrow: 1,
     },
-    listContainer: {
-      flexDirection: isDesktop ? 'row' : 'column',
-      flexWrap: isDesktop ? 'wrap' : 'nowrap',
+    columnWrapper: {
       gap: 16,
+      width: '100%',
+    },
+    separator: {
+      height: 16,
     },
     cardWrapper: {
       width: isDesktop ? undefined : '100%',
@@ -296,6 +341,23 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
     exploreBtn: {
       width: '100%',
       maxWidth: 280,
+    },
+    emptyActionBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.primary,
+      minHeight: 48,
+      paddingHorizontal: 20,
+      borderRadius: theme.rounded.default,
+      gap: 8,
+      ...theme.shadows.glow,
+    },
+    emptyActionBtnText: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.colors.onPrimary,
     },
     clearSearchBtn: {
       minHeight: 48,

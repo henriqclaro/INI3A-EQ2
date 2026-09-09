@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  FlatList,
+  Platform,
   Pressable,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -20,6 +21,7 @@ import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useUserRecipes } from '@/src/hooks/useRecipes';
 import { AppTheme } from '@/src/theme/themes';
+import { PartialRecipe } from '@/src/types';
 
 export default function RecipesScreen() {
   const { theme } = useThemeMode();
@@ -68,6 +70,200 @@ export default function RecipesScreen() {
 
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
+  const renderRecipeItem = useCallback(
+    ({ item }: { item: PartialRecipe }) => (
+      <View style={styles.cardWrapper}>
+        <RecipeView
+          title={item.title}
+          coverUrl={item.coverUrl}
+          tags={item.tags}
+          prepTimeMinutes={item.prepTimeMinutes}
+          onPress={() => {
+            router.push({ pathname: '/single-recipe', params: { recipeId: item.id } });
+          }}
+        />
+      </View>
+    ),
+    [styles.cardWrapper],
+  );
+
+  const listHeader = useMemo(() => {
+    if (!isDesktop || recipes.length === 0) return null;
+    return (
+      <View style={styles.desktopHeaderWrapper}>
+        <View style={styles.desktopHeader}>
+          <View style={styles.desktopHeaderTitleCol}>
+            <Text style={styles.desktopHeaderTitle}>Suas Receitas</Text>
+            <Text style={styles.desktopHeaderSubtitle}>
+              {recipes.length}{' '}
+              {recipes.length === 1 ? 'receita cadastrada' : 'receitas cadastradas'}
+            </Text>
+          </View>
+          <View style={styles.desktopHeaderActions}>
+            <TouchableOpacity
+              style={styles.desktopHeaderSecondaryBtn}
+              onPress={() => router.push('/saved-recipes')}
+              activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel="Ver receitas salvas"
+            >
+              <MaterialCommunityIcons
+                name="bookmark-multiple-outline"
+                size={18}
+                color={theme.colors.onSurface}
+              />
+              <Text style={styles.desktopHeaderSecondaryBtnText}>Salvas</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.desktopHeaderSecondaryBtn}
+              onPress={() => router.push('/public-recipes')}
+              activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel="Buscar receitas públicas"
+            >
+              <MaterialCommunityIcons
+                name="book-search-outline"
+                size={18}
+                color={theme.colors.onSurface}
+              />
+              <Text style={styles.desktopHeaderSecondaryBtnText}>Públicas</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.desktopHeaderPrimaryBtn}
+              onPress={() => router.push('/create-recipe')}
+              activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel="Criar nova receita"
+            >
+              <MaterialCommunityIcons
+                name="notebook-plus-outline"
+                size={18}
+                color={theme.colors.onPrimary}
+              />
+              <Text style={styles.desktopHeaderPrimaryBtnText}>Nova Receita</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  }, [isDesktop, recipes.length, styles, theme.colors.onPrimary, theme.colors.onSurface]);
+
+  const listFooter = useMemo(() => {
+    if (isLoading || recipes.length === 0) return null;
+    return (
+      <View style={styles.footerWrapper}>
+        <View style={styles.bottomSuggestionCard}>
+          <View style={styles.suggestionHeader}>
+            <View style={styles.suggestionIconWrapper}>
+              <MaterialCommunityIcons
+                name="cake-variant-outline"
+                size={26}
+                color={theme.colors.primary}
+              />
+            </View>
+            <View style={styles.suggestionHeaderText}>
+              <Text style={styles.suggestionTitle}>Quer expandir seu cardápio?</Text>
+              <Text style={styles.suggestionSubtitle}>
+                Cadastre uma nova criação autoral ou descubra receitas compartilhadas pela
+                comunidade.
+              </Text>
+            </View>
+          </View>
+          <View style={styles.suggestionButtonsRow}>
+            <TouchableOpacity
+              style={styles.suggestionPrimaryBtn}
+              onPress={() => router.push('/create-recipe')}
+              activeOpacity={0.85}
+            >
+              <MaterialCommunityIcons
+                name="notebook-plus-outline"
+                size={18}
+                color={theme.colors.onPrimary}
+              />
+              <Text style={styles.suggestionPrimaryBtnText}>Criar Nova Receita</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.suggestionSecondaryBtn}
+              onPress={() => router.push('/public-recipes')}
+              activeOpacity={0.85}
+            >
+              <MaterialCommunityIcons
+                name="book-search-outline"
+                size={18}
+                color={theme.colors.onSurface}
+              />
+              <Text style={styles.suggestionSecondaryBtnText}>Explorar Públicas</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  }, [
+    isLoading,
+    recipes.length,
+    styles,
+    theme.colors.onPrimary,
+    theme.colors.onSurface,
+    theme.colors.primary,
+  ]);
+
+  const listEmpty = useMemo(() => {
+    if (isLoading) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        </View>
+      );
+    }
+    return (
+      <View style={styles.emptyWrapper}>
+        <View style={styles.emptyContainer}>
+          <View style={styles.emptyIconCircle}>
+            <MaterialCommunityIcons
+              name="cake-variant-outline"
+              size={44}
+              color={theme.colors.primary}
+            />
+          </View>
+          <Text style={styles.emptyTitle}>Seu caderno está esperando!</Text>
+          <Text style={styles.emptySubtitle}>
+            Você ainda não possui receitas cadastradas. Que tal registrar sua primeira receita ou
+            buscar inspiração nas receitas públicas?
+          </Text>
+          <View style={styles.emptyActionsRow}>
+            <TouchableOpacity
+              style={styles.emptyPrimaryBtn}
+              onPress={() => router.push('/create-recipe')}
+              activeOpacity={0.85}
+            >
+              <MaterialCommunityIcons
+                name="notebook-plus-outline"
+                size={18}
+                color={theme.colors.onPrimary}
+              />
+              <Text style={styles.emptyPrimaryBtnText}>Criar Primeira Receita</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.emptySecondaryBtn}
+              onPress={() => router.push('/public-recipes')}
+              activeOpacity={0.85}
+            >
+              <MaterialCommunityIcons
+                name="book-search-outline"
+                size={18}
+                color={theme.colors.onSurface}
+              />
+              <Text style={styles.emptySecondaryBtnText}>Ver Receitas Públicas</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  }, [isLoading, styles, theme.colors.onPrimary, theme.colors.onSurface, theme.colors.primary]);
+
+  const itemSeparator = useCallback(() => <View style={styles.separator} />, [styles.separator]);
+  const keyExtractor = useCallback((item: PartialRecipe) => item.id, []);
+
   return (
     <View style={styles.container}>
       {isSpeedDialOpen && (
@@ -79,10 +275,24 @@ export default function RecipesScreen() {
         />
       )}
 
-      <ScrollView
+      <FlatList
+        data={isLoading ? [] : recipes}
+        keyExtractor={keyExtractor}
+        renderItem={renderRecipeItem}
+        numColumns={isDesktop ? 3 : 1}
+        key={isDesktop ? 'desktop-grid' : 'mobile-list'}
+        columnWrapperStyle={isDesktop ? styles.columnWrapper : undefined}
+        ItemSeparatorComponent={itemSeparator}
+        ListHeaderComponent={listHeader}
+        ListFooterComponent={listFooter}
+        ListEmptyComponent={listEmpty}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
+        initialNumToRender={6}
+        maxToRenderPerBatch={8}
+        windowSize={5}
+        removeClippedSubviews={Platform.OS === 'android'}
         refreshControl={
           <RefreshControl
             refreshing={isLoading}
@@ -91,174 +301,7 @@ export default function RecipesScreen() {
             colors={[theme.colors.primary]}
           />
         }
-      >
-        {isLoading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={theme.colors.primary} />
-          </View>
-        ) : recipes.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <View style={styles.emptyIconCircle}>
-              <MaterialCommunityIcons
-                name="cake-variant-outline"
-                size={44}
-                color={theme.colors.primary}
-              />
-            </View>
-            <Text style={styles.emptyTitle}>Seu caderno está esperando!</Text>
-            <Text style={styles.emptySubtitle}>
-              Você ainda não possui receitas cadastradas. Que tal registrar sua primeira receita ou
-              buscar inspiração nas receitas públicas?
-            </Text>
-            <View style={styles.emptyActionsRow}>
-              <TouchableOpacity
-                style={styles.emptyPrimaryBtn}
-                onPress={() => router.push('/create-recipe')}
-                activeOpacity={0.85}
-              >
-                <MaterialCommunityIcons
-                  name="notebook-plus-outline"
-                  size={18}
-                  color={theme.colors.onPrimary}
-                />
-                <Text style={styles.emptyPrimaryBtnText}>Criar Primeira Receita</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.emptySecondaryBtn}
-                onPress={() => router.push('/public-recipes')}
-                activeOpacity={0.85}
-              >
-                <MaterialCommunityIcons
-                  name="book-search-outline"
-                  size={18}
-                  color={theme.colors.onSurface}
-                />
-                <Text style={styles.emptySecondaryBtnText}>Ver Receitas Públicas</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ) : (
-          <View style={styles.contentWrapper}>
-            {isDesktop && (
-              <View style={styles.desktopHeader}>
-                <View style={styles.desktopHeaderTitleCol}>
-                  <Text style={styles.desktopHeaderTitle}>Suas Receitas</Text>
-                  <Text style={styles.desktopHeaderSubtitle}>
-                    {recipes.length}{' '}
-                    {recipes.length === 1 ? 'receita cadastrada' : 'receitas cadastradas'}
-                  </Text>
-                </View>
-                <View style={styles.desktopHeaderActions}>
-                  <TouchableOpacity
-                    style={styles.desktopHeaderSecondaryBtn}
-                    onPress={() => router.push('/saved-recipes')}
-                    activeOpacity={0.85}
-                    accessibilityRole="button"
-                    accessibilityLabel="Ver receitas salvas"
-                  >
-                    <MaterialCommunityIcons
-                      name="bookmark-multiple-outline"
-                      size={18}
-                      color={theme.colors.onSurface}
-                    />
-                    <Text style={styles.desktopHeaderSecondaryBtnText}>Salvas</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.desktopHeaderSecondaryBtn}
-                    onPress={() => router.push('/public-recipes')}
-                    activeOpacity={0.85}
-                    accessibilityRole="button"
-                    accessibilityLabel="Buscar receitas públicas"
-                  >
-                    <MaterialCommunityIcons
-                      name="book-search-outline"
-                      size={18}
-                      color={theme.colors.onSurface}
-                    />
-                    <Text style={styles.desktopHeaderSecondaryBtnText}>Públicas</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.desktopHeaderPrimaryBtn}
-                    onPress={() => router.push('/create-recipe')}
-                    activeOpacity={0.85}
-                    accessibilityRole="button"
-                    accessibilityLabel="Criar nova receita"
-                  >
-                    <MaterialCommunityIcons
-                      name="notebook-plus-outline"
-                      size={18}
-                      color={theme.colors.onPrimary}
-                    />
-                    <Text style={styles.desktopHeaderPrimaryBtnText}>Nova Receita</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-
-            <View style={styles.gridContainer}>
-              {recipes.map((recipe) => (
-                <View key={recipe.id} style={styles.cardWrapper}>
-                  <RecipeView
-                    title={recipe.title}
-                    coverUrl={recipe.coverUrl}
-                    tags={recipe.tags}
-                    prepTimeMinutes={recipe.prepTimeMinutes}
-                    onPress={() => {
-                      router.push({ pathname: '/single-recipe', params: { recipeId: recipe.id } });
-                    }}
-                  />
-                </View>
-              ))}
-            </View>
-
-            {/* Bottom Suggestion Card */}
-            <View style={styles.bottomSuggestionCard}>
-              <View style={styles.suggestionHeader}>
-                <View style={styles.suggestionIconWrapper}>
-                  <MaterialCommunityIcons
-                    name="cake-variant-outline"
-                    size={26}
-                    color={theme.colors.primary}
-                  />
-                </View>
-                <View style={styles.suggestionHeaderText}>
-                  <Text style={styles.suggestionTitle}>Quer expandir seu cardápio?</Text>
-                  <Text style={styles.suggestionSubtitle}>
-                    Cadastre uma nova criação autoral ou descubra receitas compartilhadas pela
-                    comunidade.
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.suggestionButtonsRow}>
-                <TouchableOpacity
-                  style={styles.suggestionPrimaryBtn}
-                  onPress={() => router.push('/create-recipe')}
-                  activeOpacity={0.85}
-                >
-                  <MaterialCommunityIcons
-                    name="notebook-plus-outline"
-                    size={18}
-                    color={theme.colors.onPrimary}
-                  />
-                  <Text style={styles.suggestionPrimaryBtnText}>Criar Nova Receita</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.suggestionSecondaryBtn}
-                  onPress={() => router.push('/public-recipes')}
-                  activeOpacity={0.85}
-                >
-                  <MaterialCommunityIcons
-                    name="book-search-outline"
-                    size={18}
-                    color={theme.colors.onSurface}
-                  />
-                  <Text style={styles.suggestionSecondaryBtnText}>Explorar Públicas</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        )}
-      </ScrollView>
+      />
 
       {!isDesktop && (
         <FloatingButton
@@ -372,11 +415,39 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       alignItems: 'center',
       width: '100%',
     },
+    desktopHeaderWrapper: {
+      width: '100%',
+      maxWidth: 1200,
+      alignSelf: 'center',
+      marginBottom: 16,
+    },
+    footerWrapper: {
+      width: '100%',
+      maxWidth: 1200,
+      alignSelf: 'center',
+      marginTop: 20,
+    },
+    emptyWrapper: {
+      width: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    columnWrapper: {
+      gap: 16,
+      width: '100%',
+      maxWidth: 1200,
+      alignSelf: 'center',
+      justifyContent: 'flex-start',
+    },
+    separator: {
+      height: 16,
+    },
     cardWrapper: {
       width: isDesktop ? undefined : '100%',
       flex: isDesktop ? 1 : undefined,
       minWidth: isDesktop ? 260 : undefined,
       maxWidth: isDesktop ? 360 : 480,
+      alignSelf: 'center',
     },
     loadingContainer: {
       paddingTop: 80,

@@ -16,6 +16,7 @@ import { Stack, router, useFocusEffect, useLocalSearchParams } from 'expo-router
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { ProduceRecipeModal } from '@/src/components/production';
+import { RecipeIngredientsSection, RecipeInstructionsSection } from '@/src/components/recipe';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useSingleRecipe } from '@/src/hooks/useRecipes';
@@ -49,7 +50,6 @@ export default function RecipeScreen() {
   const isSmallScreen = width < 360;
 
   const [hasImageError, setHasImageError] = useState(false);
-  const [checkedIngredientMap, setCheckedIngredientMap] = useState<Record<string, boolean>>({});
   const [viewMode, setViewMode] = useState<'recipe' | 'pricing'>('recipe');
   const [isProduceModalOpen, setIsProduceModalOpen] = useState(false);
 
@@ -70,13 +70,6 @@ export default function RecipeScreen() {
     () => createStyles(theme, isDesktop, isSmallScreen),
     [theme, isDesktop, isSmallScreen],
   );
-
-  const toggleIngredient = (id: string) => {
-    setCheckedIngredientMap((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
 
   const hasValidCover = Boolean(
     recipe?.coverUrl && recipe.coverUrl.trim().length > 0 && !hasImageError,
@@ -335,6 +328,9 @@ export default function RecipeScreen() {
                   source={{ uri: recipe.coverUrl! }}
                   style={styles.heroImage}
                   contentFit="cover"
+                  cachePolicy="memory-disk"
+                  recyclingKey={recipe.coverUrl!}
+                  transition={150}
                   onError={() => setHasImageError(true)}
                 />
               ) : (
@@ -720,116 +716,8 @@ export default function RecipeScreen() {
               {/* Recipe View Mode */}
               {viewMode === 'recipe' ? (
                 <View style={styles.modeContainer}>
-                  {/* Items Card */}
-                  <View style={styles.cardBox}>
-                    <View style={styles.cardHeader}>
-                      <MaterialCommunityIcons
-                        name="format-list-checks"
-                        size={22}
-                        color={theme.colors.primary}
-                      />
-                      <Text style={styles.cardTitle}>Itens da Receita</Text>
-                    </View>
-
-                    {recipeItems.length > 0 ? (
-                      recipeItems.map((item, index) => {
-                        const itemId = item.id || String(index);
-                        const isIngredientChecked = Boolean(checkedIngredientMap[itemId]);
-                        const isSubRecipe = Boolean(item.subRecipe);
-                        const itemName = isSubRecipe
-                          ? item.subRecipe?.title || 'Sub-receita'
-                          : item.ingredient?.name || 'Ingrediente';
-
-                        const formattedQuantity =
-                          item.displayQuantity && item.displayUnit
-                            ? `${item.displayQuantity} ${item.displayUnit} (${item.quantity} ${item.unit})`
-                            : `${item.quantity} ${item.unit}`;
-
-                        return (
-                          <TouchableOpacity
-                            key={itemId}
-                            style={styles.ingredientRow}
-                            onPress={() => toggleIngredient(itemId)}
-                            activeOpacity={0.7}
-                            accessibilityRole="checkbox"
-                            accessibilityState={{ checked: isIngredientChecked }}
-                          >
-                            <View style={styles.ingredientLeft}>
-                              <View
-                                style={[
-                                  styles.checkbox,
-                                  isIngredientChecked && styles.checkedCheckbox,
-                                ]}
-                              >
-                                {isIngredientChecked && (
-                                  <MaterialCommunityIcons
-                                    name="check"
-                                    size={14}
-                                    color={theme.colors.onPrimary}
-                                  />
-                                )}
-                              </View>
-                              <View style={styles.ingredientTextGroup}>
-                                <View style={styles.ingredientTitleRow}>
-                                  <Text
-                                    style={[
-                                      styles.ingredientName,
-                                      isIngredientChecked && styles.checkedIngredientText,
-                                    ]}
-                                  >
-                                    {itemName}
-                                  </Text>
-                                  {isSubRecipe && (
-                                    <View style={styles.subRecipeBadge}>
-                                      <Text style={styles.subRecipeBadgeText}>Sub-receita</Text>
-                                    </View>
-                                  )}
-                                </View>
-                                {Boolean(item.notes) && (
-                                  <Text style={styles.ingredientNotes}>{item.notes}</Text>
-                                )}
-                              </View>
-                            </View>
-                            <Text style={styles.ingredientQuantity}>{formattedQuantity}</Text>
-                          </TouchableOpacity>
-                        );
-                      })
-                    ) : (
-                      <Text style={styles.emptyCardText}>Nenhum item informado.</Text>
-                    )}
-                  </View>
-
-                  {/* Preparation Steps Card */}
-                  <View style={styles.cardBox}>
-                    <View style={styles.cardHeader}>
-                      <MaterialCommunityIcons
-                        name="pot-steam-outline"
-                        size={22}
-                        color={theme.colors.primary}
-                      />
-                      <Text style={styles.cardTitle}>Modo de Preparo</Text>
-                    </View>
-
-                    {parsedInstructions.length > 0 ? (
-                      parsedInstructions.map((instruction, index) => (
-                        <View key={instruction.step || index} style={styles.stepRow}>
-                          <View style={styles.stepBadge}>
-                            <Text style={styles.stepText}>{instruction.step || index + 1}</Text>
-                          </View>
-                          <View style={styles.stepBody}>
-                            {Boolean(instruction.title) && (
-                              <Text style={styles.stepTitle}>{instruction.title}</Text>
-                            )}
-                            <Text style={styles.stepContent}>{instruction.description}</Text>
-                          </View>
-                        </View>
-                      ))
-                    ) : (
-                      <Text style={styles.emptyCardText}>
-                        Nenhuma instrução de preparo informada.
-                      </Text>
-                    )}
-                  </View>
+                  <RecipeIngredientsSection recipeItems={recipeItems} />
+                  <RecipeInstructionsSection instructions={parsedInstructions} />
                 </View>
               ) : (
                 /* Pricing View Mode */

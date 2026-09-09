@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -22,7 +22,13 @@ interface StockCardProps {
   onWaste: (item: InventoryItem) => void;
 }
 
-export const StockCard = ({ item, cardWidth, onAdjust, onPurchase, onWaste }: StockCardProps) => {
+export const StockCard = memo(function StockCard({
+  item,
+  cardWidth,
+  onAdjust,
+  onPurchase,
+  onWaste,
+}: StockCardProps) {
   const { theme } = useThemeMode();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -179,7 +185,7 @@ export const StockCard = ({ item, cardWidth, onAdjust, onPurchase, onWaste }: St
       </View>
     </View>
   );
-};
+});
 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({

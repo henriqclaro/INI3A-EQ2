@@ -1,4 +1,12 @@
-import { ReactNode, createContext, useCallback, useContext, useEffect, useState } from 'react';
+import {
+  ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 import { HapticFeedbackType, setGlobalHapticsEnabled, triggerGlobalHaptic } from '../utils/haptics';
 import { Storage } from '../utils/storage';
@@ -82,22 +90,30 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     triggerGlobalHaptic(type);
   }, []);
 
-  return (
-    <SettingsContext.Provider
-      value={{
-        isSwipeNavigationEnabled,
-        isHapticsEnabled,
-        isLoadingSettings,
-        setIsSwipeNavigationEnabled: handleSetSwipeNavigationEnabled,
-        toggleSwipeNavigation,
-        setIsHapticsEnabled: handleSetHapticsEnabled,
-        toggleHaptics,
-        triggerHaptic,
-      }}
-    >
-      {children}
-    </SettingsContext.Provider>
+  const contextValue = useMemo(
+    () => ({
+      isSwipeNavigationEnabled,
+      isHapticsEnabled,
+      isLoadingSettings,
+      setIsSwipeNavigationEnabled: handleSetSwipeNavigationEnabled,
+      toggleSwipeNavigation,
+      setIsHapticsEnabled: handleSetHapticsEnabled,
+      toggleHaptics,
+      triggerHaptic,
+    }),
+    [
+      isSwipeNavigationEnabled,
+      isHapticsEnabled,
+      isLoadingSettings,
+      handleSetSwipeNavigationEnabled,
+      toggleSwipeNavigation,
+      handleSetHapticsEnabled,
+      toggleHaptics,
+      triggerHaptic,
+    ],
   );
+
+  return <SettingsContext.Provider value={contextValue}>{children}</SettingsContext.Provider>;
 }
 
 export function useSettings(): SettingsContextData {

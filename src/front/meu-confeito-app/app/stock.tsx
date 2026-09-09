@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  FlatList,
+  Platform,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -54,17 +55,20 @@ export default function StockScreen() {
   const [modalMode, setModalMode] = useState<StockOperationType>('adjust');
 
   const isMobile = width < 768;
+  const numCols = isMobile ? 1 : Math.max(1, Math.min(3, Math.floor(width / 340)));
 
   // Calculations for summary metrics
   const summaryMetrics = useMemo(() => {
-    let totalValue = 0;
+    let totalItems = 0;
+    let totalStockValue = 0;
     let outOfStockCount = 0;
     let expiringSoonCount = 0;
 
-    inventory.forEach((item) => {
+    for (const item of inventory) {
+      totalItems += 1;
       const qty = Number(item.currentQuantity) || 0;
       const unitCost = Number(item.costPerBaseUnit) || 0;
-      totalValue += qty * unitCost;
+      totalStockValue += qty * unitCost;
 
       if (qty <= 0) {
         outOfStockCount += 1;
@@ -73,11 +77,11 @@ export default function StockScreen() {
       if (isExpiringSoon(item.expirationDate)) {
         expiringSoonCount += 1;
       }
-    });
+    }
 
     return {
-      totalItems: inventory.length,
-      totalStockValue: totalValue,
+      totalItems,
+      totalStockValue,
       outOfStockCount,
       expiringSoonCount,
     };
@@ -85,67 +89,298 @@ export default function StockScreen() {
 
   // Filtered inventory list
   const filteredInventory = useMemo(() => {
-    let list = inventory;
+    return inventory.filter((item) => {
+      const ingredientName = item.ingredient?.name?.toLowerCase() || '';
+      const categoryName = item.ingredient?.category?.toLowerCase() || '';
+      const searchLower = search.toLowerCase().trim();
 
-    // Apply category / name search
-    if (search.trim()) {
-      const searchLower = search.toLowerCase();
-      list = list.filter((item) => {
-        const hasMatchingName = Boolean(item.ingredient?.name?.toLowerCase().includes(searchLower));
-        const hasMatchingCategory = Boolean(
-          item.ingredient?.category?.toLowerCase().includes(searchLower),
-        );
-        return hasMatchingName || hasMatchingCategory;
-      });
-    }
+      const hasSearchMatch =
+        !searchLower || ingredientName.includes(searchLower) || categoryName.includes(searchLower);
 
-    // Apply status filter pill
-    if (selectedFilter === 'in_stock') {
-      list = list.filter((item) => (Number(item.currentQuantity) || 0) > 0);
-    } else if (selectedFilter === 'out_of_stock') {
-      list = list.filter((item) => (Number(item.currentQuantity) || 0) <= 0);
-    } else if (selectedFilter === 'expiring') {
-      list = list.filter((item) => isExpiringSoon(item.expirationDate));
-    }
+      if (!hasSearchMatch) return false;
 
-    return list;
+      const qty = Number(item.currentQuantity) || 0;
+
+      switch (selectedFilter) {
+        case 'in_stock':
+          return qty > 0;
+        case 'out_of_stock':
+          return qty <= 0;
+        case 'expiring':
+          return isExpiringSoon(item.expirationDate);
+        case 'all':
+        default:
+          return true;
+      }
+    });
   }, [inventory, search, selectedFilter]);
 
   // Actions
-  const handleOpenAdjust = (item: InventoryItem) => {
+  const handleOpenAdjust = useCallback((item: InventoryItem) => {
     setSelectedItem(item);
     setModalMode('adjust');
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handleOpenPurchase = (item: InventoryItem) => {
+  const handleOpenPurchase = useCallback((item: InventoryItem) => {
     setSelectedItem(item);
     setModalMode('purchase');
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handleOpenWaste = (item: InventoryItem) => {
+  const handleOpenWaste = useCallback((item: InventoryItem) => {
     setSelectedItem(item);
     setModalMode('waste');
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
     setSelectedItem(null);
-  };
+  }, []);
 
   const styles = useMemo(() => createStyles(theme, isMobile), [theme, isMobile]);
+
+  const renderStockItem = useCallback(
+    ({ item }: { item: InventoryItem }) => (
+      <View style={styles.cardWrapper}>
+        <StockCard
+          item={item}
+          onAdjust={handleOpenAdjust}
+          onPurchase={handleOpenPurchase}
+          onWaste={handleOpenWaste}
+        />
+      </View>
+    ),
+    [handleOpenAdjust, handleOpenPurchase, handleOpenWaste, styles.cardWrapper],
+  );
+
+  const listHeader = useMemo(
+    () => (
+      <View style={styles.headerWrapper}>
+        <View style={styles.headerSection}>
+          <View>
+            <Text style={styles.pageTitle}>Controle de Estoque</Text>
+            <Text style={styles.pageSubtitle}>
+              Monitore insumos, controle custos médios e registre movimentações.
+            </Text>
+          </View>
+
+          {!isMobile && (
+            <CustomButton
+              title="+ Novo Insumo"
+              variant="primary"
+              onPress={() => router.push('/register-stock')}
+              style={styles.desktopAddButton}
+            />
+          )}
+        </View>
+
+        <StockSummaryBanner
+          totalItems={summaryMetrics.totalItems}
+          totalStockValue={summaryMetrics.totalStockValue}
+          outOfStockCount={summaryMetrics.outOfStockCount}
+          expiringSoonCount={summaryMetrics.expiringSoonCount}
+        />
+
+        <View style={styles.searchRow}>
+          <Input
+            value={search}
+            placeholder="Buscar insumo ou categoria..."
+            onChangeText={setSearch}
+            isClearable
+            onClear={() => setSearch('')}
+            containerStyle={styles.searchInput}
+            leftIcon={
+              <MaterialCommunityIcons
+                name="magnify"
+                size={20}
+                color={theme.colors.onSurfaceVariant}
+              />
+            }
+          />
+        </View>
+
+        <View style={styles.filterPillsRow}>
+          <TouchableOpacity
+            style={[styles.filterPill, selectedFilter === 'all' && styles.filterPillActive]}
+            onPress={() => setSelectedFilter('all')}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Filtrar todos os insumos"
+          >
+            <Text
+              style={[
+                styles.filterPillText,
+                selectedFilter === 'all' && styles.filterPillTextActive,
+              ]}
+            >
+              Todos ({inventory.length})
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.filterPill, selectedFilter === 'in_stock' && styles.filterPillActive]}
+            onPress={() => setSelectedFilter('in_stock')}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Filtrar insumos em estoque"
+          >
+            <Text
+              style={[
+                styles.filterPillText,
+                selectedFilter === 'in_stock' && styles.filterPillTextActive,
+              ]}
+            >
+              Em estoque
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.filterPill,
+              selectedFilter === 'out_of_stock' && styles.filterPillActive,
+            ]}
+            onPress={() => setSelectedFilter('out_of_stock')}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Filtrar insumos em falta"
+          >
+            <Text
+              style={[
+                styles.filterPillText,
+                selectedFilter === 'out_of_stock' && styles.filterPillTextActive,
+              ]}
+            >
+              Em falta ({summaryMetrics.outOfStockCount})
+            </Text>
+          </TouchableOpacity>
+
+          {summaryMetrics.expiringSoonCount > 0 && (
+            <TouchableOpacity
+              style={[styles.filterPill, selectedFilter === 'expiring' && styles.filterPillActive]}
+              onPress={() => setSelectedFilter('expiring')}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Filtrar insumos vencendo em breve"
+            >
+              <Text
+                style={[
+                  styles.filterPillText,
+                  selectedFilter === 'expiring' && styles.filterPillTextActive,
+                ]}
+              >
+                Vencendo ({summaryMetrics.expiringSoonCount})
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    ),
+    [
+      inventory.length,
+      isMobile,
+      search,
+      selectedFilter,
+      styles,
+      summaryMetrics.expiringSoonCount,
+      summaryMetrics.outOfStockCount,
+      summaryMetrics.totalItems,
+      summaryMetrics.totalStockValue,
+      theme.colors.onSurfaceVariant,
+    ],
+  );
+
+  const listEmpty = useMemo(() => {
+    if (isLoading && inventory.length === 0) {
+      return (
+        <View style={styles.feedbackContainer}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <Text style={styles.feedbackText}>Carregando estoque...</Text>
+        </View>
+      );
+    }
+    if (error && inventory.length === 0) {
+      return (
+        <View style={styles.feedbackContainer}>
+          <MaterialCommunityIcons
+            name="alert-circle-outline"
+            size={40}
+            color={theme.colors.error}
+          />
+          <Text style={styles.errorText}>{error}</Text>
+          <CustomButton
+            title="Tentar Novamente"
+            variant="secondary"
+            onPress={refetch}
+            style={styles.retryButton}
+          />
+        </View>
+      );
+    }
+    return (
+      <View style={styles.feedbackContainer}>
+        <MaterialCommunityIcons
+          name="package-variant"
+          size={48}
+          color={theme.colors.onSurfaceVariant}
+        />
+        <Text style={styles.emptyTitle}>
+          {search.trim() || selectedFilter !== 'all' ? 'Nenhum insumo encontrado' : 'Estoque vazio'}
+        </Text>
+        <Text style={styles.emptySubtitle}>
+          {search.trim() || selectedFilter !== 'all'
+            ? 'Tente ajustar os filtros ou o termo de busca.'
+            : 'Cadastre os insumos e ingredientes que você usa nas suas receitas.'}
+        </Text>
+        {!search.trim() && selectedFilter === 'all' && (
+          <CustomButton
+            title="+ Cadastrar Primeiro Insumo"
+            variant="primary"
+            onPress={() => router.push('/register-stock')}
+            style={styles.emptyButton}
+          />
+        )}
+      </View>
+    );
+  }, [
+    error,
+    inventory.length,
+    isLoading,
+    refetch,
+    search,
+    selectedFilter,
+    styles,
+    theme.colors.error,
+    theme.colors.onSurfaceVariant,
+    theme.colors.primary,
+  ]);
+
+  const itemSeparator = useCallback(() => <View style={styles.separator} />, [styles.separator]);
+  const keyExtractor = useCallback((item: InventoryItem) => String(item.ingredientId), []);
 
   return (
     <>
       <Stack.Screen options={{ title: 'Estoque' }} />
 
       <View style={styles.container}>
-        <ScrollView
+        <FlatList
+          data={isLoading && inventory.length === 0 ? [] : filteredInventory}
+          keyExtractor={keyExtractor}
+          renderItem={renderStockItem}
+          numColumns={numCols}
+          key={`stock-grid-${numCols}`}
+          columnWrapperStyle={numCols > 1 ? styles.columnWrapper : undefined}
+          ItemSeparatorComponent={itemSeparator}
+          ListHeaderComponent={listHeader}
+          ListEmptyComponent={listEmpty}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          initialNumToRender={6}
+          maxToRenderPerBatch={8}
+          windowSize={5}
+          removeClippedSubviews={Platform.OS === 'android'}
           refreshControl={
             <RefreshControl
               refreshing={isLoading}
@@ -154,200 +389,7 @@ export default function StockScreen() {
               colors={[theme.colors.primary]}
             />
           }
-        >
-          <View style={styles.innerContainer}>
-            {/* Header Title Section */}
-            <View style={styles.headerSection}>
-              <View>
-                <Text style={styles.pageTitle}>Controle de Estoque</Text>
-                <Text style={styles.pageSubtitle}>
-                  Monitore insumos, controle custos médios e registre movimentações.
-                </Text>
-              </View>
-
-              {/* Desktop direct action button */}
-              {!isMobile && (
-                <CustomButton
-                  title="+ Novo Insumo"
-                  variant="primary"
-                  onPress={() => router.push('/register-stock')}
-                  style={styles.desktopAddButton}
-                />
-              )}
-            </View>
-
-            {/* Inventory Valuation & Health Metrics */}
-            <StockSummaryBanner
-              totalItems={summaryMetrics.totalItems}
-              totalStockValue={summaryMetrics.totalStockValue}
-              outOfStockCount={summaryMetrics.outOfStockCount}
-              expiringSoonCount={summaryMetrics.expiringSoonCount}
-            />
-
-            {/* Search Bar */}
-            <View style={styles.searchRow}>
-              <Input
-                value={search}
-                placeholder="Buscar insumo ou categoria..."
-                onChangeText={setSearch}
-                isClearable
-                onClear={() => setSearch('')}
-                containerStyle={styles.searchInput}
-                leftIcon={
-                  <MaterialCommunityIcons
-                    name="magnify"
-                    size={20}
-                    color={theme.colors.onSurfaceVariant}
-                  />
-                }
-              />
-            </View>
-
-            {/* Filter Pills */}
-            <View style={styles.filterPillsRow}>
-              <TouchableOpacity
-                style={[styles.filterPill, selectedFilter === 'all' && styles.filterPillActive]}
-                onPress={() => setSelectedFilter('all')}
-                activeOpacity={0.8}
-                accessibilityRole="button"
-                accessibilityLabel="Filtrar todos os insumos"
-              >
-                <Text
-                  style={[
-                    styles.filterPillText,
-                    selectedFilter === 'all' && styles.filterPillTextActive,
-                  ]}
-                >
-                  Todos ({inventory.length})
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.filterPill,
-                  selectedFilter === 'in_stock' && styles.filterPillActive,
-                ]}
-                onPress={() => setSelectedFilter('in_stock')}
-                activeOpacity={0.8}
-                accessibilityRole="button"
-                accessibilityLabel="Filtrar insumos em estoque"
-              >
-                <Text
-                  style={[
-                    styles.filterPillText,
-                    selectedFilter === 'in_stock' && styles.filterPillTextActive,
-                  ]}
-                >
-                  Em estoque
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.filterPill,
-                  selectedFilter === 'out_of_stock' && styles.filterPillActive,
-                ]}
-                onPress={() => setSelectedFilter('out_of_stock')}
-                activeOpacity={0.8}
-                accessibilityRole="button"
-                accessibilityLabel="Filtrar insumos em falta"
-              >
-                <Text
-                  style={[
-                    styles.filterPillText,
-                    selectedFilter === 'out_of_stock' && styles.filterPillTextActive,
-                  ]}
-                >
-                  Em falta ({summaryMetrics.outOfStockCount})
-                </Text>
-              </TouchableOpacity>
-
-              {summaryMetrics.expiringSoonCount > 0 && (
-                <TouchableOpacity
-                  style={[
-                    styles.filterPill,
-                    selectedFilter === 'expiring' && styles.filterPillActive,
-                  ]}
-                  onPress={() => setSelectedFilter('expiring')}
-                  activeOpacity={0.8}
-                  accessibilityRole="button"
-                  accessibilityLabel="Filtrar insumos vencendo em breve"
-                >
-                  <Text
-                    style={[
-                      styles.filterPillText,
-                      selectedFilter === 'expiring' && styles.filterPillTextActive,
-                    ]}
-                  >
-                    Vencendo ({summaryMetrics.expiringSoonCount})
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-
-            {/* List / Grid Content */}
-            {isLoading && inventory.length === 0 ? (
-              <View style={styles.feedbackContainer}>
-                <ActivityIndicator size="large" color={theme.colors.primary} />
-                <Text style={styles.feedbackText}>Carregando estoque...</Text>
-              </View>
-            ) : error && inventory.length === 0 ? (
-              <View style={styles.feedbackContainer}>
-                <MaterialCommunityIcons
-                  name="alert-circle-outline"
-                  size={40}
-                  color={theme.colors.error}
-                />
-                <Text style={styles.errorText}>{error}</Text>
-                <CustomButton
-                  title="Tentar Novamente"
-                  variant="secondary"
-                  onPress={refetch}
-                  style={styles.retryButton}
-                />
-              </View>
-            ) : filteredInventory.length === 0 ? (
-              <View style={styles.feedbackContainer}>
-                <MaterialCommunityIcons
-                  name="package-variant"
-                  size={48}
-                  color={theme.colors.onSurfaceVariant}
-                />
-                <Text style={styles.emptyTitle}>
-                  {search.trim() || selectedFilter !== 'all'
-                    ? 'Nenhum insumo encontrado'
-                    : 'Estoque vazio'}
-                </Text>
-                <Text style={styles.emptySubtitle}>
-                  {search.trim() || selectedFilter !== 'all'
-                    ? 'Tente ajustar os filtros ou o termo de busca.'
-                    : 'Cadastre os insumos e ingredientes que você usa nas suas receitas.'}
-                </Text>
-                {!search.trim() && selectedFilter === 'all' && (
-                  <CustomButton
-                    title="+ Cadastrar Primeiro Insumo"
-                    variant="primary"
-                    onPress={() => router.push('/register-stock')}
-                    style={styles.emptyButton}
-                  />
-                )}
-              </View>
-            ) : (
-              <View style={styles.cardsGrid}>
-                {filteredInventory.map((item) => (
-                  <View key={item.ingredientId} style={styles.cardWrapper}>
-                    <StockCard
-                      item={item}
-                      onAdjust={handleOpenAdjust}
-                      onPurchase={handleOpenPurchase}
-                      onWaste={handleOpenWaste}
-                    />
-                  </View>
-                ))}
-              </View>
-            )}
-          </View>
-        </ScrollView>
+        />
 
         {/* Floating Action Button (Reserved Elevation strictly per DESIGN.md) */}
         {isMobile && (
@@ -468,17 +510,28 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       color: theme.colors.onPrimary,
       fontWeight: '700',
     },
-    cardsGrid: {
+    headerWrapper: {
       width: '100%',
-      flexDirection: 'row',
-      flexWrap: 'wrap',
+      maxWidth: 1200,
+      alignSelf: 'center',
+      gap: 12,
+      marginBottom: 16,
+    },
+    columnWrapper: {
       gap: 16,
+      width: '100%',
+      maxWidth: 1200,
+      alignSelf: 'center',
+    },
+    separator: {
+      height: 16,
     },
     cardWrapper: {
       width: isMobile ? '100%' : undefined,
       flex: isMobile ? undefined : 1,
       minWidth: isMobile ? '100%' : 300,
       maxWidth: isMobile ? '100%' : 380,
+      alignSelf: 'center',
     },
     feedbackContainer: {
       width: '100%',

@@ -34,10 +34,15 @@ const processQueue = (error: any, token: string | null = null) => {
 
 api.interceptors.request.use(
   async (config) => {
-    const [accessToken, sessionId] = await Promise.all([
-      Storage.getItem('access_token'),
-      Storage.getItem('session_id'),
-    ]);
+    let accessToken = Storage.getFastItem('access_token');
+    let sessionId = Storage.getFastItem('session_id');
+
+    if (!accessToken && !sessionId) {
+      [accessToken, sessionId] = await Promise.all([
+        Storage.getItem('access_token'),
+        Storage.getItem('session_id'),
+      ]);
+    }
 
     if (config.headers) {
       if (accessToken) {

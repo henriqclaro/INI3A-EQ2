@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { Image } from 'expo-image';
@@ -22,13 +22,13 @@ interface RecipeViewProps {
   onPress: () => void;
 }
 
-export const RecipeView = ({
+export const RecipeView = memo(function RecipeView({
   title,
   coverUrl,
   tags = [],
   prepTimeMinutes = 0,
   onPress,
-}: RecipeViewProps) => {
+}: RecipeViewProps) {
   const { theme } = useThemeMode();
   const [hasImageError, setHasImageError] = useState(false);
 
@@ -62,6 +62,9 @@ export const RecipeView = ({
           source={{ uri: coverUrl! }}
           style={styles.image}
           contentFit="cover"
+          cachePolicy="memory-disk"
+          recyclingKey={coverUrl!}
+          transition={150}
           onError={() => setHasImageError(true)}
         />
       ) : (
@@ -114,7 +117,7 @@ export const RecipeView = ({
       </View>
     </TouchableOpacity>
   );
-};
+});
 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({

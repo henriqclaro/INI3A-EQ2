@@ -491,6 +491,9 @@ export default function EditProfileScreen() {
                   alt="Foto de Perfil"
                   style={styles.image}
                   contentFit="cover"
+                  cachePolicy="memory-disk"
+                  recyclingKey={user?.pfpUrl}
+                  transition={150}
                 />
               ) : (
                 <View style={[styles.image, styles.placeholderImage]}>
