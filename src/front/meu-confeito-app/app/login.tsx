@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Platform, StyleSheet, Text, View } from 'react-native';
 
 import * as Crypto from 'expo-crypto';
 import { Image } from 'expo-image';
@@ -197,13 +197,13 @@ export default function LogInScreen() {
           </View>
 
           {/* Forgot password */}
-          <View style={styles.forgotRow}>
+          {/* <View style={styles.forgotRow}>
             <Link href="/" asChild>
               <TouchableOpacity activeOpacity={0.7}>
                 <Text style={styles.forgotText}>Esqueci a Senha</Text>
               </TouchableOpacity>
             </Link>
-          </View>
+          </View> */}
 
           {/* Action buttons */}
           <View style={styles.btnActionContainer}>
