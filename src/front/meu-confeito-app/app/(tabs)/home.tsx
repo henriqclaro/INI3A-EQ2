@@ -35,11 +35,7 @@ function CustomerHomeScreen() {
   const { user } = useAuth();
   const { width } = useWindowDimensions();
   const isDesktop = width >= theme.breakpoints.md;
-  const isLargeDesktop = width >= theme.breakpoints.lg;
-  const styles = useMemo(
-    () => createCustomerStyles(theme, isDesktop, isLargeDesktop),
-    [theme, isDesktop, isLargeDesktop],
-  );
+  const styles = useMemo(() => createCustomerStyles(theme, isDesktop), [theme, isDesktop]);
 
   const firstName = user?.name ? user.name.split(' ')[0] : 'Cliente';
 
@@ -48,6 +44,7 @@ function CustomerHomeScreen() {
       <View style={styles.contentWrapper}>
         <NearbyBakersExplorer
           hasIntroHeader={false}
+          isTwoColumnDesktop={isDesktop}
           headerContent={
             <View style={styles.header}>
               <Text style={styles.title}>Olá, {firstName}!</Text>
@@ -444,7 +441,7 @@ export default function HomeScreen() {
   return <BakerHomeScreen />;
 }
 
-const createCustomerStyles = (theme: AppTheme, isDesktop: boolean, isLargeDesktop: boolean) =>
+const createCustomerStyles = (theme: AppTheme, isDesktop: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -453,17 +450,10 @@ const createCustomerStyles = (theme: AppTheme, isDesktop: boolean, isLargeDeskto
     contentWrapper: {
       flex: 1,
       width: '100%',
-      maxWidth: isDesktop ? theme.spacing.containerMax : undefined,
-      alignSelf: 'center',
-      paddingHorizontal: isLargeDesktop
-        ? theme.spacing.marginDesktop
-        : isDesktop
-          ? theme.spacing.marginTablet
-          : 0,
     },
     header: {
       paddingHorizontal: theme.spacing.space1,
-      paddingTop: isDesktop ? theme.spacing.space4 : theme.spacing.space2,
+      paddingTop: isDesktop ? theme.spacing.space2 : theme.spacing.space1,
       paddingBottom: theme.spacing.space1,
     },
     title: {
