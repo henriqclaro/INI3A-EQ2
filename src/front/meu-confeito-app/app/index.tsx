@@ -1,15 +1,24 @@
 import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 
 import { Image } from 'expo-image';
 import { Link, Stack } from 'expo-router';
+
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { CustomButton } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
 export default function WelcomeScreen() {
-  const { theme, isDarkMode } = useThemeMode();
+  const { theme, isDarkMode, toggleTheme } = useThemeMode();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 768;
 
@@ -17,7 +26,27 @@ export default function WelcomeScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Bem-Vindo' }} />
+      <Stack.Screen
+        options={{
+          title: 'Bem-Vindo',
+          headerRight: () => (
+            <TouchableOpacity
+              style={styles.headerThemeBtn}
+              onPress={toggleTheme}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={isDarkMode ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <MaterialCommunityIcons
+                name={isDarkMode ? 'weather-sunny' : 'weather-night'}
+                size={22}
+                color={theme.colors.espressoDark}
+              />
+            </TouchableOpacity>
+          ),
+        }}
+      />
 
       <View style={styles.container}>
         <ScrollView
@@ -49,7 +78,11 @@ export default function WelcomeScreen() {
               }}
               asChild
             >
-              <CustomButton title="Cadastrar como Confeiteira" variant="primary" />
+              <CustomButton
+                title="Cadastrar como Confeiteira"
+                variant="primary"
+                style={styles.actionButton}
+              />
             </Link>
 
             {/* This should send the 'CUSTOMER' role*/}
@@ -60,11 +93,19 @@ export default function WelcomeScreen() {
               }}
               asChild
             >
-              <CustomButton title="Cadastrar como Cliente" variant="secondary" />
+              <CustomButton
+                title="Cadastrar como Cliente"
+                variant="secondary"
+                style={styles.actionButton}
+              />
             </Link>
 
             <Link href="/login" asChild>
-              <CustomButton title="Já tenho cadastro" variant="neutral" />
+              <CustomButton
+                title="Já tenho cadastro"
+                variant="neutral"
+                style={styles.actionButton}
+              />
             </Link>
           </View>
         </ScrollView>
@@ -135,5 +176,20 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       padding: 10,
       width: '100%',
       gap: 12,
+    },
+    actionButton: {
+      width: isDesktop ? 340 : 300,
+      maxWidth: '100%',
+    },
+    headerThemeBtn: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      marginRight: 8,
     },
   });

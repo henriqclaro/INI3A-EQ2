@@ -126,7 +126,8 @@ export default function RecipeScreen() {
     const unitCost = totalRecipeCost / yieldNum;
 
     const profitPct = Number(recipe?.profitMargin) || 0;
-    const suggestedUnitPrice = unitCost * (1 + profitPct / 100);
+    const suggestedUnitPrice = unitCost / (1 - profitPct / 100);
+    //const suggestedUnitPrice = unitCost * (1 + profitPct / 100);
     const suggestedTotalPrice = suggestedUnitPrice * yieldNum;
 
     return {
@@ -229,8 +230,8 @@ export default function RecipeScreen() {
         return {
           label: 'Rascunho',
           icon: 'file-document-edit-outline' as const,
-          color: theme.colors.primary,
-          bgColor: theme.colors.primaryContainer,
+          color: theme.colors.chips.primary.text,
+          bgColor: theme.colors.chips.primary.background,
         };
     }
   };
@@ -322,559 +323,572 @@ export default function RecipeScreen() {
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.innerWrapper}>
-              {/* Recipe Cover or Placeholder */}
-              {hasValidCover ? (
-                <Image
-                  source={{ uri: recipe.coverUrl! }}
-                  style={styles.heroImage}
-                  contentFit="cover"
-                  cachePolicy="memory-disk"
-                  recyclingKey={recipe.coverUrl!}
-                  transition={150}
-                  onError={() => setHasImageError(true)}
-                />
-              ) : (
-                <View style={styles.heroPlaceholder}>
-                  <View style={styles.heroPlaceholderBadge}>
-                    <MaterialCommunityIcons
-                      name="cake-variant-outline"
-                      size={44}
-                      color={theme.colors.primary}
-                    />
-                  </View>
-                  <Text style={styles.heroPlaceholderTitle}>Receita Sem Foto</Text>
-                  <Text style={styles.heroPlaceholderSubtitle}>
-                    Meu Confeito • Confeitaria Artesanal
-                  </Text>
-                </View>
-              )}
-
-              {/* Title, Meta, Status and Tags Header */}
-              <View style={styles.headerSection}>
-                <View style={styles.titleRow}>
-                  <Text style={styles.primaryTitle}>{recipe.title}</Text>
-                  <View style={[styles.statusBadge, { backgroundColor: statusBadge.bgColor }]}>
-                    <MaterialCommunityIcons
-                      name={statusBadge.icon}
-                      size={14}
-                      color={statusBadge.color}
-                    />
-                    <Text style={[styles.statusBadgeText, { color: statusBadge.color }]}>
-                      {statusBadge.label}
+              <View style={styles.leftColumn}>
+                {/* Recipe Cover or Placeholder */}
+                {hasValidCover ? (
+                  <Image
+                    source={{ uri: recipe.coverUrl! }}
+                    style={styles.heroImage}
+                    contentFit="cover"
+                    cachePolicy="memory-disk"
+                    recyclingKey={recipe.coverUrl!}
+                    transition={150}
+                    onError={() => setHasImageError(true)}
+                  />
+                ) : (
+                  <View style={styles.heroPlaceholder}>
+                    <View style={styles.heroPlaceholderBadge}>
+                      <MaterialCommunityIcons
+                        name="cake-variant-outline"
+                        size={44}
+                        color={theme.colors.primary}
+                      />
+                    </View>
+                    <Text style={styles.heroPlaceholderTitle}>Receita Sem Foto</Text>
+                    <Text style={styles.heroPlaceholderSubtitle}>
+                      Meu Confeito • Confeitaria Artesanal
                     </Text>
                   </View>
-                </View>
-
-                <View style={styles.metaRow}>
-                  {Boolean(recipe.baseYield) && (
-                    <View style={styles.metaBadge}>
-                      <MaterialCommunityIcons
-                        name="silverware-fork-knife"
-                        size={15}
-                        color={theme.colors.text}
-                      />
-                      <Text style={styles.metaBadgeText}>
-                        Rende {recipe.baseYield} {recipe.yieldUnit || 'UN'}
-                      </Text>
-                    </View>
-                  )}
-
-                  {Number(recipe.prepTimeMinutes) > 0 && (
-                    <View style={styles.metaBadge}>
-                      <MaterialCommunityIcons
-                        name="timer-outline"
-                        size={15}
-                        color={theme.colors.text}
-                      />
-                      <Text style={styles.metaBadgeText}>{recipe.prepTimeMinutes} min</Text>
-                    </View>
-                  )}
-
-                  {typeof recipe.totalSaves === 'number' && recipe.totalSaves > 0 && (
-                    <View style={styles.metaBadge}>
-                      <MaterialCommunityIcons
-                        name="bookmark-outline"
-                        size={15}
-                        color={theme.colors.primary}
-                      />
-                      <Text style={styles.metaBadgeText}>
-                        {recipe.totalSaves} {recipe.totalSaves === 1 ? 'salvo' : 'salvos'}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-
-                {recipeTags.length > 0 && (
-                  <View style={styles.tagsRow}>
-                    {recipeTags.map(
-                      (item: {
-                        tag: PartialTag;
-                        backgroundColor: string;
-                        textColor: string;
-                        borderColor: string;
-                      }) => (
-                        <View
-                          key={item?.tag?.id || item?.tag?.name}
-                          style={[
-                            styles.tagPill,
-                            {
-                              backgroundColor: item.backgroundColor,
-                              borderColor: item.borderColor,
-                            },
-                          ]}
-                        >
-                          <Text style={[styles.tagPillText, { color: item.textColor }]}>
-                            {item?.tag?.name}
-                          </Text>
-                        </View>
-                      ),
-                    )}
-                  </View>
                 )}
-              </View>
 
-              {/* Owner Action Panel */}
-              {isOwner && (
-                <View style={styles.ownerControlCard}>
-                  <View style={styles.ownerControlHeader}>
-                    <View style={styles.ownerControlTitleGroup}>
+                {/* Title, Meta, Status and Tags Header */}
+                <View style={styles.headerSection}>
+                  <View style={styles.titleRow}>
+                    <Text style={styles.primaryTitle}>{recipe.title}</Text>
+                    <View style={[styles.statusBadge, { backgroundColor: statusBadge.bgColor }]}>
                       <MaterialCommunityIcons
-                        name="cog-outline"
-                        size={18}
-                        color={theme.colors.primary}
+                        name={statusBadge.icon}
+                        size={14}
+                        color={statusBadge.color}
                       />
-                      <Text style={styles.ownerControlTitle}>Painel da Receita</Text>
+                      <Text style={[styles.statusBadgeText, { color: statusBadge.color }]}>
+                        {statusBadge.label}
+                      </Text>
                     </View>
-                    {isUpdatingVisibility && (
-                      <ActivityIndicator size="small" color={theme.colors.primary} />
+                  </View>
+
+                  <View style={styles.metaRow}>
+                    {Boolean(recipe.baseYield) && (
+                      <View style={styles.metaBadge}>
+                        <MaterialCommunityIcons
+                          name="silverware-fork-knife"
+                          size={15}
+                          color={theme.colors.text}
+                        />
+                        <Text style={styles.metaBadgeText}>
+                          Rende {recipe.baseYield} {recipe.yieldUnit || 'UN'}
+                        </Text>
+                      </View>
+                    )}
+
+                    {Number(recipe.prepTimeMinutes) > 0 && (
+                      <View style={styles.metaBadge}>
+                        <MaterialCommunityIcons
+                          name="timer-outline"
+                          size={15}
+                          color={theme.colors.text}
+                        />
+                        <Text style={styles.metaBadgeText}>{recipe.prepTimeMinutes} min</Text>
+                      </View>
+                    )}
+
+                    {typeof recipe.totalSaves === 'number' && recipe.totalSaves > 0 && (
+                      <View style={styles.metaBadge}>
+                        <MaterialCommunityIcons
+                          name="bookmark-outline"
+                          size={15}
+                          color={theme.colors.primary}
+                        />
+                        <Text style={styles.metaBadgeText}>
+                          {recipe.totalSaves} {recipe.totalSaves === 1 ? 'salvo' : 'salvos'}
+                        </Text>
+                      </View>
                     )}
                   </View>
 
-                  {/* Primary Action: Produzir */}
-                  <TouchableOpacity
-                    style={styles.btnActionProduce}
-                    onPress={() => setIsProduceModalOpen(true)}
-                    activeOpacity={0.85}
-                    accessibilityRole="button"
-                    accessibilityLabel="Registrar produção desta receita"
-                  >
-                    <MaterialCommunityIcons
-                      name="pot-steam"
-                      size={20}
-                      color={theme.colors.onPrimary}
-                    />
-                    <Text style={styles.btnActionTextProduce}>Produzir Receita</Text>
-                  </TouchableOpacity>
+                  {recipeTags.length > 0 && (
+                    <View style={styles.tagsRow}>
+                      {recipeTags.map(
+                        (item: {
+                          tag: PartialTag;
+                          backgroundColor: string;
+                          textColor: string;
+                          borderColor: string;
+                        }) => (
+                          <View
+                            key={item?.tag?.id || item?.tag?.name}
+                            style={[
+                              styles.tagPill,
+                              {
+                                backgroundColor: item.backgroundColor,
+                                borderColor: item.borderColor,
+                              },
+                            ]}
+                          >
+                            <Text style={[styles.tagPillText, { color: item.textColor }]}>
+                              {item?.tag?.name}
+                            </Text>
+                          </View>
+                        ),
+                      )}
+                    </View>
+                  )}
+                </View>
 
-                  <View style={styles.ownerActionButtons}>
-                    {/* Botão Editar */}
-                    <TouchableOpacity
-                      style={styles.btnActionEdit}
-                      onPress={() =>
-                        router.push({
-                          pathname: '/edit-recipe',
-                          params: { recipeId: recipe.id },
-                        })
-                      }
-                      activeOpacity={0.8}
-                      accessibilityRole="button"
-                      accessibilityLabel="Editar informações da receita"
-                    >
-                      <MaterialCommunityIcons
-                        name="pencil-outline"
-                        size={18}
-                        color={theme.colors.primary}
-                      />
-                      <Text style={styles.btnActionTextEdit}>Editar</Text>
-                    </TouchableOpacity>
-
-                    {/* Botão Publicar / Despublicar */}
-                    {recipe.status === 'PUBLISHED' ? (
-                      <TouchableOpacity
-                        style={styles.btnActionDraft}
-                        onPress={() => handleToggleVisibility('DRAFT')}
-                        disabled={isUpdatingVisibility}
-                        activeOpacity={0.8}
-                        accessibilityRole="button"
-                        accessibilityLabel="Mudar receita para rascunho"
-                      >
+                {/* Owner Action Panel */}
+                {isOwner && (
+                  <View style={styles.ownerControlCard}>
+                    <View style={styles.ownerControlHeader}>
+                      <View style={styles.ownerControlTitleGroup}>
                         <MaterialCommunityIcons
-                          name="lock-outline"
-                          size={18}
-                          color={theme.colors.onSurfaceVariant}
-                        />
-                        <Text style={styles.btnActionTextDraft}>Despublicar</Text>
-                      </TouchableOpacity>
-                    ) : (
-                      <TouchableOpacity
-                        style={styles.btnActionPublish}
-                        onPress={() => handleToggleVisibility('PUBLISHED')}
-                        disabled={isUpdatingVisibility}
-                        activeOpacity={0.8}
-                        accessibilityRole="button"
-                        accessibilityLabel="Publicar receita na comunidade"
-                      >
-                        <MaterialCommunityIcons
-                          name="earth"
-                          size={18}
-                          color={theme.colors.onTertiary}
-                        />
-                        <Text style={styles.btnActionTextPublish}>Publicar</Text>
-                      </TouchableOpacity>
-                    )}
-
-                    {/* Botão Arquivar / Restaurar */}
-                    {recipe.status === 'ARCHIVED' ? (
-                      <TouchableOpacity
-                        style={styles.btnActionUnarchive}
-                        onPress={handleUnarchiveRecipe}
-                        disabled={isUpdatingVisibility}
-                        activeOpacity={0.8}
-                        accessibilityRole="button"
-                        accessibilityLabel="Restaurar receita arquivada"
-                      >
-                        <MaterialCommunityIcons
-                          name="archive-arrow-up-outline"
+                          name="cog-outline"
                           size={18}
                           color={theme.colors.primary}
                         />
-                        <Text style={styles.btnActionTextUnarchive}>Restaurar</Text>
-                      </TouchableOpacity>
-                    ) : (
+                        <Text style={styles.ownerControlTitle}>Painel da Receita</Text>
+                      </View>
+                      {isUpdatingVisibility && (
+                        <ActivityIndicator size="small" color={theme.colors.primary} />
+                      )}
+                    </View>
+
+                    {/* Primary Action: Produzir */}
+                    <TouchableOpacity
+                      style={styles.btnActionProduce}
+                      onPress={() => setIsProduceModalOpen(true)}
+                      activeOpacity={0.85}
+                      accessibilityRole="button"
+                      accessibilityLabel="Registrar produção desta receita"
+                    >
+                      <MaterialCommunityIcons
+                        name="pot-steam"
+                        size={20}
+                        color={theme.colors.onPrimary}
+                      />
+                      <Text style={styles.btnActionTextProduce}>Produzir Receita</Text>
+                    </TouchableOpacity>
+
+                    <View style={styles.ownerActionButtons}>
+                      {/* Botão Editar */}
                       <TouchableOpacity
-                        style={styles.btnActionArchive}
-                        onPress={handleArchiveRecipe}
-                        disabled={isUpdatingVisibility}
+                        style={styles.btnActionEdit}
+                        onPress={() =>
+                          router.push({
+                            pathname: '/edit-recipe',
+                            params: { recipeId: recipe.id },
+                          })
+                        }
                         activeOpacity={0.8}
                         accessibilityRole="button"
-                        accessibilityLabel="Arquivar receita"
+                        accessibilityLabel="Editar informações da receita"
                       >
                         <MaterialCommunityIcons
-                          name="archive-arrow-down-outline"
+                          name="pencil-outline"
                           size={18}
-                          color={theme.colors.onSurfaceVariant}
+                          color={theme.colors.primary}
                         />
-                        <Text style={styles.btnActionTextArchive}>Arquivar</Text>
+                        <Text style={styles.btnActionTextEdit}>Editar</Text>
                       </TouchableOpacity>
-                    )}
-                  </View>
 
-                  {/* Link para histórico de produções */}
-                  <TouchableOpacity
-                    style={styles.historyLinkBtn}
-                    onPress={() =>
-                      router.push({
-                        pathname: '/productions',
-                        params: { recipeId: recipe.id },
-                      })
-                    }
-                    activeOpacity={0.7}
-                    accessibilityRole="button"
-                    accessibilityLabel="Ver produções anteriores desta receita"
-                  >
-                    <MaterialCommunityIcons name="history" size={18} color={theme.colors.primary} />
-                    <Text style={styles.historyLinkText}>
-                      Ver histórico de produções desta receita
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-
-              {!isOwner && user && recipe.status === 'PUBLISHED' && (
-                <View style={styles.guestProduceCard}>
-                  <View style={styles.guestProduceInfo}>
-                    <Text style={styles.guestProduceTitle}>Receita da Comunidade</Text>
-                    <Text style={styles.guestProduceSubtitle}>
-                      {hasSavedRecipe
-                        ? 'Esta receita já está salva nas suas receitas favoritas.'
-                        : 'Salve nas suas favoritas ou produza usando seus insumos.'}
-                    </Text>
-                  </View>
-                  <View style={styles.guestProduceButtons}>
-                    <TouchableOpacity
-                      style={[
-                        styles.btnActionSaveGuest,
-                        hasSavedRecipe && styles.btnActionSaveGuestActive,
-                      ]}
-                      onPress={handleToggleSave}
-                      disabled={isTogglingSave}
-                      activeOpacity={0.8}
-                      accessibilityRole="button"
-                      accessibilityLabel={
-                        hasSavedRecipe
-                          ? 'Remover receita dos salvos'
-                          : 'Salvar receita nos favoritos'
-                      }
-                    >
-                      {isTogglingSave ? (
-                        <ActivityIndicator
-                          size="small"
-                          color={
-                            hasSavedRecipe ? theme.colors.onPrimaryContainer : theme.colors.primary
-                          }
-                        />
-                      ) : (
-                        <>
+                      {/* Botão Publicar / Despublicar */}
+                      {recipe.status === 'PUBLISHED' ? (
+                        <TouchableOpacity
+                          style={styles.btnActionDraft}
+                          onPress={() => handleToggleVisibility('DRAFT')}
+                          disabled={isUpdatingVisibility}
+                          activeOpacity={0.8}
+                          accessibilityRole="button"
+                          accessibilityLabel="Mudar receita para rascunho"
+                        >
                           <MaterialCommunityIcons
-                            name={hasSavedRecipe ? 'bookmark-check' : 'bookmark-outline'}
+                            name="lock-outline"
                             size={18}
+                            color={theme.colors.onSurfaceVariant}
+                          />
+                          <Text style={styles.btnActionTextDraft}>Despublicar</Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity
+                          style={styles.btnActionPublish}
+                          onPress={() => handleToggleVisibility('PUBLISHED')}
+                          disabled={isUpdatingVisibility}
+                          activeOpacity={0.8}
+                          accessibilityRole="button"
+                          accessibilityLabel="Publicar receita na comunidade"
+                        >
+                          <MaterialCommunityIcons
+                            name="earth"
+                            size={18}
+                            color={theme.colors.onTertiary}
+                          />
+                          <Text style={styles.btnActionTextPublish}>Publicar</Text>
+                        </TouchableOpacity>
+                      )}
+
+                      {/* Botão Arquivar / Restaurar */}
+                      {recipe.status === 'ARCHIVED' ? (
+                        <TouchableOpacity
+                          style={styles.btnActionUnarchive}
+                          onPress={handleUnarchiveRecipe}
+                          disabled={isUpdatingVisibility}
+                          activeOpacity={0.8}
+                          accessibilityRole="button"
+                          accessibilityLabel="Restaurar receita arquivada"
+                        >
+                          <MaterialCommunityIcons
+                            name="archive-arrow-up-outline"
+                            size={18}
+                            color={theme.colors.primary}
+                          />
+                          <Text style={styles.btnActionTextUnarchive}>Restaurar</Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity
+                          style={styles.btnActionArchive}
+                          onPress={handleArchiveRecipe}
+                          disabled={isUpdatingVisibility}
+                          activeOpacity={0.8}
+                          accessibilityRole="button"
+                          accessibilityLabel="Arquivar receita"
+                        >
+                          <MaterialCommunityIcons
+                            name="archive-arrow-down-outline"
+                            size={18}
+                            color={theme.colors.onSurfaceVariant}
+                          />
+                          <Text style={styles.btnActionTextArchive}>Arquivar</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+
+                    {/* Link para histórico de produções */}
+                    <TouchableOpacity
+                      style={styles.historyLinkBtn}
+                      onPress={() =>
+                        router.push({
+                          pathname: '/productions',
+                          params: { recipeId: recipe.id },
+                        })
+                      }
+                      activeOpacity={0.7}
+                      accessibilityRole="button"
+                      accessibilityLabel="Ver produções anteriores desta receita"
+                    >
+                      <MaterialCommunityIcons
+                        name="history"
+                        size={18}
+                        color={theme.colors.primary}
+                      />
+                      <Text style={styles.historyLinkText}>
+                        Ver histórico de produções desta receita
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+
+                {!isOwner && user && recipe.status === 'PUBLISHED' && (
+                  <View style={styles.guestProduceCard}>
+                    <View style={styles.guestProduceInfo}>
+                      <Text style={styles.guestProduceTitle}>Receita da Comunidade</Text>
+                      <Text style={styles.guestProduceSubtitle}>
+                        {hasSavedRecipe
+                          ? 'Esta receita já está salva nas suas receitas favoritas.'
+                          : 'Salve nas suas favoritas ou produza usando seus insumos.'}
+                      </Text>
+                    </View>
+                    <View style={styles.guestProduceButtons}>
+                      <TouchableOpacity
+                        style={[
+                          styles.btnActionSaveGuest,
+                          hasSavedRecipe && styles.btnActionSaveGuestActive,
+                        ]}
+                        onPress={handleToggleSave}
+                        disabled={isTogglingSave}
+                        activeOpacity={0.8}
+                        accessibilityRole="button"
+                        accessibilityLabel={
+                          hasSavedRecipe
+                            ? 'Remover receita dos salvos'
+                            : 'Salvar receita nos favoritos'
+                        }
+                      >
+                        {isTogglingSave ? (
+                          <ActivityIndicator
+                            size="small"
                             color={
                               hasSavedRecipe
                                 ? theme.colors.onPrimaryContainer
                                 : theme.colors.primary
                             }
                           />
-                          <Text
-                            style={[
-                              styles.btnActionTextSaveGuest,
-                              hasSavedRecipe && styles.btnActionTextSaveGuestActive,
-                            ]}
-                          >
-                            {hasSavedRecipe ? 'Salva' : 'Salvar'}
-                          </Text>
-                        </>
-                      )}
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={styles.btnActionProduceGuest}
-                      onPress={() => setIsProduceModalOpen(true)}
-                      activeOpacity={0.85}
-                      accessibilityRole="button"
-                      accessibilityLabel="Registrar produção desta receita pública"
-                    >
-                      <MaterialCommunityIcons
-                        name="pot-steam"
-                        size={18}
-                        color={theme.colors.onPrimary}
-                      />
-                      <Text style={styles.btnActionTextProduceGuest}>Produzir</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              )}
-
-              {/* Segmented Mode Switcher */}
-              <View style={styles.segmentedControl}>
-                <TouchableOpacity
-                  style={[
-                    styles.segmentButton,
-                    viewMode === 'recipe' && styles.segmentButtonActive,
-                  ]}
-                  onPress={() => setViewMode('recipe')}
-                  activeOpacity={0.85}
-                  accessibilityRole="button"
-                  accessibilityLabel="Modo Receita"
-                >
-                  <MaterialCommunityIcons
-                    name="book-open-outline"
-                    size={18}
-                    color={
-                      viewMode === 'recipe' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant
-                    }
-                  />
-                  <Text
-                    style={[
-                      styles.segmentButtonText,
-                      viewMode === 'recipe' && styles.segmentButtonTextActive,
-                    ]}
-                  >
-                    Modo Receita
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[
-                    styles.segmentButton,
-                    viewMode === 'pricing' && styles.segmentButtonActive,
-                  ]}
-                  onPress={() => setViewMode('pricing')}
-                  activeOpacity={0.85}
-                  accessibilityRole="button"
-                  accessibilityLabel="Custos e Precificação"
-                >
-                  <MaterialCommunityIcons
-                    name="cash-multiple"
-                    size={18}
-                    color={
-                      viewMode === 'pricing'
-                        ? theme.colors.onPrimary
-                        : theme.colors.onSurfaceVariant
-                    }
-                  />
-                  <Text
-                    style={[
-                      styles.segmentButtonText,
-                      viewMode === 'pricing' && styles.segmentButtonTextActive,
-                    ]}
-                  >
-                    Custos & Preços
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Recipe View Mode */}
-              {viewMode === 'recipe' ? (
-                <View style={styles.modeContainer}>
-                  <RecipeIngredientsSection recipeItems={recipeItems} />
-                  <RecipeInstructionsSection instructions={parsedInstructions} />
-                </View>
-              ) : (
-                /* Pricing View Mode */
-                <View style={styles.modeContainer}>
-                  {/* Items Cost Breakdown */}
-                  <View style={styles.cardBox}>
-                    <View style={styles.cardHeader}>
-                      <MaterialCommunityIcons
-                        name="tag-outline"
-                        size={22}
-                        color={theme.colors.primary}
-                      />
-                      <Text style={styles.cardTitle}>Custo por Insumo (Estoque)</Text>
-                    </View>
-
-                    {recipeItems.length > 0 ? (
-                      recipeItems.map((item, index) => {
-                        const itemName = item.ingredient?.name || item.subRecipe?.title || 'Insumo';
-                        const hasCost =
-                          item.inventory && Number(item.inventory.costPerBaseUnit) > 0;
-                        const costValue = hasCost
-                          ? (Number(item.quantity) * Number(item.inventory!.costPerBaseUnit))
-                              .toFixed(2)
-                              .replace('.', ',')
-                          : null;
-
-                        return (
-                          <View key={item.id || index} style={styles.pricingRow}>
-                            <View style={styles.pricingLeft}>
-                              <Text style={styles.pricingItemName}>
-                                {item.quantity} {item.unit} • {itemName}
-                              </Text>
-                              {!hasCost && (
-                                <Text style={styles.pricingWarningText}>
-                                  Sem custo registrado no estoque
-                                </Text>
-                              )}
-                            </View>
+                        ) : (
+                          <>
+                            <MaterialCommunityIcons
+                              name={hasSavedRecipe ? 'bookmark-check' : 'bookmark-outline'}
+                              size={18}
+                              color={
+                                hasSavedRecipe
+                                  ? theme.colors.onPrimaryContainer
+                                  : theme.colors.primary
+                              }
+                            />
                             <Text
                               style={[
-                                styles.pricingItemValue,
-                                !hasCost && styles.pricingItemValueMissing,
+                                styles.btnActionTextSaveGuest,
+                                hasSavedRecipe && styles.btnActionTextSaveGuestActive,
                               ]}
                             >
-                              {hasCost ? `R$ ${costValue}` : 'R$ --,--'}
+                              {hasSavedRecipe ? 'Salva' : 'Salvar'}
                             </Text>
-                          </View>
-                        );
-                      })
-                    ) : (
-                      <Text style={styles.emptyCardText}>Sem insumos listados.</Text>
-                    )}
-                  </View>
+                          </>
+                        )}
+                      </TouchableOpacity>
 
-                  {/* Cost Summary Card */}
-                  <View style={styles.cardBox}>
-                    <View style={styles.cardHeader}>
-                      <MaterialCommunityIcons
-                        name="calculator-variant-outline"
-                        size={22}
-                        color={theme.colors.primary}
-                      />
-                      <Text style={styles.cardTitle}>Custos Operacionais</Text>
-                    </View>
-
-                    <View style={styles.pricingRow}>
-                      <Text style={styles.pricingItemName}>Insumos / Ingredientes:</Text>
-                      <Text style={styles.pricingItemValue}>
-                        R$ {financialMetrics.totalItemCost.toFixed(2).replace('.', ',')}
-                      </Text>
-                    </View>
-
-                    {financialMetrics.packagingCost > 0 && (
-                      <View style={styles.pricingRow}>
-                        <Text style={styles.pricingItemName}>Embalagem:</Text>
-                        <Text style={styles.pricingItemValue}>
-                          R$ {financialMetrics.packagingCost.toFixed(2).replace('.', ',')}
-                        </Text>
-                      </View>
-                    )}
-
-                    {financialMetrics.laborCost > 0 && (
-                      <View style={styles.pricingRow}>
-                        <Text style={styles.pricingItemName}>
-                          Mão de obra ({recipe.prepTimeMinutes} min @ R${' '}
-                          {Number(recipe.hourlyLabor).toFixed(2)}/h):
-                        </Text>
-                        <Text style={styles.pricingItemValue}>
-                          R$ {financialMetrics.laborCost.toFixed(2).replace('.', ',')}
-                        </Text>
-                      </View>
-                    )}
-
-                    {financialMetrics.overheadCost > 0 && (
-                      <View style={styles.pricingRow}>
-                        <Text style={styles.pricingItemName}>
-                          Custos fixos / overhead ({recipe.overhead}%):
-                        </Text>
-                        <Text style={styles.pricingItemValue}>
-                          R$ {financialMetrics.overheadCost.toFixed(2).replace('.', ',')}
-                        </Text>
-                      </View>
-                    )}
-
-                    <View style={[styles.pricingRow, styles.totalRow]}>
-                      <Text style={styles.totalLabel}>Custo Total de Produção:</Text>
-                      <Text style={styles.totalValue}>
-                        R$ {financialMetrics.totalRecipeCost.toFixed(2).replace('.', ',')}
-                      </Text>
-                    </View>
-
-                    <View style={styles.pricingRow}>
-                      <Text style={styles.pricingItemName}>
-                        Custo Unitário ({recipe.baseYield} {recipe.yieldUnit || 'UN'}):
-                      </Text>
-                      <Text style={styles.pricingItemValue}>
-                        R$ {financialMetrics.unitCost.toFixed(2).replace('.', ',')}
-                      </Text>
+                      <TouchableOpacity
+                        style={styles.btnActionProduceGuest}
+                        onPress={() => setIsProduceModalOpen(true)}
+                        activeOpacity={0.85}
+                        accessibilityRole="button"
+                        accessibilityLabel="Registrar produção desta receita pública"
+                      >
+                        <MaterialCommunityIcons
+                          name="pot-steam"
+                          size={18}
+                          color={theme.colors.onPrimary}
+                        />
+                        <Text style={styles.btnActionTextProduceGuest}>Produzir</Text>
+                      </TouchableOpacity>
                     </View>
                   </View>
+                )}
+              </View>
 
-                  {/* Markup & Selling Price Suggestion Card */}
-                  <View style={styles.suggestionHighlightCard}>
-                    <View style={styles.cardHeader}>
-                      <MaterialCommunityIcons
-                        name="star-circle-outline"
-                        size={22}
-                        color={theme.colors.primary}
-                      />
-                      <Text style={styles.cardTitle}>Sugestão de Preço</Text>
-                    </View>
+              <View style={styles.rightColumn}>
+                {/* Segmented Mode Switcher */}
+                <View style={styles.segmentedControl}>
+                  <TouchableOpacity
+                    style={[
+                      styles.segmentButton,
+                      viewMode === 'recipe' && styles.segmentButtonActive,
+                    ]}
+                    onPress={() => setViewMode('recipe')}
+                    activeOpacity={0.85}
+                    accessibilityRole="button"
+                    accessibilityLabel="Modo Receita"
+                  >
+                    <MaterialCommunityIcons
+                      name="book-open-outline"
+                      size={18}
+                      color={
+                        viewMode === 'recipe'
+                          ? theme.colors.onPrimary
+                          : theme.colors.onSurfaceVariant
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.segmentButtonText,
+                        viewMode === 'recipe' && styles.segmentButtonTextActive,
+                      ]}
+                    >
+                      Modo Receita
+                    </Text>
+                  </TouchableOpacity>
 
-                    <View style={styles.markupDetailsRow}>
-                      <Text style={styles.markupLabel}>Margem de Lucro Desejada:</Text>
-                      <Text style={styles.markupValueHighlight}>
-                        {recipe.profitMargin ? `${recipe.profitMargin}%` : 'Não definida'}
-                      </Text>
-                    </View>
-
-                    <View style={styles.priceContainer}>
-                      <Text style={styles.priceSubtitle}>Preço de Venda Sugerido (Unidade):</Text>
-                      <Text style={styles.priceValueText}>
-                        R$ {financialMetrics.suggestedUnitPrice.toFixed(2).replace('.', ',')}
-                      </Text>
-                    </View>
-
-                    <View style={styles.priceSubContainer}>
-                      <Text style={styles.priceSubText}>
-                        Preço Total da Receita:{' '}
-                        <Text style={styles.priceSubTextBold}>
-                          R$ {financialMetrics.suggestedTotalPrice.toFixed(2).replace('.', ',')}
-                        </Text>
-                      </Text>
-                    </View>
-                  </View>
+                  <TouchableOpacity
+                    style={[
+                      styles.segmentButton,
+                      viewMode === 'pricing' && styles.segmentButtonActive,
+                    ]}
+                    onPress={() => setViewMode('pricing')}
+                    activeOpacity={0.85}
+                    accessibilityRole="button"
+                    accessibilityLabel="Custos e Precificação"
+                  >
+                    <MaterialCommunityIcons
+                      name="cash-multiple"
+                      size={18}
+                      color={
+                        viewMode === 'pricing'
+                          ? theme.colors.onPrimary
+                          : theme.colors.onSurfaceVariant
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.segmentButtonText,
+                        viewMode === 'pricing' && styles.segmentButtonTextActive,
+                      ]}
+                    >
+                      Custos & Preços
+                    </Text>
+                  </TouchableOpacity>
                 </View>
-              )}
+
+                {/* Recipe View Mode */}
+                {viewMode === 'recipe' ? (
+                  <View style={styles.modeContainer}>
+                    <RecipeIngredientsSection recipeItems={recipeItems} />
+                    <RecipeInstructionsSection instructions={parsedInstructions} />
+                  </View>
+                ) : (
+                  /* Pricing View Mode */
+                  <View style={styles.modeContainer}>
+                    {/* Items Cost Breakdown */}
+                    <View style={styles.cardBox}>
+                      <View style={styles.cardHeader}>
+                        <MaterialCommunityIcons
+                          name="tag-outline"
+                          size={22}
+                          color={theme.colors.primary}
+                        />
+                        <Text style={styles.cardTitle}>Custo por Insumo (Estoque)</Text>
+                      </View>
+
+                      {recipeItems.length > 0 ? (
+                        recipeItems.map((item, index) => {
+                          const itemName =
+                            item.ingredient?.name || item.subRecipe?.title || 'Insumo';
+                          const hasCost =
+                            item.inventory && Number(item.inventory.costPerBaseUnit) > 0;
+                          const costValue = hasCost
+                            ? (Number(item.quantity) * Number(item.inventory!.costPerBaseUnit))
+                                .toFixed(2)
+                                .replace('.', ',')
+                            : null;
+
+                          return (
+                            <View key={item.id || index} style={styles.pricingRow}>
+                              <View style={styles.pricingLeft}>
+                                <Text style={styles.pricingItemName}>
+                                  {item.quantity} {item.unit} • {itemName}
+                                </Text>
+                                {!hasCost && (
+                                  <Text style={styles.pricingWarningText}>
+                                    Sem custo registrado no estoque
+                                  </Text>
+                                )}
+                              </View>
+                              <Text
+                                style={[
+                                  styles.pricingItemValue,
+                                  !hasCost && styles.pricingItemValueMissing,
+                                ]}
+                              >
+                                {hasCost ? `R$ ${costValue}` : 'R$ --,--'}
+                              </Text>
+                            </View>
+                          );
+                        })
+                      ) : (
+                        <Text style={styles.emptyCardText}>Sem insumos listados.</Text>
+                      )}
+                    </View>
+
+                    {/* Cost Summary Card */}
+                    <View style={styles.cardBox}>
+                      <View style={styles.cardHeader}>
+                        <MaterialCommunityIcons
+                          name="calculator-variant-outline"
+                          size={22}
+                          color={theme.colors.primary}
+                        />
+                        <Text style={styles.cardTitle}>Custos Operacionais</Text>
+                      </View>
+
+                      <View style={styles.pricingRow}>
+                        <Text style={styles.pricingItemName}>Insumos / Ingredientes:</Text>
+                        <Text style={styles.pricingItemValue}>
+                          R$ {financialMetrics.totalItemCost.toFixed(2).replace('.', ',')}
+                        </Text>
+                      </View>
+
+                      {financialMetrics.packagingCost > 0 && (
+                        <View style={styles.pricingRow}>
+                          <Text style={styles.pricingItemName}>Embalagem:</Text>
+                          <Text style={styles.pricingItemValue}>
+                            R$ {financialMetrics.packagingCost.toFixed(2).replace('.', ',')}
+                          </Text>
+                        </View>
+                      )}
+
+                      {financialMetrics.laborCost > 0 && (
+                        <View style={styles.pricingRow}>
+                          <Text style={styles.pricingItemName}>
+                            Mão de obra ({recipe.prepTimeMinutes} min @ R${' '}
+                            {Number(recipe.hourlyLabor).toFixed(2)}/h):
+                          </Text>
+                          <Text style={styles.pricingItemValue}>
+                            R$ {financialMetrics.laborCost.toFixed(2).replace('.', ',')}
+                          </Text>
+                        </View>
+                      )}
+
+                      {financialMetrics.overheadCost > 0 && (
+                        <View style={styles.pricingRow}>
+                          <Text style={styles.pricingItemName}>
+                            Custos fixos / overhead ({recipe.overhead}%):
+                          </Text>
+                          <Text style={styles.pricingItemValue}>
+                            R$ {financialMetrics.overheadCost.toFixed(2).replace('.', ',')}
+                          </Text>
+                        </View>
+                      )}
+
+                      <View style={[styles.pricingRow, styles.totalRow]}>
+                        <Text style={styles.totalLabel}>Custo Total de Produção:</Text>
+                        <Text style={styles.totalValue}>
+                          R$ {financialMetrics.totalRecipeCost.toFixed(2).replace('.', ',')}
+                        </Text>
+                      </View>
+
+                      <View style={styles.pricingRow}>
+                        <Text style={styles.pricingItemName}>
+                          Custo Unitário ({recipe.baseYield} {recipe.yieldUnit || 'UN'}):
+                        </Text>
+                        <Text style={styles.pricingItemValue}>
+                          R$ {financialMetrics.unitCost.toFixed(2).replace('.', ',')}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Markup & Selling Price Suggestion Card */}
+                    <View style={styles.suggestionHighlightCard}>
+                      <View style={styles.cardHeader}>
+                        <MaterialCommunityIcons
+                          name="star-circle-outline"
+                          size={22}
+                          color={theme.colors.primary}
+                        />
+                        <Text style={styles.cardTitle}>Sugestão de Preço</Text>
+                      </View>
+
+                      <View style={styles.markupDetailsRow}>
+                        <Text style={styles.markupLabel}>Margem de Lucro Desejada:</Text>
+                        <Text style={styles.markupValueHighlight}>
+                          {recipe.profitMargin ? `${recipe.profitMargin}%` : 'Não definida'}
+                        </Text>
+                      </View>
+
+                      <View style={styles.priceContainer}>
+                        <Text style={styles.priceSubtitle}>Preço de Venda Sugerido (Unidade):</Text>
+                        <Text style={styles.priceValueText}>
+                          R$ {financialMetrics.suggestedUnitPrice.toFixed(2).replace('.', ',')}
+                        </Text>
+                      </View>
+
+                      <View style={styles.priceSubContainer}>
+                        <Text style={styles.priceSubText}>
+                          Preço Total da Receita:{' '}
+                          <Text style={styles.priceSubTextBold}>
+                            R$ {financialMetrics.suggestedTotalPrice.toFixed(2).replace('.', ',')}
+                          </Text>
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                )}
+              </View>
             </View>
           </ScrollView>
         )}
@@ -924,7 +938,21 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     },
     innerWrapper: {
       width: '100%',
-      maxWidth: isDesktop ? 960 : 720,
+      maxWidth: isDesktop ? 1200 : 720,
+      flexDirection: isDesktop ? 'row' : 'column',
+      alignItems: 'flex-start',
+      gap: isDesktop ? 32 : 0,
+    },
+    leftColumn: {
+      flex: isDesktop ? 1 : undefined,
+      width: isDesktop ? undefined : '100%',
+      maxWidth: isDesktop ? 480 : '100%',
+      minWidth: isDesktop ? 340 : undefined,
+    },
+    rightColumn: {
+      flex: isDesktop ? 1.4 : undefined,
+      width: isDesktop ? undefined : '100%',
+      minWidth: isDesktop ? 340 : undefined,
     },
     loadingContainer: {
       flex: 1,
@@ -974,8 +1002,8 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     // Hero Cover or Placeholder
     heroImage: {
       width: '100%',
-      aspectRatio: isDesktop ? 21 / 9 : 16 / 9,
-      maxHeight: isDesktop ? 380 : undefined,
+      aspectRatio: 16 / 9,
+      maxHeight: isDesktop ? 300 : undefined,
       borderRadius: theme.rounded.lg,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
@@ -983,8 +1011,8 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     },
     heroPlaceholder: {
       width: '100%',
-      aspectRatio: isDesktop ? 21 / 9 : 16 / 9,
-      maxHeight: isDesktop ? 360 : undefined,
+      aspectRatio: 16 / 9,
+      maxHeight: isDesktop ? 300 : undefined,
       borderRadius: theme.rounded.lg,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,

@@ -1,5 +1,5 @@
 import { memo, useMemo } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
@@ -17,6 +17,7 @@ import {
 interface StockCardProps {
   item: InventoryItem;
   cardWidth?: number;
+  style?: StyleProp<ViewStyle>;
   onAdjust: (item: InventoryItem) => void;
   onPurchase: (item: InventoryItem) => void;
   onWaste: (item: InventoryItem) => void;
@@ -25,6 +26,7 @@ interface StockCardProps {
 export const StockCard = memo(function StockCard({
   item,
   cardWidth,
+  style,
   onAdjust,
   onPurchase,
   onWaste,
@@ -45,7 +47,7 @@ export const StockCard = memo(function StockCard({
   const baseUnit = item.ingredient?.baseUnit || 'un';
 
   return (
-    <View style={[styles.card, cardWidth ? { width: cardWidth } : undefined]}>
+    <View style={[styles.card, cardWidth ? { width: cardWidth } : undefined, style]}>
       {/* Header: Title + Category pill */}
       <View style={styles.header}>
         <View style={styles.titleContainer}>
@@ -89,7 +91,7 @@ export const StockCard = memo(function StockCard({
       </View>
 
       {/* Expiration Date Info */}
-      {Boolean(item.expirationDate) && (
+      {item.expirationDate ? (
         <View
           style={[
             styles.expirationRow,
@@ -134,6 +136,17 @@ export const StockCard = memo(function StockCard({
                 : `Validade: ${formatDate(item.expirationDate)}`}
           </Text>
         </View>
+      ) : (
+        <View style={[styles.expirationRow, styles.expirationNone]}>
+          <MaterialCommunityIcons
+            name="calendar-blank-outline"
+            size={16}
+            color={theme.colors.placeholder}
+          />
+          <Text style={[styles.expirationText, styles.expirationTextNone]}>
+            Sem validade informada
+          </Text>
+        </View>
       )}
 
       {/* Action Buttons Row */}
@@ -146,7 +159,9 @@ export const StockCard = memo(function StockCard({
           accessibilityLabel={`Ajustar estoque de ${ingredientName}`}
         >
           <MaterialCommunityIcons name="tune-variant" size={18} color={theme.colors.onSurface} />
-          <Text style={styles.actionBtnTextSecondary}>Ajustar</Text>
+          <Text style={styles.actionBtnTextSecondary} numberOfLines={1}>
+            Ajustar
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -157,7 +172,9 @@ export const StockCard = memo(function StockCard({
           accessibilityLabel={`Registrar compra para ${ingredientName}`}
         >
           <MaterialCommunityIcons name="plus" size={18} color={theme.colors.onPrimary} />
-          <Text style={styles.actionBtnTextPrimary}>Compra</Text>
+          <Text style={styles.actionBtnTextPrimary} numberOfLines={1}>
+            Compra
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -178,6 +195,7 @@ export const StockCard = memo(function StockCard({
               styles.actionBtnTextDanger,
               isOutOfStock ? styles.actionBtnTextDisabled : undefined,
             ]}
+            numberOfLines={1}
           >
             Perda
           </Text>
@@ -214,6 +232,7 @@ const createStyles = (theme: AppTheme) =>
       fontWeight: '600',
       color: theme.colors.espressoDark,
       lineHeight: 22,
+      minHeight: 44,
     },
     categoryPill: {
       alignSelf: 'flex-start',
@@ -329,11 +348,19 @@ const createStyles = (theme: AppTheme) =>
       backgroundColor: theme.colors.errorContainer,
       borderColor: theme.colors.error,
     },
+    expirationNone: {
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderColor: theme.colors.outlineVariant,
+    },
     expirationText: {
       fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
       fontWeight: '500',
       color: theme.colors.onSurface,
+    },
+    expirationTextNone: {
+      color: theme.colors.onSurfaceVariant,
+      fontWeight: '500',
     },
     expirationTextSoon: {
       color: theme.colors.warning,
@@ -350,6 +377,7 @@ const createStyles = (theme: AppTheme) =>
     },
     actionBtnSecondary: {
       flex: 1,
+      minWidth: 0,
       height: 48,
       borderRadius: theme.rounded.sm,
       borderWidth: 1,
@@ -369,6 +397,7 @@ const createStyles = (theme: AppTheme) =>
     },
     actionBtnPrimary: {
       flex: 1.2,
+      minWidth: 0,
       height: 48,
       borderRadius: theme.rounded.sm,
       backgroundColor: theme.colors.primary,
@@ -387,6 +416,7 @@ const createStyles = (theme: AppTheme) =>
     },
     actionBtnDanger: {
       flex: 0.9,
+      minWidth: 0,
       height: 48,
       borderRadius: theme.rounded.sm,
       borderWidth: 1,

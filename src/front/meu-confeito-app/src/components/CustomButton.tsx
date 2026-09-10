@@ -115,6 +115,7 @@ const createStyles = (
       letterSpacing: theme.typography.labelMd.letterSpacing,
       textTransform: 'uppercase',
       color: textColor,
+      textAlign: 'center',
     },
     disabledButton: {
       opacity: 0.5,

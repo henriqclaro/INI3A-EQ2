@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
@@ -21,7 +21,9 @@ export const StockSummaryBanner = ({
   expiringSoonCount,
 }: StockSummaryBannerProps) => {
   const { theme } = useThemeMode();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 768;
+  const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
   return (
     <View style={styles.container}>
@@ -31,24 +33,36 @@ export const StockSummaryBanner = ({
           <View style={styles.iconWrapper}>
             <MaterialCommunityIcons
               name="package-variant-closed"
-              size={20}
+              size={isDesktop ? 20 : 18}
               color={theme.colors.primary}
             />
           </View>
           <View style={styles.textContainer}>
-            <Text style={styles.metricLabel}>Total de Itens</Text>
-            <Text style={styles.metricValue}>{totalItems}</Text>
+            <Text style={styles.metricLabel} numberOfLines={1}>
+              Total de Itens
+            </Text>
+            <Text style={styles.metricValue} numberOfLines={1}>
+              {totalItems}
+            </Text>
           </View>
         </View>
 
         {/* Metric 2: Total Value */}
         <View style={styles.metricCard}>
           <View style={styles.iconWrapper}>
-            <MaterialCommunityIcons name="cash-multiple" size={20} color={theme.colors.tertiary} />
+            <MaterialCommunityIcons
+              name="cash-multiple"
+              size={isDesktop ? 20 : 18}
+              color={theme.colors.tertiary}
+            />
           </View>
           <View style={styles.textContainer}>
-            <Text style={styles.metricLabel}>Valor em Estoque</Text>
-            <Text style={styles.metricValuePrimary}>{formatCurrency(totalStockValue)}</Text>
+            <Text style={styles.metricLabel} numberOfLines={1}>
+              Valor em Estoque
+            </Text>
+            <Text style={styles.metricValuePrimary} numberOfLines={1} adjustsFontSizeToFit>
+              {formatCurrency(totalStockValue)}
+            </Text>
           </View>
         </View>
 
@@ -57,17 +71,20 @@ export const StockSummaryBanner = ({
           <View style={[styles.iconWrapper, outOfStockCount > 0 && styles.iconWrapperCritical]}>
             <MaterialCommunityIcons
               name="alert-circle-outline"
-              size={20}
+              size={isDesktop ? 20 : 18}
               color={outOfStockCount > 0 ? theme.colors.error : theme.colors.outline}
             />
           </View>
           <View style={styles.textContainer}>
-            <Text style={styles.metricLabel}>Em Falta</Text>
+            <Text style={styles.metricLabel} numberOfLines={1}>
+              Em Falta
+            </Text>
             <Text
               style={[
                 styles.metricValue,
                 outOfStockCount > 0 ? styles.metricValueCritical : undefined,
               ]}
+              numberOfLines={1}
             >
               {outOfStockCount}
             </Text>
@@ -79,17 +96,20 @@ export const StockSummaryBanner = ({
           <View style={[styles.iconWrapper, expiringSoonCount > 0 && styles.iconWrapperWarning]}>
             <MaterialCommunityIcons
               name="clock-alert-outline"
-              size={20}
+              size={isDesktop ? 20 : 18}
               color={expiringSoonCount > 0 ? theme.colors.warning : theme.colors.outline}
             />
           </View>
           <View style={styles.textContainer}>
-            <Text style={styles.metricLabel}>Vence em Breve</Text>
+            <Text style={styles.metricLabel} numberOfLines={1}>
+              Vence em Breve
+            </Text>
             <Text
               style={[
                 styles.metricValue,
                 expiringSoonCount > 0 ? styles.metricValueWarning : undefined,
               ]}
+              numberOfLines={1}
             >
               {expiringSoonCount}
             </Text>
@@ -100,7 +120,7 @@ export const StockSummaryBanner = ({
   );
 };
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = (theme: AppTheme, isDesktop: boolean) =>
   StyleSheet.create({
     container: {
       width: '100%',
@@ -108,26 +128,26 @@ const createStyles = (theme: AppTheme) =>
       borderRadius: theme.rounded.lg,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      padding: 14,
+      padding: isDesktop ? 16 : 10,
       marginBottom: 16,
       ...theme.shadows.soft,
     },
     grid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 10,
+      gap: isDesktop ? 10 : 8,
     },
     metricCard: {
       flex: 1,
-      minWidth: '45%',
+      minWidth: isDesktop ? 180 : '46%',
       backgroundColor: theme.colors.surfaceContainerLow,
       borderRadius: theme.rounded.md,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      padding: 10,
+      padding: isDesktop ? 12 : 8,
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 10,
+      gap: isDesktop ? 10 : 8,
     },
     metricCardAlert: {
       borderColor: theme.colors.error,
@@ -138,9 +158,9 @@ const createStyles = (theme: AppTheme) =>
       backgroundColor: theme.colors.surfaceContainerLow,
     },
     iconWrapper: {
-      width: 38,
-      height: 38,
-      borderRadius: 19,
+      width: isDesktop ? 38 : 32,
+      height: isDesktop ? 38 : 32,
+      borderRadius: isDesktop ? 19 : 16,
       backgroundColor: theme.colors.surfaceContainerLowest,
       alignItems: 'center',
       justifyContent: 'center',
@@ -157,6 +177,7 @@ const createStyles = (theme: AppTheme) =>
     },
     textContainer: {
       flex: 1,
+      minWidth: 0,
       justifyContent: 'center',
     },
     metricLabel: {
@@ -168,13 +189,13 @@ const createStyles = (theme: AppTheme) =>
     },
     metricValue: {
       fontFamily: theme.typography.bodyLg.fontFamily,
-      fontSize: 17,
+      fontSize: isDesktop ? 17 : 15,
       fontWeight: '700',
       color: theme.colors.espressoDark,
     },
     metricValuePrimary: {
       fontFamily: theme.typography.bodyLg.fontFamily,
-      fontSize: 16,
+      fontSize: isDesktop ? 16 : 14,
       fontWeight: '700',
       color: theme.colors.tertiary,
     },

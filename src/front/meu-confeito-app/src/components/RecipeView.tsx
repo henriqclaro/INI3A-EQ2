@@ -1,5 +1,5 @@
 import { memo, useMemo, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 
 import { Image } from 'expo-image';
 
@@ -20,6 +20,8 @@ interface RecipeViewProps {
   tags?: TagData[];
   prepTimeMinutes?: number;
   onPress: () => void;
+  style?: StyleProp<ViewStyle>;
+  maxTagRows?: 1 | 2;
 }
 
 export const RecipeView = memo(function RecipeView({
@@ -28,11 +30,13 @@ export const RecipeView = memo(function RecipeView({
   tags = [],
   prepTimeMinutes = 0,
   onPress,
+  style,
+  maxTagRows = 1,
 }: RecipeViewProps) {
   const { theme } = useThemeMode();
   const [hasImageError, setHasImageError] = useState(false);
 
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const styles = useMemo(() => createStyles(theme, maxTagRows), [theme, maxTagRows]);
 
   const styledTags = useMemo(() => {
     if (!Array.isArray(tags)) return [];
@@ -48,10 +52,13 @@ export const RecipeView = memo(function RecipeView({
   }, [tags, theme]);
 
   const hasValidCover = Boolean(coverUrl && coverUrl.trim().length > 0 && !hasImageError);
+  const maxTags = maxTagRows === 2 ? 4 : 2;
+  const visibleTags = styledTags.slice(0, maxTags);
+  const remainingTagsCount = styledTags.length - maxTags;
 
   return (
     <TouchableOpacity
-      style={styles.container}
+      style={[styles.container, style]}
       onPress={onPress}
       activeOpacity={0.85}
       accessibilityRole="button"
@@ -85,41 +92,56 @@ export const RecipeView = memo(function RecipeView({
           {title}
         </Text>
 
-        {styledTags.length > 0 && (
+        <View style={styles.footerInfo}>
           <View style={styles.tagsContainer}>
-            {styledTags.map((item) => (
-              <View
-                key={item?.tag?.id || item?.tag?.name}
-                style={[
-                  styles.tagBadge,
-                  {
-                    backgroundColor: item.backgroundColor,
-                    borderColor: item.borderColor,
-                  },
-                ]}
-              >
-                <Text style={[styles.tagText, { color: item.textColor }]}>{item?.tag?.name}</Text>
-              </View>
-            ))}
+            {styledTags.length > 0 ? (
+              <>
+                {visibleTags.map((item) => (
+                  <View
+                    key={item?.tag?.id || item?.tag?.name}
+                    style={[
+                      styles.tagBadge,
+                      {
+                        backgroundColor: item.backgroundColor,
+                        borderColor: item.borderColor,
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.tagText, { color: item.textColor }]} numberOfLines={1}>
+                      {item?.tag?.name}
+                    </Text>
+                  </View>
+                ))}
+                {remainingTagsCount > 0 && (
+                  <View style={styles.tagMoreBadge}>
+                    <Text style={styles.tagMoreText}>+{remainingTagsCount}</Text>
+                  </View>
+                )}
+              </>
+            ) : (
+              <View style={styles.tagPlaceholder} />
+            )}
           </View>
-        )}
 
-        {prepTimeMinutes > 0 && (
-          <View style={styles.timeBadge}>
-            <MaterialCommunityIcons
-              name="timer-outline"
-              size={16}
-              color={theme.colors.onSurfaceVariant}
-            />
-            <Text style={styles.timeText}>{prepTimeMinutes} min</Text>
-          </View>
-        )}
+          {prepTimeMinutes > 0 ? (
+            <View style={styles.timeBadge}>
+              <MaterialCommunityIcons
+                name="timer-outline"
+                size={16}
+                color={theme.colors.onSurfaceVariant}
+              />
+              <Text style={styles.timeText}>{prepTimeMinutes} min</Text>
+            </View>
+          ) : (
+            <View style={[styles.timeBadge, styles.timeBadgePlaceholder]} />
+          )}
+        </View>
       </View>
     </TouchableOpacity>
   );
 });
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = (theme: AppTheme, maxTagRows: 1 | 2) =>
   StyleSheet.create({
     container: {
       backgroundColor: theme.colors.surfaceContainerLowest,
@@ -159,37 +181,66 @@ const createStyles = (theme: AppTheme) =>
       color: theme.colors.onSurfaceVariant,
     },
     infoContainer: {
-      padding: theme.spacing.space4,
+      paddingHorizontal: theme.spacing.space4,
+      paddingTop: theme.spacing.space3,
+      paddingBottom: theme.spacing.space4,
+      flexGrow: 1,
+      justifyContent: 'space-between',
     },
     title: {
-      fontSize: 19,
-      lineHeight: 25,
+      fontSize: 18,
+      lineHeight: 24,
+      minHeight: 48,
       fontWeight: '600',
       fontFamily: theme.typography.headlineMd.fontFamily,
       color: theme.colors.espressoDark,
       marginBottom: theme.spacing.space2,
     },
+    footerInfo: {
+      gap: 10,
+      justifyContent: 'flex-end',
+      paddingBottom: 2,
+    },
     tagsContainer: {
       flexDirection: 'row',
       flexWrap: 'wrap',
+      alignItems: 'center',
       gap: 6,
+      minHeight: maxTagRows === 2 ? 56 : 26,
     },
     tagBadge: {
-      paddingVertical: 4,
-      paddingHorizontal: 10,
+      paddingVertical: 3,
+      paddingHorizontal: 8,
       borderRadius: theme.rounded.full,
       borderWidth: 1,
+      maxWidth: 130,
     },
     tagText: {
-      fontSize: 12,
+      fontSize: 11,
       fontFamily: theme.typography.labelSm.fontFamily,
       fontWeight: '600',
+    },
+    tagMoreBadge: {
+      paddingVertical: 3,
+      paddingHorizontal: 6,
+      borderRadius: theme.rounded.full,
+      backgroundColor: theme.colors.surfaceContainerHigh,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+    },
+    tagMoreText: {
+      fontSize: 11,
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontWeight: '600',
+      color: theme.colors.onSurfaceVariant,
+    },
+    tagPlaceholder: {
+      height: maxTagRows === 2 ? 56 : 26,
     },
     timeBadge: {
       flexDirection: 'row',
       alignItems: 'center',
       alignSelf: 'flex-start',
-      marginTop: theme.spacing.space2,
       backgroundColor: theme.colors.surfaceContainerLow,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
@@ -197,6 +248,12 @@ const createStyles = (theme: AppTheme) =>
       paddingHorizontal: 10,
       borderRadius: theme.rounded.full,
       gap: 5,
+      minHeight: 28,
+    },
+    timeBadgePlaceholder: {
+      opacity: 0,
+      borderWidth: 0,
+      minHeight: 28,
     },
     timeText: {
       fontSize: 12,

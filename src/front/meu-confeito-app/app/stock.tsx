@@ -55,7 +55,11 @@ export default function StockScreen() {
   const [modalMode, setModalMode] = useState<StockOperationType>('adjust');
 
   const isMobile = width < 768;
-  const numCols = isMobile ? 1 : Math.max(1, Math.min(3, Math.floor(width / 340)));
+  const containerWidth = Math.min(width - (isMobile ? 32 : 48), 1200);
+  const numCols = isMobile ? 1 : Math.max(1, Math.min(3, Math.floor(containerWidth / 340)));
+  const cardWidth = isMobile
+    ? Math.min(width - 32, 480)
+    : Math.floor((containerWidth - (numCols - 1) * 16) / numCols);
 
   // Calculations for summary metrics
   const summaryMetrics = useMemo(() => {
@@ -139,20 +143,31 @@ export default function StockScreen() {
     setSelectedItem(null);
   }, []);
 
-  const styles = useMemo(() => createStyles(theme, isMobile), [theme, isMobile]);
+  const styles = useMemo(
+    () => createStyles(theme, isMobile, cardWidth),
+    [theme, isMobile, cardWidth],
+  );
 
   const renderStockItem = useCallback(
     ({ item }: { item: InventoryItem }) => (
       <View style={styles.cardWrapper}>
         <StockCard
           item={item}
+          style={!isMobile ? styles.desktopCard : undefined}
           onAdjust={handleOpenAdjust}
           onPurchase={handleOpenPurchase}
           onWaste={handleOpenWaste}
         />
       </View>
     ),
-    [handleOpenAdjust, handleOpenPurchase, handleOpenWaste, styles.cardWrapper],
+    [
+      handleOpenAdjust,
+      handleOpenPurchase,
+      handleOpenWaste,
+      isMobile,
+      styles.cardWrapper,
+      styles.desktopCard,
+    ],
   );
 
   const listHeader = useMemo(
@@ -374,6 +389,7 @@ export default function StockScreen() {
           ItemSeparatorComponent={itemSeparator}
           ListHeaderComponent={listHeader}
           ListEmptyComponent={listEmpty}
+          style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -419,11 +435,15 @@ export default function StockScreen() {
   );
 }
 
-const createStyles = (theme: AppTheme, isMobile: boolean) =>
+const createStyles = (theme: AppTheme, isMobile: boolean, cardWidth?: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
+    },
+    scrollView: {
+      flex: 1,
+      width: '100%',
     },
     scrollContent: {
       flexGrow: 1,
@@ -431,11 +451,6 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       paddingHorizontal: isMobile ? 16 : 24,
       paddingTop: 16,
       paddingBottom: 96,
-    },
-    innerContainer: {
-      width: '100%',
-      maxWidth: 1200,
-      gap: 12,
     },
     headerSection: {
       flexDirection: isMobile ? 'column' : 'row',
@@ -511,8 +526,8 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       fontWeight: '700',
     },
     headerWrapper: {
-      width: '100%',
-      maxWidth: 1200,
+      width: isMobile ? cardWidth : '100%',
+      maxWidth: isMobile ? '100%' : 1200,
       alignSelf: 'center',
       gap: 12,
       marginBottom: 16,
@@ -522,19 +537,25 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       width: '100%',
       maxWidth: 1200,
       alignSelf: 'center',
+      justifyContent: 'flex-start',
     },
     separator: {
       height: 16,
     },
     cardWrapper: {
-      width: isMobile ? '100%' : undefined,
-      flex: isMobile ? undefined : 1,
-      minWidth: isMobile ? '100%' : 300,
-      maxWidth: isMobile ? '100%' : 380,
+      width: cardWidth,
+      maxWidth: '100%',
+      height: isMobile ? undefined : 375,
       alignSelf: 'center',
     },
+    desktopCard: {
+      height: '100%',
+      justifyContent: 'space-between',
+    },
     feedbackContainer: {
-      width: '100%',
+      width: isMobile ? cardWidth : '100%',
+      maxWidth: 420,
+      alignSelf: 'center',
       alignItems: 'center',
       justifyContent: 'center',
       paddingVertical: 48,

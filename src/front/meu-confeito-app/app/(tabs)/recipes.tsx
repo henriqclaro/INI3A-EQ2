@@ -37,6 +37,11 @@ export default function RecipesScreen() {
   }, [user]);
 
   const isDesktop = width >= 768;
+  const numCols = isDesktop ? 3 : 1;
+  const containerWidth = Math.min(width - (isDesktop ? 48 : 32), 1200);
+  const cardWidth = isDesktop
+    ? Math.floor((containerWidth - (numCols - 1) * 16) / numCols)
+    : Math.min(width - 32, 480);
 
   const speedDialActions: FloatingActionItem[] = useMemo(
     () => [
@@ -68,7 +73,10 @@ export default function RecipesScreen() {
     [],
   );
 
-  const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
+  const styles = useMemo(
+    () => createStyles(theme, isDesktop, cardWidth),
+    [theme, isDesktop, cardWidth],
+  );
 
   const renderRecipeItem = useCallback(
     ({ item }: { item: PartialRecipe }) => (
@@ -78,13 +86,14 @@ export default function RecipesScreen() {
           coverUrl={item.coverUrl}
           tags={item.tags}
           prepTimeMinutes={item.prepTimeMinutes}
+          style={isDesktop ? styles.desktopCard : undefined}
           onPress={() => {
             router.push({ pathname: '/single-recipe', params: { recipeId: item.id } });
           }}
         />
       </View>
     ),
-    [styles.cardWrapper],
+    [isDesktop, styles.cardWrapper, styles.desktopCard],
   );
 
   const listHeader = useMemo(() => {
@@ -317,7 +326,7 @@ export default function RecipesScreen() {
   );
 }
 
-const createStyles = (theme: AppTheme, isDesktop: boolean) =>
+const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -334,7 +343,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
     },
     scrollContainer: {
       paddingHorizontal: isDesktop ? 24 : 16,
-      paddingTop: 16,
+      paddingTop: isDesktop ? 24 : 16,
       paddingBottom: 100,
       alignItems: 'center',
     },
@@ -349,27 +358,30 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingVertical: 8,
+      flexWrap: 'wrap',
+      gap: 16,
+      paddingVertical: 4,
       paddingHorizontal: 4,
-      marginBottom: 4,
     },
     desktopHeaderTitleCol: {
-      gap: 4,
+      gap: 6,
+      minWidth: 200,
     },
     desktopHeaderTitle: {
       fontFamily: theme.typography.headlineLg.fontFamily,
-      fontSize: 26,
+      fontSize: 28,
       fontWeight: '700',
       color: theme.colors.espressoDark,
     },
     desktopHeaderSubtitle: {
       fontFamily: theme.typography.bodySm.fontFamily,
-      fontSize: 13,
+      fontSize: 14,
       color: theme.colors.onSurfaceVariant,
     },
     desktopHeaderActions: {
       flexDirection: 'row',
       alignItems: 'center',
+      flexWrap: 'wrap',
       gap: 12,
     },
     desktopHeaderSecondaryBtn: {
@@ -419,13 +431,16 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       width: '100%',
       maxWidth: 1200,
       alignSelf: 'center',
-      marginBottom: 16,
+      marginBottom: 28,
+      paddingBottom: 20,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.outlineVariant,
     },
     footerWrapper: {
-      width: '100%',
+      width: isDesktop ? '100%' : cardWidth,
       maxWidth: 1200,
       alignSelf: 'center',
-      marginTop: 20,
+      marginTop: 24,
     },
     emptyWrapper: {
       width: '100%',
@@ -443,11 +458,13 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       height: 16,
     },
     cardWrapper: {
-      width: isDesktop ? undefined : '100%',
-      flex: isDesktop ? 1 : undefined,
-      minWidth: isDesktop ? 260 : undefined,
-      maxWidth: isDesktop ? 360 : 480,
+      width: cardWidth,
+      maxWidth: '100%',
+      height: isDesktop ? 380 : undefined,
       alignSelf: 'center',
+    },
+    desktopCard: {
+      height: '100%',
     },
     loadingContainer: {
       paddingTop: 80,
@@ -534,7 +551,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       borderRadius: theme.rounded.lg,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      padding: 20,
+      padding: isDesktop ? 20 : 16,
       marginTop: 8,
       gap: 16,
       ...theme.shadows.soft,
@@ -542,12 +559,12 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
     suggestionHeader: {
       flexDirection: 'row',
       alignItems: 'flex-start',
-      gap: 14,
+      gap: 12,
     },
     suggestionIconWrapper: {
-      width: 46,
-      height: 46,
-      borderRadius: 23,
+      width: isDesktop ? 46 : 40,
+      height: isDesktop ? 46 : 40,
+      borderRadius: isDesktop ? 23 : 20,
       backgroundColor: theme.colors.secondaryContainer,
       alignItems: 'center',
       justifyContent: 'center',
@@ -556,10 +573,11 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
     },
     suggestionHeaderText: {
       flex: 1,
+      minWidth: 0,
     },
     suggestionTitle: {
       fontFamily: theme.typography.headlineMd.fontFamily,
-      fontSize: 18,
+      fontSize: isDesktop ? 18 : 17,
       fontWeight: '600',
       color: theme.colors.espressoDark,
       marginBottom: 4,
@@ -576,6 +594,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
     },
     suggestionPrimaryBtn: {
       flex: isDesktop ? 1 : undefined,
+      width: isDesktop ? undefined : '100%',
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
@@ -594,6 +613,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
     },
     suggestionSecondaryBtn: {
       flex: isDesktop ? 1 : undefined,
+      width: isDesktop ? undefined : '100%',
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',

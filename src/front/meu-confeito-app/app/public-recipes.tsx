@@ -29,9 +29,17 @@ export default function PublicRecipesScreen() {
   const { width } = useWindowDimensions();
 
   const isDesktop = width >= 768;
+  const numCols = isDesktop ? 3 : 1;
+  const containerWidth = Math.min(width - (isDesktop ? 48 : 32), 1200);
+  const cardWidth = isDesktop
+    ? Math.floor((containerWidth - (numCols - 1) * 16) / numCols)
+    : Math.min(width - 32, 480);
   const hasActiveSearch = Boolean(search.trim().length > 0);
 
-  const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
+  const styles = useMemo(
+    () => createStyles(theme, isDesktop, cardWidth),
+    [theme, isDesktop, cardWidth],
+  );
 
   const renderRecipeItem = useCallback(
     ({ item }: { item: PartialRecipe }) => (
@@ -41,13 +49,15 @@ export default function PublicRecipesScreen() {
           coverUrl={item.coverUrl}
           tags={item.tags}
           prepTimeMinutes={item.prepTimeMinutes}
+          maxTagRows={2}
+          style={isDesktop ? styles.desktopCard : undefined}
           onPress={() => {
             router.push({ pathname: '/single-recipe', params: { recipeId: item.id } });
           }}
         />
       </View>
     ),
-    [styles.cardWrapper],
+    [isDesktop, styles.cardWrapper, styles.desktopCard],
   );
 
   const listEmpty = useMemo(() => {
@@ -189,7 +199,7 @@ export default function PublicRecipesScreen() {
   );
 }
 
-const createStyles = (theme: AppTheme, isDesktop: boolean) =>
+const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -269,11 +279,13 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       height: 16,
     },
     cardWrapper: {
-      width: isDesktop ? undefined : '100%',
-      flex: isDesktop ? 1 : undefined,
-      minWidth: isDesktop ? 260 : undefined,
-      maxWidth: isDesktop ? 360 : 480,
+      width: cardWidth,
+      maxWidth: '100%',
+      height: isDesktop ? 410 : undefined,
       alignSelf: 'center',
+    },
+    desktopCard: {
+      height: '100%',
     },
     emptyWrapper: {
       width: '100%',
