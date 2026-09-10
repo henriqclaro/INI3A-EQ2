@@ -261,13 +261,15 @@ export function ProfitSummarySection({
           {/* Cost Breakdown Section */}
           <View style={styles.breakdownCard}>
             <View style={styles.breakdownHeader}>
-              <View>
+              <View style={styles.breakdownTitleCol}>
                 <Text style={styles.breakdownTitle}>Composição dos Custos</Text>
                 <Text style={styles.breakdownSubtitle}>
                   Detalhamento de gastos dos lotes fabricados no período
                 </Text>
               </View>
-              <Text style={styles.breakdownTotal}>{formatCurrency(totalCostNumber)}</Text>
+              <Text style={styles.breakdownTotal} numberOfLines={1} adjustsFontSizeToFit>
+                {formatCurrency(totalCostNumber)}
+              </Text>
             </View>
 
             {/* Stacked Proportional Bar */}
@@ -544,8 +546,10 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
+      gap: 8,
     },
     kpiLabel: {
+      flex: 1,
       fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
@@ -593,6 +597,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       paddingVertical: 4,
       borderRadius: theme.rounded.full,
       borderWidth: 1,
+      flexShrink: 0,
     },
     marginBadgePositive: {
       backgroundColor: theme.colors.chips.success.background,
@@ -627,6 +632,11 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       flexDirection: 'row',
       alignItems: 'flex-start',
       justifyContent: 'space-between',
+      gap: 12,
+    },
+    breakdownTitleCol: {
+      flex: 1,
+      gap: 2,
     },
     breakdownTitle: {
       fontFamily: theme.typography.labelMd.fontFamily,
@@ -638,13 +648,15 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
       color: theme.colors.onSurfaceVariant,
-      marginTop: 2,
+      lineHeight: 16,
     },
     breakdownTotal: {
       fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 18,
       fontWeight: '700',
       color: theme.colors.primary,
+      textAlign: 'right',
+      flexShrink: 0,
     },
     progressBarWrapper: {
       width: '100%',
@@ -664,6 +676,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
+      gap: 8,
       paddingVertical: 12,
       borderBottomWidth: 1,
       borderBottomColor: theme.colors.surfaceContainerHigh,
@@ -673,6 +686,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       borderBottomWidth: 0,
     },
     breakdownLeftCol: {
+      flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
       gap: 10,
@@ -683,6 +697,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       borderRadius: 5,
     },
     breakdownName: {
+      flex: 1,
       fontFamily: theme.typography.bodyMd.fontFamily,
       fontSize: 14,
       color: theme.colors.espressoDark,
@@ -691,6 +706,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
+      flexShrink: 0,
     },
     breakdownAmount: {
       fontFamily: theme.typography.bodyMd.fontFamily,
