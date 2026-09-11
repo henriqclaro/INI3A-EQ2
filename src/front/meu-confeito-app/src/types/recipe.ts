@@ -61,6 +61,10 @@ export interface PartialRecipe {
   updatedAt: Date | string;
   baseYield?: number | string;
   yieldUnit?: string;
+  parent?: {
+    id: string;
+    title: string;
+  } | null;
   tags: {
     tag: PartialTag;
   }[];
@@ -79,7 +83,10 @@ export interface RecipeInstructionsData {
 export interface FullRecipe {
   id: string;
   userId: string | null;
-  parentId: string | null;
+  parent?: {
+    id: string;
+    title: string;
+  } | null;
   title: string;
   coverUrl: string | null;
   instructions:
@@ -149,7 +156,10 @@ export interface RecipeRegisterResponseData {
   recipe: {
     id: string;
     userId: string | null;
-    parentId: string | null;
+    parent?: {
+      id: string;
+      title: string;
+    } | null;
     title: string;
     coverUrl: string | null;
     instructions: unknown;

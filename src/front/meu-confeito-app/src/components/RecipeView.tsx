@@ -22,6 +22,8 @@ interface RecipeViewProps {
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
   maxTagRows?: 1 | 2;
+  isCustomized?: boolean;
+  hasParent?: boolean;
 }
 
 export const RecipeView = memo(function RecipeView({
@@ -32,6 +34,8 @@ export const RecipeView = memo(function RecipeView({
   onPress,
   style,
   maxTagRows = 1,
+  isCustomized = false,
+  hasParent = false,
 }: RecipeViewProps) {
   const { theme } = useThemeMode();
   const [hasImageError, setHasImageError] = useState(false);
@@ -88,6 +92,12 @@ export const RecipeView = memo(function RecipeView({
       )}
 
       <View style={styles.infoContainer}>
+        {(isCustomized || hasParent) && (
+          <View style={styles.customizedBadge}>
+            <MaterialCommunityIcons name="source-fork" size={12} color={theme.colors.secondary} />
+            <Text style={styles.customizedBadgeText}>Adaptada</Text>
+          </View>
+        )}
         <Text style={styles.title} numberOfLines={2}>
           {title}
         </Text>
@@ -186,6 +196,25 @@ const createStyles = (theme: AppTheme, maxTagRows: 1 | 2) =>
       paddingBottom: theme.spacing.space4,
       flexGrow: 1,
       justifyContent: 'space-between',
+    },
+    customizedBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      backgroundColor: theme.colors.surfaceContainerHigh,
+      borderColor: theme.colors.outlineVariant,
+      borderWidth: 1,
+      borderRadius: theme.rounded.full,
+      paddingVertical: 2,
+      paddingHorizontal: 8,
+      gap: 4,
+      marginBottom: 6,
+    },
+    customizedBadgeText: {
+      fontSize: 11,
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontWeight: '600',
+      color: theme.colors.secondary,
     },
     title: {
       fontSize: 18,

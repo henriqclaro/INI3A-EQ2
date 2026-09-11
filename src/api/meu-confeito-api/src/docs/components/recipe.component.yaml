@@ -13,10 +13,15 @@ components:
               type: string
               format: uuid
               nullable: true
-            parentId:
-              type: string
-              format: uuid
+            parent:
+              type: object
               nullable: true
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                title:
+                  type: string
             title:
               type: string
             coverUrl:
@@ -111,10 +116,15 @@ components:
               type: string
               format: uuid
               nullable: true
-            parentId:
-              type: string
-              format: uuid
+            parent:
+              type: object
               nullable: true
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                title:
+                  type: string
             title:
               type: string
             coverUrl:
@@ -265,10 +275,15 @@ components:
               type: string
               format: uuid
               nullable: true
-            parentId:
-              type: string
-              format: uuid
+            parent:
+              type: object
               nullable: true
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                title:
+                  type: string
             title:
               type: string
             coverUrl:
@@ -419,10 +434,15 @@ components:
               type: string
               format: uuid
               nullable: true
-            parentId:
-              type: string
-              format: uuid
+            parent:
+              type: object
               nullable: true
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                title:
+                  type: string
             title:
               type: string
             coverUrl:
@@ -588,6 +608,15 @@ components:
               id:
                 type: string
                 format: uuid
+              parent:
+                type: object
+                nullable: true
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  title:
+                    type: string
               createdAt:
                 type: string
                 format: date-time

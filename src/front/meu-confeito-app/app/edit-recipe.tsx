@@ -109,22 +109,47 @@ export default function EditRecipeScreen() {
             <View style={styles.errorCard}>
               <View style={styles.iconCircle}>
                 <MaterialCommunityIcons
-                  name="shield-lock-outline"
+                  name={recipe?.status === 'PUBLISHED' ? 'source-fork' : 'shield-lock-outline'}
                   size={40}
-                  color={theme.colors.error}
+                  color={recipe?.status === 'PUBLISHED' ? theme.colors.primary : theme.colors.error}
                 />
               </View>
-              <Text style={styles.errorTitle}>Acesso Negado</Text>
-              <Text style={styles.errorSubtitle}>
-                Você não tem permissão para editar esta receita.
+              <Text style={styles.errorTitle}>
+                {recipe?.status === 'PUBLISHED' ? 'Receita Pública' : 'Acesso Negado'}
               </Text>
+              <Text style={styles.errorSubtitle}>
+                {recipe?.status === 'PUBLISHED'
+                  ? 'Esta é uma receita pública e não pode ser alterada diretamente. Deseja criar sua própria versão personalizada na sua confeitaria?'
+                  : 'Você não tem permissão para editar esta receita diretamente.'}
+              </Text>
+              {recipe?.status === 'PUBLISHED' && (
+                <TouchableOpacity
+                  style={styles.actionBtn}
+                  onPress={() =>
+                    router.replace({
+                      pathname: '/create-recipe',
+                      params: { forkFromId: recipeId },
+                    })
+                  }
+                  accessibilityRole="button"
+                  accessibilityLabel="Personalizar receita e criar minha versão"
+                >
+                  <Text style={styles.actionBtnText}>Personalizar e Criar Minha Versão</Text>
+                </TouchableOpacity>
+              )}
               <TouchableOpacity
-                style={styles.actionBtn}
+                style={recipe?.status === 'PUBLISHED' ? styles.secondaryBtn : styles.actionBtn}
                 onPress={() => router.back()}
                 accessibilityRole="button"
                 accessibilityLabel="Voltar"
               >
-                <Text style={styles.actionBtnText}>Voltar</Text>
+                <Text
+                  style={
+                    recipe?.status === 'PUBLISHED' ? styles.secondaryBtnText : styles.actionBtnText
+                  }
+                >
+                  Voltar
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -210,6 +235,24 @@ const createStyles = (theme: AppTheme) =>
     },
     actionBtnText: {
       color: theme.colors.onPrimary,
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 15,
+      fontWeight: '600',
+    },
+    secondaryBtn: {
+      marginTop: 4,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      borderRadius: theme.rounded.default,
+      minHeight: 48,
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%',
+    },
+    secondaryBtnText: {
+      color: theme.colors.onSurfaceVariant,
       fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 15,
       fontWeight: '600',

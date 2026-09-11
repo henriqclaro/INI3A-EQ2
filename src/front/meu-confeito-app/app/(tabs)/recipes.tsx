@@ -86,6 +86,8 @@ export default function RecipesScreen() {
           coverUrl={item.coverUrl}
           tags={item.tags}
           prepTimeMinutes={item.prepTimeMinutes}
+          isCustomized={Boolean(item.parent)}
+          hasParent={Boolean(item.parent)}
           style={isDesktop ? styles.desktopCard : undefined}
           onPress={() => {
             router.push({ pathname: '/single-recipe', params: { recipeId: item.id } });

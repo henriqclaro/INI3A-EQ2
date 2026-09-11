@@ -38,6 +38,10 @@ export namespace UserDTO {
   export interface SelectUserRecipesResponse {
     recipes: {
       id: string;
+      parent: {
+        id: string;
+        title: string;
+      } | null;
       title: string;
       coverUrl: string | null;
       /*

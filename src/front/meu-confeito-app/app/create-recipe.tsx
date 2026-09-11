@@ -1,5 +1,13 @@
 import { useMemo } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 
@@ -15,22 +23,32 @@ import { RecipeRegisterInput } from '@/src/types';
 export default function CreateRecipeScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
-  const { recipeId } = useLocalSearchParams<{ recipeId?: string }>();
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 768;
 
-  const isEditMode = Boolean(recipeId);
+  const { recipeId, forkFromId, parentId } = useLocalSearchParams<{
+    recipeId?: string;
+    forkFromId?: string;
+    parentId?: string;
+  }>();
+
+  const sourceRecipeId = forkFromId || parentId;
+  const isCustomizing = Boolean(sourceRecipeId);
+  const isEditMode = Boolean(recipeId) && !isCustomizing;
+  const targetRecipeId = isCustomizing ? sourceRecipeId : recipeId;
 
   const {
     recipe,
     isLoading: isLoadingRecipe,
     error: recipeError,
-  } = useSingleRecipe(recipeId || '', user?.id);
+  } = useSingleRecipe(targetRecipeId || '', user?.id);
   const { registerRecipe, isLoading: isRegistering } = useRecipeRegister();
   const { updateRecipe, isLoading: isUpdating } = useRecipeUpdate();
 
   const isSubmitting = isEditMode ? isUpdating : isRegistering;
   const isOwner = Boolean(!isEditMode || (user?.id && recipe?.userId && user.id === recipe.userId));
 
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
   const handleSubmit = async (formData: RecipeFormSubmitData) => {
     if (!user?.id) {
@@ -69,7 +87,7 @@ export default function CreateRecipeScreen() {
       } else {
         const payload: RecipeRegisterInput = {
           userId: user.id,
-          parentId: null,
+          parentId: isCustomizing && sourceRecipeId ? sourceRecipeId : null,
           title: formData.title,
           coverUrl: formData.coverUrl,
           instructions: formData.instructions,
@@ -86,7 +104,12 @@ export default function CreateRecipeScreen() {
 
         const res = await registerRecipe(payload);
 
-        Alert.alert('Sucesso', 'Receita cadastrada com sucesso!', [
+        const successTitle = isCustomizing ? 'Receita Personalizada!' : 'Sucesso';
+        const successMessage = isCustomizing
+          ? 'Sua versão personalizada foi criada com sucesso e vinculada à receita original!'
+          : 'Receita cadastrada com sucesso!';
+
+        Alert.alert(successTitle, successMessage, [
           {
             text: 'Visualizar',
             onPress: () => {
@@ -109,22 +132,41 @@ export default function CreateRecipeScreen() {
         apiErr?.message ||
         (isEditMode
           ? 'Não foi possível atualizar a receita.'
-          : 'Não foi possível salvar a receita.');
-      Alert.alert(isEditMode ? 'Erro ao atualizar' : 'Erro ao cadastrar', errorMsg);
+          : isCustomizing
+            ? 'Não foi possível criar sua versão personalizada.'
+            : 'Não foi possível salvar a receita.');
+      Alert.alert(
+        isEditMode
+          ? 'Erro ao atualizar'
+          : isCustomizing
+            ? 'Erro ao personalizar'
+            : 'Erro ao cadastrar',
+        errorMsg,
+      );
     }
   };
 
+  const pageTitle = isCustomizing
+    ? 'Personalizar Receita'
+    : isEditMode
+      ? 'Editar Receita'
+      : 'Cadastrar Receita';
+
   return (
     <>
-      <Stack.Screen options={{ title: isEditMode ? 'Editar Receita' : 'Cadastrar Receita' }} />
+      <Stack.Screen options={{ title: pageTitle }} />
 
       <View style={styles.container}>
-        {isEditMode && isLoadingRecipe ? (
+        {(isEditMode || isCustomizing) && isLoadingRecipe ? (
           <View style={styles.centerContainer}>
             <ActivityIndicator size="large" color={theme.colors.primary} />
-            <Text style={styles.loadingText}>Carregando dados da receita...</Text>
+            <Text style={styles.loadingText}>
+              {isCustomizing
+                ? 'Carregando dados da receita pública...'
+                : 'Carregando dados da receita...'}
+            </Text>
           </View>
-        ) : isEditMode && (!recipe || recipeError) ? (
+        ) : (isEditMode || isCustomizing) && (!recipe || recipeError) ? (
           <View style={styles.centerContainer}>
             <View style={styles.errorCard}>
               <View style={styles.iconCircle}>
@@ -136,7 +178,9 @@ export default function CreateRecipeScreen() {
               </View>
               <Text style={styles.errorTitle}>Receita não encontrada</Text>
               <Text style={styles.errorSubtitle}>
-                Não foi possível encontrar a receita para edição.
+                {isCustomizing
+                  ? 'Não foi possível encontrar a receita pública para personalização.'
+                  : 'Não foi possível encontrar a receita para edição.'}
               </Text>
               <TouchableOpacity
                 style={styles.actionBtn}
@@ -160,7 +204,7 @@ export default function CreateRecipeScreen() {
               </View>
               <Text style={styles.errorTitle}>Acesso Negado</Text>
               <Text style={styles.errorSubtitle}>
-                Você não tem permissão para editar esta receita.
+                Você não tem permissão para editar esta receita diretamente.
               </Text>
               <TouchableOpacity
                 style={styles.actionBtn}
@@ -173,24 +217,131 @@ export default function CreateRecipeScreen() {
             </View>
           </View>
         ) : (
-          <RecipeForm
-            initialRecipe={isEditMode ? recipe : undefined}
-            isEditMode={isEditMode}
-            isSubmitting={isSubmitting}
-            onSubmit={handleSubmit}
-            submitButtonText={isEditMode ? 'Salvar Alterações' : 'Cadastrar Receita'}
-          />
+          <View style={styles.formWrapper}>
+            {isCustomizing && recipe && (
+              <View style={styles.forkBannerWrapper}>
+                <View style={styles.forkBanner}>
+                  <View style={styles.forkBannerIconWrap}>
+                    <MaterialCommunityIcons
+                      name="source-fork"
+                      size={22}
+                      color={theme.colors.primary}
+                    />
+                  </View>
+                  <View style={styles.forkBannerContent}>
+                    <View style={styles.forkBannerBadge}>
+                      <MaterialCommunityIcons
+                        name="earth"
+                        size={12}
+                        color={theme.colors.onPrimaryFixed}
+                      />
+                      <Text style={styles.forkBannerBadgeText}>Personalizando Receita Pública</Text>
+                    </View>
+                    <Text style={styles.forkBannerTitle} numberOfLines={1}>
+                      Versão baseada em: {recipe.title}
+                    </Text>
+                    <Text style={styles.forkBannerSubtitle}>
+                      Todos os dados originais foram carregados abaixo. Ajuste ingredientes, etapas
+                      e precificação para a sua confeitaria. A receita original permanecerá intacta
+                      e vinculada como referência.
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            <RecipeForm
+              key={isCustomizing ? `fork-${recipe?.id}` : isEditMode ? `edit-${recipe?.id}` : 'new'}
+              initialRecipe={isCustomizing || isEditMode ? recipe : undefined}
+              isEditMode={isEditMode}
+              isSubmitting={isSubmitting}
+              onSubmit={handleSubmit}
+              submitButtonText={
+                isCustomizing
+                  ? 'Salvar Minha Versão'
+                  : isEditMode
+                    ? 'Salvar Alterações'
+                    : 'Cadastrar Receita'
+              }
+            />
+          </View>
         )}
       </View>
     </>
   );
 }
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = (theme: AppTheme, isDesktop: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
+    },
+    formWrapper: {
+      flex: 1,
+    },
+    forkBannerWrapper: {
+      paddingHorizontal: isDesktop ? 24 : 16,
+      paddingTop: 16,
+      paddingBottom: 4,
+      width: '100%',
+      maxWidth: 960,
+      alignSelf: 'center',
+    },
+    forkBanner: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.lg,
+      padding: 16,
+      gap: 14,
+      ...theme.shadows.soft,
+    },
+    forkBannerIconWrap: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: theme.colors.surfaceContainer,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 2,
+    },
+    forkBannerContent: {
+      flex: 1,
+      gap: 4,
+    },
+    forkBannerBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      backgroundColor: theme.colors.primaryFixed,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: theme.rounded.full,
+      gap: 4,
+      marginBottom: 2,
+    },
+    forkBannerBadgeText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 11,
+      fontWeight: '600',
+      color: theme.colors.onPrimaryFixed,
+    },
+    forkBannerTitle: {
+      fontFamily: theme.typography.headlineMd.fontFamily,
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: theme.colors.espressoDark,
+    },
+    forkBannerSubtitle: {
+      fontFamily: theme.typography.bodySm.fontFamily,
+      fontSize: 13,
+      color: theme.colors.onSurfaceVariant,
+      lineHeight: 18,
     },
     centerContainer: {
       flex: 1,

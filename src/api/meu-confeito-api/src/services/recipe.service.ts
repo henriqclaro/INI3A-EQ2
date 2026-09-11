@@ -127,7 +127,12 @@ export class RecipeService {
       select: {
         id: true,
         userId: true,
-        parentId: true,
+        parent: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
         title: true,
         coverUrl: true,
         instructions: true,
@@ -173,8 +178,16 @@ export class RecipeService {
   async selectSingle(context: RequestContext, id: string) {
     const recipe = await prisma.recipe.findUnique({
       where: { id: id },
-
+      omit: {
+        parentId: true,
+      },
       include: {
+        parent: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
         items: {
           orderBy: { sortOrder: 'asc' },
           include: {
@@ -233,8 +246,16 @@ export class RecipeService {
 
     const recipe = await prisma.recipe.findUnique({
       where: { id: id },
-
+      omit: {
+        parentId: true,
+      },
       include: {
+        parent: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
         items: {
           orderBy: { sortOrder: 'asc' },
           include: {
@@ -377,6 +398,12 @@ export class RecipeService {
       },
       select: {
         id: true,
+        parent: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
         title: true,
         coverUrl: true,
 
@@ -596,7 +623,16 @@ export class RecipeService {
       return tx.recipe.update({
         where: { id },
         data: updateData,
+        omit: {
+          parentId: true,
+        },
         include: {
+          parent: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
           items: {
             orderBy: { sortOrder: 'asc' },
             include: {

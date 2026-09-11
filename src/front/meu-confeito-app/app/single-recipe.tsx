@@ -16,7 +16,11 @@ import { Stack, router, useFocusEffect, useLocalSearchParams } from 'expo-router
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { ProduceRecipeModal } from '@/src/components/production';
-import { RecipeIngredientsSection, RecipeInstructionsSection } from '@/src/components/recipe';
+import {
+  CustomizeRecipeModal,
+  RecipeIngredientsSection,
+  RecipeInstructionsSection,
+} from '@/src/components/recipe';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useSingleRecipe } from '@/src/hooks/useRecipes';
@@ -52,6 +56,7 @@ export default function RecipeScreen() {
   const [hasImageError, setHasImageError] = useState(false);
   const [viewMode, setViewMode] = useState<'recipe' | 'pricing'>('recipe');
   const [isProduceModalOpen, setIsProduceModalOpen] = useState(false);
+  const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
 
   const handleToggleSave = async () => {
     if (!user) {
@@ -64,6 +69,29 @@ export default function RecipeScreen() {
 
     await toggleSave(recipeId);
     refetch();
+  };
+
+  const handleOpenCustomize = () => {
+    if (!user) {
+      Alert.alert(
+        'Login Necessário',
+        'Faça login para personalizar esta receita e salvá-la na sua confeitaria.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Fazer Login', onPress: () => router.push('/login') },
+        ],
+      );
+      return;
+    }
+    setIsCustomizeModalOpen(true);
+  };
+
+  const handleConfirmCustomize = () => {
+    setIsCustomizeModalOpen(false);
+    router.push({
+      pathname: '/create-recipe',
+      params: { forkFromId: recipe?.id },
+    });
   };
 
   const styles = useMemo(
@@ -265,6 +293,21 @@ export default function RecipeScreen() {
                   )}
                 </TouchableOpacity>
               )}
+              {!isOwner && recipe && recipe.status === 'PUBLISHED' && (
+                <TouchableOpacity
+                  onPress={handleOpenCustomize}
+                  style={styles.headerForkBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel="Personalizar receita"
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <MaterialCommunityIcons
+                    name="source-fork"
+                    size={22}
+                    color={theme.colors.primary}
+                  />
+                </TouchableOpacity>
+              )}
               {isOwner && recipe && (
                 <TouchableOpacity
                   onPress={() =>
@@ -355,17 +398,69 @@ export default function RecipeScreen() {
                 <View style={styles.headerSection}>
                   <View style={styles.titleRow}>
                     <Text style={styles.primaryTitle}>{recipe.title}</Text>
-                    <View style={[styles.statusBadge, { backgroundColor: statusBadge.bgColor }]}>
-                      <MaterialCommunityIcons
-                        name={statusBadge.icon}
-                        size={14}
-                        color={statusBadge.color}
-                      />
-                      <Text style={[styles.statusBadgeText, { color: statusBadge.color }]}>
-                        {statusBadge.label}
-                      </Text>
+                    <View style={styles.titleBadgesRow}>
+                      {Boolean(recipe.parent) && (
+                        <View style={styles.forkBadge}>
+                          <MaterialCommunityIcons
+                            name="source-fork"
+                            size={13}
+                            color={theme.colors.secondary}
+                          />
+                          <Text style={styles.forkBadgeText}>Versão Adaptada</Text>
+                        </View>
+                      )}
+                      <View style={[styles.statusBadge, { backgroundColor: statusBadge.bgColor }]}>
+                        <MaterialCommunityIcons
+                          name={statusBadge.icon}
+                          size={14}
+                          color={statusBadge.color}
+                        />
+                        <Text style={[styles.statusBadgeText, { color: statusBadge.color }]}>
+                          {statusBadge.label}
+                        </Text>
+                      </View>
                     </View>
                   </View>
+
+                  {/* Parent Recipe Link Banner */}
+                  {Boolean(recipe.parent) && (
+                    <TouchableOpacity
+                      style={styles.parentRecipeBanner}
+                      onPress={() =>
+                        router.push({
+                          pathname: '/single-recipe',
+                          params: { recipeId: recipe.parent!.id },
+                        })
+                      }
+                      activeOpacity={0.8}
+                      accessibilityRole="link"
+                      accessibilityLabel={`Ver receita original: ${recipe.parent?.title || 'Receita original'}`}
+                    >
+                      <View style={styles.parentRecipeBannerIconWrap}>
+                        <MaterialCommunityIcons
+                          name="source-fork"
+                          size={18}
+                          color={theme.colors.primary}
+                        />
+                      </View>
+                      <View style={styles.parentRecipeBannerTextCol}>
+                        <Text style={styles.parentRecipeBannerLabel}>
+                          Baseada na receita original
+                        </Text>
+                        <Text style={styles.parentRecipeBannerTitle} numberOfLines={1}>
+                          {recipe.parent?.title || 'Visualizar receita original'}
+                        </Text>
+                      </View>
+                      <View style={styles.parentRecipeBannerAction}>
+                        <Text style={styles.parentRecipeBannerActionText}>Ver original</Text>
+                        <MaterialCommunityIcons
+                          name="arrow-top-right"
+                          size={15}
+                          color={theme.colors.primary}
+                        />
+                      </View>
+                    </TouchableOpacity>
+                  )}
 
                   <View style={styles.metaRow}>
                     {Boolean(recipe.baseYield) && (
@@ -586,78 +681,109 @@ export default function RecipeScreen() {
                   </View>
                 )}
 
-                {!isOwner && user && recipe.status === 'PUBLISHED' && (
+                {!isOwner && recipe.status === 'PUBLISHED' && (
                   <View style={styles.guestProduceCard}>
-                    <View style={styles.guestProduceInfo}>
-                      <Text style={styles.guestProduceTitle}>Receita da Comunidade</Text>
-                      <Text style={styles.guestProduceSubtitle}>
-                        {hasSavedRecipe
-                          ? 'Esta receita já está salva nas suas receitas favoritas.'
-                          : 'Salve nas suas favoritas ou produza usando seus insumos.'}
-                      </Text>
+                    <View style={styles.guestProduceHeader}>
+                      <View style={styles.guestProduceTitleGroup}>
+                        <MaterialCommunityIcons
+                          name="earth"
+                          size={18}
+                          color={theme.colors.primary}
+                        />
+                        <Text style={styles.guestProduceTitle}>Receita da Comunidade</Text>
+                      </View>
+                      <View style={styles.guestProduceBadge}>
+                        <Text style={styles.guestProduceBadgeText}>Pública</Text>
+                      </View>
                     </View>
-                    <View style={styles.guestProduceButtons}>
+
+                    <Text style={styles.guestProduceSubtitle}>
+                      {hasSavedRecipe
+                        ? 'Esta receita está salva nas suas favoritas. Você pode produzi-la ou criar sua versão personalizada.'
+                        : 'Salve nas suas favoritas, produza usando seus insumos ou personalize para criar sua própria versão.'}
+                    </Text>
+
+                    {/* Primary Action: Produzir */}
+                    <TouchableOpacity
+                      style={styles.btnActionProduceGuest}
+                      onPress={() => setIsProduceModalOpen(true)}
+                      activeOpacity={0.85}
+                      accessibilityRole="button"
+                      accessibilityLabel="Registrar produção desta receita pública"
+                    >
+                      <MaterialCommunityIcons
+                        name="pot-steam"
+                        size={20}
+                        color={theme.colors.onPrimary}
+                      />
+                      <Text style={styles.btnActionTextProduceGuest}>Produzir Receita</Text>
+                    </TouchableOpacity>
+
+                    {/* Secondary Actions: Personalizar & Salvar */}
+                    <View style={styles.guestSecondaryActions}>
                       <TouchableOpacity
-                        style={[
-                          styles.btnActionSaveGuest,
-                          hasSavedRecipe && styles.btnActionSaveGuestActive,
-                        ]}
-                        onPress={handleToggleSave}
-                        disabled={isTogglingSave}
-                        activeOpacity={0.8}
+                        style={styles.btnActionCustomizeGuest}
+                        onPress={handleOpenCustomize}
+                        activeOpacity={0.85}
                         accessibilityRole="button"
-                        accessibilityLabel={
-                          hasSavedRecipe
-                            ? 'Remover receita dos salvos'
-                            : 'Salvar receita nos favoritos'
-                        }
+                        accessibilityLabel="Personalizar e criar sua versão desta receita"
                       >
-                        {isTogglingSave ? (
-                          <ActivityIndicator
-                            size="small"
-                            color={
-                              hasSavedRecipe
-                                ? theme.colors.onPrimaryContainer
-                                : theme.colors.primary
-                            }
-                          />
-                        ) : (
-                          <>
-                            <MaterialCommunityIcons
-                              name={hasSavedRecipe ? 'bookmark-check' : 'bookmark-outline'}
-                              size={18}
+                        <MaterialCommunityIcons
+                          name="source-fork"
+                          size={18}
+                          color={theme.colors.primary}
+                        />
+                        <Text style={styles.btnActionTextCustomizeGuest}>Personalizar</Text>
+                      </TouchableOpacity>
+
+                      {user && (
+                        <TouchableOpacity
+                          style={[
+                            styles.btnActionSaveGuest,
+                            hasSavedRecipe && styles.btnActionSaveGuestActive,
+                          ]}
+                          onPress={handleToggleSave}
+                          disabled={isTogglingSave}
+                          activeOpacity={0.8}
+                          accessibilityRole="button"
+                          accessibilityLabel={
+                            hasSavedRecipe
+                              ? 'Remover receita dos salvos'
+                              : 'Salvar receita nos favoritos'
+                          }
+                        >
+                          {isTogglingSave ? (
+                            <ActivityIndicator
+                              size="small"
                               color={
                                 hasSavedRecipe
                                   ? theme.colors.onPrimaryContainer
                                   : theme.colors.primary
                               }
                             />
-                            <Text
-                              style={[
-                                styles.btnActionTextSaveGuest,
-                                hasSavedRecipe && styles.btnActionTextSaveGuestActive,
-                              ]}
-                            >
-                              {hasSavedRecipe ? 'Salva' : 'Salvar'}
-                            </Text>
-                          </>
-                        )}
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        style={styles.btnActionProduceGuest}
-                        onPress={() => setIsProduceModalOpen(true)}
-                        activeOpacity={0.85}
-                        accessibilityRole="button"
-                        accessibilityLabel="Registrar produção desta receita pública"
-                      >
-                        <MaterialCommunityIcons
-                          name="pot-steam"
-                          size={18}
-                          color={theme.colors.onPrimary}
-                        />
-                        <Text style={styles.btnActionTextProduceGuest}>Produzir</Text>
-                      </TouchableOpacity>
+                          ) : (
+                            <>
+                              <MaterialCommunityIcons
+                                name={hasSavedRecipe ? 'bookmark-check' : 'bookmark-outline'}
+                                size={18}
+                                color={
+                                  hasSavedRecipe
+                                    ? theme.colors.onPrimaryContainer
+                                    : theme.colors.primary
+                                }
+                              />
+                              <Text
+                                style={[
+                                  styles.btnActionTextSaveGuest,
+                                  hasSavedRecipe && styles.btnActionTextSaveGuestActive,
+                                ]}
+                              >
+                                {hasSavedRecipe ? 'Salva' : 'Salvar'}
+                              </Text>
+                            </>
+                          )}
+                        </TouchableOpacity>
+                      )}
                     </View>
                   </View>
                 )}
@@ -915,6 +1041,15 @@ export default function RecipeScreen() {
             }}
           />
         )}
+
+        {recipe && (
+          <CustomizeRecipeModal
+            isVisible={isCustomizeModalOpen}
+            onClose={() => setIsCustomizeModalOpen(false)}
+            onConfirm={handleConfirmCustomize}
+            recipeTitle={recipe.title}
+          />
+        )}
       </View>
     </>
   );
@@ -1063,6 +1198,78 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       lineHeight: 32,
       fontWeight: 'bold',
     },
+    titleBadgesRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: 6,
+    },
+    forkBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.surfaceContainerHigh,
+      borderColor: theme.colors.outlineVariant,
+      borderWidth: 1,
+      paddingVertical: 5,
+      paddingHorizontal: 10,
+      borderRadius: theme.rounded.full,
+      gap: 5,
+    },
+    forkBadgeText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 12,
+      fontWeight: '700',
+      color: theme.colors.secondary,
+    },
+    parentRecipeBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.lg,
+      paddingVertical: 10,
+      paddingHorizontal: 14,
+      gap: 12,
+      minHeight: 48,
+      ...theme.shadows.soft,
+    },
+    parentRecipeBannerIconWrap: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    parentRecipeBannerTextCol: {
+      flex: 1,
+    },
+    parentRecipeBannerLabel: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 11,
+      fontWeight: '500',
+      color: theme.colors.onSurfaceVariant,
+    },
+    parentRecipeBannerTitle: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 14,
+      fontWeight: '700',
+      color: theme.colors.espressoDark,
+    },
+    parentRecipeBannerAction: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    parentRecipeBannerActionText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 12,
+      fontWeight: '700',
+      color: theme.colors.primary,
+    },
     statusBadge: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -1082,6 +1289,13 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       gap: 4,
     },
     headerSaveBtn: {
+      minWidth: 48,
+      minHeight: 48,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 8,
+    },
+    headerForkBtn: {
       minWidth: 48,
       minHeight: 48,
       alignItems: 'center',
@@ -1257,33 +1471,93 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       borderColor: theme.colors.outlineVariant,
       padding: 16,
       marginBottom: 20,
-      flexDirection: isSmallScreen ? 'column' : 'row',
-      alignItems: isSmallScreen ? 'stretch' : 'center',
-      justifyContent: 'space-between',
       gap: 12,
       ...theme.shadows.soft,
     },
-    guestProduceInfo: {
-      flex: 1,
+    guestProduceHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    guestProduceTitleGroup: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
     },
     guestProduceTitle: {
       fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
       fontWeight: 'bold',
       color: theme.colors.espressoDark,
-      marginBottom: 2,
+    },
+    guestProduceBadge: {
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: theme.rounded.full,
+    },
+    guestProduceBadgeText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 11,
+      fontWeight: '700',
+      color: theme.colors.primary,
     },
     guestProduceSubtitle: {
       fontFamily: theme.typography.bodySm.fontFamily,
-      fontSize: 12,
+      fontSize: 13,
+      lineHeight: 18,
       color: theme.colors.onSurfaceVariant,
     },
-    guestProduceButtons: {
+    btnActionProduceGuest: {
+      width: '100%',
+      minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.primary,
+      borderRadius: theme.rounded.default,
+      paddingHorizontal: 16,
       gap: 8,
+      ...theme.shadows.soft,
+    },
+    btnActionTextProduceGuest: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 14,
+      fontWeight: '700',
+      color: theme.colors.onPrimary,
+    },
+    guestSecondaryActions: {
+      flexDirection: isSmallScreen ? 'column' : 'row',
+      alignItems: 'center',
+      gap: 8,
+      width: '100%',
+    },
+    btnActionCustomizeGuest: {
+      flex: 1,
+      width: isSmallScreen ? '100%' : undefined,
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderWidth: 1.5,
+      borderColor: theme.colors.primary,
+      borderRadius: theme.rounded.default,
+      paddingHorizontal: 14,
+      gap: 6,
+      ...theme.shadows.soft,
+    },
+    btnActionTextCustomizeGuest: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 13,
+      fontWeight: '700',
+      color: theme.colors.primary,
     },
     btnActionSaveGuest: {
+      flex: 1,
+      width: isSmallScreen ? '100%' : undefined,
       minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',
@@ -1307,23 +1581,6 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     },
     btnActionTextSaveGuestActive: {
       color: theme.colors.onPrimaryContainer,
-    },
-    btnActionProduceGuest: {
-      minHeight: 48,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: theme.colors.primary,
-      borderRadius: theme.rounded.default,
-      paddingHorizontal: 16,
-      gap: 6,
-      ...theme.shadows.soft,
-    },
-    btnActionTextProduceGuest: {
-      fontFamily: theme.typography.labelMd.fontFamily,
-      fontSize: 13,
-      fontWeight: '600',
-      color: theme.colors.onPrimary,
     },
     metaRow: {
       flexDirection: 'row',

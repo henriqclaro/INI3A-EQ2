@@ -10,7 +10,10 @@ export namespace RecipeDTO {
     recipe: {
       id: string;
       userId: string | null;
-      parentId: string | null;
+      parent: {
+        id: string;
+        title: string;
+      } | null;
       title: string;
       coverUrl: string | null;
       instructions: JsonValue;
@@ -60,7 +63,10 @@ export namespace RecipeDTO {
     recipe: {
       id: string;
       userId: string | null;
-      parentId: string | null;
+      parent: {
+        id: string;
+        title: string;
+      } | null;
       title: string;
       coverUrl: string | null;
       instructions: JsonValue;
@@ -120,7 +126,10 @@ export namespace RecipeDTO {
     recipe: {
       id: string;
       userId: string | null;
-      parentId: string | null;
+      parent: {
+        id: string;
+        title: string;
+      } | null;
       title: string;
       coverUrl: string | null;
       instructions: JsonValue;
@@ -185,6 +194,10 @@ export namespace RecipeDTO {
       packagingCost: Decimal;
       prepTimeMinutes: number;
       id: string;
+      parent: {
+        id: string;
+        title: string;
+      } | null;
       createdAt: Date;
       updatedAt: Date;
       tags: {

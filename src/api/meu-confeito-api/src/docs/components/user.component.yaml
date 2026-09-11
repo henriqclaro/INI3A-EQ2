@@ -60,6 +60,15 @@ components:
               id:
                 type: string
                 format: uuid
+              parent:
+                type: object
+                nullable: true
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  title:
+                    type: string
               title:
                 type: string
               coverUrl:
@@ -83,8 +92,7 @@ components:
                       type: object
                       properties:
                         id:
-                          type: string
-                          format: uuid
+                          type: integer
                         name:
                           type: string
                         type:

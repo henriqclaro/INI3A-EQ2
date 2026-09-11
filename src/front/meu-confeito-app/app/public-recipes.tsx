@@ -50,6 +50,8 @@ export default function PublicRecipesScreen() {
           tags={item.tags}
           prepTimeMinutes={item.prepTimeMinutes}
           maxTagRows={2}
+          isCustomized={Boolean(item.parent)}
+          hasParent={Boolean(item.parent)}
           style={isDesktop ? styles.desktopCard : undefined}
           onPress={() => {
             router.push({ pathname: '/single-recipe', params: { recipeId: item.id } });

@@ -176,6 +176,12 @@ export class UserService {
       take: 10,
       select: {
         id: true,
+        parent: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
         title: true,
         coverUrl: true,
 
