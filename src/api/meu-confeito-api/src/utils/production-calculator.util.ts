@@ -2,6 +2,8 @@ import { Prisma, type StandardUnit } from '../generated/prisma/client';
 import { DefaultAppError, NotFoundError } from '../responses/http.error';
 import { UNIT_TO_DIMENSION_MAP } from './unit-conversion.util';
 
+export type DecimalValue = Prisma.Decimal | number | string;
+
 export interface LeafIngredientRequirement {
   ingredientId: number;
   name: string;
@@ -10,13 +12,13 @@ export interface LeafIngredientRequirement {
 }
 
 export interface ProductionCostParams {
-  yieldProduced: Prisma.Decimal | number | string;
-  baseYield: Prisma.Decimal | number | string;
-  ingredientCost: Prisma.Decimal | number | string;
+  yieldProduced: DecimalValue;
+  baseYield: DecimalValue;
+  ingredientCost: DecimalValue;
   prepTimeMinutes?: number | null;
-  hourlyLabor?: Prisma.Decimal | number | string | null;
-  overhead?: Prisma.Decimal | number | string | null;
-  packagingCost?: Prisma.Decimal | number | string | null;
+  hourlyLabor?: DecimalValue | null;
+  overhead?: DecimalValue | null;
+  packagingCost?: DecimalValue | null;
 }
 
 export interface ProductionCostSnapshot {
@@ -30,8 +32,8 @@ export interface ProductionCostSnapshot {
 }
 
 export function calculateScaleFactor(
-  yieldProduced: Prisma.Decimal | number | string,
-  baseYield: Prisma.Decimal | number | string,
+  yieldProduced: DecimalValue,
+  baseYield: DecimalValue,
 ): Prisma.Decimal {
   const yieldProducedDec = new Prisma.Decimal(yieldProduced);
   const baseYieldDec = new Prisma.Decimal(baseYield);
@@ -58,14 +60,15 @@ export function calculateProductionCosts(params: ProductionCostParams): Producti
     .times(scaleFactor)
     .toDecimalPlaces(2);
 
+  const basePackagingCost = new Prisma.Decimal(params.packagingCost ?? 0);
+  const packagingCost = basePackagingCost.times(scaleFactor).toDecimalPlaces(2);
+
   const overheadPercent = new Prisma.Decimal(params.overhead ?? 0);
   const overheadCost = ingredientCost
     .plus(laborCost)
+    .plus(packagingCost)
     .times(overheadPercent.dividedBy(100))
     .toDecimalPlaces(2);
-
-  const basePackagingCost = new Prisma.Decimal(params.packagingCost ?? 0);
-  const packagingCost = basePackagingCost.times(scaleFactor).toDecimalPlaces(2);
 
   const totalCost = ingredientCost
     .plus(laborCost)

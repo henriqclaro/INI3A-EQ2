@@ -66,8 +66,14 @@ export class AnalyticsService {
       totalProductionCost = totalProductionCost.plus(production.totalCost);
 
       const profitMargin = production.recipe?.profitMargin ?? new Prisma.Decimal(0);
-      const marginMultiplier = new Prisma.Decimal(1).plus(profitMargin.dividedBy(100));
-      const revenue = production.totalCost.times(marginMultiplier);
+      const marginPercent = profitMargin.dividedBy(100);
+
+      const marginDivisor = new Prisma.Decimal(1).minus(marginPercent);
+
+      const revenue = marginDivisor.gt(0)
+        ? production.totalCost.dividedBy(marginDivisor)
+        : production.totalCost;
+
       projectedRevenue = projectedRevenue.plus(revenue);
     }
 
