@@ -39,8 +39,8 @@ export const StockCard = memo(function StockCard({
   const totalValue = qty * unitCost;
 
   const isOutOfStock = qty <= 0;
-  const isCardExpired = isExpired(item.expirationDate);
-  const isCardExpiringSoon = !isCardExpired && isExpiringSoon(item.expirationDate);
+  const isCardExpired = !isOutOfStock && isExpired(item.expirationDate);
+  const isCardExpiringSoon = !isOutOfStock && !isCardExpired && isExpiringSoon(item.expirationDate);
 
   const ingredientName = item.ingredient?.name || 'Ingrediente';
   const categoryName = item.ingredient?.category || 'Geral';
@@ -178,15 +178,22 @@ export const StockCard = memo(function StockCard({
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.actionBtnDanger}
+          style={[
+            styles.actionBtnDanger,
+            isCardExpired && !isOutOfStock && styles.actionBtnDangerExpired,
+          ]}
           onPress={() => onWaste(item)}
           activeOpacity={0.8}
           accessibilityRole="button"
-          accessibilityLabel={`Registrar perda de ${ingredientName}`}
+          accessibilityLabel={
+            isCardExpired
+              ? `Descartar insumo vencido: ${ingredientName}`
+              : `Registrar perda de ${ingredientName}`
+          }
           disabled={isOutOfStock}
         >
           <MaterialCommunityIcons
-            name="trash-can-outline"
+            name={isCardExpired && !isOutOfStock ? 'delete-alert-outline' : 'trash-can-outline'}
             size={18}
             color={isOutOfStock ? theme.colors.outline : theme.colors.error}
           />
@@ -194,10 +201,11 @@ export const StockCard = memo(function StockCard({
             style={[
               styles.actionBtnTextDanger,
               isOutOfStock ? styles.actionBtnTextDisabled : undefined,
+              isCardExpired && !isOutOfStock ? styles.actionBtnTextDangerExpired : undefined,
             ]}
             numberOfLines={1}
           >
-            Perda
+            {isCardExpired && !isOutOfStock ? 'Descartar' : 'Perda'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -428,11 +436,19 @@ const createStyles = (theme: AppTheme) =>
       gap: 4,
       paddingHorizontal: 8,
     },
+    actionBtnDangerExpired: {
+      borderColor: theme.colors.error,
+      backgroundColor: theme.colors.errorContainer,
+    },
     actionBtnTextDanger: {
       fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
       color: theme.colors.error,
+    },
+    actionBtnTextDangerExpired: {
+      color: theme.colors.onErrorContainer,
+      fontWeight: '700',
     },
     actionBtnTextDisabled: {
       color: theme.colors.outline,

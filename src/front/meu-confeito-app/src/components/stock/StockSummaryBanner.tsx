@@ -12,6 +12,7 @@ interface StockSummaryBannerProps {
   totalStockValue: number;
   outOfStockCount: number;
   expiringSoonCount: number;
+  expiredCount?: number;
 }
 
 export const StockSummaryBanner = ({
@@ -19,6 +20,7 @@ export const StockSummaryBanner = ({
   totalStockValue,
   outOfStockCount,
   expiringSoonCount,
+  expiredCount = 0,
 }: StockSummaryBannerProps) => {
   const { theme } = useThemeMode();
   const { width } = useWindowDimensions();
@@ -115,6 +117,27 @@ export const StockSummaryBanner = ({
             </Text>
           </View>
         </View>
+
+        {/* Metric 5: Expired items */}
+        {expiredCount > 0 && (
+          <View style={[styles.metricCard, styles.metricCardAlert]}>
+            <View style={[styles.iconWrapper, styles.iconWrapperCritical]}>
+              <MaterialCommunityIcons
+                name="alert-decagram"
+                size={isDesktop ? 20 : 18}
+                color={theme.colors.error}
+              />
+            </View>
+            <View style={styles.textContainer}>
+              <Text style={styles.metricLabel} numberOfLines={1}>
+                Vencidos
+              </Text>
+              <Text style={[styles.metricValue, styles.metricValueCritical]} numberOfLines={1}>
+                {expiredCount}
+              </Text>
+            </View>
+          </View>
+        )}
       </View>
     </View>
   );

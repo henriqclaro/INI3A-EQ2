@@ -21,7 +21,7 @@ import {
   PurchaseRequest,
   WasteRequest,
 } from '@/src/types/inventory';
-import { formatCurrency, formatQuantity } from '@/src/utils/formatters';
+import { formatCurrency, formatDate, formatQuantity, isExpired } from '@/src/utils/formatters';
 
 export type StockOperationType = 'adjust' | 'purchase' | 'waste';
 
@@ -56,20 +56,32 @@ const StockOperationModalForm = ({
   const [activeTab, setActiveTab] = useState<StockOperationType>(initialMode);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Form states initialized directly from props without effect
-  const [quantityInput, setQuantityInput] = useState(
-    initialMode === 'adjust' ? String(item.currentQuantity) : '',
-  );
-  const [costInput, setCostInput] = useState('');
-  const [notesInput, setNotesInput] = useState('');
-  const [expirationDateInput, setExpirationDateInput] = useState('');
-
-  const styles = useMemo(() => createStyles(theme), [theme]);
-
   const currentQty = Number(item.currentQuantity) || 0;
   const unitCost = Number(item.costPerBaseUnit) || 0;
   const baseUnit = item.ingredient?.baseUnit || 'un';
   const ingredientName = item.ingredient?.name || 'Ingrediente';
+  const isItemExpired = currentQty > 0 && isExpired(item.expirationDate);
+
+  // Form states initialized directly from props without effect
+  const [quantityInput, setQuantityInput] = useState(() => {
+    if (initialMode === 'adjust') return String(item.currentQuantity);
+    if (initialMode === 'waste' && isItemExpired && currentQty > 0) {
+      return String(currentQty);
+    }
+    return '';
+  });
+  const [costInput, setCostInput] = useState('');
+  const [notesInput, setNotesInput] = useState(() => {
+    if (initialMode === 'waste' && isItemExpired) {
+      return item.expirationDate
+        ? `Descarte por validade vencida em ${formatDate(item.expirationDate)}`
+        : 'Descarte por validade vencida';
+    }
+    return '';
+  });
+  const [expirationDateInput, setExpirationDateInput] = useState('');
+
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   const isAdjustMode = activeTab === 'adjust';
   const isPurchaseMode = activeTab === 'purchase';
@@ -248,7 +260,18 @@ const StockOperationModalForm = ({
               style={[styles.tabBtn, isWasteMode && styles.tabBtnActive]}
               onPress={() => {
                 setActiveTab('waste');
-                setQuantityInput('');
+                if (isItemExpired && currentQty > 0) {
+                  setQuantityInput(String(currentQty));
+                  if (!notesInput) {
+                    setNotesInput(
+                      item.expirationDate
+                        ? `Descarte por validade vencida em ${formatDate(item.expirationDate)}`
+                        : 'Descarte por validade vencida',
+                    );
+                  }
+                } else {
+                  setQuantityInput('');
+                }
               }}
               activeOpacity={0.8}
             >
@@ -393,13 +416,70 @@ const StockOperationModalForm = ({
             {/* TAB 3: WASTE */}
             {isWasteMode && (
               <View style={styles.formContainer}>
-                <Text style={styles.formExplainer}>
-                  Registre ingredientes perdidos por validade vencida, avarias ou sobras de
-                  produção.
-                </Text>
+                {isItemExpired ? (
+                  <View style={styles.expiredBanner}>
+                    <MaterialCommunityIcons
+                      name="alert-decagram"
+                      size={22}
+                      color={theme.colors.error}
+                      style={styles.expiredBannerIcon}
+                    />
+                    <View style={styles.expiredBannerContent}>
+                      <Text style={styles.expiredBannerTitle}>Insumo com validade vencida!</Text>
+                      <Text style={styles.expiredBannerSubtitle}>
+                        Venceu em {formatDate(item.expirationDate)}. O descarte total foi
+                        pré-preenchido para incentivar a segurança alimentar e evitar o uso de
+                        insumos impróprios.
+                      </Text>
+                    </View>
+                  </View>
+                ) : (
+                  <Text style={styles.formExplainer}>
+                    Registre ingredientes perdidos por validade vencida, avarias ou sobras de
+                    produção.
+                  </Text>
+                )}
 
                 <View style={styles.fieldWrapper}>
-                  <Text style={styles.label}>Quantidade Perdida ({baseUnit}) *</Text>
+                  <View style={styles.labelRow}>
+                    <Text style={styles.label}>Quantidade Perdida ({baseUnit}) *</Text>
+                    {currentQty > 0 && (
+                      <TouchableOpacity
+                        style={[
+                          styles.quickFillBtn,
+                          isItemExpired ? styles.quickFillBtnExpired : undefined,
+                        ]}
+                        onPress={() => {
+                          setQuantityInput(String(currentQty));
+                          if (!notesInput) {
+                            setNotesInput(
+                              isItemExpired && item.expirationDate
+                                ? `Descarte por validade vencida em ${formatDate(item.expirationDate)}`
+                                : 'Descarte total do estoque',
+                            );
+                          }
+                        }}
+                        activeOpacity={0.7}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Preencher com todo o estoque atual: ${formatQuantity(currentQty, baseUnit)}`}
+                      >
+                        <MaterialCommunityIcons
+                          name={isItemExpired ? 'trash-can-outline' : 'lightning-bolt-outline'}
+                          size={14}
+                          color={isItemExpired ? theme.colors.error : theme.colors.primary}
+                        />
+                        <Text
+                          style={[
+                            styles.quickFillBtnText,
+                            isItemExpired ? styles.quickFillBtnTextExpired : undefined,
+                          ]}
+                        >
+                          {isItemExpired ? 'Descartar estoque total' : 'Todo o saldo'} (
+                          {formatQuantity(currentQty, baseUnit)})
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
                   <View
                     style={[
                       styles.inputWithSuffix,
@@ -410,7 +490,7 @@ const StockOperationModalForm = ({
                       style={styles.textInput}
                       value={quantityInput}
                       onChangeText={setQuantityInput}
-                      placeholder="Ex: 200"
+                      placeholder={currentQty > 0 ? `Ex: ${currentQty}` : '0'}
                       placeholderTextColor={theme.colors.placeholder}
                       keyboardType="numeric"
                     />
@@ -425,6 +505,74 @@ const StockOperationModalForm = ({
                     </Text>
                   )}
                 </View>
+
+                {/* Quick filling options */}
+                {currentQty > 0 && (
+                  <View style={styles.quickOptionsContainer}>
+                    <Text style={styles.quickOptionsLabel}>Preenchimento rápido:</Text>
+                    <View style={styles.quickChipsRow}>
+                      <TouchableOpacity
+                        style={[
+                          styles.quickChip,
+                          parsedQty === currentQty && styles.quickChipActive,
+                        ]}
+                        onPress={() => {
+                          setQuantityInput(String(currentQty));
+                          if (!notesInput) {
+                            setNotesInput(
+                              isItemExpired && item.expirationDate
+                                ? `Descarte por validade vencida em ${formatDate(item.expirationDate)}`
+                                : 'Descarte total do estoque',
+                            );
+                          }
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <MaterialCommunityIcons
+                          name="check-all"
+                          size={14}
+                          color={
+                            parsedQty === currentQty
+                              ? theme.colors.primary
+                              : theme.colors.onSurfaceVariant
+                          }
+                        />
+                        <Text
+                          style={[
+                            styles.quickChipText,
+                            parsedQty === currentQty && styles.quickChipTextActive,
+                          ]}
+                        >
+                          Estoque total (100%)
+                        </Text>
+                      </TouchableOpacity>
+
+                      {currentQty >= 2 && (
+                        <TouchableOpacity
+                          style={[
+                            styles.quickChip,
+                            parsedQty === Math.round((currentQty / 2) * 100) / 100 &&
+                              styles.quickChipActive,
+                          ]}
+                          onPress={() => {
+                            setQuantityInput(String(Math.round((currentQty / 2) * 100) / 100));
+                          }}
+                          activeOpacity={0.7}
+                        >
+                          <Text
+                            style={[
+                              styles.quickChipText,
+                              parsedQty === Math.round((currentQty / 2) * 100) / 100 &&
+                                styles.quickChipTextActive,
+                            ]}
+                          >
+                            Metade (50%)
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+                )}
 
                 {/* Calculated loss value */}
                 <View style={styles.previewBox}>
@@ -478,7 +626,9 @@ const StockOperationModalForm = ({
                     ? 'Salvar Ajuste'
                     : isPurchaseMode
                       ? 'Registrar Compra'
-                      : 'Registrar Perda'}
+                      : isItemExpired && parsedQty === currentQty
+                        ? 'Descartar Lote Vencido'
+                        : 'Registrar Perda'}
                 </Text>
               )}
             </TouchableOpacity>
@@ -615,6 +765,105 @@ const createStyles = (theme: AppTheme) =>
       fontSize: 12,
       color: theme.colors.onSurfaceVariant,
       lineHeight: 18,
+    },
+    expiredBanner: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      backgroundColor: theme.colors.errorContainer,
+      borderRadius: theme.rounded.sm,
+      borderWidth: 1,
+      borderColor: theme.colors.error,
+      padding: 12,
+      gap: 10,
+    },
+    expiredBannerIcon: {
+      marginTop: 2,
+    },
+    expiredBannerContent: {
+      flex: 1,
+      gap: 3,
+    },
+    expiredBannerTitle: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 13,
+      fontWeight: '700',
+      color: theme.colors.onErrorContainer,
+    },
+    expiredBannerSubtitle: {
+      fontFamily: theme.typography.bodySm.fontFamily,
+      fontSize: 11,
+      color: theme.colors.onErrorContainer,
+      lineHeight: 16,
+    },
+    labelRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 6,
+    },
+    quickFillBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: theme.rounded.full,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+    },
+    quickFillBtnExpired: {
+      backgroundColor: theme.colors.errorContainer,
+      borderColor: theme.colors.error,
+    },
+    quickFillBtnText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 11,
+      fontWeight: '600',
+      color: theme.colors.primary,
+    },
+    quickFillBtnTextExpired: {
+      color: theme.colors.onErrorContainer,
+    },
+    quickOptionsContainer: {
+      gap: 6,
+      marginTop: 2,
+    },
+    quickOptionsLabel: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 11,
+      fontWeight: '600',
+      color: theme.colors.onSurfaceVariant,
+    },
+    quickChipsRow: {
+      flexDirection: 'row',
+      gap: 8,
+      flexWrap: 'wrap',
+    },
+    quickChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: theme.rounded.sm,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      backgroundColor: theme.colors.surfaceContainerLow,
+    },
+    quickChipActive: {
+      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+    },
+    quickChipText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 11,
+      fontWeight: '600',
+      color: theme.colors.onSurfaceVariant,
+    },
+    quickChipTextActive: {
+      color: theme.colors.primary,
+      fontWeight: '700',
     },
     fieldWrapper: {
       width: '100%',

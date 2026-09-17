@@ -9,6 +9,7 @@ import { AppTheme } from '@/src/theme/themes';
 export interface BakerStockAlertCardProps {
   lowStockCount: number;
   expiringSoonCount: number;
+  expiredCount?: number;
   totalItemsCount: number;
   onPress: () => void;
 }
@@ -16,39 +17,68 @@ export interface BakerStockAlertCardProps {
 export function BakerStockAlertCard({
   lowStockCount,
   expiringSoonCount,
+  expiredCount = 0,
   totalItemsCount,
   onPress,
 }: BakerStockAlertCardProps) {
   const { theme } = useThemeMode();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
-  const hasAlert = lowStockCount > 0 || expiringSoonCount > 0;
+  const hasExpired = expiredCount > 0;
+  const hasExpiringSoon = expiringSoonCount > 0;
+  const hasLowStock = lowStockCount > 0;
+  const hasAlert = hasExpired || hasExpiringSoon || hasLowStock;
 
   const description = useMemo(() => {
     if (totalItemsCount === 0) {
       return 'Nenhum insumo cadastrado ainda. Comece adicionando seus primeiros ingredientes!';
     }
-    if (lowStockCount > 0 && expiringSoonCount > 0) {
-      return `${lowStockCount} ${lowStockCount === 1 ? 'insumo com estoque baixo' : 'insumos com estoque baixo'} e ${expiringSoonCount} próximo(s) do vencimento.`;
+    if (hasExpired) {
+      const parts: string[] = [];
+      parts.push(
+        `${expiredCount} ${expiredCount === 1 ? 'insumo já venceu' : 'insumos já venceram'}`,
+      );
+      if (hasExpiringSoon) {
+        parts.push(`${expiringSoonCount} próximo(s) do vencimento`);
+      }
+      if (hasLowStock) {
+        parts.push(`${lowStockCount} em falta`);
+      }
+      return `${parts.join(' e ')}. Registre o descarte para manter a segurança alimentar.`;
     }
-    if (lowStockCount > 0) {
-      return `${lowStockCount} ${lowStockCount === 1 ? 'insumo está' : 'insumos estão'} abaixo da quantidade mínima recomendada.`;
+    if (hasExpiringSoon && hasLowStock) {
+      return `${expiringSoonCount} ${expiringSoonCount === 1 ? 'insumo vence' : 'insumos vencem'} nos próximos dias e ${lowStockCount} ${lowStockCount === 1 ? 'insumo está' : 'insumos estão'} em falta.`;
     }
-    if (expiringSoonCount > 0) {
-      return `${expiringSoonCount} ${expiringSoonCount === 1 ? 'insumo vence' : 'insumos vencem'} nos próximos dias.`;
+    if (hasExpiringSoon) {
+      return `${expiringSoonCount} ${expiringSoonCount === 1 ? 'insumo vence' : 'insumos vencem'} nos próximos dias. Planeje a produção para evitar desperdício.`;
+    }
+    if (hasLowStock) {
+      return `${lowStockCount} ${lowStockCount === 1 ? 'insumo está' : 'insumos estão'} abaixo da quantidade mínima ou em falta.`;
     }
     return `Todos os ${totalItemsCount} ${totalItemsCount === 1 ? 'insumo está' : 'insumos estão'} com estoque seguro e dentro da validade.`;
-  }, [totalItemsCount, lowStockCount, expiringSoonCount]);
+  }, [
+    totalItemsCount,
+    hasExpired,
+    expiredCount,
+    hasExpiringSoon,
+    expiringSoonCount,
+    hasLowStock,
+    lowStockCount,
+  ]);
 
   const cardTitle = useMemo(() => {
     if (totalItemsCount === 0) return 'Cadastre seu Estoque';
+    if (hasExpired) return 'Insumos Vencidos';
     if (hasAlert) return 'Atenção ao Estoque';
     return 'Estoque em Dia';
-  }, [totalItemsCount, hasAlert]);
+  }, [totalItemsCount, hasExpired, hasAlert]);
 
   return (
     <TouchableOpacity
-      style={[styles.card, hasAlert ? styles.cardAlert : styles.cardNormal]}
+      style={[
+        styles.card,
+        hasExpired ? styles.cardExpired : hasAlert ? styles.cardAlert : styles.cardNormal,
+      ]}
       onPress={onPress}
       activeOpacity={0.85}
       accessibilityRole="button"
@@ -56,35 +86,63 @@ export function BakerStockAlertCard({
     >
       <View style={styles.contentRow}>
         <View
-          style={[styles.iconCircle, hasAlert ? styles.iconCircleAlert : styles.iconCircleNormal]}
+          style={[
+            styles.iconCircle,
+            hasExpired
+              ? styles.iconCircleExpired
+              : hasAlert
+                ? styles.iconCircleAlert
+                : styles.iconCircleNormal,
+          ]}
         >
           <MaterialCommunityIcons
             name={
               totalItemsCount === 0
                 ? 'package-variant'
-                : hasAlert
-                  ? 'alert-circle-outline'
-                  : 'check-circle-outline'
+                : hasExpired
+                  ? 'alert-decagram'
+                  : hasAlert
+                    ? 'clock-alert-outline'
+                    : 'check-circle-outline'
             }
             size={24}
-            color={hasAlert ? theme.colors.error : theme.colors.tertiary}
+            color={
+              hasExpired
+                ? theme.colors.error
+                : hasAlert
+                  ? theme.colors.warning
+                  : theme.colors.tertiary
+            }
           />
         </View>
 
         <View style={styles.textContainer}>
           <View style={styles.titleRow}>
             <Text style={styles.title}>{cardTitle}</Text>
-            {hasAlert ? (
-              <View style={styles.alertPill}>
-                <Text style={styles.alertPillText}>
-                  {lowStockCount + expiringSoonCount} aviso(s)
-                </Text>
-              </View>
-            ) : totalItemsCount > 0 ? (
-              <View style={styles.successPill}>
-                <Text style={styles.successPillText}>Regular</Text>
-              </View>
-            ) : null}
+            <View style={styles.pillsWrapper}>
+              {hasExpired && (
+                <View style={styles.expiredPill}>
+                  <Text style={styles.expiredPillText}>
+                    {expiredCount} {expiredCount === 1 ? 'vencido' : 'vencidos'}
+                  </Text>
+                </View>
+              )}
+              {hasExpiringSoon && (
+                <View style={styles.warningPill}>
+                  <Text style={styles.warningPillText}>{expiringSoonCount} a vencer</Text>
+                </View>
+              )}
+              {!hasExpired && !hasExpiringSoon && hasLowStock && (
+                <View style={styles.alertPill}>
+                  <Text style={styles.alertPillText}>{lowStockCount} em falta</Text>
+                </View>
+              )}
+              {!hasAlert && totalItemsCount > 0 && (
+                <View style={styles.successPill}>
+                  <Text style={styles.successPillText}>Regular</Text>
+                </View>
+              )}
+            </View>
           </View>
           <Text style={styles.description} numberOfLines={2}>
             {description}
@@ -115,8 +173,12 @@ const createStyles = (theme: AppTheme) =>
     cardNormal: {
       borderColor: theme.colors.outlineVariant,
     },
-    cardAlert: {
+    cardExpired: {
       borderColor: theme.colors.error,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+    },
+    cardAlert: {
+      borderColor: theme.colors.warning,
       backgroundColor: theme.colors.surfaceContainerLowest,
     },
     contentRow: {
@@ -136,9 +198,13 @@ const createStyles = (theme: AppTheme) =>
       backgroundColor: theme.colors.surfaceContainerLow,
       borderColor: theme.colors.outlineVariant,
     },
-    iconCircleAlert: {
-      backgroundColor: theme.colors.chips.accent.background,
+    iconCircleExpired: {
+      backgroundColor: theme.colors.errorContainer,
       borderColor: theme.colors.error,
+    },
+    iconCircleAlert: {
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderColor: theme.colors.warning,
     },
     textContainer: {
       flex: 1,
@@ -154,6 +220,40 @@ const createStyles = (theme: AppTheme) =>
       fontSize: 15,
       fontWeight: '600',
       color: theme.colors.espressoDark,
+    },
+    pillsWrapper: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: 4,
+    },
+    expiredPill: {
+      backgroundColor: theme.colors.errorContainer,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: theme.rounded.full,
+    },
+    expiredPillText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 10,
+      fontWeight: '700',
+      color: theme.colors.onErrorContainer,
+      textTransform: 'uppercase',
+    },
+    warningPill: {
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.warning,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: theme.rounded.full,
+    },
+    warningPillText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 10,
+      fontWeight: '700',
+      color: theme.colors.warning,
+      textTransform: 'uppercase',
     },
     alertPill: {
       backgroundColor: theme.colors.chips.accent.background,

@@ -27,9 +27,9 @@ import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useInventory } from '@/src/hooks/useInventory';
 import { AppTheme } from '@/src/theme/themes';
 import { InventoryItem } from '@/src/types/inventory';
-import { isExpiringSoon } from '@/src/utils/formatters';
+import { isExpired, isExpiringSoon } from '@/src/utils/formatters';
 
-type FilterType = 'all' | 'in_stock' | 'out_of_stock' | 'expiring';
+type FilterType = 'all' | 'in_stock' | 'out_of_stock' | 'expired' | 'expiring';
 
 export default function StockScreen() {
   const { theme } = useThemeMode();
@@ -67,6 +67,7 @@ export default function StockScreen() {
     let totalStockValue = 0;
     let outOfStockCount = 0;
     let expiringSoonCount = 0;
+    let expiredCount = 0;
 
     for (const item of inventory) {
       totalItems += 1;
@@ -76,9 +77,9 @@ export default function StockScreen() {
 
       if (qty <= 0) {
         outOfStockCount += 1;
-      }
-
-      if (isExpiringSoon(item.expirationDate)) {
+      } else if (isExpired(item.expirationDate)) {
+        expiredCount += 1;
+      } else if (isExpiringSoon(item.expirationDate)) {
         expiringSoonCount += 1;
       }
     }
@@ -88,6 +89,7 @@ export default function StockScreen() {
       totalStockValue,
       outOfStockCount,
       expiringSoonCount,
+      expiredCount,
     };
   }, [inventory]);
 
@@ -110,8 +112,10 @@ export default function StockScreen() {
           return qty > 0;
         case 'out_of_stock':
           return qty <= 0;
+        case 'expired':
+          return qty > 0 && isExpired(item.expirationDate);
         case 'expiring':
-          return isExpiringSoon(item.expirationDate);
+          return qty > 0 && !isExpired(item.expirationDate) && isExpiringSoon(item.expirationDate);
         case 'all':
         default:
           return true;
@@ -196,6 +200,7 @@ export default function StockScreen() {
           totalStockValue={summaryMetrics.totalStockValue}
           outOfStockCount={summaryMetrics.outOfStockCount}
           expiringSoonCount={summaryMetrics.expiringSoonCount}
+          expiredCount={summaryMetrics.expiredCount}
         />
 
         <View style={styles.searchRow}>
@@ -271,6 +276,30 @@ export default function StockScreen() {
             </Text>
           </TouchableOpacity>
 
+          {summaryMetrics.expiredCount > 0 && (
+            <TouchableOpacity
+              style={[
+                styles.filterPill,
+                styles.filterPillExpired,
+                selectedFilter === 'expired' && styles.filterPillExpiredActive,
+              ]}
+              onPress={() => setSelectedFilter('expired')}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Filtrar insumos vencidos"
+            >
+              <Text
+                style={[
+                  styles.filterPillText,
+                  styles.filterPillTextExpired,
+                  selectedFilter === 'expired' && styles.filterPillTextExpiredActive,
+                ]}
+              >
+                Vencidos ({summaryMetrics.expiredCount})
+              </Text>
+            </TouchableOpacity>
+          )}
+
           {summaryMetrics.expiringSoonCount > 0 && (
             <TouchableOpacity
               style={[styles.filterPill, selectedFilter === 'expiring' && styles.filterPillActive]}
@@ -285,7 +314,7 @@ export default function StockScreen() {
                   selectedFilter === 'expiring' && styles.filterPillTextActive,
                 ]}
               >
-                Vencendo ({summaryMetrics.expiringSoonCount})
+                A vencer ({summaryMetrics.expiringSoonCount})
               </Text>
             </TouchableOpacity>
           )}
@@ -298,6 +327,7 @@ export default function StockScreen() {
       search,
       selectedFilter,
       styles,
+      summaryMetrics.expiredCount,
       summaryMetrics.expiringSoonCount,
       summaryMetrics.outOfStockCount,
       summaryMetrics.totalItems,
@@ -515,6 +545,14 @@ const createStyles = (theme: AppTheme, isMobile: boolean, cardWidth?: number) =>
       borderColor: theme.colors.primary,
       ...theme.shadows.soft,
     },
+    filterPillExpired: {
+      borderColor: theme.colors.error,
+      backgroundColor: theme.colors.errorContainer,
+    },
+    filterPillExpiredActive: {
+      backgroundColor: theme.colors.error,
+      borderColor: theme.colors.error,
+    },
     filterPillText: {
       fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 13,
@@ -523,6 +561,14 @@ const createStyles = (theme: AppTheme, isMobile: boolean, cardWidth?: number) =>
     },
     filterPillTextActive: {
       color: theme.colors.onPrimary,
+      fontWeight: '700',
+    },
+    filterPillTextExpired: {
+      color: theme.colors.onErrorContainer,
+      fontWeight: '700',
+    },
+    filterPillTextExpiredActive: {
+      color: theme.colors.onError,
       fontWeight: '700',
     },
     headerWrapper: {

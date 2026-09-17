@@ -109,15 +109,27 @@ function BakerHomeScreen() {
     [inventory],
   );
 
-  const expiringItems = useMemo(
+  const expiredItems = useMemo(
     () =>
       inventory.filter(
-        (item) => isExpiringSoon(item.expirationDate) || isExpired(item.expirationDate),
+        (item) => Number(item.currentQuantity) > 0 && isExpired(item.expirationDate),
       ),
     [inventory],
   );
 
-  const hasStockAlert = lowStockItems.length > 0 || expiringItems.length > 0;
+  const expiringSoonItems = useMemo(
+    () =>
+      inventory.filter(
+        (item) =>
+          Number(item.currentQuantity) > 0 &&
+          !isExpired(item.expirationDate) &&
+          isExpiringSoon(item.expirationDate),
+      ),
+    [inventory],
+  );
+
+  const hasStockAlert =
+    lowStockItems.length > 0 || expiringSoonItems.length > 0 || expiredItems.length > 0;
   const recentRecipes = useMemo(
     () => recipes.slice(0, isLargeDesktop ? 4 : 3),
     [recipes, isLargeDesktop],
@@ -283,7 +295,8 @@ function BakerHomeScreen() {
               <View style={styles.rightColumn}>
                 <BakerStockAlertCard
                   lowStockCount={lowStockItems.length}
-                  expiringSoonCount={expiringItems.length}
+                  expiredCount={expiredItems.length}
+                  expiringSoonCount={expiringSoonItems.length}
                   totalItemsCount={stockCount}
                   onPress={() => router.push('/stock')}
                 />
@@ -342,7 +355,8 @@ function BakerHomeScreen() {
 
               <BakerStockAlertCard
                 lowStockCount={lowStockItems.length}
-                expiringSoonCount={expiringItems.length}
+                expiredCount={expiredItems.length}
+                expiringSoonCount={expiringSoonItems.length}
                 totalItemsCount={stockCount}
                 onPress={() => router.push('/stock')}
               />
