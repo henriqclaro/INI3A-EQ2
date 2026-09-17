@@ -38,10 +38,12 @@ export {
   SettingsSection,
   ThemeToggleCard,
   InteractionSettingsCard,
+  OperationalPreferencesCard,
   DeleteAccountModal,
   type SettingsSectionProps,
   type DeleteAccountModalProps,
 } from '@/src/components/settings';
+export { ThemeSwitch, type ThemeSwitchProps } from '@/src/components/ThemeSwitch';
 export {
   BakerCard,
   NearbyBakersExplorer,

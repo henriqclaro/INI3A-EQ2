@@ -1,15 +1,9 @@
 import { useMemo } from 'react';
-import {
-  StyleSheet,
-  Switch,
-  Text,
-  TouchableOpacity,
-  View,
-  useWindowDimensions,
-} from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
+import { ThemeSwitch } from '@/src/components/ThemeSwitch';
 import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme, colors, darkColors } from '@/src/theme/themes';
@@ -26,7 +20,6 @@ export function ThemeToggleCard() {
   const isDarkSelected = currentMode === 'dark';
 
   const handleToggleTheme = () => {
-    triggerHaptic('selection');
     toggleTheme();
   };
 
@@ -64,15 +57,9 @@ export function ThemeToggleCard() {
           </View>
         </View>
 
-        <Switch
+        <ThemeSwitch
           value={isDarkMode}
           onValueChange={handleToggleTheme}
-          thumbColor={isDarkMode ? theme.colors.primary : theme.colors.surfaceContainerHighest}
-          trackColor={{
-            false: theme.colors.outlineVariant,
-            true: theme.colors.primaryContainer,
-          }}
-          accessibilityRole="switch"
           accessibilityLabel="Alternar entre modo claro e modo escuro"
         />
       </View>

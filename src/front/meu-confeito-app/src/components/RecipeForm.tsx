@@ -23,6 +23,7 @@ import { RecipeSelector } from '@/src/components/RecipeSelector';
 import { TagSelector } from '@/src/components/TagSelector';
 import { STANDARD_UNITS } from '@/src/constants/common-units';
 import { useAuth } from '@/src/contexts/AuthContext';
+import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useIngredients } from '@/src/hooks/useIngredients';
 import { useUserRecipes } from '@/src/hooks/useRecipes';
@@ -82,6 +83,16 @@ export function RecipeForm({
 }: RecipeFormProps) {
   const { theme } = useThemeMode();
   const { user } = useAuth();
+  const {
+    isDefaultOverheadEnabled,
+    defaultOverhead,
+    isDefaultProfitMarginEnabled,
+    defaultProfitMargin,
+    isDefaultHourlyLaborEnabled,
+    defaultHourlyLabor,
+    isDefaultPackagingCostEnabled,
+    defaultPackagingCost,
+  } = useSettings();
   const { width } = useWindowDimensions();
   const isSmallScreen = width < 350;
 
@@ -160,27 +171,43 @@ export function RecipeForm({
     initialRecipe?.prepTimeMinutes ? String(initialRecipe.prepTimeMinutes) : '',
   );
 
-  // Financial / Pricing States
-  const [profitMargin, setProfitMargin] = useState(
-    initialRecipe?.profitMargin !== undefined && initialRecipe.profitMargin !== null
-      ? String(initialRecipe.profitMargin)
-      : '',
-  );
-  const [overhead, setOverhead] = useState(
-    initialRecipe?.overhead !== undefined && initialRecipe.overhead !== null
-      ? String(initialRecipe.overhead)
-      : '',
-  );
-  const [hourlyLabor, setHourlyLabor] = useState(
-    initialRecipe?.hourlyLabor !== undefined && initialRecipe.hourlyLabor !== null
-      ? String(initialRecipe.hourlyLabor)
-      : '',
-  );
-  const [packagingCost, setPackagingCost] = useState(
-    initialRecipe?.packagingCost !== undefined && initialRecipe.packagingCost !== null
-      ? String(initialRecipe.packagingCost)
-      : '',
-  );
+  // Financial / Pricing States (Default values from Operational Preferences if enabled)
+  const [profitMargin, setProfitMargin] = useState(() => {
+    if (initialRecipe?.profitMargin !== undefined && initialRecipe.profitMargin !== null) {
+      return String(initialRecipe.profitMargin);
+    }
+    if (!isEditMode && isDefaultProfitMarginEnabled && defaultProfitMargin.trim()) {
+      return defaultProfitMargin;
+    }
+    return '';
+  });
+  const [overhead, setOverhead] = useState(() => {
+    if (initialRecipe?.overhead !== undefined && initialRecipe.overhead !== null) {
+      return String(initialRecipe.overhead);
+    }
+    if (!isEditMode && isDefaultOverheadEnabled && defaultOverhead.trim()) {
+      return defaultOverhead;
+    }
+    return '';
+  });
+  const [hourlyLabor, setHourlyLabor] = useState(() => {
+    if (initialRecipe?.hourlyLabor !== undefined && initialRecipe.hourlyLabor !== null) {
+      return String(initialRecipe.hourlyLabor);
+    }
+    if (!isEditMode && isDefaultHourlyLaborEnabled && defaultHourlyLabor.trim()) {
+      return defaultHourlyLabor;
+    }
+    return '';
+  });
+  const [packagingCost, setPackagingCost] = useState(() => {
+    if (initialRecipe?.packagingCost !== undefined && initialRecipe.packagingCost !== null) {
+      return String(initialRecipe.packagingCost);
+    }
+    if (!isEditMode && isDefaultPackagingCostEnabled && defaultPackagingCost.trim()) {
+      return defaultPackagingCost;
+    }
+    return '';
+  });
 
   // Recipe Items State
   const [items, setItems] = useState<RecipeFormItem[]>(initialItems);

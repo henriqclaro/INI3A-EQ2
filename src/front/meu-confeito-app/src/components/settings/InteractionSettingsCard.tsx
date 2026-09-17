@@ -1,15 +1,9 @@
 import { useMemo, useState } from 'react';
-import {
-  StyleSheet,
-  Switch,
-  Text,
-  TouchableOpacity,
-  View,
-  useWindowDimensions,
-} from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
+import { ThemeSwitch } from '@/src/components/ThemeSwitch';
 import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
@@ -69,17 +63,9 @@ export function InteractionSettingsCard() {
           </View>
         </View>
 
-        <Switch
+        <ThemeSwitch
           value={isSwipeNavigationEnabled}
           onValueChange={toggleSwipeNavigation}
-          thumbColor={
-            isSwipeNavigationEnabled ? theme.colors.primary : theme.colors.surfaceContainerHighest
-          }
-          trackColor={{
-            false: theme.colors.outlineVariant,
-            true: theme.colors.primaryContainer,
-          }}
-          accessibilityRole="switch"
           accessibilityLabel="Ativar ou desativar navegação por gesto de deslize"
         />
       </View>
@@ -107,17 +93,10 @@ export function InteractionSettingsCard() {
           </View>
         </View>
 
-        <Switch
+        <ThemeSwitch
           value={isHapticsEnabled}
           onValueChange={toggleHaptics}
-          thumbColor={
-            isHapticsEnabled ? theme.colors.primary : theme.colors.surfaceContainerHighest
-          }
-          trackColor={{
-            false: theme.colors.outlineVariant,
-            true: theme.colors.primaryContainer,
-          }}
-          accessibilityRole="switch"
+          hasHapticFeedback={false}
           accessibilityLabel="Ativar ou desativar retorno tátil global no aplicativo"
         />
       </View>

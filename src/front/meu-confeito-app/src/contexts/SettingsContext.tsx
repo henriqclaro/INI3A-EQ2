@@ -20,10 +20,47 @@ export interface SettingsContextData {
   setIsHapticsEnabled: (isEnabled: boolean) => void;
   toggleHaptics: () => void;
   triggerHaptic: (type?: HapticFeedbackType) => void;
+
+  // Operational Preferences (Recipe default values)
+  isDefaultOverheadEnabled: boolean;
+  defaultOverhead: string;
+  setIsDefaultOverheadEnabled: (isEnabled: boolean) => void;
+  setDefaultOverhead: (value: string) => void;
+  toggleDefaultOverhead: () => void;
+
+  isDefaultProfitMarginEnabled: boolean;
+  defaultProfitMargin: string;
+  setIsDefaultProfitMarginEnabled: (isEnabled: boolean) => void;
+  setDefaultProfitMargin: (value: string) => void;
+  toggleDefaultProfitMargin: () => void;
+
+  isDefaultHourlyLaborEnabled: boolean;
+  defaultHourlyLabor: string;
+  setIsDefaultHourlyLaborEnabled: (isEnabled: boolean) => void;
+  setDefaultHourlyLabor: (value: string) => void;
+  toggleDefaultHourlyLabor: () => void;
+
+  isDefaultPackagingCostEnabled: boolean;
+  defaultPackagingCost: string;
+  setIsDefaultPackagingCostEnabled: (isEnabled: boolean) => void;
+  setDefaultPackagingCost: (value: string) => void;
+  toggleDefaultPackagingCost: () => void;
 }
 
 const SWIPE_NAV_STORAGE_KEY = 'settings_swipe_nav_enabled';
 const HAPTICS_STORAGE_KEY = 'settings_haptics_enabled';
+
+const DEFAULT_OVERHEAD_ENABLED_KEY = 'settings_default_overhead_enabled';
+const DEFAULT_OVERHEAD_VALUE_KEY = 'settings_default_overhead_value';
+
+const DEFAULT_PROFIT_MARGIN_ENABLED_KEY = 'settings_default_profit_margin_enabled';
+const DEFAULT_PROFIT_MARGIN_VALUE_KEY = 'settings_default_profit_margin_value';
+
+const DEFAULT_HOURLY_LABOR_ENABLED_KEY = 'settings_default_hourly_labor_enabled';
+const DEFAULT_HOURLY_LABOR_VALUE_KEY = 'settings_default_hourly_labor_value';
+
+const DEFAULT_PACKAGING_COST_ENABLED_KEY = 'settings_default_packaging_cost_enabled';
+const DEFAULT_PACKAGING_COST_VALUE_KEY = 'settings_default_packaging_cost_value';
 
 const SettingsContext = createContext<SettingsContextData>({} as SettingsContextData);
 
@@ -32,12 +69,44 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [isHapticsEnabled, setIsHapticsEnabledState] = useState(true);
   const [isLoadingSettings, setIsLoadingSettings] = useState(true);
 
+  // Operational Preferences States
+  const [isDefaultOverheadEnabled, setIsDefaultOverheadEnabledState] = useState(false);
+  const [defaultOverhead, setDefaultOverheadState] = useState('');
+
+  const [isDefaultProfitMarginEnabled, setIsDefaultProfitMarginEnabledState] = useState(false);
+  const [defaultProfitMargin, setDefaultProfitMarginState] = useState('');
+
+  const [isDefaultHourlyLaborEnabled, setIsDefaultHourlyLaborEnabledState] = useState(false);
+  const [defaultHourlyLabor, setDefaultHourlyLaborState] = useState('');
+
+  const [isDefaultPackagingCostEnabled, setIsDefaultPackagingCostEnabledState] = useState(false);
+  const [defaultPackagingCost, setDefaultPackagingCostState] = useState('');
+
   useEffect(() => {
     async function loadStoredSettings() {
       try {
-        const [storedSwipe, storedHaptics] = await Promise.all([
+        const [
+          storedSwipe,
+          storedHaptics,
+          storedOverheadEnabled,
+          storedOverheadValue,
+          storedProfitMarginEnabled,
+          storedProfitMarginValue,
+          storedHourlyLaborEnabled,
+          storedHourlyLaborValue,
+          storedPackagingCostEnabled,
+          storedPackagingCostValue,
+        ] = await Promise.all([
           Storage.getItem(SWIPE_NAV_STORAGE_KEY),
           Storage.getItem(HAPTICS_STORAGE_KEY),
+          Storage.getItem(DEFAULT_OVERHEAD_ENABLED_KEY),
+          Storage.getItem(DEFAULT_OVERHEAD_VALUE_KEY),
+          Storage.getItem(DEFAULT_PROFIT_MARGIN_ENABLED_KEY),
+          Storage.getItem(DEFAULT_PROFIT_MARGIN_VALUE_KEY),
+          Storage.getItem(DEFAULT_HOURLY_LABOR_ENABLED_KEY),
+          Storage.getItem(DEFAULT_HOURLY_LABOR_VALUE_KEY),
+          Storage.getItem(DEFAULT_PACKAGING_COST_ENABLED_KEY),
+          Storage.getItem(DEFAULT_PACKAGING_COST_VALUE_KEY),
         ]);
 
         if (storedSwipe !== null) {
@@ -48,6 +117,34 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           const isHapticsActive = storedHaptics === 'true';
           setIsHapticsEnabledState(isHapticsActive);
           setGlobalHapticsEnabled(isHapticsActive);
+        }
+
+        if (storedOverheadEnabled !== null) {
+          setIsDefaultOverheadEnabledState(storedOverheadEnabled === 'true');
+        }
+        if (storedOverheadValue !== null) {
+          setDefaultOverheadState(storedOverheadValue);
+        }
+
+        if (storedProfitMarginEnabled !== null) {
+          setIsDefaultProfitMarginEnabledState(storedProfitMarginEnabled === 'true');
+        }
+        if (storedProfitMarginValue !== null) {
+          setDefaultProfitMarginState(storedProfitMarginValue);
+        }
+
+        if (storedHourlyLaborEnabled !== null) {
+          setIsDefaultHourlyLaborEnabledState(storedHourlyLaborEnabled === 'true');
+        }
+        if (storedHourlyLaborValue !== null) {
+          setDefaultHourlyLaborState(storedHourlyLaborValue);
+        }
+
+        if (storedPackagingCostEnabled !== null) {
+          setIsDefaultPackagingCostEnabledState(storedPackagingCostEnabled === 'true');
+        }
+        if (storedPackagingCostValue !== null) {
+          setDefaultPackagingCostState(storedPackagingCostValue);
         }
       } catch (error) {
         console.error('Error loading stored interaction settings:', error);
@@ -86,9 +183,92 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     }
   }, [handleSetHapticsEnabled, isHapticsEnabled]);
 
-  const triggerHaptic = useCallback((type: HapticFeedbackType = 'selection') => {
-    triggerGlobalHaptic(type);
+  useEffect(() => {
+    setGlobalHapticsEnabled(isHapticsEnabled);
+  }, [isHapticsEnabled]);
+
+  const triggerHaptic = useCallback(
+    (type: HapticFeedbackType = 'selection') => {
+      if (!isHapticsEnabled) {
+        return;
+      }
+      triggerGlobalHaptic(type);
+    },
+    [isHapticsEnabled],
+  );
+
+  // Operational Preferences Handlers
+  const handleSetDefaultOverheadEnabled = useCallback((isEnabled: boolean) => {
+    setIsDefaultOverheadEnabledState(isEnabled);
+    Storage.setItem(DEFAULT_OVERHEAD_ENABLED_KEY, String(isEnabled)).catch((error) => {
+      console.error('Error saving default overhead enabled setting:', error);
+    });
   }, []);
+
+  const handleSetDefaultOverhead = useCallback((value: string) => {
+    setDefaultOverheadState(value);
+    Storage.setItem(DEFAULT_OVERHEAD_VALUE_KEY, value).catch((error) => {
+      console.error('Error saving default overhead value setting:', error);
+    });
+  }, []);
+
+  const toggleDefaultOverhead = useCallback(() => {
+    handleSetDefaultOverheadEnabled(!isDefaultOverheadEnabled);
+  }, [handleSetDefaultOverheadEnabled, isDefaultOverheadEnabled]);
+
+  const handleSetDefaultProfitMarginEnabled = useCallback((isEnabled: boolean) => {
+    setIsDefaultProfitMarginEnabledState(isEnabled);
+    Storage.setItem(DEFAULT_PROFIT_MARGIN_ENABLED_KEY, String(isEnabled)).catch((error) => {
+      console.error('Error saving default profit margin enabled setting:', error);
+    });
+  }, []);
+
+  const handleSetDefaultProfitMargin = useCallback((value: string) => {
+    setDefaultProfitMarginState(value);
+    Storage.setItem(DEFAULT_PROFIT_MARGIN_VALUE_KEY, value).catch((error) => {
+      console.error('Error saving default profit margin value setting:', error);
+    });
+  }, []);
+
+  const toggleDefaultProfitMargin = useCallback(() => {
+    handleSetDefaultProfitMarginEnabled(!isDefaultProfitMarginEnabled);
+  }, [handleSetDefaultProfitMarginEnabled, isDefaultProfitMarginEnabled]);
+
+  const handleSetDefaultHourlyLaborEnabled = useCallback((isEnabled: boolean) => {
+    setIsDefaultHourlyLaborEnabledState(isEnabled);
+    Storage.setItem(DEFAULT_HOURLY_LABOR_ENABLED_KEY, String(isEnabled)).catch((error) => {
+      console.error('Error saving default hourly labor enabled setting:', error);
+    });
+  }, []);
+
+  const handleSetDefaultHourlyLabor = useCallback((value: string) => {
+    setDefaultHourlyLaborState(value);
+    Storage.setItem(DEFAULT_HOURLY_LABOR_VALUE_KEY, value).catch((error) => {
+      console.error('Error saving default hourly labor value setting:', error);
+    });
+  }, []);
+
+  const toggleDefaultHourlyLabor = useCallback(() => {
+    handleSetDefaultHourlyLaborEnabled(!isDefaultHourlyLaborEnabled);
+  }, [handleSetDefaultHourlyLaborEnabled, isDefaultHourlyLaborEnabled]);
+
+  const handleSetDefaultPackagingCostEnabled = useCallback((isEnabled: boolean) => {
+    setIsDefaultPackagingCostEnabledState(isEnabled);
+    Storage.setItem(DEFAULT_PACKAGING_COST_ENABLED_KEY, String(isEnabled)).catch((error) => {
+      console.error('Error saving default packaging cost enabled setting:', error);
+    });
+  }, []);
+
+  const handleSetDefaultPackagingCost = useCallback((value: string) => {
+    setDefaultPackagingCostState(value);
+    Storage.setItem(DEFAULT_PACKAGING_COST_VALUE_KEY, value).catch((error) => {
+      console.error('Error saving default packaging cost value setting:', error);
+    });
+  }, []);
+
+  const toggleDefaultPackagingCost = useCallback(() => {
+    handleSetDefaultPackagingCostEnabled(!isDefaultPackagingCostEnabled);
+  }, [handleSetDefaultPackagingCostEnabled, isDefaultPackagingCostEnabled]);
 
   const contextValue = useMemo(
     () => ({
@@ -100,6 +280,31 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       setIsHapticsEnabled: handleSetHapticsEnabled,
       toggleHaptics,
       triggerHaptic,
+
+      // Operational Preferences
+      isDefaultOverheadEnabled,
+      defaultOverhead,
+      setIsDefaultOverheadEnabled: handleSetDefaultOverheadEnabled,
+      setDefaultOverhead: handleSetDefaultOverhead,
+      toggleDefaultOverhead,
+
+      isDefaultProfitMarginEnabled,
+      defaultProfitMargin,
+      setIsDefaultProfitMarginEnabled: handleSetDefaultProfitMarginEnabled,
+      setDefaultProfitMargin: handleSetDefaultProfitMargin,
+      toggleDefaultProfitMargin,
+
+      isDefaultHourlyLaborEnabled,
+      defaultHourlyLabor,
+      setIsDefaultHourlyLaborEnabled: handleSetDefaultHourlyLaborEnabled,
+      setDefaultHourlyLabor: handleSetDefaultHourlyLabor,
+      toggleDefaultHourlyLabor,
+
+      isDefaultPackagingCostEnabled,
+      defaultPackagingCost,
+      setIsDefaultPackagingCostEnabled: handleSetDefaultPackagingCostEnabled,
+      setDefaultPackagingCost: handleSetDefaultPackagingCost,
+      toggleDefaultPackagingCost,
     }),
     [
       isSwipeNavigationEnabled,
@@ -110,6 +315,30 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       handleSetHapticsEnabled,
       toggleHaptics,
       triggerHaptic,
+
+      isDefaultOverheadEnabled,
+      defaultOverhead,
+      handleSetDefaultOverheadEnabled,
+      handleSetDefaultOverhead,
+      toggleDefaultOverhead,
+
+      isDefaultProfitMarginEnabled,
+      defaultProfitMargin,
+      handleSetDefaultProfitMarginEnabled,
+      handleSetDefaultProfitMargin,
+      toggleDefaultProfitMargin,
+
+      isDefaultHourlyLaborEnabled,
+      defaultHourlyLabor,
+      handleSetDefaultHourlyLaborEnabled,
+      handleSetDefaultHourlyLabor,
+      toggleDefaultHourlyLabor,
+
+      isDefaultPackagingCostEnabled,
+      defaultPackagingCost,
+      handleSetDefaultPackagingCostEnabled,
+      handleSetDefaultPackagingCost,
+      toggleDefaultPackagingCost,
     ],
   );
 

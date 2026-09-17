@@ -19,6 +19,7 @@ import {
   DeleteAccountModal,
   InteractionSettingsCard,
   MenuOptionButton,
+  OperationalPreferencesCard,
   SettingsSection,
   ThemeToggleCard,
 } from '@/src/components';
@@ -26,32 +27,6 @@ import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useUserDelete } from '@/src/hooks/useUsers';
 import { AppTheme } from '@/src/theme/themes';
-
-// Operational Preferences (Planned Features) - Temporarily commented out as it is not currently in use, will be used in future versions.
-// "Unidades de Medida Padrão" was removed as requested.
-/*
-interface PlannedFeatureItem {
-  id: string;
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
-  title: string;
-  subtitle: string;
-}
-
-const PLANNED_FEATURES: PlannedFeatureItem[] = [
-  {
-    id: 'notifications',
-    icon: 'bell-outline',
-    title: 'Alertas de Validade do Estoque',
-    subtitle: 'Receber avisos preventivos de insumos próximos ao vencimento',
-  },
-  {
-    id: 'financial',
-    icon: 'calculator-variant-outline',
-    title: 'Margem de Lucro Padrão',
-    subtitle: 'Valores sugeridos automaticamente ao criar novas fichas técnicas',
-  },
-];
-*/
 
 export default function SettingsScreen() {
   const { theme, isDarkMode } = useThemeMode();
@@ -187,53 +162,14 @@ export default function SettingsScreen() {
             </SettingsSection>
           )}
 
-          {/* Section 4: Planned Features (Extensible Architecture) - Temporarily commented out as it is not currently in use, will be used in the future */}
-          {/*
+          {/* Section 4: Operational Preferences */}
           <SettingsSection
             title="Preferências Operacionais"
-            description="Recursos e personalizações em desenvolvimento para as próximas versões"
+            description="Defina valores padrão para cálculo automático de custos e precificação ao criar receitas"
             icon="tune-variant"
           >
-            <View style={styles.plannedCard}>
-              <View style={styles.plannedCardHeader}>
-                <MaterialCommunityIcons name="clock-fast" size={20} color={theme.colors.primary} />
-                <Text style={styles.plannedCardTitle}>Em Breve na Cozinha Digital</Text>
-              </View>
-
-              <Text style={styles.plannedCardSubtitle}>
-                Estamos preparando novos controles para tornar sua rotina de confeitaria ainda mais
-                prática e automatizada.
-              </Text>
-
-              <View style={styles.plannedList}>
-                {PLANNED_FEATURES.map((item, index) => {
-                  const isLastItem = index === PLANNED_FEATURES.length - 1;
-                  return (
-                    <View
-                      key={item.id}
-                      style={[styles.plannedItemRow, !isLastItem && styles.plannedItemBorder]}
-                    >
-                      <View style={styles.plannedIconBox}>
-                        <MaterialCommunityIcons
-                          name={item.icon}
-                          size={18}
-                          color={theme.colors.onSurfaceVariant}
-                        />
-                      </View>
-                      <View style={styles.plannedItemTextCol}>
-                        <Text style={styles.plannedItemTitle}>{item.title}</Text>
-                        <Text style={styles.plannedItemSubtitle}>{item.subtitle}</Text>
-                      </View>
-                      <View style={styles.soonBadge}>
-                        <Text style={styles.soonBadgeText}>Em breve</Text>
-                      </View>
-                    </View>
-                  );
-                })}
-              </View>
-            </View>
+            <OperationalPreferencesCard />
           </SettingsSection>
-          */}
 
           {/* Section 5: App Info & About */}
           <SettingsSection
@@ -347,92 +283,6 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       color: theme.colors.onSurfaceVariant,
       marginTop: 6,
       lineHeight: 22,
-    },
-    plannedCard: {
-      backgroundColor: theme.colors.surfaceContainerLowest,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      borderRadius: theme.rounded.lg,
-      padding: theme.spacing.space5,
-      width: '100%',
-      ...theme.shadows.soft,
-    },
-    plannedCardHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: theme.spacing.space2,
-      marginBottom: theme.spacing.space2,
-    },
-    plannedCardTitle: {
-      fontFamily: theme.typography.headlineMd.fontFamily,
-      fontSize: 16,
-      fontWeight: '600',
-      color: theme.colors.espressoDark,
-    },
-    plannedCardSubtitle: {
-      fontFamily: theme.typography.bodySm.fontFamily,
-      fontSize: 13,
-      color: theme.colors.onSurfaceVariant,
-      lineHeight: 18,
-      marginBottom: theme.spacing.space4,
-    },
-    plannedList: {
-      backgroundColor: theme.colors.surfaceContainerLow,
-      borderRadius: theme.rounded.md,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      overflow: 'hidden',
-    },
-    plannedItemRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      padding: theme.spacing.space3,
-      minHeight: 52,
-      gap: theme.spacing.space3,
-    },
-    plannedItemBorder: {
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.outlineVariant,
-    },
-    plannedIconBox: {
-      width: 34,
-      height: 34,
-      borderRadius: theme.rounded.sm,
-      backgroundColor: theme.colors.surfaceContainerLowest,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    plannedItemTextCol: {
-      flex: 1,
-      gap: 2,
-    },
-    plannedItemTitle: {
-      fontFamily: theme.typography.bodyMd.fontFamily,
-      fontSize: 14,
-      fontWeight: '600',
-      color: theme.colors.espressoDark,
-    },
-    plannedItemSubtitle: {
-      fontFamily: theme.typography.bodySm.fontFamily,
-      fontSize: 12,
-      color: theme.colors.onSurfaceVariant,
-      lineHeight: 16,
-    },
-    soonBadge: {
-      backgroundColor: theme.colors.chips.secondary.background,
-      paddingHorizontal: 8,
-      paddingVertical: 3,
-      borderRadius: theme.rounded.full,
-    },
-    soonBadgeText: {
-      fontFamily: theme.typography.labelSm.fontFamily,
-      fontSize: 10,
-      fontWeight: '700',
-      color: theme.colors.chips.secondary.text,
-      textTransform: 'uppercase',
-      letterSpacing: 0.3,
     },
     aboutCard: {
       backgroundColor: theme.colors.surfaceContainerLowest,
