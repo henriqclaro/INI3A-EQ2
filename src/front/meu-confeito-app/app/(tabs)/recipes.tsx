@@ -36,12 +36,19 @@ export default function RecipesScreen() {
     }
   }, [user]);
 
-  const isDesktop = width >= 768;
-  const numCols = isDesktop ? 3 : 1;
-  const containerWidth = Math.min(width - (isDesktop ? 48 : 32), 1200);
-  const cardWidth = isDesktop
-    ? Math.floor((containerWidth - (numCols - 1) * 16) / numCols)
-    : Math.min(width - 32, 480);
+  const isWebSidebarPresent = Platform.OS === 'web' && width >= theme.breakpoints.lg;
+  const effectiveWidth = isWebSidebarPresent ? width - 260 : width;
+
+  const isMobile = effectiveWidth < 768;
+  const isTablet = effectiveWidth >= 768 && effectiveWidth < 1024;
+  const hasHeaderActions = effectiveWidth >= 768;
+
+  const numCols = isMobile ? 1 : isTablet ? 2 : 3;
+  const containerWidth = Math.min(effectiveWidth - (isMobile ? 32 : 48), 1200);
+  const cardWidth =
+    numCols === 1
+      ? Math.min(effectiveWidth - 32, 480)
+      : Math.floor((containerWidth - (numCols - 1) * 16) / numCols);
 
   const speedDialActions: FloatingActionItem[] = useMemo(
     () => [
@@ -74,8 +81,8 @@ export default function RecipesScreen() {
   );
 
   const styles = useMemo(
-    () => createStyles(theme, isDesktop, cardWidth),
-    [theme, isDesktop, cardWidth],
+    () => createStyles(theme, isMobile, isTablet, numCols, containerWidth, cardWidth),
+    [theme, isMobile, isTablet, numCols, containerWidth, cardWidth],
   );
 
   const renderRecipeItem = useCallback(
@@ -88,18 +95,18 @@ export default function RecipesScreen() {
           prepTimeMinutes={item.prepTimeMinutes}
           isCustomized={Boolean(item.parent)}
           hasParent={Boolean(item.parent)}
-          style={isDesktop ? styles.desktopCard : undefined}
+          style={numCols > 1 ? styles.desktopCard : undefined}
           onPress={() => {
             router.push({ pathname: '/single-recipe', params: { recipeId: item.id } });
           }}
         />
       </View>
     ),
-    [isDesktop, styles.cardWrapper, styles.desktopCard],
+    [numCols, styles.cardWrapper, styles.desktopCard],
   );
 
   const listHeader = useMemo(() => {
-    if (!isDesktop || recipes.length === 0) return null;
+    if (!hasHeaderActions || recipes.length === 0) return null;
     return (
       <View style={styles.desktopHeaderWrapper}>
         <View style={styles.desktopHeader}>
@@ -157,7 +164,7 @@ export default function RecipesScreen() {
         </View>
       </View>
     );
-  }, [isDesktop, recipes.length, styles, theme.colors.onPrimary, theme.colors.onSurface]);
+  }, [hasHeaderActions, recipes.length, styles, theme.colors.onPrimary, theme.colors.onSurface]);
 
   const listFooter = useMemo(() => {
     if (isLoading || recipes.length === 0) return null;
@@ -290,9 +297,9 @@ export default function RecipesScreen() {
         data={isLoading ? [] : recipes}
         keyExtractor={keyExtractor}
         renderItem={renderRecipeItem}
-        numColumns={isDesktop ? 3 : 1}
-        key={isDesktop ? 'desktop-grid' : 'mobile-list'}
-        columnWrapperStyle={isDesktop ? styles.columnWrapper : undefined}
+        numColumns={numCols}
+        key={`recipes-grid-${numCols}`}
+        columnWrapperStyle={numCols > 1 ? styles.columnWrapper : undefined}
         ItemSeparatorComponent={itemSeparator}
         ListHeaderComponent={listHeader}
         ListFooterComponent={listFooter}
@@ -314,7 +321,7 @@ export default function RecipesScreen() {
         }
       />
 
-      {!isDesktop && (
+      {isMobile && (
         <FloatingButton
           variant="primary"
           containerStyle={styles.button}
@@ -328,7 +335,14 @@ export default function RecipesScreen() {
   );
 }
 
-const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number) =>
+const createStyles = (
+  theme: AppTheme,
+  isMobile: boolean,
+  isTablet: boolean,
+  numCols: number,
+  containerWidth: number,
+  cardWidth: number,
+) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -344,21 +358,21 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number) =
       width: '100%',
     },
     scrollContainer: {
-      paddingHorizontal: isDesktop ? 24 : 16,
-      paddingTop: isDesktop ? 24 : 16,
+      paddingHorizontal: isMobile ? 16 : 24,
+      paddingTop: isMobile ? 16 : 24,
       paddingBottom: 100,
       alignItems: 'center',
     },
     contentWrapper: {
       width: '100%',
-      maxWidth: 1200,
+      maxWidth: containerWidth,
       alignItems: 'center',
       gap: 24,
     },
     desktopHeader: {
       width: '100%',
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: isTablet ? 'column' : 'row',
+      alignItems: isTablet ? 'flex-start' : 'center',
       justifyContent: 'space-between',
       flexWrap: 'wrap',
       gap: 16,
@@ -422,25 +436,25 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number) =
       color: theme.colors.onPrimary,
     },
     gridContainer: {
-      flexDirection: isDesktop ? 'row' : 'column',
-      flexWrap: isDesktop ? 'wrap' : 'nowrap',
+      flexDirection: numCols > 1 ? 'row' : 'column',
+      flexWrap: numCols > 1 ? 'wrap' : 'nowrap',
       gap: 16,
-      justifyContent: isDesktop ? 'flex-start' : 'center',
+      justifyContent: numCols > 1 ? 'flex-start' : 'center',
       alignItems: 'center',
       width: '100%',
     },
     desktopHeaderWrapper: {
       width: '100%',
-      maxWidth: 1200,
+      maxWidth: containerWidth,
       alignSelf: 'center',
-      marginBottom: 28,
+      marginBottom: 24,
       paddingBottom: 20,
       borderBottomWidth: 1,
       borderBottomColor: theme.colors.outlineVariant,
     },
     footerWrapper: {
-      width: isDesktop ? '100%' : cardWidth,
-      maxWidth: 1200,
+      width: '100%',
+      maxWidth: containerWidth,
       alignSelf: 'center',
       marginTop: 24,
     },
@@ -452,7 +466,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number) =
     columnWrapper: {
       gap: 16,
       width: '100%',
-      maxWidth: 1200,
+      maxWidth: containerWidth,
       alignSelf: 'center',
       justifyContent: 'flex-start',
     },
@@ -462,10 +476,11 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number) =
     cardWrapper: {
       width: cardWidth,
       maxWidth: '100%',
-      height: isDesktop ? 380 : undefined,
+      minHeight: numCols > 1 ? 360 : undefined,
       alignSelf: 'center',
     },
     desktopCard: {
+      minHeight: 360,
       height: '100%',
     },
     loadingContainer: {
@@ -553,7 +568,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number) =
       borderRadius: theme.rounded.lg,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      padding: isDesktop ? 20 : 16,
+      padding: !isMobile ? 20 : 16,
       marginTop: 8,
       gap: 16,
       ...theme.shadows.soft,
@@ -564,9 +579,9 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number) =
       gap: 12,
     },
     suggestionIconWrapper: {
-      width: isDesktop ? 46 : 40,
-      height: isDesktop ? 46 : 40,
-      borderRadius: isDesktop ? 23 : 20,
+      width: !isMobile ? 46 : 40,
+      height: !isMobile ? 46 : 40,
+      borderRadius: !isMobile ? 23 : 20,
       backgroundColor: theme.colors.secondaryContainer,
       alignItems: 'center',
       justifyContent: 'center',
@@ -579,7 +594,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number) =
     },
     suggestionTitle: {
       fontFamily: theme.typography.headlineMd.fontFamily,
-      fontSize: isDesktop ? 18 : 17,
+      fontSize: !isMobile ? 18 : 17,
       fontWeight: '600',
       color: theme.colors.espressoDark,
       marginBottom: 4,
@@ -591,12 +606,12 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number) =
       color: theme.colors.onSurfaceVariant,
     },
     suggestionButtonsRow: {
-      flexDirection: isDesktop ? 'row' : 'column',
+      flexDirection: !isMobile ? 'row' : 'column',
       gap: 10,
     },
     suggestionPrimaryBtn: {
-      flex: isDesktop ? 1 : undefined,
-      width: isDesktop ? undefined : '100%',
+      flex: !isMobile ? 1 : undefined,
+      width: !isMobile ? undefined : '100%',
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
@@ -614,8 +629,8 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number) =
       fontWeight: '600',
     },
     suggestionSecondaryBtn: {
-      flex: isDesktop ? 1 : undefined,
-      width: isDesktop ? undefined : '100%',
+      flex: !isMobile ? 1 : undefined,
+      width: !isMobile ? undefined : '100%',
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',

@@ -20,9 +20,9 @@ import { AppTheme } from '@/src/theme/themes';
 export default function WelcomeScreen() {
   const { theme, isDarkMode, toggleTheme } = useThemeMode();
   const { width } = useWindowDimensions();
-  const isDesktop = width >= 768;
+  const hasSideImage = width >= 1000;
 
-  const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
+  const styles = useMemo(() => createStyles(theme, hasSideImage), [theme, hasSideImage]);
 
   return (
     <>
@@ -109,8 +109,8 @@ export default function WelcomeScreen() {
             </Link>
           </View>
         </ScrollView>
-        {/* Foto que aparece no PC */}
-        {isDesktop && (
+        {/* Foto que aparece apenas em telas grandes (>= 1000px) */}
+        {hasSideImage && (
           <View style={styles.imageContainer}>
             <Image
               source={require('../assets/images/index-image.jpg')}
@@ -123,25 +123,29 @@ export default function WelcomeScreen() {
     </>
   );
 }
-const createStyles = (theme: AppTheme, isDesktop: boolean) =>
+const createStyles = (theme: AppTheme, hasSideImage: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
-      flexDirection: isDesktop ? 'row' : 'column',
+      flexDirection: hasSideImage ? 'row' : 'column',
     },
     contentContainer: {
       flex: 1,
       alignItems: 'center',
-      justifyContent: isDesktop ? 'flex-start' : 'center',
-      paddingTop: isDesktop ? 40 : 20,
+      justifyContent: hasSideImage ? 'flex-start' : 'center',
+      paddingTop: hasSideImage ? 40 : 20,
       paddingHorizontal: 20,
+      maxWidth: hasSideImage ? 560 : 500,
+      width: '100%',
+      alignSelf: 'center',
     },
     imageContainer: {
-      width: isDesktop ? 650 : '100%',
-      height: isDesktop ? '100%' : 250,
+      flex: 1,
+      maxWidth: 650,
+      height: '100%',
       justifyContent: 'center',
-      alignItems: 'flex-end',
+      alignItems: 'center',
     },
     backgroundImage: {
       width: '100%',
@@ -173,12 +177,15 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       marginBottom: 10,
     },
     scrollContainer: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
       padding: 10,
       width: '100%',
       gap: 12,
     },
     actionButton: {
-      width: isDesktop ? 340 : 300,
+      width: hasSideImage ? 340 : 300,
       maxWidth: '100%',
     },
     headerThemeBtn: {

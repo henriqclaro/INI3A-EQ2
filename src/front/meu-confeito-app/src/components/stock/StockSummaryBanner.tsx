@@ -24,8 +24,13 @@ export const StockSummaryBanner = ({
 }: StockSummaryBannerProps) => {
   const { theme } = useThemeMode();
   const { width } = useWindowDimensions();
-  const isDesktop = width >= 768;
-  const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
+  const isDesktop = width >= 1024;
+  const isTablet = width >= 768 && width < 1024;
+  const isWideScreen = isDesktop || isTablet;
+  const styles = useMemo(
+    () => createStyles(theme, isDesktop, isTablet),
+    [theme, isDesktop, isTablet],
+  );
 
   return (
     <View style={styles.container}>
@@ -35,7 +40,7 @@ export const StockSummaryBanner = ({
           <View style={styles.iconWrapper}>
             <MaterialCommunityIcons
               name="package-variant-closed"
-              size={isDesktop ? 20 : 18}
+              size={isWideScreen ? 20 : 18}
               color={theme.colors.primary}
             />
           </View>
@@ -54,7 +59,7 @@ export const StockSummaryBanner = ({
           <View style={styles.iconWrapper}>
             <MaterialCommunityIcons
               name="cash-multiple"
-              size={isDesktop ? 20 : 18}
+              size={isWideScreen ? 20 : 18}
               color={theme.colors.tertiary}
             />
           </View>
@@ -73,7 +78,7 @@ export const StockSummaryBanner = ({
           <View style={[styles.iconWrapper, outOfStockCount > 0 && styles.iconWrapperCritical]}>
             <MaterialCommunityIcons
               name="alert-circle-outline"
-              size={isDesktop ? 20 : 18}
+              size={isWideScreen ? 20 : 18}
               color={outOfStockCount > 0 ? theme.colors.error : theme.colors.outline}
             />
           </View>
@@ -98,7 +103,7 @@ export const StockSummaryBanner = ({
           <View style={[styles.iconWrapper, expiringSoonCount > 0 && styles.iconWrapperWarning]}>
             <MaterialCommunityIcons
               name="clock-alert-outline"
-              size={isDesktop ? 20 : 18}
+              size={isWideScreen ? 20 : 18}
               color={expiringSoonCount > 0 ? theme.colors.warning : theme.colors.outline}
             />
           </View>
@@ -124,7 +129,7 @@ export const StockSummaryBanner = ({
             <View style={[styles.iconWrapper, styles.iconWrapperCritical]}>
               <MaterialCommunityIcons
                 name="alert-decagram"
-                size={isDesktop ? 20 : 18}
+                size={isWideScreen ? 20 : 18}
                 color={theme.colors.error}
               />
             </View>
@@ -143,34 +148,35 @@ export const StockSummaryBanner = ({
   );
 };
 
-const createStyles = (theme: AppTheme, isDesktop: boolean) =>
-  StyleSheet.create({
+const createStyles = (theme: AppTheme, isDesktop: boolean, isTablet: boolean) => {
+  const isWide = isDesktop || isTablet;
+  return StyleSheet.create({
     container: {
       width: '100%',
       backgroundColor: theme.colors.surfaceContainerLowest,
       borderRadius: theme.rounded.lg,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      padding: isDesktop ? 16 : 10,
+      padding: isWide ? 14 : 10,
       marginBottom: 16,
       ...theme.shadows.soft,
     },
     grid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: isDesktop ? 10 : 8,
+      gap: isWide ? 10 : 8,
     },
     metricCard: {
       flex: 1,
-      minWidth: isDesktop ? 180 : '46%',
+      minWidth: isDesktop ? 180 : isTablet ? 135 : '46%',
       backgroundColor: theme.colors.surfaceContainerLow,
       borderRadius: theme.rounded.md,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      padding: isDesktop ? 12 : 8,
+      padding: isWide ? 10 : 8,
       flexDirection: 'row',
       alignItems: 'center',
-      gap: isDesktop ? 10 : 8,
+      gap: isWide ? 10 : 8,
     },
     metricCardAlert: {
       borderColor: theme.colors.error,
@@ -181,9 +187,9 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       backgroundColor: theme.colors.surfaceContainerLow,
     },
     iconWrapper: {
-      width: isDesktop ? 38 : 32,
-      height: isDesktop ? 38 : 32,
-      borderRadius: isDesktop ? 19 : 16,
+      width: isWide ? 36 : 32,
+      height: isWide ? 36 : 32,
+      borderRadius: isWide ? 18 : 16,
       backgroundColor: theme.colors.surfaceContainerLowest,
       alignItems: 'center',
       justifyContent: 'center',
@@ -212,13 +218,13 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
     },
     metricValue: {
       fontFamily: theme.typography.bodyLg.fontFamily,
-      fontSize: isDesktop ? 17 : 15,
+      fontSize: isDesktop ? 17 : isTablet ? 15 : 14,
       fontWeight: '700',
       color: theme.colors.espressoDark,
     },
     metricValuePrimary: {
       fontFamily: theme.typography.bodyLg.fontFamily,
-      fontSize: isDesktop ? 16 : 14,
+      fontSize: isDesktop ? 16 : isTablet ? 15 : 13,
       fontWeight: '700',
       color: theme.colors.tertiary,
     },
@@ -229,3 +235,4 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       color: theme.colors.warning,
     },
   });
+};

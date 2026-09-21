@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
+  Platform,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -34,7 +35,9 @@ function CustomerHomeScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
   const { width } = useWindowDimensions();
-  const isDesktop = width >= theme.breakpoints.md;
+  const isWebSidebarPresent = Platform.OS === 'web' && width >= theme.breakpoints.lg;
+  const effectiveWidth = isWebSidebarPresent ? width - 260 : width;
+  const isDesktop = effectiveWidth >= theme.breakpoints.md;
   const styles = useMemo(() => createCustomerStyles(theme, isDesktop), [theme, isDesktop]);
 
   const firstName = user?.name ? user.name.split(' ')[0] : 'Cliente';
@@ -63,9 +66,13 @@ function BakerHomeScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
   const { width } = useWindowDimensions();
-  const isSmallScreen = width < theme.breakpoints.sm;
-  const isDesktop = width >= theme.breakpoints.md;
-  const isLargeDesktop = width >= theme.breakpoints.lg;
+  const isWebSidebarPresent = Platform.OS === 'web' && width >= theme.breakpoints.lg;
+  const effectiveWidth = isWebSidebarPresent ? width - 260 : width;
+
+  const isSmallScreen = effectiveWidth < theme.breakpoints.sm;
+  const isDesktop = effectiveWidth >= theme.breakpoints.md;
+  const isLargeDesktop = effectiveWidth >= theme.breakpoints.lg;
+  const hasTwoColumns = effectiveWidth >= theme.breakpoints.md;
 
   const styles = useMemo(
     () => createBakerStyles(theme, isSmallScreen, isDesktop, isLargeDesktop),
@@ -203,8 +210,8 @@ function BakerHomeScreen() {
             savedCount={savedCount}
           />
 
-          {isLargeDesktop ? (
-            /* Multi-column Split View for Large Desktop Screens */
+          {hasTwoColumns ? (
+            /* Multi-column Split View for Tablet and Desktop Screens */
             <View style={styles.columnsContainer}>
               {/* Left Column: Quick Actions & Recent Author Recipes */}
               <View style={styles.leftColumn}>
@@ -515,14 +522,14 @@ const createBakerStyles = (
     },
     headerBlock: {
       paddingTop: theme.spacing.space1,
-      flexDirection: isDesktop ? 'row' : 'column',
-      alignItems: isDesktop ? 'center' : 'flex-start',
+      flexDirection: isLargeDesktop ? 'row' : 'column',
+      alignItems: isLargeDesktop ? 'center' : 'flex-start',
       justifyContent: 'space-between',
       gap: theme.spacing.space3,
     },
     headerTextCol: {
       gap: 4,
-      flex: isDesktop ? 1 : undefined,
+      flex: isLargeDesktop ? 1 : undefined,
     },
     greetingTitle: {
       fontFamily: theme.typography.headlineXl.fontFamily,
@@ -603,17 +610,18 @@ const createBakerStyles = (
     },
     columnsContainer: {
       flexDirection: 'row',
-      gap: theme.spacing.gutterDesktop,
+      gap: isLargeDesktop ? theme.spacing.gutterDesktop : theme.spacing.space4,
       width: '100%',
       alignItems: 'flex-start',
     },
     leftColumn: {
-      flex: 1.15,
+      flex: isLargeDesktop ? 1.15 : 1,
+      minWidth: 0,
       gap: theme.spacing.space5,
     },
     rightColumn: {
-      flex: 0.85,
-      minWidth: 320,
+      flex: isLargeDesktop ? 0.85 : 1,
+      minWidth: 0,
       gap: theme.spacing.space5,
     },
     recipesSection: {
@@ -656,7 +664,7 @@ const createBakerStyles = (
     },
     recipeGridItem: {
       flex: 1,
-      minWidth: 260,
+      minWidth: isLargeDesktop ? 260 : '100%',
     },
     emptyRecipesCard: {
       backgroundColor: theme.colors.surfaceContainerLowest,

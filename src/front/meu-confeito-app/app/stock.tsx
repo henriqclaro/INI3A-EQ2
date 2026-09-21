@@ -148,8 +148,8 @@ export default function StockScreen() {
   }, []);
 
   const styles = useMemo(
-    () => createStyles(theme, isMobile, cardWidth),
-    [theme, isMobile, cardWidth],
+    () => createStyles(theme, isMobile, containerWidth, cardWidth),
+    [theme, isMobile, containerWidth, cardWidth],
   );
 
   const renderStockItem = useCallback(
@@ -465,7 +465,12 @@ export default function StockScreen() {
   );
 }
 
-const createStyles = (theme: AppTheme, isMobile: boolean, cardWidth?: number) =>
+const createStyles = (
+  theme: AppTheme,
+  isMobile: boolean,
+  containerWidth: number,
+  cardWidth?: number,
+) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -572,8 +577,8 @@ const createStyles = (theme: AppTheme, isMobile: boolean, cardWidth?: number) =>
       fontWeight: '700',
     },
     headerWrapper: {
-      width: isMobile ? cardWidth : '100%',
-      maxWidth: isMobile ? '100%' : 1200,
+      width: '100%',
+      maxWidth: isMobile ? cardWidth : containerWidth,
       alignSelf: 'center',
       gap: 12,
       marginBottom: 16,
@@ -581,7 +586,7 @@ const createStyles = (theme: AppTheme, isMobile: boolean, cardWidth?: number) =>
     columnWrapper: {
       gap: 16,
       width: '100%',
-      maxWidth: 1200,
+      maxWidth: containerWidth,
       alignSelf: 'center',
       justifyContent: 'flex-start',
     },
@@ -591,10 +596,11 @@ const createStyles = (theme: AppTheme, isMobile: boolean, cardWidth?: number) =>
     cardWrapper: {
       width: cardWidth,
       maxWidth: '100%',
-      height: isMobile ? undefined : 375,
+      minHeight: isMobile ? undefined : 365,
       alignSelf: 'center',
     },
     desktopCard: {
+      minHeight: 365,
       height: '100%',
       justifyContent: 'space-between',
     },

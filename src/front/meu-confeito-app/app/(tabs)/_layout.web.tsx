@@ -16,7 +16,7 @@ export default function TabsWebLayout() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
   const { width } = useWindowDimensions();
-  const isDesktop = width >= theme.breakpoints.md;
+  const isDesktop = width >= theme.breakpoints.lg;
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const isCustomerRole = user?.role?.trim().toUpperCase() === 'CUSTOMER';
