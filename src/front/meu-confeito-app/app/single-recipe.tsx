@@ -633,7 +633,7 @@ export default function RecipeScreen() {
                           <MaterialCommunityIcons
                             name="archive-arrow-up-outline"
                             size={18}
-                            color={theme.colors.primary}
+                            color={theme.colors.onPrimaryContainer}
                           />
                           <Text style={styles.btnActionTextUnarchive}>Restaurar</Text>
                         </TouchableOpacity>
@@ -1441,12 +1441,13 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       borderRadius: theme.rounded.default,
       paddingHorizontal: 12,
       gap: 6,
+      ...theme.shadows.soft,
     },
     btnActionTextUnarchive: {
       fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.primary,
+      color: theme.colors.onPrimaryContainer,
     },
     historyLinkBtn: {
       minHeight: 48,

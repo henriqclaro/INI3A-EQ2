@@ -168,11 +168,6 @@ function BakerHomeScreen() {
 
             {isDesktop && (
               <View style={styles.headerActionsRow}>
-                <View style={styles.statusPill}>
-                  <View style={styles.statusDot} />
-                  <Text style={styles.statusPillText}>Ateliê em Atividade</Text>
-                </View>
-
                 <TouchableOpacity
                   style={styles.headerSecondaryBtn}
                   onPress={() => router.push('/register-stock')}
@@ -549,29 +544,6 @@ const createBakerStyles = (
       alignItems: 'center',
       gap: theme.spacing.space3,
       flexWrap: 'wrap',
-    },
-    statusPill: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-      backgroundColor: theme.colors.surfaceContainerLowest,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      paddingHorizontal: theme.spacing.space3,
-      paddingVertical: 6,
-      borderRadius: theme.rounded.full,
-    },
-    statusDot: {
-      width: 8,
-      height: 8,
-      borderRadius: theme.rounded.full,
-      backgroundColor: theme.colors.tertiary,
-    },
-    statusPillText: {
-      fontFamily: theme.typography.labelSm.fontFamily,
-      fontSize: 11,
-      fontWeight: '600',
-      color: theme.colors.espressoDark,
     },
     headerSecondaryBtn: {
       flexDirection: 'row',
