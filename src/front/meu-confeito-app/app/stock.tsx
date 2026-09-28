@@ -11,7 +11,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
-import { Stack, router } from 'expo-router';
+import { Stack, router, useFocusEffect } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
@@ -44,6 +44,12 @@ export default function StockScreen() {
     registerPurchase,
     registerWaste,
   } = useInventory();
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
 
   // Search & Filter state
   const [search, setSearch] = useState('');
