@@ -87,6 +87,10 @@ export const Storage = {
   },
 
   async prewarmTokens(): Promise<void> {
-    await Promise.all([this.getItem('access_token'), this.getItem('session_id')]);
+    await Promise.all([
+      this.getItem('access_token'),
+      this.getItem('refresh_token'),
+      this.getItem('session_id'),
+    ]);
   },
 };

@@ -8,6 +8,7 @@ import {
   useState,
 } from 'react';
 
+import { requestTokenRefresh, setAuthFailureListener } from '../services/api';
 import { AuthService, LogInData, LogInResponse } from '../services/auth';
 import { Storage } from '../utils/storage';
 
@@ -35,14 +36,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoadingStorage, setIsLoadingStorage] = useState(true);
 
   useEffect(() => {
+    setAuthFailureListener(() => {
+      setUser(null);
+    });
+
+    return () => {
+      setAuthFailureListener(null);
+    };
+  }, []);
+
+  useEffect(() => {
     async function loadStorageData() {
       try {
         await Storage.prewarmTokens();
         const storedToken = await Storage.getItem('access_token');
+        const storedRefreshToken = await Storage.getItem('refresh_token');
         const storedUser = await Storage.getItem('user_profile');
 
-        if (storedToken && storedUser) {
-          setUser(JSON.parse(storedUser));
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          if (storedToken) {
+            setUser(parsedUser);
+          } else if (storedRefreshToken) {
+            try {
+              await requestTokenRefresh(storedRefreshToken);
+              setUser(parsedUser);
+            } catch {
+              await Storage.removeItem('access_token');
+              await Storage.removeItem('refresh_token');
+              await Storage.removeItem('user_profile');
+              setUser(null);
+            }
+          }
         }
       } catch (error) {
         console.error('Error loading items from Storage: ', error);
