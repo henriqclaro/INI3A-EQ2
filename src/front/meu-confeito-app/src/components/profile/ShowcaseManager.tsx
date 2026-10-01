@@ -101,6 +101,9 @@ export function ShowcaseManager({ userId }: ShowcaseManagerProps) {
             color={theme.colors.primary}
           />
           <Text style={styles.sectionTitle}>Vitrine de Destaques</Text>
+          <View style={styles.badgeOptional}>
+            <Text style={styles.badgeOptionalText}>opcional</Text>
+          </View>
         </View>
         <View style={styles.countBadge}>
           <Text style={styles.countText}>
@@ -299,6 +302,23 @@ const createStyles = (theme: AppTheme) =>
       fontSize: 14,
       fontWeight: '700',
       color: theme.colors.espressoDark,
+    },
+    badgeOptional: {
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      paddingHorizontal: 7,
+      paddingVertical: 2,
+      borderRadius: theme.rounded.full,
+      marginLeft: 6,
+    },
+    badgeOptionalText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 10,
+      fontWeight: '600',
+      color: theme.colors.onSurfaceVariant,
+      textTransform: 'uppercase',
+      letterSpacing: 0.4,
     },
     countBadge: {
       backgroundColor: theme.colors.surfaceContainerLowest,

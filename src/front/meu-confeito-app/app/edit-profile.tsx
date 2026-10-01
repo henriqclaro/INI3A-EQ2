@@ -1,15 +1,24 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Alert, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Alert, Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { Image } from 'expo-image';
 import * as Location from 'expo-location';
-import { Stack, router } from 'expo-router';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import {
+  KeyboardAwareScrollView,
+  KeyboardAwareScrollViewRef,
+} from 'react-native-keyboard-controller';
 import { ActivityIndicator } from 'react-native-paper';
 
-import { BakerTagSelector, CustomButton, Input, ShowcaseManager } from '@/src/components';
+import {
+  BakerTagSelector,
+  CustomButton,
+  Input,
+  ShowcaseManager,
+  ThemeSwitch,
+} from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useDeleteBakerProfile, useSaveBakerProfile } from '@/src/hooks/useBakerProfile';
@@ -35,6 +44,12 @@ export default function EditProfileScreen() {
   const { theme } = useThemeMode();
   const { user, updateUser } = useAuth();
   const isBakerRole = user?.role?.trim().toUpperCase() === 'BAKER';
+
+  const { focusCommercial } = useLocalSearchParams<{ focusCommercial?: string }>();
+  const isFocusCommercial = focusCommercial === 'true';
+
+  const scrollViewRef = useRef<KeyboardAwareScrollViewRef>(null);
+  const [blinkAnim] = useState(() => new Animated.Value(0));
 
   const { editUser, isLoading: isLoadingUserEdit } = useUserEdit();
   const [isLoadingInitialBaker, setIsLoadingInitialBaker] = useState<boolean>(isBakerRole);
@@ -113,6 +128,27 @@ export default function EditProfileScreen() {
       isMounted = false;
     };
   }, [isBakerRole]);
+
+  useEffect(() => {
+    if (!isFocusCommercial || isLoadingInitialBaker) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+
+      Animated.sequence([
+        Animated.timing(blinkAnim, { toValue: 1, duration: 250, useNativeDriver: false }),
+        Animated.timing(blinkAnim, { toValue: 0, duration: 250, useNativeDriver: false }),
+        Animated.timing(blinkAnim, { toValue: 1, duration: 250, useNativeDriver: false }),
+        Animated.timing(blinkAnim, { toValue: 0, duration: 250, useNativeDriver: false }),
+        Animated.timing(blinkAnim, { toValue: 1, duration: 250, useNativeDriver: false }),
+        Animated.timing(blinkAnim, { toValue: 0, duration: 350, useNativeDriver: false }),
+      ]).start();
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [blinkAnim, isFocusCommercial, isLoadingInitialBaker]);
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -474,6 +510,7 @@ export default function EditProfileScreen() {
       <Stack.Screen options={{ title: 'Editar Perfil' }} />
 
       <KeyboardAwareScrollView
+        ref={scrollViewRef}
         style={styles.container}
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
@@ -513,9 +550,12 @@ export default function EditProfileScreen() {
             {/* Name input */}
             <View style={styles.fieldWrapper}>
               <View style={styles.labelRow}>
-                <Text style={styles.label}>
-                  Nome completo <Text style={styles.required}>*</Text>
-                </Text>
+                <View style={styles.labelGroup}>
+                  <Text style={styles.label}>Nome completo</Text>
+                  <View style={styles.badgeRequired}>
+                    <Text style={styles.badgeRequiredText}>obrigatório</Text>
+                  </View>
+                </View>
                 {touched.name && isNameFieldValid && (
                   <MaterialCommunityIcons
                     name="check-circle-outline"
@@ -559,15 +599,18 @@ export default function EditProfileScreen() {
             {/* Email input (Private account data) */}
             <View style={styles.fieldWrapper}>
               <View style={styles.labelRow}>
-                <View style={styles.labelWithIcon}>
-                  <Text style={styles.label}>
-                    E-mail <Text style={styles.required}>*</Text>
-                  </Text>
-                  <MaterialCommunityIcons
-                    name="lock-outline"
-                    size={14}
-                    color={theme.colors.onSurfaceVariant}
-                  />
+                <View style={styles.labelGroup}>
+                  <View style={styles.labelWithIcon}>
+                    <Text style={styles.label}>E-mail</Text>
+                    <MaterialCommunityIcons
+                      name="lock-outline"
+                      size={14}
+                      color={theme.colors.onSurfaceVariant}
+                    />
+                  </View>
+                  <View style={styles.badgeRequired}>
+                    <Text style={styles.badgeRequiredText}>obrigatório</Text>
+                  </View>
                 </View>
                 {touched.email && isEmailFieldValid && (
                   <MaterialCommunityIcons
@@ -613,10 +656,20 @@ export default function EditProfileScreen() {
             {/* Phone input */}
             <View style={styles.fieldWrapper}>
               <View style={styles.labelRow}>
-                <Text style={styles.label}>
-                  {isBakerRole ? 'Telefone / WhatsApp Comercial' : 'Telefone'}{' '}
-                  {isBakerRole && isPublicProfile ? <Text style={styles.required}>*</Text> : null}
-                </Text>
+                <View style={styles.labelGroup}>
+                  <Text style={styles.label}>
+                    {isBakerRole ? 'Telefone / WhatsApp Comercial' : 'Telefone'}
+                  </Text>
+                  {isBakerRole && isPublicProfile ? (
+                    <View style={styles.badgeRequired}>
+                      <Text style={styles.badgeRequiredText}>obrigatório</Text>
+                    </View>
+                  ) : (
+                    <View style={styles.badgeOptional}>
+                      <Text style={styles.badgeOptionalText}>opcional</Text>
+                    </View>
+                  )}
+                </View>
                 {touched.phone && phone.trim() && isPhoneFieldValid && (
                   <MaterialCommunityIcons
                     name="check-circle-outline"
@@ -663,24 +716,36 @@ export default function EditProfileScreen() {
 
           {/* Baker Profile / Public Profile Card */}
           {isBakerRole ? (
-            <View style={styles.card}>
+            <Animated.View
+              style={[
+                styles.card,
+                isFocusCommercial && {
+                  borderColor: blinkAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [theme.colors.outlineVariant, theme.colors.primary],
+                  }),
+                  borderWidth: blinkAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [1, 2.5],
+                  }),
+                },
+              ]}
+            >
               <View style={styles.publicHeaderRow}>
                 <View style={styles.publicTitleWrapper}>
                   <Text style={styles.cardSectionHeader}>Perfil Comercial de Confeiteiro</Text>
                   <Text style={styles.publicSubtitle}>Tornar seu perfil público para clientes</Text>
                 </View>
 
-                <Switch
+                <ThemeSwitch
                   value={isPublicProfile}
                   onValueChange={handleTogglePublicProfile}
                   disabled={isTogglingPublic}
-                  thumbColor={
-                    isPublicProfile ? theme.colors.primary : theme.colors.surfaceContainerHighest
-                  }
-                  trackColor={{
-                    false: theme.colors.outlineVariant,
-                    true: theme.colors.primaryContainer,
-                  }}
+                  activeThumbColor={theme.colors.primary}
+                  inactiveThumbColor={theme.colors.surfaceContainerHighest}
+                  activeTrackColor={theme.colors.primaryContainer}
+                  inactiveTrackColor={theme.colors.outlineVariant}
+                  accessibilityLabel="Tornar perfil comercial público"
                 />
               </View>
 
@@ -753,13 +818,18 @@ export default function EditProfileScreen() {
                   {/* Location Section handled by expo-location */}
                   <View style={styles.locationSection}>
                     <View style={styles.locationHeaderRow}>
-                      <View style={styles.labelWithIcon}>
-                        <MaterialCommunityIcons
-                          name="crosshairs-gps"
-                          size={16}
-                          color={theme.colors.primary}
-                        />
-                        <Text style={styles.label}>Localização Geográfica (GPS)</Text>
+                      <View style={styles.labelGroup}>
+                        <View style={styles.labelWithIcon}>
+                          <MaterialCommunityIcons
+                            name="crosshairs-gps"
+                            size={16}
+                            color={theme.colors.primary}
+                          />
+                          <Text style={styles.label}>Localização Geográfica (GPS)</Text>
+                        </View>
+                        <View style={styles.badgeOptional}>
+                          <Text style={styles.badgeOptionalText}>opcional</Text>
+                        </View>
                       </View>
                       {hasLocationCoords ? (
                         <TouchableOpacity
@@ -822,7 +892,12 @@ export default function EditProfileScreen() {
                   {/* City input */}
                   <View style={styles.fieldWrapper}>
                     <View style={styles.labelRow}>
-                      <Text style={styles.label}>Cidade</Text>
+                      <View style={styles.labelGroup}>
+                        <Text style={styles.label}>Cidade</Text>
+                        <View style={styles.badgeOptional}>
+                          <Text style={styles.badgeOptionalText}>opcional</Text>
+                        </View>
+                      </View>
                     </View>
                     <Input
                       value={city}
@@ -846,7 +921,12 @@ export default function EditProfileScreen() {
                   {/* Neighborhood input */}
                   <View style={styles.fieldWrapper}>
                     <View style={styles.labelRow}>
-                      <Text style={styles.label}>Bairro</Text>
+                      <View style={styles.labelGroup}>
+                        <Text style={styles.label}>Bairro</Text>
+                        <View style={styles.badgeOptional}>
+                          <Text style={styles.badgeOptionalText}>opcional</Text>
+                        </View>
+                      </View>
                     </View>
                     <Input
                       value={neighborhood}
@@ -870,7 +950,12 @@ export default function EditProfileScreen() {
                   {/* Bio input */}
                   <View style={styles.fieldWrapper}>
                     <View style={styles.labelRow}>
-                      <Text style={styles.label}>Sobre a Confeitaria / Bio</Text>
+                      <View style={styles.labelGroup}>
+                        <Text style={styles.label}>Sobre a Confeitaria / Bio</Text>
+                        <View style={styles.badgeOptional}>
+                          <Text style={styles.badgeOptionalText}>opcional</Text>
+                        </View>
+                      </View>
                       <Text style={styles.charCounter}>{bio.length}/500</Text>
                     </View>
                     <Input
@@ -890,7 +975,12 @@ export default function EditProfileScreen() {
                   {/* Instagram handle */}
                   <View style={styles.fieldWrapper}>
                     <View style={styles.labelRow}>
-                      <Text style={styles.label}>Instagram Comercial</Text>
+                      <View style={styles.labelGroup}>
+                        <Text style={styles.label}>Instagram Comercial</Text>
+                        <View style={styles.badgeOptional}>
+                          <Text style={styles.badgeOptionalText}>opcional</Text>
+                        </View>
+                      </View>
                     </View>
                     <Input
                       value={instagram}
@@ -926,7 +1016,7 @@ export default function EditProfileScreen() {
                   {hasInitialBakerProfile && <ShowcaseManager userId={user?.id} />}
                 </>
               )}
-            </View>
+            </Animated.View>
           ) : null}
 
           {/* Save Button - Only serves to update information */}
@@ -1168,6 +1258,41 @@ const createStyles = (theme: AppTheme) =>
       alignItems: 'center',
       justifyContent: 'space-between',
       marginBottom: 2,
+    },
+    labelGroup: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    badgeRequired: {
+      backgroundColor: theme.colors.chips.primary.background,
+      paddingHorizontal: 7,
+      paddingVertical: 2,
+      borderRadius: theme.rounded.full,
+    },
+    badgeRequiredText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 10,
+      fontWeight: '700',
+      color: theme.colors.chips.primary.text,
+      textTransform: 'uppercase',
+      letterSpacing: 0.4,
+    },
+    badgeOptional: {
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      paddingHorizontal: 7,
+      paddingVertical: 2,
+      borderRadius: theme.rounded.full,
+    },
+    badgeOptionalText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 10,
+      fontWeight: '600',
+      color: theme.colors.onSurfaceVariant,
+      textTransform: 'uppercase',
+      letterSpacing: 0.4,
     },
     labelWithIcon: {
       flexDirection: 'row',

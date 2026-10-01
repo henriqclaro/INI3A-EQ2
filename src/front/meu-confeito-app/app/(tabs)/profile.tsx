@@ -176,10 +176,15 @@ export default function ProfileScreen() {
                     encomendas de clientes.
                   </Text>
                   <CustomButton
-                    title="Tornar Perfil Público"
+                    title="Perfil Comercial"
                     variant="dashed"
                     style={styles.cardButton}
-                    onPress={() => router.push('/edit-profile')}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/edit-profile',
+                        params: { focusCommercial: 'true' },
+                      })
+                    }
                   />
                 </View>
               ))}
