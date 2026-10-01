@@ -16,13 +16,13 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { ActivityIndicator } from 'react-native-paper';
 
-import { CustomButton, IngredientSelector, StockCard } from '@/src/components';
+import { CustomButton, DateInput, IngredientSelector, StockCard } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useIngredients } from '@/src/hooks/useIngredients';
 import { useInventory } from '@/src/hooks/useInventory';
 import { AppTheme } from '@/src/theme/themes';
 import { InventoryItem } from '@/src/types/inventory';
-import { formatCurrency, formatQuantity } from '@/src/utils/formatters';
+import { formatCurrency, formatDateForApi, formatQuantity } from '@/src/utils/formatters';
 
 type EntryMode = 'purchase' | 'adjustment';
 
@@ -57,7 +57,7 @@ export default function RegisterStockScreen() {
   const [selectedIngredientId, setSelectedIngredientId] = useState('');
   const [quantityInput, setQuantityInput] = useState('');
   const [totalCostInput, setTotalCostInput] = useState('');
-  const [expirationDateInput, setExpirationDateInput] = useState('');
+  const [expirationDate, setExpirationDate] = useState<Date | null>(null);
   const [notesInput, setNotesInput] = useState('');
 
   // Package calculation helper
@@ -137,7 +137,7 @@ export default function RegisterStockScreen() {
       ingredientId: Number(selectedIngredient.id),
       currentQuantity: finalQty,
       costPerBaseUnit: finalCost,
-      expirationDate: expirationDateInput.trim() || null,
+      expirationDate: expirationDate ? (formatDateForApi(expirationDate) ?? null) : null,
       lastUpdated: new Date(),
       ingredient: {
         id: Number(selectedIngredient.id),
@@ -156,7 +156,7 @@ export default function RegisterStockScreen() {
     calculatedUnitCost,
     entryMode,
     parsedCost,
-    expirationDateInput,
+    expirationDate,
   ]);
 
   const handleSubmit = async () => {
@@ -172,23 +172,8 @@ export default function RegisterStockScreen() {
       return;
     }
 
-    // Format optional expiration date
-    let formattedExpDate: string | undefined = undefined;
-    if (expirationDateInput.trim()) {
-      const cleaned = expirationDateInput.trim();
-      if (/^\d{4}-\d{2}-\d{2}$/.test(cleaned)) {
-        formattedExpDate = cleaned;
-      } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(cleaned)) {
-        const [d, m, y] = cleaned.split('/');
-        formattedExpDate = `${y}-${m}-${d}`;
-      } else {
-        Alert.alert(
-          'Data Inválida',
-          'A data de validade deve estar no formato DD/MM/AAAA ou AAAA-MM-DD.',
-        );
-        return;
-      }
-    }
+    // Format optional expiration date for API request format (YYYY-MM-DD)
+    const formattedExpDate = formatDateForApi(expirationDate);
 
     try {
       setIsSubmitting(true);
@@ -519,20 +504,14 @@ export default function RegisterStockScreen() {
 
             {/* Expiration Date (Purchase Mode) */}
             {entryMode === 'purchase' && (
-              <View style={styles.fieldWrapper}>
-                <Text style={styles.label}>Data de Validade (Opcional)</Text>
-                <TextInput
-                  style={styles.singleInput}
-                  value={expirationDateInput}
-                  onChangeText={setExpirationDateInput}
-                  placeholder="DD/MM/AAAA"
-                  placeholderTextColor={theme.colors.placeholder}
-                />
-                <Text style={styles.helperText}>
-                  Se informada, você receberá avisos automáticos na tela de Estoque antes do
-                  vencimento.
-                </Text>
-              </View>
+              <DateInput
+                label="Data de Validade (Opcional)"
+                value={expirationDate}
+                onChangeDate={setExpirationDate}
+                placeholder="DD/MM/AAAA"
+                helperText="Se informada, você receberá avisos automáticos na tela de Estoque antes do vencimento."
+                isClearable
+              />
             )}
 
             {/* Notes (Adjustment Mode) */}

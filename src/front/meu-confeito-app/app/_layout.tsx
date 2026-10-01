@@ -6,12 +6,15 @@ import { StatusBar } from 'expo-status-bar';
 
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { ActivityIndicator, PaperProvider } from 'react-native-paper';
+import { pt, registerTranslation } from 'react-native-paper-dates';
 
 import { CustomHeader, DesktopAlert } from '@/src/components';
 import { AuthProvider, useAuth } from '@/src/contexts/AuthContext';
 import { SettingsProvider } from '@/src/contexts/SettingsContext';
 import { ThemeProvider, useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
+
+registerTranslation('pt', pt);
 
 function useProtectedRoute() {
   const { user, isLoadingStorage } = useAuth();

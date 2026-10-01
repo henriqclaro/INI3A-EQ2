@@ -13,6 +13,7 @@ import {
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAvoidingView, KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
+import { DateInput } from '@/src/components/DateInput';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import {
@@ -21,7 +22,13 @@ import {
   PurchaseRequest,
   WasteRequest,
 } from '@/src/types/inventory';
-import { formatCurrency, formatDate, formatQuantity, isExpired } from '@/src/utils/formatters';
+import {
+  formatCurrency,
+  formatDate,
+  formatDateForApi,
+  formatQuantity,
+  isExpired,
+} from '@/src/utils/formatters';
 
 export type StockOperationType = 'adjust' | 'purchase' | 'waste';
 
@@ -79,7 +86,7 @@ const StockOperationModalForm = ({
     }
     return '';
   });
-  const [expirationDateInput, setExpirationDateInput] = useState('');
+  const [expirationDate, setExpirationDate] = useState<Date | null>(null);
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -132,24 +139,8 @@ const StockOperationModalForm = ({
         return;
       }
 
-      // Check date format if provided
-      let formattedExpDate: string | undefined = undefined;
-      if (expirationDateInput.trim()) {
-        const cleaned = expirationDateInput.trim();
-        // Check YYYY-MM-DD or DD/MM/YYYY
-        if (/^\d{4}-\d{2}-\d{2}$/.test(cleaned)) {
-          formattedExpDate = cleaned;
-        } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(cleaned)) {
-          const [d, m, y] = cleaned.split('/');
-          formattedExpDate = `${y}-${m}-${d}`;
-        } else {
-          Alert.alert(
-            'Data Inválida',
-            'Informe a data de validade no formato DD/MM/AAAA ou AAAA-MM-DD.',
-          );
-          return;
-        }
-      }
+      // Format optional expiration date for API request (YYYY-MM-DD)
+      const formattedExpDate = formatDateForApi(expirationDate);
 
       try {
         setIsSubmitting(true);
@@ -400,16 +391,13 @@ const StockOperationModalForm = ({
                   </Text>
                 </View>
 
-                <View style={styles.fieldWrapper}>
-                  <Text style={styles.label}>Data de Validade (Opcional)</Text>
-                  <TextInput
-                    style={styles.singleInput}
-                    value={expirationDateInput}
-                    onChangeText={setExpirationDateInput}
-                    placeholder="DD/MM/AAAA ou AAAA-MM-DD"
-                    placeholderTextColor={theme.colors.placeholder}
-                  />
-                </View>
+                <DateInput
+                  label="Data de Validade (Opcional)"
+                  value={expirationDate}
+                  onChangeDate={setExpirationDate}
+                  placeholder="DD/MM/AAAA"
+                  isClearable
+                />
               </View>
             )}
 

@@ -70,3 +70,4 @@ export {
   type ShowcaseManagerProps,
   type ShowcaseRecipePickerModalProps,
 } from '@/src/components/profile';
+export { DateInput, type DateInputProps } from '@/src/components/DateInput';

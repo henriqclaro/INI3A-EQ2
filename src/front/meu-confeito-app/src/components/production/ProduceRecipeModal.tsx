@@ -13,10 +13,12 @@ import {
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAvoidingView, KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
+import { DateInput } from '@/src/components/DateInput';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useRegisterProduction } from '@/src/hooks/useProductions';
 import { AppTheme } from '@/src/theme/themes';
 import { ProductionItem } from '@/src/types/production';
+import { formatDateForApi } from '@/src/utils/formatters';
 
 export interface ProduceRecipeModalProps {
   isVisible: boolean;
@@ -41,7 +43,7 @@ function ProduceRecipeModalContent({ recipe, onClose, onSuccess }: ProduceRecipe
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const [yieldProduced, setYieldProduced] = useState(String(recipe.baseYield || '1'));
-  const [expirationDate, setExpirationDate] = useState('');
+  const [expirationDate, setExpirationDate] = useState<Date | null>(null);
 
   const { registerProduction, isLoading: isSubmitting } = useRegisterProduction();
 
@@ -56,23 +58,13 @@ function ProduceRecipeModalContent({ recipe, onClose, onSuccess }: ProduceRecipe
       return;
     }
 
-    const trimmedDate = expirationDate.trim();
-    if (trimmedDate.length > 0) {
-      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-      if (!dateRegex.test(trimmedDate)) {
-        Alert.alert(
-          'Data Inválida',
-          'A data de validade deve estar no formato AAAA-MM-DD (ex: 2026-10-15).',
-        );
-        return;
-      }
-    }
+    const formattedExpDate = formatDateForApi(expirationDate);
 
     try {
       const res = await registerProduction({
         recipeId: recipe.id,
         yieldProduced: yieldNum,
-        expirationDate: trimmedDate || undefined,
+        expirationDate: formattedExpDate,
       });
 
       onSuccess(res.data.production);
@@ -157,14 +149,12 @@ function ProduceRecipeModalContent({ recipe, onClose, onSuccess }: ProduceRecipe
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Data de Validade do Lote (opcional)</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="AAAA-MM-DD (ex: 2026-10-20)"
-              placeholderTextColor={theme.colors.placeholder}
+            <DateInput
+              label="Data de Validade do Lote (Opcional)"
               value={expirationDate}
-              onChangeText={setExpirationDate}
-              autoCapitalize="none"
+              onChangeDate={setExpirationDate}
+              placeholder="DD/MM/AAAA"
+              isClearable
             />
           </View>
 
