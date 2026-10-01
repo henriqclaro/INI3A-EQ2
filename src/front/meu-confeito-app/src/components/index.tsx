@@ -7,9 +7,11 @@ export { Label } from '@/src/components/Label';
 export { RecipeSmallView } from '@/src/components/RecipeSmallView';
 export { RecipeView } from '@/src/components/RecipeView';
 export {
+  AddStockCard,
   StockCard,
   StockOperationModal,
   StockSummaryBanner,
+  type AddStockCardProps,
   type StockOperationType,
 } from '@/src/components/stock';
 export { TagSelector, type TagSelectorProps } from '@/src/components/TagSelector';

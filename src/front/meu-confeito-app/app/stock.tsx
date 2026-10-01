@@ -16,6 +16,7 @@ import { Stack, router, useFocusEffect } from 'expo-router';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import {
+  AddStockCard,
   CustomButton,
   Input,
   StockCard,
@@ -153,6 +154,10 @@ export default function StockScreen() {
     setSelectedItem(null);
   }, []);
 
+  const handleNavigateToRegister = useCallback(() => {
+    router.push('/register-stock');
+  }, []);
+
   const styles = useMemo(
     () => createStyles(theme, isMobile, containerWidth, cardWidth),
     [theme, isMobile, containerWidth, cardWidth],
@@ -195,7 +200,7 @@ export default function StockScreen() {
             <CustomButton
               title="+ Novo Insumo"
               variant="primary"
-              onPress={() => router.push('/register-stock')}
+              onPress={handleNavigateToRegister}
               style={styles.desktopAddButton}
             />
           )}
@@ -328,6 +333,7 @@ export default function StockScreen() {
       </View>
     ),
     [
+      handleNavigateToRegister,
       inventory.length,
       isMobile,
       search,
@@ -388,7 +394,7 @@ export default function StockScreen() {
           <CustomButton
             title="+ Cadastrar Primeiro Insumo"
             variant="primary"
-            onPress={() => router.push('/register-stock')}
+            onPress={handleNavigateToRegister}
             style={styles.emptyButton}
           />
         )}
@@ -396,6 +402,7 @@ export default function StockScreen() {
     );
   }, [
     error,
+    handleNavigateToRegister,
     inventory.length,
     isLoading,
     refetch,
@@ -406,6 +413,15 @@ export default function StockScreen() {
     theme.colors.onSurfaceVariant,
     theme.colors.primary,
   ]);
+
+  const listFooter = useMemo(() => {
+    if (isLoading || inventory.length === 0) return null;
+    return (
+      <View style={styles.footerWrapper}>
+        <AddStockCard isMobile={isMobile} onPress={handleNavigateToRegister} />
+      </View>
+    );
+  }, [handleNavigateToRegister, inventory.length, isLoading, isMobile, styles.footerWrapper]);
 
   const itemSeparator = useCallback(() => <View style={styles.separator} />, [styles.separator]);
   const keyExtractor = useCallback((item: InventoryItem) => String(item.ingredientId), []);
@@ -425,6 +441,7 @@ export default function StockScreen() {
           ItemSeparatorComponent={itemSeparator}
           ListHeaderComponent={listHeader}
           ListEmptyComponent={listEmpty}
+          ListFooterComponent={listFooter}
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -447,7 +464,7 @@ export default function StockScreen() {
         {isMobile && (
           <TouchableOpacity
             style={styles.mobileFab}
-            onPress={() => router.push('/register-stock')}
+            onPress={handleNavigateToRegister}
             activeOpacity={0.85}
             accessibilityRole="button"
             accessibilityLabel="Cadastrar novo insumo no estoque"
@@ -588,6 +605,12 @@ const createStyles = (
       alignSelf: 'center',
       gap: 12,
       marginBottom: 16,
+    },
+    footerWrapper: {
+      width: isMobile ? cardWidth : '100%',
+      maxWidth: isMobile ? cardWidth : containerWidth,
+      alignSelf: 'center',
+      marginTop: 20,
     },
     columnWrapper: {
       gap: 16,
