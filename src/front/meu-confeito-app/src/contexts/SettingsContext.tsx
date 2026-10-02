@@ -8,8 +8,12 @@ import {
   useState,
 } from 'react';
 
+import { setGlobalPriceDecimalPlaces } from '../utils/formatters';
 import { HapticFeedbackType, setGlobalHapticsEnabled, triggerGlobalHaptic } from '../utils/haptics';
 import { Storage } from '../utils/storage';
+
+export type PriceDecimalPlaces = 2 | 3 | 4;
+export const DEFAULT_PRICE_DECIMAL_PLACES: PriceDecimalPlaces = 4;
 
 export interface SettingsContextData {
   isSwipeNavigationEnabled: boolean;
@@ -21,7 +25,10 @@ export interface SettingsContextData {
   toggleHaptics: () => void;
   triggerHaptic: (type?: HapticFeedbackType) => void;
 
-  // Operational Preferences (Recipe default values)
+  // Operational Preferences (Recipe default values & display precision)
+  priceDecimalPlaces: PriceDecimalPlaces;
+  setPriceDecimalPlaces: (places: PriceDecimalPlaces) => void;
+
   isDefaultOverheadEnabled: boolean;
   defaultOverhead: string;
   setIsDefaultOverheadEnabled: (isEnabled: boolean) => void;
@@ -50,6 +57,8 @@ export interface SettingsContextData {
 const SWIPE_NAV_STORAGE_KEY = 'settings_swipe_nav_enabled';
 const HAPTICS_STORAGE_KEY = 'settings_haptics_enabled';
 
+const PRICE_DECIMAL_PLACES_STORAGE_KEY = 'settings_price_decimal_places';
+
 const DEFAULT_OVERHEAD_ENABLED_KEY = 'settings_default_overhead_enabled';
 const DEFAULT_OVERHEAD_VALUE_KEY = 'settings_default_overhead_value';
 
@@ -70,6 +79,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [isLoadingSettings, setIsLoadingSettings] = useState(true);
 
   // Operational Preferences States
+  const [priceDecimalPlaces, setPriceDecimalPlacesState] = useState<PriceDecimalPlaces>(
+    DEFAULT_PRICE_DECIMAL_PLACES,
+  );
+
   const [isDefaultOverheadEnabled, setIsDefaultOverheadEnabledState] = useState(false);
   const [defaultOverhead, setDefaultOverheadState] = useState('');
 
@@ -96,6 +109,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           storedHourlyLaborValue,
           storedPackagingCostEnabled,
           storedPackagingCostValue,
+          storedPriceDecimalPlaces,
         ] = await Promise.all([
           Storage.getItem(SWIPE_NAV_STORAGE_KEY),
           Storage.getItem(HAPTICS_STORAGE_KEY),
@@ -107,6 +121,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           Storage.getItem(DEFAULT_HOURLY_LABOR_VALUE_KEY),
           Storage.getItem(DEFAULT_PACKAGING_COST_ENABLED_KEY),
           Storage.getItem(DEFAULT_PACKAGING_COST_VALUE_KEY),
+          Storage.getItem(PRICE_DECIMAL_PLACES_STORAGE_KEY),
         ]);
 
         if (storedSwipe !== null) {
@@ -117,6 +132,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           const isHapticsActive = storedHaptics === 'true';
           setIsHapticsEnabledState(isHapticsActive);
           setGlobalHapticsEnabled(isHapticsActive);
+        }
+
+        if (storedPriceDecimalPlaces !== null) {
+          const parsed = parseInt(storedPriceDecimalPlaces, 10);
+          if (parsed === 2 || parsed === 3 || parsed === 4) {
+            setPriceDecimalPlacesState(parsed);
+            setGlobalPriceDecimalPlaces(parsed);
+          }
         }
 
         if (storedOverheadEnabled !== null) {
@@ -198,6 +221,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   );
 
   // Operational Preferences Handlers
+  const handleSetPriceDecimalPlaces = useCallback((places: PriceDecimalPlaces) => {
+    setPriceDecimalPlacesState(places);
+    setGlobalPriceDecimalPlaces(places);
+    Storage.setItem(PRICE_DECIMAL_PLACES_STORAGE_KEY, String(places)).catch((error) => {
+      console.error('Error saving price decimal places setting:', error);
+    });
+  }, []);
+
   const handleSetDefaultOverheadEnabled = useCallback((isEnabled: boolean) => {
     setIsDefaultOverheadEnabledState(isEnabled);
     Storage.setItem(DEFAULT_OVERHEAD_ENABLED_KEY, String(isEnabled)).catch((error) => {
@@ -282,6 +313,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       triggerHaptic,
 
       // Operational Preferences
+      priceDecimalPlaces,
+      setPriceDecimalPlaces: handleSetPriceDecimalPlaces,
+
       isDefaultOverheadEnabled,
       defaultOverhead,
       setIsDefaultOverheadEnabled: handleSetDefaultOverheadEnabled,
@@ -315,6 +349,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       handleSetHapticsEnabled,
       toggleHaptics,
       triggerHaptic,
+
+      priceDecimalPlaces,
+      handleSetPriceDecimalPlaces,
 
       isDefaultOverheadEnabled,
       defaultOverhead,

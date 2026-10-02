@@ -14,6 +14,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAvoidingView, KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { DateInput } from '@/src/components/DateInput';
+import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import {
@@ -60,6 +61,7 @@ const StockOperationModalForm = ({
   onRegisterWaste,
 }: StockOperationModalFormProps) => {
   const { theme } = useThemeMode();
+  const { priceDecimalPlaces } = useSettings();
   const [activeTab, setActiveTab] = useState<StockOperationType>(initialMode);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -386,7 +388,7 @@ const StockOperationModalForm = ({
                   <Text style={styles.previewBoxLabel}>Custo unitário desta compra:</Text>
                   <Text style={styles.previewBoxValue}>
                     {calculatedNewUnitCost > 0
-                      ? `${formatCurrency(calculatedNewUnitCost)} / ${baseUnit}`
+                      ? `${formatCurrency(calculatedNewUnitCost, priceDecimalPlaces)} / ${baseUnit}`
                       : 'Informe quantidade e valor total'}
                   </Text>
                 </View>
@@ -566,7 +568,9 @@ const StockOperationModalForm = ({
                 <View style={styles.previewBox}>
                   <Text style={styles.previewBoxLabel}>Prejuízo financeiro estimado:</Text>
                   <Text style={[styles.previewBoxValue, styles.previewNegative]}>
-                    {calculatedLossValue > 0 ? formatCurrency(calculatedLossValue) : 'R$ 0,00'}
+                    {calculatedLossValue > 0
+                      ? formatCurrency(calculatedLossValue, priceDecimalPlaces)
+                      : 'R$ 0,00'}
                   </Text>
                 </View>
 

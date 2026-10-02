@@ -1,10 +1,17 @@
 import { useMemo } from 'react';
-import { StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { ThemeSwitch } from '@/src/components/ThemeSwitch';
-import { useSettings } from '@/src/contexts/SettingsContext';
+import { PriceDecimalPlaces, useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
@@ -23,9 +30,44 @@ interface PreferenceItemConfig {
   onChangeValue: (value: string) => void;
 }
 
+interface PrecisionOption {
+  value: PriceDecimalPlaces;
+  title: string;
+  badge: string;
+  subtitle: string;
+  preview: string;
+}
+
+const PRECISION_OPTIONS: PrecisionOption[] = [
+  {
+    value: 2,
+    title: '2 casas',
+    badge: 'Comercial',
+    subtitle: 'Formato padrão com centavos arredondados',
+    preview: 'R$ 0,12',
+  },
+  {
+    value: 3,
+    title: '3 casas',
+    badge: 'Intermediário',
+    subtitle: 'Equilíbrio entre detalhe e visual limpo',
+    preview: 'R$ 0,123',
+  },
+  {
+    value: 4,
+    title: '4 casas',
+    badge: 'Alta Precisão (Padrão)',
+    subtitle: 'Máxima exatidão para insumos fracionados',
+    preview: 'R$ 0,1234',
+  },
+];
+
 export function OperationalPreferencesCard() {
   const { theme } = useThemeMode();
   const {
+    priceDecimalPlaces,
+    setPriceDecimalPlaces,
+    triggerHaptic,
     isDefaultOverheadEnabled,
     defaultOverhead,
     setIsDefaultOverheadEnabled,
@@ -147,6 +189,11 @@ export function OperationalPreferencesCard() {
     ],
   );
 
+  const handleSelectDecimalPlaces = (places: PriceDecimalPlaces) => {
+    triggerHaptic('selection');
+    setPriceDecimalPlaces(places);
+  };
+
   return (
     <View style={styles.card}>
       {preferences.map((pref, index) => {
@@ -229,11 +276,122 @@ export function OperationalPreferencesCard() {
           opção estiver desativada, o campo correspondente ficará vazio na ficha técnica.
         </Text>
       </View>
+
+      <View style={styles.sectionDivider} />
+
+      {/* Pricing Display Decimal Places Section */}
+      <View style={styles.precisionSection}>
+        <View style={styles.settingRow}>
+          <View style={styles.settingInfo}>
+            <View style={styles.iconCircle}>
+              <MaterialCommunityIcons
+                name="decimal-increase"
+                size={22}
+                color={theme.colors.primary}
+              />
+            </View>
+            <View style={styles.textColumn}>
+              <View style={styles.titleWithBadge}>
+                <Text style={styles.title}>Casas Decimais em Precificações</Text>
+                <View style={styles.activeBadge}>
+                  <Text style={styles.activeBadgeText}>{priceDecimalPlaces} casas</Text>
+                </View>
+              </View>
+              <Text style={styles.subtitle}>
+                Controle a quantidade de casas decimais na exibição de preços e custos unitários
+                (especialmente no estoque).
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <Text style={styles.selectorLabel}>Exibição visual de custos e preços:</Text>
+
+        <View style={styles.precisionTilesContainer}>
+          {PRECISION_OPTIONS.map((option) => {
+            const isSelected = priceDecimalPlaces === option.value;
+            return (
+              <TouchableOpacity
+                key={option.value}
+                style={[styles.precisionTile, isSelected && styles.precisionTileActive]}
+                onPress={() => handleSelectDecimalPlaces(option.value)}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: isSelected }}
+                accessibilityLabel={`${option.title} (${option.badge}): exemplo ${option.preview}`}
+                activeOpacity={0.8}
+              >
+                <View style={styles.precisionTileHeader}>
+                  <View style={styles.precisionTileTitleRow}>
+                    <MaterialCommunityIcons
+                      name={isSelected ? 'radiobox-marked' : 'radiobox-blank'}
+                      size={20}
+                      color={isSelected ? theme.colors.primary : theme.colors.placeholder}
+                    />
+                    <Text
+                      style={[
+                        styles.precisionTileTitle,
+                        isSelected && styles.precisionTileTitleActive,
+                      ]}
+                    >
+                      {option.title}
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.precisionOptionBadge,
+                      isSelected && styles.precisionOptionBadgeActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.precisionOptionBadgeText,
+                        isSelected && styles.precisionOptionBadgeTextActive,
+                      ]}
+                    >
+                      {option.badge}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.precisionPreviewContainer}>
+                  <Text style={styles.precisionPreviewLabel}>Exemplo:</Text>
+                  <Text
+                    style={[
+                      styles.precisionPreviewValue,
+                      isSelected && styles.precisionPreviewValueActive,
+                    ]}
+                  >
+                    {option.preview}
+                  </Text>
+                </View>
+
+                <Text style={styles.precisionTileDescription}>{option.subtitle}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* Visual-only reassurance callout */}
+        <View style={styles.precisionCallout}>
+          <MaterialCommunityIcons
+            name="shield-check-outline"
+            size={18}
+            color={theme.colors.primary}
+            style={styles.infoIcon}
+          />
+          <Text style={styles.precisionCalloutText}>
+            <Text style={styles.precisionCalloutBold}>Aviso de precisão: </Text>
+            Esta alteração é exclusivamente visual para facilitar a leitura. Todos os cálculos
+            internos, custos médios de estoque e fichas técnicas continuam sendo processados e
+            armazenados com alta precisão matemática no sistema.
+          </Text>
+        </View>
+      </View>
     </View>
   );
 }
 
-const createStyles = (theme: AppTheme, _isSmallScreen: boolean) =>
+const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
   StyleSheet.create({
     card: {
       backgroundColor: theme.colors.surfaceContainerLowest,
@@ -398,5 +556,141 @@ const createStyles = (theme: AppTheme, _isSmallScreen: boolean) =>
       fontSize: 12,
       lineHeight: 18,
       color: theme.colors.onSurfaceVariant,
+    },
+    sectionDivider: {
+      height: 1,
+      backgroundColor: theme.colors.outlineVariant,
+      marginVertical: theme.spacing.space5,
+    },
+    precisionSection: {
+      gap: theme.spacing.space3,
+    },
+    selectorLabel: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 12,
+      fontWeight: '600',
+      color: theme.colors.onSurfaceVariant,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      marginTop: theme.spacing.space2,
+    },
+    precisionTilesContainer: {
+      flexDirection: isSmallScreen ? 'column' : 'row',
+      gap: theme.spacing.space3,
+      width: '100%',
+    },
+    precisionTile: {
+      flex: 1,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1.5,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.md,
+      padding: theme.spacing.space3,
+      minHeight: 48,
+      justifyContent: 'space-between',
+      gap: theme.spacing.space2,
+      overflow: 'hidden',
+    },
+    precisionTileActive: {
+      backgroundColor: theme.colors.surfaceContainer,
+      borderColor: theme.colors.primary,
+      ...theme.shadows.glow,
+    },
+    precisionTileHeader: {
+      flexDirection: isSmallScreen ? 'row' : 'column',
+      alignItems: isSmallScreen ? 'center' : 'flex-start',
+      justifyContent: isSmallScreen ? 'space-between' : 'flex-start',
+      gap: isSmallScreen ? theme.spacing.space1 : 6,
+      flexWrap: isSmallScreen ? 'wrap' : 'nowrap',
+      rowGap: isSmallScreen ? 4 : 0,
+      minHeight: isSmallScreen ? undefined : 48,
+    },
+    precisionTileTitleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.space2,
+    },
+    precisionTileTitle: {
+      fontFamily: theme.typography.headlineMd.fontFamily,
+      fontSize: 15,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
+    },
+    precisionTileTitleActive: {
+      color: theme.colors.primary,
+      fontWeight: '700',
+    },
+    precisionOptionBadge: {
+      backgroundColor: theme.colors.surfaceContainerHigh,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: theme.rounded.full,
+      maxWidth: '100%',
+      alignSelf: 'flex-start',
+    },
+    precisionOptionBadgeActive: {
+      backgroundColor: theme.colors.chips.primary.background,
+    },
+    precisionOptionBadgeText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 10,
+      fontWeight: '600',
+      color: theme.colors.onSurfaceVariant,
+    },
+    precisionOptionBadgeTextActive: {
+      color: theme.colors.chips.primary.text,
+    },
+    precisionPreviewContainer: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+      gap: 6,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      paddingHorizontal: 8,
+      paddingVertical: 5,
+      borderRadius: theme.rounded.sm,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+    },
+    precisionPreviewLabel: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 11,
+      color: theme.colors.onSurfaceVariant,
+    },
+    precisionPreviewValue: {
+      fontFamily: theme.typography.bodyMd.fontFamily,
+      fontSize: 13,
+      fontWeight: '700',
+      color: theme.colors.espressoDark,
+    },
+    precisionPreviewValueActive: {
+      color: theme.colors.primary,
+    },
+    precisionTileDescription: {
+      fontFamily: theme.typography.bodySm.fontFamily,
+      fontSize: 11,
+      color: theme.colors.onSurfaceVariant,
+      lineHeight: 15,
+    },
+    precisionCallout: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.default,
+      padding: theme.spacing.space3,
+      marginTop: theme.spacing.space2,
+      gap: theme.spacing.space3,
+    },
+    precisionCalloutText: {
+      flex: 1,
+      fontFamily: theme.typography.bodySm.fontFamily,
+      fontSize: 12,
+      lineHeight: 18,
+      color: theme.colors.onSurfaceVariant,
+    },
+    precisionCalloutBold: {
+      fontWeight: '700',
+      color: theme.colors.espressoDark,
     },
   });

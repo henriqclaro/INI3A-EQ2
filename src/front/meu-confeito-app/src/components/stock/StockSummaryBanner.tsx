@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
+import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { formatCurrency } from '@/src/utils/formatters';
@@ -23,10 +24,12 @@ export const StockSummaryBanner = ({
   expiredCount = 0,
 }: StockSummaryBannerProps) => {
   const { theme } = useThemeMode();
+  const { priceDecimalPlaces } = useSettings();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
   const isTablet = width >= 768 && width < 1024;
   const isWideScreen = isDesktop || isTablet;
+
   const styles = useMemo(
     () => createStyles(theme, isDesktop, isTablet),
     [theme, isDesktop, isTablet],
@@ -55,7 +58,7 @@ export const StockSummaryBanner = ({
         </View>
 
         {/* Metric 2: Total Value */}
-        <View style={styles.metricCard}>
+        <View style={[styles.metricCard, styles.metricCardValue]}>
           <View style={styles.iconWrapper}>
             <MaterialCommunityIcons
               name="cash-multiple"
@@ -68,7 +71,7 @@ export const StockSummaryBanner = ({
               Valor em Estoque
             </Text>
             <Text style={styles.metricValuePrimary} numberOfLines={1} adjustsFontSizeToFit>
-              {formatCurrency(totalStockValue)}
+              {formatCurrency(totalStockValue, priceDecimalPlaces)}
             </Text>
           </View>
         </View>
@@ -153,6 +156,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isTablet: boolean) =>
   return StyleSheet.create({
     container: {
       width: '100%',
+      alignSelf: 'center',
       backgroundColor: theme.colors.surfaceContainerLowest,
       borderRadius: theme.rounded.lg,
       borderWidth: 1,
@@ -164,11 +168,12 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isTablet: boolean) =>
     grid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
+      justifyContent: isWide ? 'flex-start' : 'center',
       gap: isWide ? 10 : 8,
     },
     metricCard: {
       flex: 1,
-      minWidth: isDesktop ? 180 : isTablet ? 135 : '46%',
+      minWidth: isDesktop ? 190 : isTablet ? 155 : '46%',
       backgroundColor: theme.colors.surfaceContainerLow,
       borderRadius: theme.rounded.md,
       borderWidth: 1,
@@ -177,6 +182,10 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isTablet: boolean) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: isWide ? 10 : 8,
+    },
+    metricCardValue: {
+      flex: isDesktop ? 1.3 : isWide ? 1.15 : 1,
+      minWidth: isDesktop ? 220 : isTablet ? 175 : '46%',
     },
     metricCardAlert: {
       borderColor: theme.colors.error,
@@ -215,6 +224,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isTablet: boolean) =>
       fontWeight: '600',
       color: theme.colors.onSurfaceVariant,
       marginBottom: 2,
+      lineHeight: 14,
     },
     metricValue: {
       fontFamily: theme.typography.bodyLg.fontFamily,

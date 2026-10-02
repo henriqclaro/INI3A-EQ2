@@ -492,7 +492,7 @@ const createStyles = (
   theme: AppTheme,
   isMobile: boolean,
   containerWidth: number,
-  cardWidth?: number,
+  cardWidth: number,
 ) =>
   StyleSheet.create({
     container: {
@@ -600,7 +600,7 @@ const createStyles = (
       fontWeight: '700',
     },
     headerWrapper: {
-      width: '100%',
+      width: isMobile ? cardWidth : '100%',
       maxWidth: isMobile ? cardWidth : containerWidth,
       alignSelf: 'center',
       gap: 12,

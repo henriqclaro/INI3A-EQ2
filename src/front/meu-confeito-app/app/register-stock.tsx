@@ -17,6 +17,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { ActivityIndicator } from 'react-native-paper';
 
 import { CustomButton, DateInput, IngredientSelector, StockCard } from '@/src/components';
+import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useIngredients } from '@/src/hooks/useIngredients';
 import { useInventory } from '@/src/hooks/useInventory';
@@ -28,6 +29,7 @@ type EntryMode = 'purchase' | 'adjustment';
 
 export default function RegisterStockScreen() {
   const { theme } = useThemeMode();
+  const { priceDecimalPlaces } = useSettings();
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
 
@@ -352,8 +354,12 @@ export default function RegisterStockScreen() {
                   <Text style={styles.existingStockTitle}>Item já possui estoque:</Text>
                   <Text style={styles.existingStockDetail}>
                     Saldo atual: {formatQuantity(existingStockItem.currentQuantity, baseUnit)} |
-                    Custo médio: {formatCurrency(Number(existingStockItem.costPerBaseUnit) || 0)} /{' '}
-                    {baseUnit}
+                    Custo médio:{' '}
+                    {formatCurrency(
+                      Number(existingStockItem.costPerBaseUnit) || 0,
+                      priceDecimalPlaces,
+                    )}{' '}
+                    / {baseUnit}
                   </Text>
                 </View>
               </View>
@@ -491,12 +497,12 @@ export default function RegisterStockScreen() {
                 </View>
                 <Text style={styles.costSummaryValue}>
                   {calculatedUnitCost > 0
-                    ? `${formatCurrency(calculatedUnitCost)} / ${baseUnit}`
+                    ? `${formatCurrency(calculatedUnitCost, priceDecimalPlaces)} / ${baseUnit}`
                     : 'R$ 0,00'}
                 </Text>
                 <Text style={styles.costSummaryExplainer}>
                   {calculatedUnitCost > 0
-                    ? `Calculado a partir de ${formatCurrency(parsedCost)} para ${formatQuantity(parsedQuantity, baseUnit)}.`
+                    ? `Calculado a partir de ${formatCurrency(parsedCost, priceDecimalPlaces)} para ${formatQuantity(parsedQuantity, baseUnit)}.`
                     : 'Preencha a quantidade e o valor total para visualizar o custo unitário.'}
                 </Text>
               </View>

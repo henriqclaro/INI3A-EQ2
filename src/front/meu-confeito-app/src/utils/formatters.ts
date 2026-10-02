@@ -1,11 +1,26 @@
-export const formatCurrency = (value: number | string | null | undefined): string => {
+let globalPriceDecimalPlaces = 4;
+
+export const setGlobalPriceDecimalPlaces = (decimals: number): void => {
+  if (decimals === 2 || decimals === 3 || decimals === 4) {
+    globalPriceDecimalPlaces = decimals;
+  }
+};
+
+export const getGlobalPriceDecimalPlaces = (): number => globalPriceDecimalPlaces;
+
+export const formatCurrency = (
+  value: number | string | null | undefined,
+  maxFractionDigits?: number,
+): string => {
   const num = typeof value === 'string' ? parseFloat(value) : (value ?? 0);
   if (isNaN(num)) return 'R$ 0,00';
+  const effectiveMaxDigits =
+    typeof maxFractionDigits === 'number' ? maxFractionDigits : globalPriceDecimalPlaces;
   return num.toLocaleString('pt-BR', {
     style: 'currency',
     currency: 'BRL',
     minimumFractionDigits: 2,
-    maximumFractionDigits: 4,
+    maximumFractionDigits: Math.max(2, effectiveMaxDigits),
   });
 };
 

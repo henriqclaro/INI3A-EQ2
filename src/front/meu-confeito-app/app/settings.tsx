@@ -165,7 +165,7 @@ export default function SettingsScreen() {
           {/* Section 4: Operational Preferences */}
           <SettingsSection
             title="Preferências Operacionais"
-            description="Defina valores padrão para cálculo automático de custos e precificação ao criar receitas"
+            description="Defina valores padrão para custos de receitas e a precisão de exibição das precificações"
             icon="tune-variant"
           >
             <OperationalPreferencesCard />

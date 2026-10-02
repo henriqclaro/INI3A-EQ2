@@ -3,6 +3,7 @@ import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from '
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
+import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { InventoryItem } from '@/src/types/inventory';
@@ -32,6 +33,7 @@ export const StockCard = memo(function StockCard({
   onWaste,
 }: StockCardProps) {
   const { theme } = useThemeMode();
+  const { priceDecimalPlaces } = useSettings();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const qty = Number(item.currentQuantity) || 0;
@@ -80,13 +82,16 @@ export const StockCard = memo(function StockCard({
         <View style={styles.metricItem}>
           <Text style={styles.metricItemLabel}>Custo Unitário Médio</Text>
           <Text style={styles.metricItemValue}>
-            {formatCurrency(unitCost)} <Text style={styles.metricUnit}>/ {baseUnit}</Text>
+            {formatCurrency(unitCost, priceDecimalPlaces)}{' '}
+            <Text style={styles.metricUnit}>/ {baseUnit}</Text>
           </Text>
         </View>
 
         <View style={styles.metricItem}>
           <Text style={styles.metricItemLabel}>Valor no Estoque</Text>
-          <Text style={styles.metricItemValuePrimary}>{formatCurrency(totalValue)}</Text>
+          <Text style={styles.metricItemValuePrimary}>
+            {formatCurrency(totalValue, priceDecimalPlaces)}
+          </Text>
         </View>
       </View>
 
