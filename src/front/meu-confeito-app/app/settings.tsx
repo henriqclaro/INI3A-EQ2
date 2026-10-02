@@ -37,6 +37,8 @@ export default function SettingsScreen() {
   const { user, signOut } = useAuth();
   const { deleteUser, isLoading: isDeletingUser } = useUserDelete();
 
+  const isCustomerRole = user?.role?.trim().toUpperCase() === 'CUSTOMER';
+
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
 
   const styles = useMemo(() => createStyles(theme, isSmallScreen), [theme, isSmallScreen]);
@@ -163,13 +165,15 @@ export default function SettingsScreen() {
           )}
 
           {/* Section 4: Operational Preferences */}
-          <SettingsSection
-            title="Preferências Operacionais"
-            description="Defina valores padrão para custos de receitas e a precisão de exibição das precificações"
-            icon="tune-variant"
-          >
-            <OperationalPreferencesCard />
-          </SettingsSection>
+          {!isCustomerRole && (
+            <SettingsSection
+              title="Preferências Operacionais"
+              description="Defina valores padrão para custos de receitas e a precisão de exibição das precificações"
+              icon="tune-variant"
+            >
+              <OperationalPreferencesCard />
+            </SettingsSection>
+          )}
 
           {/* Section 5: App Info & About */}
           <SettingsSection
