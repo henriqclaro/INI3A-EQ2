@@ -127,4 +127,66 @@ export class RecipeController {
 
     return new NoContentResponse(res, 'Recipe deleted successfully').send();
   }
+
+  async createReview(
+    req: Request<RecipeDTO.RequestParams, unknown, RecipeDTO.CreateReviewRequest>,
+    res: Response<ApiResponse<RecipeDTO.CreateReviewResponse>>,
+  ) {
+    const context = this.extractProps(req);
+    const recipeId = req.params.id;
+
+    const responseData: RecipeDTO.CreateReviewResponse = await this.recipeService.createReview(
+      context,
+      recipeId,
+      req.body,
+    );
+
+    return new CreatedResponse(res, responseData, 'Recipe review created successfully').send();
+  }
+
+  async updateReview(
+    req: Request<RecipeDTO.RequestParams, unknown, RecipeDTO.UpdateReviewRequest>,
+    res: Response<ApiResponse<RecipeDTO.UpdateReviewResponse>>,
+  ) {
+    const context = this.extractProps(req);
+    const recipeId = req.params.id;
+
+    const responseData: RecipeDTO.UpdateReviewResponse = await this.recipeService.updateReview(
+      context,
+      recipeId,
+      req.body,
+    );
+
+    return new DefaultSuccessResponse(
+      res,
+      responseData,
+      'Recipe review updated successfully',
+    ).send();
+  }
+
+  async deleteReview(req: Request<RecipeDTO.RequestParams>, res: Response<ApiResponse>) {
+    const context = this.extractProps(req);
+    const recipeId = req.params.id;
+
+    await this.recipeService.deleteReview(context, recipeId);
+
+    return new NoContentResponse(res, 'Recipe review deleted successfully').send();
+  }
+
+  async selectRecipeReviews(
+    req: Request<RecipeDTO.RequestParams>,
+    res: Response<ApiResponse<RecipeDTO.SelectRecipeReviewsResponse>>,
+  ) {
+    const context = this.extractProps(req);
+    const recipeId = req.params.id;
+
+    const responseData: RecipeDTO.SelectRecipeReviewsResponse =
+      await this.recipeService.selectRecipeReviews(context, recipeId);
+
+    return new DefaultSuccessResponse(
+      res,
+      responseData,
+      'Recipe reviews selected successfully',
+    ).send();
+  }
 }

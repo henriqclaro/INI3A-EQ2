@@ -1,7 +1,7 @@
 import type { JsonNullClass } from '@prisma/client/runtime/client';
 
 import prisma from '../config/database';
-import type { Prisma } from '../generated/prisma/client';
+import { Prisma } from '../generated/prisma/client';
 import {
   ConflictError,
   DefaultAppError,
@@ -238,7 +238,51 @@ export class RecipeService {
       }
     }
 
-    return { recipe };
+    const [userReview, reviewGroups] = await Promise.all([
+      prisma.recipeReview.findUnique({
+        where: {
+          userId_recipeId: {
+            userId: context.userId,
+            recipeId: id,
+          },
+        },
+        select: {
+          id: true,
+          userId: true,
+          recipeId: true,
+          rating: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+      prisma.recipeReview.groupBy({
+        by: ['rating'],
+        where: { recipeId: id },
+        _count: { rating: true },
+      }),
+    ]);
+
+    const ratingCounts: Record<1 | 2 | 3 | 4 | 5, number> = {
+      1: 0,
+      2: 0,
+      3: 0,
+      4: 0,
+      5: 0,
+    };
+
+    for (const group of reviewGroups) {
+      if (group.rating >= 1 && group.rating <= 5) {
+        ratingCounts[group.rating as 1 | 2 | 3 | 4 | 5] = group._count.rating;
+      }
+    }
+
+    return {
+      recipe: {
+        ...recipe,
+        userReview,
+        ratingCounts,
+      },
+    };
   }
 
   async selectSingleUserInventory(context: RequestContext, id: string, userId: string) {
@@ -718,5 +762,247 @@ export class RecipeService {
     await prisma.recipe.delete({
       where: { id },
     });
+  }
+
+  private validateRating(rating: number): void {
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      throw new DefaultAppError('Rating must be an integer between 1 and 5', 'INVALID_FORMAT');
+    }
+  }
+
+  private async recalculateRecipeRating(
+    tx: Prisma.TransactionClient,
+    recipeId: string,
+  ): Promise<{ totalReviews: number; averageRating: Prisma.Decimal }> {
+    const aggregate = await tx.recipeReview.aggregate({
+      where: { recipeId },
+      _avg: { rating: true },
+      _count: { rating: true },
+    });
+
+    const totalReviews = aggregate._count.rating;
+    const averageRating =
+      aggregate._avg.rating !== null
+        ? new Prisma.Decimal(aggregate._avg.rating).toDecimalPlaces(2)
+        : new Prisma.Decimal(0);
+
+    await tx.recipe.update({
+      where: { id: recipeId },
+      data: {
+        totalReviews,
+        averageRating,
+      },
+    });
+
+    return { totalReviews, averageRating };
+  }
+
+  async createReview(
+    context: RequestContext,
+    recipeId: string,
+    data: RecipeDTO.CreateReviewRequest,
+  ): Promise<RecipeDTO.CreateReviewResponse> {
+    this.validateRating(data.rating);
+
+    const recipe = await prisma.recipe.findUnique({
+      where: { id: recipeId },
+      select: { id: true, status: true, userId: true },
+    });
+
+    if (!recipe || recipe.status === 'SUSPENDED') {
+      throw new NotFoundError('Recipe not found', 'RESOURCE_NOT_FOUND');
+    }
+
+    if (
+      recipe.status !== 'PUBLISHED' &&
+      recipe.userId !== context.userId &&
+      context.userRole !== 'ADMIN'
+    ) {
+      throw new NotFoundError('Recipe not found', 'RESOURCE_NOT_FOUND');
+    }
+
+    const existingReview = await prisma.recipeReview.findUnique({
+      where: {
+        userId_recipeId: {
+          userId: context.userId,
+          recipeId,
+        },
+      },
+    });
+
+    if (existingReview) {
+      throw new ConflictError('Recipe already reviewed by user', 'RESOURCE_ALREADY_EXISTS');
+    }
+
+    const review = await prisma.$transaction(async (tx) => {
+      const createdReview = await tx.recipeReview.create({
+        data: {
+          userId: context.userId,
+          recipeId,
+          rating: data.rating,
+        },
+        select: {
+          id: true,
+          userId: true,
+          recipeId: true,
+          rating: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      await this.recalculateRecipeRating(tx, recipeId);
+
+      return createdReview;
+    });
+
+    return { review };
+  }
+
+  async updateReview(
+    context: RequestContext,
+    recipeId: string,
+    data: RecipeDTO.UpdateReviewRequest,
+  ): Promise<RecipeDTO.UpdateReviewResponse> {
+    this.validateRating(data.rating);
+
+    const existingReview = await prisma.recipeReview.findUnique({
+      where: {
+        userId_recipeId: {
+          userId: context.userId,
+          recipeId,
+        },
+      },
+    });
+
+    if (!existingReview) {
+      throw new NotFoundError('Review not found', 'RESOURCE_NOT_FOUND');
+    }
+
+    const review = await prisma.$transaction(async (tx) => {
+      const updatedReview = await tx.recipeReview.update({
+        where: {
+          userId_recipeId: {
+            userId: context.userId,
+            recipeId,
+          },
+        },
+        data: {
+          rating: data.rating,
+        },
+        select: {
+          id: true,
+          userId: true,
+          recipeId: true,
+          rating: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      await this.recalculateRecipeRating(tx, recipeId);
+
+      return updatedReview;
+    });
+
+    return { review };
+  }
+
+  async deleteReview(context: RequestContext, recipeId: string): Promise<void> {
+    const existingReview = await prisma.recipeReview.findUnique({
+      where: {
+        userId_recipeId: {
+          userId: context.userId,
+          recipeId,
+        },
+      },
+    });
+
+    if (!existingReview) {
+      throw new NotFoundError('Review not found', 'RESOURCE_NOT_FOUND');
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.recipeReview.delete({
+        where: {
+          userId_recipeId: {
+            userId: context.userId,
+            recipeId,
+          },
+        },
+      });
+
+      await this.recalculateRecipeRating(tx, recipeId);
+    });
+  }
+
+  async selectRecipeReviews(
+    context: RequestContext,
+    recipeId: string,
+  ): Promise<RecipeDTO.SelectRecipeReviewsResponse> {
+    const recipe = await prisma.recipe.findUnique({
+      where: { id: recipeId },
+      select: { id: true, status: true, userId: true, totalReviews: true, averageRating: true },
+    });
+
+    if (!recipe || recipe.status === 'SUSPENDED') {
+      throw new NotFoundError('Recipe not found', 'RESOURCE_NOT_FOUND');
+    }
+
+    if (
+      recipe.status !== 'PUBLISHED' &&
+      recipe.userId !== context.userId &&
+      context.userRole !== 'ADMIN'
+    ) {
+      throw new NotFoundError('Recipe not found', 'RESOURCE_NOT_FOUND');
+    }
+
+    const [reviews, reviewGroups] = await Promise.all([
+      prisma.recipeReview.findMany({
+        where: { recipeId },
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          userId: true,
+          recipeId: true,
+          rating: true,
+          createdAt: true,
+          updatedAt: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              pfpUrl: true,
+            },
+          },
+        },
+      }),
+      prisma.recipeReview.groupBy({
+        by: ['rating'],
+        where: { recipeId },
+        _count: { rating: true },
+      }),
+    ]);
+
+    const ratingCounts: Record<1 | 2 | 3 | 4 | 5, number> = {
+      1: 0,
+      2: 0,
+      3: 0,
+      4: 0,
+      5: 0,
+    };
+
+    for (const group of reviewGroups) {
+      if (group.rating >= 1 && group.rating <= 5) {
+        ratingCounts[group.rating as 1 | 2 | 3 | 4 | 5] = group._count.rating;
+      }
+    }
+
+    return {
+      reviews,
+      totalReviews: recipe.totalReviews,
+      averageRating: recipe.averageRating,
+      ratingCounts,
+    };
   }
 }

@@ -160,3 +160,44 @@ components:
             savedAt:
               type: string
               format: date-time
+    UserSelectReviewsResponse:
+      type: object
+      properties:
+        reviews:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              userId:
+                type: string
+                format: uuid
+              recipeId:
+                type: string
+                format: uuid
+              rating:
+                type: integer
+              createdAt:
+                type: string
+                format: date-time
+              updatedAt:
+                type: string
+                format: date-time
+              recipe:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  title:
+                    type: string
+                  coverUrl:
+                    type: string
+                    format: url
+                    nullable: true
+                  averageRating:
+                    type: number
+                  totalReviews:
+                    type: integer

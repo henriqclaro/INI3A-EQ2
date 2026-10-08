@@ -56,7 +56,7 @@ export namespace RecipeDTO {
   export type QueryRequest = z.infer<typeof recipe.querySchema>;
 
   export interface UpdateResponse {
-    recipe: SingleSelectResponse['recipe'];
+    recipe: Omit<SingleSelectResponse['recipe'], 'userReview' | 'ratingCounts'>;
   }
 
   export interface SingleSelectResponse {
@@ -119,6 +119,21 @@ export namespace RecipeDTO {
           type: TagType;
         };
       }[];
+      userReview: {
+        id: string;
+        userId: string;
+        recipeId: string;
+        rating: number;
+        createdAt: Date;
+        updatedAt: Date;
+      } | null;
+      ratingCounts: {
+        1: number;
+        2: number;
+        3: number;
+        4: number;
+        5: number;
+      };
     };
   }
 
@@ -218,6 +233,55 @@ export namespace RecipeDTO {
       title: string;
       status: string;
       updatedAt: Date;
+    };
+  }
+
+  export type CreateReviewRequest = z.infer<typeof recipe.createReviewSchema>;
+  export interface CreateReviewResponse {
+    review: {
+      id: string;
+      userId: string;
+      recipeId: string;
+      rating: number;
+      createdAt: Date;
+      updatedAt: Date;
+    };
+  }
+
+  export type UpdateReviewRequest = z.infer<typeof recipe.updateReviewSchema>;
+  export interface UpdateReviewResponse {
+    review: {
+      id: string;
+      userId: string;
+      recipeId: string;
+      rating: number;
+      createdAt: Date;
+      updatedAt: Date;
+    };
+  }
+
+  export interface SelectRecipeReviewsResponse {
+    reviews: {
+      id: string;
+      userId: string;
+      recipeId: string;
+      rating: number;
+      createdAt: Date;
+      updatedAt: Date;
+      user: {
+        id: string;
+        name: string;
+        pfpUrl: string | null;
+      };
+    }[];
+    totalReviews: number;
+    averageRating: Decimal;
+    ratingCounts: {
+      1: number;
+      2: number;
+      3: number;
+      4: number;
+      5: number;
     };
   }
 }

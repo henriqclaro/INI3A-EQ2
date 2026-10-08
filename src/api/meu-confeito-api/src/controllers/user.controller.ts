@@ -144,4 +144,22 @@ export class UserController {
 
     return new NoContentResponse(res, 'Saved recipe removed successfully').send();
   }
+
+  async selectUserReviews(
+    req: Request<UserDTO.RequestParams>,
+    res: Response<ApiResponse<UserDTO.SelectUserReviewsResponse>>,
+  ) {
+    const context = this.extractProps(req);
+
+    const userId = req.params.id;
+
+    const responseData: UserDTO.SelectUserReviewsResponse =
+      await this.userService.selectUserReviews(context, userId);
+
+    return new DefaultSuccessResponse(
+      res,
+      responseData,
+      'User reviews selected successfully',
+    ).send();
+  }
 }

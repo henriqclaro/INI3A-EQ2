@@ -96,4 +96,22 @@ export namespace UserDTO {
   }
 
   export type RemoveSaveRecipeRequest = z.infer<typeof user.removeSaveRecipeSchema>;
+
+  export interface SelectUserReviewsResponse {
+    reviews: {
+      id: string;
+      userId: string;
+      recipeId: string;
+      rating: number;
+      createdAt: Date;
+      updatedAt: Date;
+      recipe: {
+        id: string;
+        title: string;
+        coverUrl: string | null;
+        averageRating: Decimal;
+        totalReviews: number;
+      };
+    }[];
+  }
 }

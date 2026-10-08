@@ -365,4 +365,42 @@ export class UserService {
       });
     });
   }
+
+  async selectUserReviews(
+    context: RequestContext,
+    id: string,
+  ): Promise<UserDTO.SelectUserReviewsResponse> {
+    this.checkPermission(context, id);
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { isActive: true },
+    });
+
+    this.checkUser(user);
+
+    const reviews = await prisma.recipeReview.findMany({
+      where: { userId: id },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        userId: true,
+        recipeId: true,
+        rating: true,
+        createdAt: true,
+        updatedAt: true,
+        recipe: {
+          select: {
+            id: true,
+            title: true,
+            coverUrl: true,
+            averageRating: true,
+            totalReviews: true,
+          },
+        },
+      },
+    });
+
+    return { reviews };
+  }
 }

@@ -171,3 +171,102 @@ paths:
           description: Ação negada por falta de privilégios ou telefone não cadastrado
         '404':
           description: Receita não encontrada
+  /recipes/{id}/reviews:
+    get:
+      summary: Busca e lista as avaliações de uma receita
+      tags:
+        - Receitas
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/RecipeParamsSchema'
+      responses:
+        '200':
+          description: Avaliações da receita selecionadas com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeSelectRecipeReviewsResponse'
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Receita não encontrada
+    post:
+      summary: Cadastra uma avaliação para a receita
+      tags:
+        - Receitas
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/RecipeParamsSchema'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeCreateReviewSchema'
+      responses:
+        '201':
+          description: Avaliação cadastrada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeCreateReviewResponse'
+        '400':
+          description: Erro na validação dos dados
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Receita não encontrada
+        '409':
+          description: Receita já avaliada pelo usuário
+    patch:
+      summary: Atualiza a avaliação do usuário para uma receita
+      tags:
+        - Receitas
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/RecipeParamsSchema'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeUpdateReviewSchema'
+      responses:
+        '200':
+          description: Avaliação atualizada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeUpdateReviewResponse'
+        '400':
+          description: Erro na validação dos dados
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Avaliação não encontrada
+    delete:
+      summary: Exclui a avaliação do usuário para uma receita
+      tags:
+        - Receitas
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/RecipeParamsSchema'
+      responses:
+        '204':
+          description: Avaliação excluída com sucesso
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Avaliação não encontrada

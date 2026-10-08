@@ -262,6 +262,40 @@ components:
                         type: string
                       type:
                         type: string
+            userReview:
+              type: object
+              nullable: true
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                userId:
+                  type: string
+                  format: uuid
+                recipeId:
+                  type: string
+                  format: uuid
+                rating:
+                  type: integer
+                createdAt:
+                  type: string
+                  format: date-time
+                updatedAt:
+                  type: string
+                  format: date-time
+            ratingCounts:
+              type: object
+              properties:
+                '1':
+                  type: integer
+                '2':
+                  type: integer
+                '3':
+                  type: integer
+                '4':
+                  type: integer
+                '5':
+                  type: integer
     RecipeUpdateResponse:
       type: object
       properties:
@@ -657,5 +691,104 @@ components:
               enum: [DRAFT, PUBLISHED, ARCHIVED]
             updatedAt:
               type: string
-
               format: date-time
+    RecipeCreateReviewResponse:
+      type: object
+      properties:
+        review:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            userId:
+              type: string
+              format: uuid
+            recipeId:
+              type: string
+              format: uuid
+            rating:
+              type: integer
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+    RecipeUpdateReviewResponse:
+      type: object
+      properties:
+        review:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            userId:
+              type: string
+              format: uuid
+            recipeId:
+              type: string
+              format: uuid
+            rating:
+              type: integer
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+    RecipeSelectRecipeReviewsResponse:
+      type: object
+      properties:
+        reviews:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              userId:
+                type: string
+                format: uuid
+              recipeId:
+                type: string
+                format: uuid
+              rating:
+                type: integer
+              createdAt:
+                type: string
+                format: date-time
+              updatedAt:
+                type: string
+                format: date-time
+              user:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  name:
+                    type: string
+                  pfpUrl:
+                    type: string
+                    format: url
+                    nullable: true
+        totalReviews:
+          type: integer
+        averageRating:
+          type: number
+        ratingCounts:
+          type: object
+          properties:
+            '1':
+              type: integer
+            '2':
+              type: integer
+            '3':
+              type: integer
+            '4':
+              type: integer
+            '5':
+              type: integer

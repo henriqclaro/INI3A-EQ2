@@ -52,4 +52,28 @@ recipeRoutes.delete(
   recipeController.delete.bind(recipeController),
 );
 
+recipeRoutes.get(
+  '/:id/reviews',
+  validate({ params: recipe.paramsSchema }),
+  recipeController.selectRecipeReviews.bind(recipeController),
+);
+
+recipeRoutes.post(
+  '/:id/reviews',
+  validate({ params: recipe.paramsSchema, body: recipe.createReviewSchema }),
+  recipeController.createReview.bind(recipeController),
+);
+
+recipeRoutes.patch(
+  '/:id/reviews',
+  validate({ params: recipe.paramsSchema, body: recipe.updateReviewSchema }),
+  recipeController.updateReview.bind(recipeController),
+);
+
+recipeRoutes.delete(
+  '/:id/reviews',
+  validate({ params: recipe.paramsSchema }),
+  recipeController.deleteReview.bind(recipeController),
+);
+
 export { recipeRoutes };

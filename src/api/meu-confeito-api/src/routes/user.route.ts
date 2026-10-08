@@ -62,4 +62,10 @@ userRoutes.delete(
   userController.removeSaveRecipe.bind(userController),
 );
 
+userRoutes.get(
+  '/:id/reviews',
+  validate({ params: user.paramsSchema }),
+  userController.selectUserReviews.bind(userController),
+);
+
 export { userRoutes };

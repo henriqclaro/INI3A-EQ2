@@ -199,3 +199,28 @@ paths:
           description: Ação negada por falta de privilégios
         '404':
           description: Receita salva ou usuário não encontrado
+  /users/{id}/reviews:
+    get:
+      summary: Seleciona as avaliações feitas por um usuário
+      tags:
+        - Usuários
+        - Receitas
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UserParamsSchema'
+      responses:
+        '200':
+          description: Avaliações selecionadas com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSelectReviewsResponse'
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Usuário não encontrado
+        '410':
+          description: Usuário suspenso ou excluído
