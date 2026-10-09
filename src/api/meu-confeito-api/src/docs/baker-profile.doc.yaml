@@ -50,6 +50,50 @@ paths:
           description: Usuário não encontrado
         '410':
           description: Usuário suspenso ou excluído
+  /baker-profiles/neighborhood:
+    get:
+      summary: Busca e lista perfis de confeiteiro por palavras-chave em neighborhood e tags
+      tags:
+        - Perfil de Confeiteiro
+      parameters:
+        - in: query
+          name: search
+          required: false
+          description: Palavras-chave para busca de bairro, cidade ou estado
+          schema:
+            type: string
+        - in: query
+          name: query
+          required: false
+          description: Alias para o parâmetro de busca por palavras-chave
+          schema:
+            type: string
+        - in: query
+          name: page
+          required: false
+          description: Página para paginação (início em 0, 10 itens por página)
+          schema:
+            type: integer
+            default: 0
+        - in: query
+          name: tags
+          required: false
+          description: Tags para filtro (IDs numéricos ou nomes separados por vírgula)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Perfis de confeiteiro selecionados com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BakerProfileSelectByNeighborhoodResponse'
+        '400':
+          description: Erro na validação dos dados
+        '404':
+          description: Usuário não encontrado
+        '410':
+          description: Usuário suspenso ou excluído
   /baker-profiles/me:
     post:
       summary: Cadastra o perfil de confeiteiro do usuário autenticado

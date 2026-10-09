@@ -144,3 +144,38 @@ components:
                       type: integer
                     name:
                       type: string
+    BakerProfileSelectByNeighborhoodResponse:
+      type: object
+      properties:
+        bakerProfiles:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: string
+                format: uuid
+              name:
+                type: string
+              publicName:
+                type: string
+                nullable: true
+              pfpUrl:
+                type: string
+                format: url
+                nullable: true
+              neighborhood:
+                type: string
+                nullable: true
+              city:
+                type: string
+                nullable: true
+              tags:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string

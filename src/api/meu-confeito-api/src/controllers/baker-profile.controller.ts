@@ -94,4 +94,19 @@ export class BakerProfileController {
       'Baker profiles selected successfully',
     ).send();
   }
+
+  async selectByNeighborhood(
+    req: Request,
+    res: Response<ApiResponse<BakerProfileDTO.SelectByNeighborhoodResponse>>,
+  ) {
+    const context = this.extractProps(req);
+    const query = req.query as unknown as BakerProfileDTO.NeighborhoodQueryRequest;
+    const responseData = await this.bakerProfileService.selectByNeighborhood(context, query);
+
+    return new DefaultSuccessResponse(
+      res,
+      responseData,
+      'Baker profiles selected successfully',
+    ).send();
+  }
 }

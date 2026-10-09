@@ -493,4 +493,105 @@ export class BakerProfileService {
 
     return { bakerProfiles };
   }
+
+  async selectByNeighborhood(
+    context: RequestContext,
+    data: BakerProfileDTO.NeighborhoodQueryRequest,
+  ): Promise<BakerProfileDTO.SelectByNeighborhoodResponse> {
+    const sender = await prisma.user.findUnique({
+      where: { id: context.userId },
+      select: { isActive: true },
+    });
+
+    if (!sender) {
+      throw new NotFoundError('User not found', 'USER_NOT_FOUND');
+    }
+
+    if (!sender.isActive) {
+      throw new GoneError('User suspended or deleted', 'USER_ACCOUNT_GONE');
+    }
+
+    const limit = 10;
+    const safePage = data.page ?? 0;
+    const offset = safePage > 0 ? safePage * limit : 0;
+
+    let tagCondition = Prisma.empty;
+    if (data.tags && data.tags.length > 0) {
+      const numericTagIds = data.tags
+        .map((t) => parseInt(t, 10))
+        .filter((n) => !isNaN(n) && Number.isInteger(n));
+      const tagNames = data.tags.map((t) => t.toLowerCase());
+
+      tagCondition = Prisma.sql`AND EXISTS (
+        SELECT 1
+        FROM "user_tag" ut
+        JOIN "tag" t ON t.id = ut.tag_id
+        WHERE ut.user_id = bp.user_id
+          AND (
+            ${numericTagIds.length > 0 ? Prisma.sql`ut.tag_id = ANY(${numericTagIds}) OR ` : Prisma.empty}LOWER(t.name) = ANY(${tagNames})
+          )
+      )`;
+    }
+
+    const rawSearch = data.search ?? data.query ?? data.neighborhood;
+    let neighborhoodCondition = Prisma.sql`AND bp.neighborhood IS NOT NULL AND TRIM(bp.neighborhood) != ''`;
+
+    if (rawSearch && rawSearch.trim().length > 0) {
+      const keywords = rawSearch
+        .trim()
+        .split(/[,;\-\s/]+/)
+        .map((k) => k.trim())
+        .filter((k) => k.length > 0);
+
+      if (keywords.length > 0) {
+        const keywordSqlConditions = keywords.map((kw) => {
+          const escaped = kw.replace(/([%_\\])/g, '\\$1');
+          return Prisma.sql`CONCAT_WS(' ', bp.neighborhood, bp.city) ILIKE ${`%${escaped}%`}`;
+        });
+
+        neighborhoodCondition = Prisma.sql`AND bp.neighborhood IS NOT NULL AND TRIM(bp.neighborhood) != '' AND (${Prisma.join(keywordSqlConditions, ' AND ')})`;
+      }
+    }
+
+    /* eslint-disable @ts-safeql/check-sql */
+    const result = await prisma.$queryRaw<any[]>`
+      SELECT
+        bp.user_id as "userId",
+        "user".name,
+        bp.public_name as "publicName",
+        "user".profile_picture_url as "pfpUrl",
+        bp.neighborhood,
+        bp.city,
+        COALESCE(
+          (
+            SELECT json_agg(json_build_object('id', t.id, 'name', t.name) ORDER BY t.id ASC)
+            FROM "user_tag" ut
+            INNER JOIN "tag" t ON t.id = ut.tag_id
+            WHERE ut.user_id = bp.user_id
+          ),
+          '[]'::json
+        ) as tags
+      FROM "baker_profile" bp
+      INNER JOIN "user" ON "user".id = bp.user_id
+      WHERE "user".is_active = true
+        ${neighborhoodCondition}
+        ${tagCondition}
+      ORDER BY LOWER(COALESCE(NULLIF(TRIM(bp.public_name), ''), "user".name)) ASC, LOWER("user".name) ASC, bp.user_id ASC
+      LIMIT ${limit}
+      OFFSET ${offset}
+    `;
+    /* eslint-enable @ts-safeql/check-sql */
+
+    const bakerProfiles = result.map((row) => ({
+      userId: row.userId,
+      name: row.name,
+      publicName: row.publicName ?? null,
+      pfpUrl: row.pfpUrl,
+      neighborhood: row.neighborhood,
+      city: row.city,
+      tags: this.parseTags(row.tags),
+    }));
+
+    return { bakerProfiles };
+  }
 }

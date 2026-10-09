@@ -19,6 +19,12 @@ bakerProfileRoutes.get(
   bakerProfileController.selectByLocation.bind(bakerProfileController),
 );
 
+bakerProfileRoutes.get(
+  '/neighborhood',
+  validate({ query: bakerProfile.neighborhoodQuerySchema }),
+  bakerProfileController.selectByNeighborhood.bind(bakerProfileController),
+);
+
 bakerProfileRoutes.post(
   '/me',
   validate({ body: bakerProfile.registerSchema }),

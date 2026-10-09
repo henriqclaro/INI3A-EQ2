@@ -79,3 +79,24 @@ export const querySchema = z.object({
     })
     .pipe(z.array(z.string()).optional()),
 });
+
+export const neighborhoodQuerySchema = z.object({
+  search: z.string('Search query must be a string').trim().optional(),
+  query: z.string('Search query must be a string').trim().optional(),
+  neighborhood: z.string('Neighborhood query must be a string').trim().optional(),
+  page: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val, 10) : 0))
+    .pipe(z.number({ error: 'Page must be a non-negative integer' }).int().min(0)),
+  tags: z
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .transform((val) => {
+      if (!val) return undefined;
+      const arr = Array.isArray(val) ? val : [val];
+      const cleaned = arr.flatMap((i) => i.split(',').map((t) => t.trim())).filter(Boolean);
+      return cleaned.length > 0 ? cleaned : undefined;
+    })
+    .pipe(z.array(z.string()).optional()),
+});

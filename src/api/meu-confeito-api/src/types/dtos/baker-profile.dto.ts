@@ -65,4 +65,18 @@ export namespace BakerProfileDTO {
       tags: BakerTag[];
     }[];
   }
+
+  export type NeighborhoodQueryRequest = z.infer<typeof bakerProfile.neighborhoodQuerySchema>;
+
+  export interface SelectByNeighborhoodResponse {
+    bakerProfiles: {
+      userId: string;
+      name: string;
+      publicName: string | null;
+      pfpUrl: string | null;
+      neighborhood: string | null;
+      city: string | null;
+      tags: BakerTag[];
+    }[];
+  }
 }
