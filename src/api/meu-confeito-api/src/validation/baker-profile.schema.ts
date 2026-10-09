@@ -7,8 +7,10 @@ export const locationSchema = z.object({
 
 export const registerSchema = z
   .object({
+    publicName: z.string().max(100).nullish(),
     bio: z.string().max(500).nullish(),
     instagram: z.string().max(100).nullish(),
+    whatsapp: z.e164('Invalid E164 for phone number').nullish(),
     neighborhood: z.string().max(100).nullish(),
     city: z.string().max(100).nullish(),
     location: locationSchema.nullish(),
@@ -25,8 +27,10 @@ export const registerSchema = z
 
 export const updateSchema = z
   .object({
+    publicName: z.string().max(100).nullish(),
     bio: z.string().max(500).nullish(),
     instagram: z.string().max(100).nullish(),
+    whatsapp: z.e164('Invalid E164 for phone number').nullish(),
     neighborhood: z.string().max(100).nullish(),
     city: z.string().max(100).nullish(),
     location: locationSchema.nullish(),

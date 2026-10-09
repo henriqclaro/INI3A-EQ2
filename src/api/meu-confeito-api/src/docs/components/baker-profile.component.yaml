@@ -11,9 +11,15 @@ components:
               format: uuid
             name:
               type: string
+            publicName:
+              type: string
+              nullable: true
             email:
               type: string
             phone:
+              type: string
+              nullable: true
+            whatsapp:
               type: string
               nullable: true
             pfpUrl:
@@ -66,11 +72,17 @@ components:
               format: uuid
             name:
               type: string
+            publicName:
+              type: string
+              nullable: true
             pfpUrl:
               type: string
               format: url
               nullable: true
             phone:
+              type: string
+              nullable: true
+            whatsapp:
               type: string
               nullable: true
             bio:
@@ -107,6 +119,9 @@ components:
                 format: uuid
               name:
                 type: string
+              publicName:
+                type: string
+                nullable: true
               pfpUrl:
                 type: string
                 format: url

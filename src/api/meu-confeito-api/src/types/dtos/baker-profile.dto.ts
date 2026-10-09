@@ -16,8 +16,10 @@ export namespace BakerProfileDTO {
     bakerProfile: {
       userId: string;
       name: string;
+      publicName: string | null;
       email: string;
       phone: string | null;
+      whatsapp: string | null;
       pfpUrl: string | null;
       bio: string | null;
       instagram: string | null;
@@ -37,8 +39,10 @@ export namespace BakerProfileDTO {
     bakerProfile: {
       userId: string;
       name: string;
+      publicName: string | null;
       pfpUrl: string | null;
       phone: string | null;
+      whatsapp: string | null;
       bio: string | null;
       instagram: string | null;
       neighborhood: string | null;
@@ -53,6 +57,7 @@ export namespace BakerProfileDTO {
     bakerProfiles: {
       userId: string;
       name: string;
+      publicName: string | null;
       pfpUrl: string | null;
       distance: number;
       neighborhood: string | null;

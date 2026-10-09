@@ -110,8 +110,10 @@ export class BakerProfileService {
       await tx.bakerProfile.create({
         data: {
           userId: context.userId,
+          publicName: data.publicName ?? null,
           bio: data.bio ?? null,
           instagram: data.instagram ?? null,
+          whatsapp: data.whatsapp ?? null,
           neighborhood: data.neighborhood ?? null,
           city: data.city ?? null,
         },
@@ -162,8 +164,10 @@ export class BakerProfileService {
         "user".email,
         "user".phone,
         "user".profile_picture_url as "pfpUrl",
+        bp.public_name as "publicName",
         bp.bio,
         bp.instagram,
+        bp.whatsapp,
         bp.neighborhood,
         bp.city,
         bp.created_at as "createdAt",
@@ -194,8 +198,10 @@ export class BakerProfileService {
       bakerProfile: {
         userId: rawProfile.userId,
         name: rawProfile.name,
+        publicName: rawProfile.publicName ?? null,
         email: rawProfile.email,
         phone: rawProfile.phone,
+        whatsapp: rawProfile.whatsapp ?? null,
         pfpUrl: rawProfile.pfpUrl,
         bio: rawProfile.bio,
         instagram: rawProfile.instagram,
@@ -241,11 +247,13 @@ export class BakerProfileService {
       uniqueTagIds = await this.validateUserTagIds(incomingTagIds);
     }
 
-    const { location, bio, instagram, neighborhood, city } = data;
+    const { publicName, bio, instagram, whatsapp, neighborhood, city, location } = data;
 
     const profileData = {
+      ...(publicName !== undefined && { publicName }),
       ...(bio !== undefined && { bio }),
       ...(instagram !== undefined && { instagram }),
+      ...(whatsapp !== undefined && { whatsapp }),
       ...(neighborhood !== undefined && { neighborhood }),
       ...(city !== undefined && { city }),
     };
@@ -348,8 +356,10 @@ export class BakerProfileService {
       where: { userId: id },
       select: {
         userId: true,
+        publicName: true,
         bio: true,
         instagram: true,
+        whatsapp: true,
         neighborhood: true,
         city: true,
         user: {
@@ -384,8 +394,10 @@ export class BakerProfileService {
       bakerProfile: {
         userId: profile.userId,
         name: profile.user.name,
+        publicName: profile.publicName,
         pfpUrl: profile.user.pfpUrl,
         phone: profile.user.phone,
+        whatsapp: profile.whatsapp,
         bio: profile.bio,
         instagram: profile.instagram,
         neighborhood: profile.neighborhood,
@@ -442,6 +454,7 @@ export class BakerProfileService {
       SELECT
         bp.user_id as "userId",
         "user".name,
+        bp.public_name as "publicName",
         "user".profile_picture_url as "pfpUrl",
         bp.neighborhood,
         bp.city,
@@ -470,6 +483,7 @@ export class BakerProfileService {
     const bakerProfiles = result.map((row) => ({
       userId: row.userId,
       name: row.name,
+      publicName: row.publicName ?? null,
       pfpUrl: row.pfpUrl,
       distance: Number(row.distance),
       neighborhood: row.neighborhood,
