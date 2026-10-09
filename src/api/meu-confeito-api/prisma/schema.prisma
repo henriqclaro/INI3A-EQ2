@@ -126,9 +126,11 @@ model PasswordReset {
 }
 
 model BakerProfile {
-  userId    String  @id @map("user_id")
-  bio       String?
-  instagram String?
+  userId     String  @id @map("user_id")
+  publicName String? @map("public_name")
+  bio        String?
+  instagram  String?
+  whatsapp   String?
 
   location     Unsupported("geometry(Point, 4326)")?
   neighborhood String?
