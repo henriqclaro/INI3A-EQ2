@@ -237,7 +237,7 @@ export default function RegisterScreen() {
             <Text style={styles.subheadline}>
               {role === 'BAKER'
                 ? 'Cadastre-se para gerenciar produções e receitas'
-                : 'Cadastre-se para encomendar e ver receitas'}
+                : 'Cadastre-se para entrar em contato com confeiteiros e ver receitas'}
             </Text>
           </View>
 

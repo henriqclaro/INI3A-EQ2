@@ -56,6 +56,8 @@ export {
   NearbyBakerItem,
   NearbyBakersQuery,
   NearbyBakersResponse,
+  NeighborhoodBakersQuery,
+  NeighborhoodBakersResponse,
   PublicBakerProfile,
 } from './baker-profile';
 export {

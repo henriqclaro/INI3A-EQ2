@@ -7,6 +7,7 @@ import {
   BakerProfileUpdateInput,
   NearbyBakerItem,
   NearbyBakersQuery,
+  NeighborhoodBakersQuery,
   PublicBakerProfile,
 } from '../types/baker-profile';
 import { ReorderShowcaseItem, ShowcaseRecipeItem } from '../types/showcase';
@@ -289,12 +290,38 @@ export function useNearbyBakers() {
     }
   }, []);
 
+  const searchBakersByNeighborhood = useCallback(async (params: NeighborhoodBakersQuery) => {
+    setIsLoading(true);
+    setHasError(false);
+    setErrorMessage(null);
+    try {
+      const response = await BakerProfileService.getBakersByNeighborhood(params);
+      const list = response?.data?.bakerProfiles || [];
+      setBakers(list);
+      return list;
+    } catch (err: unknown) {
+      console.error('Error fetching bakers by neighborhood:', err);
+      const apiErr = err as ApiError;
+      setHasError(true);
+      setErrorMessage(
+        apiErr?.response?.data?.message ||
+          apiErr?.message ||
+          'Não foi possível encontrar confeitarias para essa localização.',
+      );
+      setBakers([]);
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   return {
     bakers,
     isLoading,
     hasError,
     errorMessage,
     searchBakers,
+    searchBakersByNeighborhood,
     setBakers,
   };
 }

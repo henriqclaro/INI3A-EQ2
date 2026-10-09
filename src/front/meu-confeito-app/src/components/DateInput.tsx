@@ -188,7 +188,7 @@ export const DateInput = ({
 
   return (
     <View style={[styles.container, containerStyle]}>
-      {label && (
+      {Boolean(label) && (
         <Text style={styles.label}>
           {label} {isRequired && <Text style={styles.required}>*</Text>}
         </Text>

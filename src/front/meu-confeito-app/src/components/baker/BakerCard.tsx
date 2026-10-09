@@ -44,19 +44,24 @@ export const BakerCard = memo(function BakerCard({ baker, onPress }: BakerCardPr
     }
   };
 
+  const displayName = baker.publicName?.trim() || baker.name;
+  const hasCustomPublicName = Boolean(
+    baker.publicName?.trim() && baker.publicName.trim() !== baker.name,
+  );
+
   return (
     <TouchableOpacity
       style={styles.card}
       onPress={handlePress}
       activeOpacity={0.75}
       accessibilityRole="button"
-      accessibilityLabel={`Confeitaria ${baker.name}, a ${formattedDistance}`}
+      accessibilityLabel={`Confeitaria ${displayName}${formattedDistance ? `, a ${formattedDistance}` : ''}`}
     >
       <View style={styles.avatarContainer}>
         {baker.pfpUrl ? (
           <Image
             source={{ uri: baker.pfpUrl }}
-            alt={baker.name}
+            alt={displayName}
             style={styles.avatar}
             contentFit="cover"
             cachePolicy="memory-disk"
@@ -77,7 +82,7 @@ export const BakerCard = memo(function BakerCard({ baker, onPress }: BakerCardPr
       <View style={styles.infoCol}>
         <View style={styles.headerRow}>
           <Text style={styles.bakerName} numberOfLines={1}>
-            {baker.name}
+            {displayName}
           </Text>
           {formattedDistance ? (
             <View style={styles.distanceBadge}>
@@ -90,6 +95,12 @@ export const BakerCard = memo(function BakerCard({ baker, onPress }: BakerCardPr
             </View>
           ) : null}
         </View>
+
+        {hasCustomPublicName ? (
+          <Text style={styles.accountSubtext} numberOfLines={1}>
+            Por {baker.name}
+          </Text>
+        ) : null}
 
         <View style={styles.locationRow}>
           <MaterialCommunityIcons
@@ -159,6 +170,12 @@ const createStyles = (theme: AppTheme) =>
       fontWeight: '600',
       color: theme.colors.espressoDark,
       flex: 1,
+    },
+    accountSubtext: {
+      fontFamily: theme.typography.bodySm.fontFamily,
+      fontSize: 12,
+      color: theme.colors.onSurfaceVariant,
+      marginTop: -2,
     },
     distanceBadge: {
       flexDirection: 'row',

@@ -66,6 +66,24 @@ export default function ProfileScreen() {
     return parts.join(', ');
   }, [bakerProfile]);
 
+  const handleCommercialProfilePress = () => {
+    Alert.alert(
+      'Perfil Comercial de Confeiteiro',
+      `Ao ativar seu perfil comercial, o nome da sua conta (${user?.name}) será público para todos os clientes.\n\nVocê também terá a opção de cadastrar um Nome Comercial opcional para ser exibido em destaque e um WhatsApp comercial exclusivo para contato direto com clientes (seu telefone pessoal de validação permanece estritamente privado).`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Configurar Perfil',
+          onPress: () =>
+            router.push({
+              pathname: '/edit-profile',
+              params: { focusCommercial: 'true' },
+            }),
+        },
+      ],
+    );
+  };
+
   return (
     <ScrollView
       style={styles.container}
@@ -119,7 +137,14 @@ export default function ProfileScreen() {
               ))}
           </View>
 
-          <Text style={styles.userName}>{user?.name || 'Usuário'}</Text>
+          <Text style={styles.userName}>
+            {isBakerRole && bakerProfile?.publicName
+              ? bakerProfile.publicName
+              : user?.name || 'Usuário'}
+          </Text>
+          {isBakerRole && bakerProfile?.publicName && bakerProfile.publicName !== user?.name ? (
+            <Text style={styles.accountSubtext}>Responsável: {user?.name}</Text>
+          ) : null}
 
           <View style={styles.roleBadge}>
             <Text style={styles.userRole}>{isBakerRole ? 'Confeiteira(o)' : 'Cliente'}</Text>
@@ -173,18 +198,13 @@ export default function ProfileScreen() {
                 <View style={styles.activatePromptContainer}>
                   <Text style={styles.activatePromptText}>
                     Seu perfil está privado. Torne-o público para divulgar suas receitas e receber
-                    encomendas de clientes.
+                    contato direto de clientes.
                   </Text>
                   <CustomButton
                     title="Perfil Comercial"
                     variant="dashed"
                     style={styles.cardButton}
-                    onPress={() =>
-                      router.push({
-                        pathname: '/edit-profile',
-                        params: { focusCommercial: 'true' },
-                      })
-                    }
+                    onPress={handleCommercialProfilePress}
                   />
                 </View>
               ))}
@@ -359,6 +379,13 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       textAlign: 'center',
       letterSpacing: 0.6,
       marginTop: theme.spacing.space1,
+    },
+    accountSubtext: {
+      fontFamily: theme.typography.bodySm.fontFamily,
+      fontSize: 12,
+      color: theme.colors.onSurfaceVariant,
+      textAlign: 'center',
+      marginTop: 2,
     },
     roleBadge: {
       backgroundColor: theme.colors.chips.primary.background,

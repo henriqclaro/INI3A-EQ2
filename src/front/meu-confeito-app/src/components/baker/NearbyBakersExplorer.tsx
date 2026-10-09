@@ -57,14 +57,22 @@ export function NearbyBakersExplorer({
     [theme, isDesktop, isLargeDesktop],
   );
 
-  // Location state
+  // Search Mode state
+  const [searchMode, setSearchMode] = useState<'location' | 'neighborhood'>('location');
+  const isLocationMode = searchMode === 'location';
+  const isNeighborhoodMode = searchMode === 'neighborhood';
+
+  // Location search state
   const [userCoords, setUserCoords] = useState<{ latitude: number; longitude: number } | null>(
     null,
   );
   const [locationLabel, setLocationLabel] = useState<string>('');
-  const [addressInput, setAddressInput] = useState<string>('');
   const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(false);
-  const [isGeocodingAddress, setIsGeocodingAddress] = useState<boolean>(false);
+
+  // Neighborhood search state
+  const [neighborhoodInput, setNeighborhoodInput] = useState<string>('');
+  const [activeNeighborhoodQuery, setActiveNeighborhoodQuery] = useState<string>('');
+  const [hasNeighborhoodSearched, setHasNeighborhoodSearched] = useState<boolean>(false);
 
   // Filter state
   const [selectedRadius, setSelectedRadius] = useState<number>(10000); // 10km default
@@ -79,6 +87,7 @@ export function NearbyBakersExplorer({
     hasError,
     errorMessage,
     searchBakers,
+    searchBakersByNeighborhood,
   } = useNearbyBakers();
   const { tags: apiTags } = useTags(undefined, 'USER');
 
@@ -97,13 +106,13 @@ export function NearbyBakersExplorer({
 
   const hasLocation = Boolean(userCoords);
 
-  // Query nearby bakers with current filters
+  // Query nearby bakers with current filters (Proximity)
   const performSearch = useCallback(
     async (coordsToUse = userCoords, radiusToUse = selectedRadius, tagsToUse = selectedTags) => {
       if (!coordsToUse) {
         Alert.alert(
           'Localização Necessária',
-          'Por favor, obtenha sua localização atual via GPS ou digite um endereço para encontrar confeitarias.',
+          'Por favor, obtenha sua localização atual via GPS ou alterne para a busca por Bairro / Cidade.',
         );
         return;
       }
@@ -117,6 +126,21 @@ export function NearbyBakersExplorer({
       });
     },
     [userCoords, selectedRadius, selectedTags, searchBakers],
+  );
+
+  // Query bakers by neighborhood, city or state
+  const performNeighborhoodSearch = useCallback(
+    async (searchTerm = neighborhoodInput, tagsToUse = selectedTags) => {
+      const query = searchTerm.trim();
+      setHasSearched(true);
+      setHasNeighborhoodSearched(true);
+      setActiveNeighborhoodQuery(query);
+      await searchBakersByNeighborhood({
+        search: query || undefined,
+        tags: tagsToUse.length > 0 ? tagsToUse : undefined,
+      });
+    },
+    [neighborhoodInput, selectedTags, searchBakersByNeighborhood],
   );
 
   // Request GPS location and reverse geocode address label
@@ -166,50 +190,12 @@ export function NearbyBakersExplorer({
       console.error('Error detecting GPS location:', error);
       Alert.alert(
         'Erro na Localização',
-        'Não foi possível obter sua localização GPS. Verifique se o GPS está ativado ou digite um endereço manualmente.',
+        'Não foi possível obter sua localização GPS. Verifique se o GPS está ativado ou utilize a busca por Bairro / Cidade.',
       );
     } finally {
       setIsLoadingLocation(false);
     }
   }, [performSearch, selectedRadius, selectedTags]);
-
-  // Geocode address from text input
-  const handleSearchByAddress = useCallback(async () => {
-    const query = addressInput.trim();
-    if (!query) {
-      Alert.alert('Endereço Vazio', 'Digite uma cidade, bairro ou endereço para buscar.');
-      return;
-    }
-
-    try {
-      setIsGeocodingAddress(true);
-      const results = await Location.geocodeAsync(query);
-
-      if (!results || results.length === 0) {
-        Alert.alert(
-          'Endereço não encontrado',
-          'Não foi possível localizar este endereço. Tente ser mais específico (ex: "Pinheiros, São Paulo").',
-        );
-        return;
-      }
-
-      const match = results[0];
-      const coords = {
-        latitude: match.latitude,
-        longitude: match.longitude,
-      };
-
-      setUserCoords(coords);
-      setLocationLabel(query);
-
-      performSearch(coords, selectedRadius, selectedTags);
-    } catch (error) {
-      console.error('Error geocoding address:', error);
-      Alert.alert('Erro ao Buscar Endereço', 'Ocorreu um erro ao consultar o endereço digitado.');
-    } finally {
-      setIsGeocodingAddress(false);
-    }
-  }, [addressInput, performSearch, selectedRadius, selectedTags]);
 
   // Handle radius change
   const handleRadiusChange = (meters: number) => {
@@ -232,8 +218,10 @@ export function NearbyBakersExplorer({
     }
     setSelectedTags(updatedTags);
 
-    if (userCoords) {
+    if (isLocationMode && userCoords) {
       performSearch(userCoords, selectedRadius, updatedTags);
+    } else if (isNeighborhoodMode && (hasNeighborhoodSearched || neighborhoodInput.trim())) {
+      performNeighborhoodSearch(neighborhoodInput, updatedTags);
     }
   };
 
@@ -246,8 +234,10 @@ export function NearbyBakersExplorer({
       const updated = [...selectedTags, trimmed];
       setSelectedTags(updated);
       setCustomTagInput('');
-      if (userCoords) {
+      if (isLocationMode && userCoords) {
         performSearch(userCoords, selectedRadius, updated);
+      } else if (isNeighborhoodMode && (hasNeighborhoodSearched || neighborhoodInput.trim())) {
+        performNeighborhoodSearch(neighborhoodInput, updated);
       }
     } else {
       setCustomTagInput('');
@@ -264,10 +254,14 @@ export function NearbyBakersExplorer({
 
   // Refresh handler
   const handleRefresh = () => {
-    if (userCoords) {
-      performSearch(userCoords, selectedRadius, selectedTags);
+    if (isLocationMode) {
+      if (userCoords) {
+        performSearch(userCoords, selectedRadius, selectedTags);
+      } else {
+        handleDetectGPSLocation();
+      }
     } else {
-      handleDetectGPSLocation();
+      performNeighborhoodSearch(neighborhoodInput, selectedTags);
     }
   };
 
@@ -275,7 +269,9 @@ export function NearbyBakersExplorer({
     <View style={styles.filtersSection}>
       <View style={styles.filtersHeaderRow}>
         <Text style={styles.filtersTitle}>Filtros de Busca</Text>
-        <Text style={styles.filtersSubtitle}>Localização & Raio</Text>
+        <Text style={styles.filtersSubtitle}>
+          {isLocationMode ? 'Localização & Raio' : 'Bairro & Cidade'}
+        </Text>
       </View>
 
       <View style={styles.filterCard}>
@@ -288,9 +284,9 @@ export function NearbyBakersExplorer({
                 color={theme.colors.primary}
               />
               <View style={styles.heroTextCol}>
-                <Text style={styles.heroTitle}>Confeitarias Próximas</Text>
+                <Text style={styles.heroTitle}>Buscar Confeitarias</Text>
                 <Text style={styles.heroSubtitle}>
-                  Encontre confeitarias e artesãos locais por proximidade e especialidades
+                  Encontre confeitarias artesanais por proximidade GPS ou por bairro e cidade
                 </Text>
               </View>
             </View>
@@ -298,116 +294,206 @@ export function NearbyBakersExplorer({
           </>
         )}
 
-        <Text style={styles.sectionLabel}>Sua Localização</Text>
-
-        {/* GPS Detection Button */}
-        <TouchableOpacity
-          style={styles.gpsButton}
-          onPress={handleDetectGPSLocation}
-          disabled={isLoadingLocation}
-          activeOpacity={0.8}
-          accessibilityRole="button"
-          accessibilityLabel="Usar localização GPS atual"
-        >
-          {isLoadingLocation ? (
-            <ActivityIndicator size="small" color={theme.colors.primary} />
-          ) : (
-            <MaterialCommunityIcons name="crosshairs-gps" size={20} color={theme.colors.primary} />
-          )}
-          <Text style={styles.gpsButtonText}>
-            {isLoadingLocation ? 'Detectando GPS...' : 'Usar Minha Localização Atual'}
-          </Text>
-        </TouchableOpacity>
-
-        {/* Manual address input */}
-        <View style={styles.manualAddressRow}>
-          <View style={styles.manualInputWrapper}>
-            <MaterialCommunityIcons
-              name="map-marker-outline"
-              size={18}
-              color={theme.colors.placeholder}
-              style={styles.manualInputIcon}
-            />
-            <TextInput
-              style={styles.manualInput}
-              placeholder="Ou digite bairro / cidade..."
-              placeholderTextColor={theme.colors.placeholder}
-              value={addressInput}
-              onChangeText={setAddressInput}
-              onSubmitEditing={handleSearchByAddress}
-              returnKeyType="search"
-            />
-          </View>
+        {/* Search Mode Switcher Tabs */}
+        <View style={styles.modeSwitcherContainer}>
           <TouchableOpacity
-            style={styles.addressSearchBtn}
-            onPress={handleSearchByAddress}
-            disabled={isGeocodingAddress}
+            style={[styles.modeTab, isLocationMode && styles.modeTabActive]}
+            onPress={() => setSearchMode('location')}
             activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel="Buscar endereço digitado"
+            accessibilityRole="tab"
+            accessibilityState={{ selected: isLocationMode }}
+            accessibilityLabel="Buscar por proximidade e raio GPS"
           >
-            {isGeocodingAddress ? (
-              <ActivityIndicator size="small" color={theme.colors.onPrimary} />
-            ) : (
-              <MaterialCommunityIcons name="magnify" size={20} color={theme.colors.onPrimary} />
-            )}
+            <MaterialCommunityIcons
+              name="crosshairs-gps"
+              size={18}
+              color={isLocationMode ? theme.colors.onPrimary : theme.colors.espressoDark}
+            />
+            <Text style={[styles.modeTabText, isLocationMode && styles.modeTabTextActive]}>
+              Por Proximidade
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.modeTab, isNeighborhoodMode && styles.modeTabActive]}
+            onPress={() => {
+              setSearchMode('neighborhood');
+              if (!hasNeighborhoodSearched && !neighborhoodInput.trim()) {
+                performNeighborhoodSearch('', selectedTags);
+              }
+            }}
+            activeOpacity={0.8}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: isNeighborhoodMode }}
+            accessibilityLabel="Buscar por bairro, cidade ou estado"
+          >
+            <MaterialCommunityIcons
+              name="city-variant-outline"
+              size={18}
+              color={isNeighborhoodMode ? theme.colors.onPrimary : theme.colors.espressoDark}
+            />
+            <Text style={[styles.modeTabText, isNeighborhoodMode && styles.modeTabTextActive]}>
+              Por Bairro / Cidade
+            </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Active Location Indicator */}
-        {hasLocation && (
-          <View style={styles.activeLocationBadge}>
-            <MaterialCommunityIcons
-              name="map-marker-check"
-              size={16}
-              color={theme.colors.chips.success.text}
-            />
-            <Text style={styles.activeLocationText} numberOfLines={1}>
-              Localização ativa: {locationLabel || 'Coordenadas GPS registradas'}
+        {isLocationMode ? (
+          <>
+            <Text style={styles.sectionLabel}>Sua Localização</Text>
+
+            {/* GPS Detection Button */}
+            <TouchableOpacity
+              style={styles.gpsButton}
+              onPress={handleDetectGPSLocation}
+              disabled={isLoadingLocation}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Usar localização GPS atual"
+            >
+              {isLoadingLocation ? (
+                <ActivityIndicator size="small" color={theme.colors.primary} />
+              ) : (
+                <MaterialCommunityIcons
+                  name="crosshairs-gps"
+                  size={20}
+                  color={theme.colors.primary}
+                />
+              )}
+              <Text style={styles.gpsButtonText}>
+                {isLoadingLocation ? 'Detectando GPS...' : 'Usar Minha Localização Atual'}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Active Location Indicator */}
+            {hasLocation && (
+              <View style={styles.activeLocationBadge}>
+                <MaterialCommunityIcons
+                  name="map-marker-check"
+                  size={16}
+                  color={theme.colors.chips.success.text}
+                />
+                <Text style={styles.activeLocationText} numberOfLines={1}>
+                  Localização ativa: {locationLabel || 'Coordenadas GPS registradas'}
+                </Text>
+              </View>
+            )}
+
+            {/* Radius Options */}
+            <View style={styles.sectionDivider} />
+
+            <View style={styles.radiusHeaderRow}>
+              <Text style={styles.sectionLabel}>Raio de Busca</Text>
+              <Text style={styles.radiusHelperText}>Distância máxima em linha reta</Text>
+            </View>
+
+            <View style={styles.radiusOptionsRow}>
+              {RADIUS_OPTIONS.map((option) => {
+                const isSelected = selectedRadius === option.meters;
+                return (
+                  <TouchableOpacity
+                    key={option.meters}
+                    style={[
+                      styles.radiusChip,
+                      isSelected ? styles.radiusChipSelected : styles.radiusChipUnselected,
+                    ]}
+                    onPress={() => handleRadiusChange(option.meters)}
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Raio de ${option.label}`}
+                  >
+                    <MaterialCommunityIcons
+                      name="map-marker-radius"
+                      size={16}
+                      color={isSelected ? theme.colors.onPrimary : theme.colors.espressoDark}
+                    />
+                    <Text
+                      style={[
+                        styles.radiusChipText,
+                        isSelected
+                          ? styles.radiusChipTextSelected
+                          : styles.radiusChipTextUnselected,
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </>
+        ) : (
+          <View style={styles.neighborhoodSection}>
+            <Text style={styles.sectionLabel}>Bairro, Cidade ou Estado</Text>
+            <Text style={styles.tagsHelperText}>
+              Pesquise confeitarias cadastradas em qualquer cidade, bairro ou estado
             </Text>
+
+            <View style={styles.manualAddressRow}>
+              <View style={styles.manualInputWrapper}>
+                <MaterialCommunityIcons
+                  name="city-variant-outline"
+                  size={18}
+                  color={theme.colors.placeholder}
+                  style={styles.manualInputIcon}
+                />
+                <TextInput
+                  style={styles.manualInput}
+                  placeholder="Ex: Pinheiros, Curitiba, Campinas, SP..."
+                  placeholderTextColor={theme.colors.placeholder}
+                  value={neighborhoodInput}
+                  onChangeText={setNeighborhoodInput}
+                  onSubmitEditing={() => performNeighborhoodSearch()}
+                  returnKeyType="search"
+                />
+                {neighborhoodInput.trim().length > 0 && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setNeighborhoodInput('');
+                      performNeighborhoodSearch('', selectedTags);
+                    }}
+                    style={styles.clearSearchInputBtn}
+                    accessibilityRole="button"
+                    accessibilityLabel="Limpar texto de busca"
+                  >
+                    <MaterialCommunityIcons
+                      name="close-circle"
+                      size={18}
+                      color={theme.colors.placeholder}
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
+              <TouchableOpacity
+                style={styles.addressSearchBtn}
+                onPress={() => performNeighborhoodSearch()}
+                disabled={isLoadingBakers}
+                activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel="Buscar confeitarias por bairro ou cidade"
+              >
+                {isLoadingBakers ? (
+                  <ActivityIndicator size="small" color={theme.colors.onPrimary} />
+                ) : (
+                  <MaterialCommunityIcons name="magnify" size={20} color={theme.colors.onPrimary} />
+                )}
+              </TouchableOpacity>
+            </View>
+
+            {activeNeighborhoodQuery ? (
+              <View style={styles.activeLocationBadge}>
+                <MaterialCommunityIcons
+                  name="city-variant"
+                  size={16}
+                  color={theme.colors.chips.success.text}
+                />
+                <Text style={styles.activeLocationText} numberOfLines={1}>
+                  {`Buscando em: "${activeNeighborhoodQuery}"`}
+                </Text>
+              </View>
+            ) : null}
           </View>
         )}
-
-        {/* Radius Options */}
-        <View style={styles.sectionDivider} />
-
-        <View style={styles.radiusHeaderRow}>
-          <Text style={styles.sectionLabel}>Raio de Busca</Text>
-          <Text style={styles.radiusHelperText}>Distância máxima em linha reta</Text>
-        </View>
-
-        <View style={styles.radiusOptionsRow}>
-          {RADIUS_OPTIONS.map((option) => {
-            const isSelected = selectedRadius === option.meters;
-            return (
-              <TouchableOpacity
-                key={option.meters}
-                style={[
-                  styles.radiusChip,
-                  isSelected ? styles.radiusChipSelected : styles.radiusChipUnselected,
-                ]}
-                onPress={() => handleRadiusChange(option.meters)}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                accessibilityLabel={`Raio de ${option.label}`}
-              >
-                <MaterialCommunityIcons
-                  name="map-marker-radius"
-                  size={16}
-                  color={isSelected ? theme.colors.onPrimary : theme.colors.espressoDark}
-                />
-                <Text
-                  style={[
-                    styles.radiusChipText,
-                    isSelected ? styles.radiusChipTextSelected : styles.radiusChipTextUnselected,
-                  ]}
-                >
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
 
         {/* Tag Filters */}
         <View style={styles.sectionDivider} />
@@ -480,7 +566,11 @@ export function NearbyBakersExplorer({
             <TouchableOpacity
               onPress={() => {
                 setSelectedTags([]);
-                if (userCoords) performSearch(userCoords, selectedRadius, []);
+                if (isLocationMode && userCoords) {
+                  performSearch(userCoords, selectedRadius, []);
+                } else if (isNeighborhoodMode) {
+                  performNeighborhoodSearch(neighborhoodInput, []);
+                }
               }}
               style={styles.clearTagsBtn}
               accessibilityRole="button"
@@ -499,10 +589,21 @@ export function NearbyBakersExplorer({
       {/* Results Header */}
       <View style={styles.resultsHeaderRow}>
         <Text style={styles.resultsTitle}>
-          {hasSearched ? `Confeitarias Encontradas (${bakers.length})` : 'Confeitarias na Região'}
+          {isLocationMode
+            ? hasSearched
+              ? `Confeitarias Encontradas (${bakers.length})`
+              : 'Confeitarias na Região'
+            : hasNeighborhoodSearched
+              ? `Confeitarias Encontradas (${bakers.length})`
+              : 'Confeitarias por Região'}
         </Text>
-        {hasSearched && (
+        {isLocationMode && hasSearched && (
           <Text style={styles.resultsSubtitle}>Até {(selectedRadius / 1000).toFixed(0)} km</Text>
+        )}
+        {isNeighborhoodMode && hasNeighborhoodSearched && (
+          <Text style={styles.resultsSubtitle}>
+            {activeNeighborhoodQuery ? `Em "${activeNeighborhoodQuery}"` : 'Todas as regiões'}
+          </Text>
         )}
       </View>
 
@@ -510,7 +611,11 @@ export function NearbyBakersExplorer({
       {isLoadingBakers ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
-          <Text style={styles.loadingText}>Buscando confeitarias próximas...</Text>
+          <Text style={styles.loadingText}>
+            {isLocationMode
+              ? 'Buscando confeitarias próximas...'
+              : 'Buscando confeitarias por bairro/cidade...'}
+          </Text>
         </View>
       ) : hasError ? (
         <View style={styles.errorCard}>
@@ -525,7 +630,7 @@ export function NearbyBakersExplorer({
             title="Tentar Novamente"
             variant="primary"
             style={styles.retryBtn}
-            onPress={() => performSearch()}
+            onPress={() => (isLocationMode ? performSearch() : performNeighborhoodSearch())}
           />
         </View>
       ) : bakers.length > 0 ? (
@@ -536,7 +641,7 @@ export function NearbyBakersExplorer({
             </View>
           ))}
         </View>
-      ) : hasSearched ? (
+      ) : isLocationMode && hasSearched ? (
         <View style={styles.emptyCard}>
           <MaterialCommunityIcons
             name="store-off-outline"
@@ -570,6 +675,58 @@ export function NearbyBakersExplorer({
             )}
           </View>
         </View>
+      ) : isNeighborhoodMode && hasNeighborhoodSearched ? (
+        <View style={styles.emptyCard}>
+          <MaterialCommunityIcons
+            name="store-off-outline"
+            size={48}
+            color={theme.colors.placeholder}
+          />
+          <Text style={styles.emptyTitle}>Nenhuma confeitaria encontrada</Text>
+          <Text style={styles.emptyDescription}>
+            {`Não encontramos confeitarias em "${activeNeighborhoodQuery || 'região informada'}"${selectedTags.length > 0 ? ' com as tags selecionadas' : ''}.`}
+          </Text>
+          <View style={styles.emptyActions}>
+            <CustomButton
+              title="Buscar em Todas as Regiões"
+              variant="primary"
+              style={styles.emptyActionBtn}
+              onPress={() => {
+                setNeighborhoodInput('');
+                performNeighborhoodSearch('', selectedTags);
+              }}
+            />
+            {selectedTags.length > 0 && (
+              <CustomButton
+                title="Limpar filtros de tags"
+                variant="secondary"
+                style={styles.emptyActionBtn}
+                onPress={() => {
+                  setSelectedTags([]);
+                  performNeighborhoodSearch(neighborhoodInput, []);
+                }}
+              />
+            )}
+          </View>
+        </View>
+      ) : isNeighborhoodMode && !hasNeighborhoodSearched ? (
+        <View style={styles.emptyCard}>
+          <MaterialCommunityIcons
+            name="city-variant-outline"
+            size={48}
+            color={theme.colors.primary}
+          />
+          <Text style={styles.emptyTitle}>Buscar por Bairro ou Cidade</Text>
+          <Text style={styles.emptyDescription}>
+            Digite um bairro, cidade ou estado acima para listar as confeitarias cadastradas.
+          </Text>
+          <CustomButton
+            title="Listar Todas as Confeitarias"
+            variant="primary"
+            style={styles.emptyActionBtn}
+            onPress={() => performNeighborhoodSearch('', selectedTags)}
+          />
+        </View>
       ) : !hasLocation ? (
         <View style={styles.emptyCard}>
           <MaterialCommunityIcons
@@ -579,8 +736,8 @@ export function NearbyBakersExplorer({
           />
           <Text style={styles.emptyTitle}>Defina sua localização</Text>
           <Text style={styles.emptyDescription}>
-            Ative o GPS ou informe seu bairro/cidade acima para listar as confeitarias mais
-            próximas.
+            Ative o GPS para listar as confeitarias mais próximas ou alterne para a busca por Bairro
+            / Cidade acima.
           </Text>
           <CustomButton
             title="Detectar Localização Atual"
@@ -722,6 +879,48 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isLargeDesktop: boole
       color: theme.colors.onSurfaceVariant,
       marginTop: 2,
       lineHeight: 18,
+    },
+    modeSwitcherContainer: {
+      flexDirection: 'row',
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderRadius: theme.rounded.full,
+      padding: 4,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      gap: 4,
+    },
+    modeTab: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 48,
+      paddingHorizontal: 12,
+      borderRadius: theme.rounded.full,
+      gap: 6,
+    },
+    modeTabActive: {
+      backgroundColor: theme.colors.primary,
+      ...theme.shadows.soft,
+    },
+    modeTabText: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
+    },
+    modeTabTextActive: {
+      color: theme.colors.onPrimary,
+      fontWeight: '700',
+    },
+    neighborhoodSection: {
+      gap: theme.spacing.space3,
+    },
+    clearSearchInputBtn: {
+      width: 36,
+      height: 36,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     sectionDivider: {
       height: 1,

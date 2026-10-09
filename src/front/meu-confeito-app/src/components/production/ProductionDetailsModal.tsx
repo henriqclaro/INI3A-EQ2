@@ -93,7 +93,7 @@ export function ProductionDetailsModal({
                   Produzido em:{' '}
                   <Text style={styles.metaBold}>{formatDate(production.productionDate)}</Text>
                 </Text>
-                {production.expirationDate && (
+                {Boolean(production.expirationDate) && (
                   <Text style={styles.metaText}>
                     Validade:{' '}
                     <Text style={styles.metaBold}>{formatDate(production.expirationDate)}</Text>

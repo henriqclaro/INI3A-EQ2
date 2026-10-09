@@ -67,6 +67,8 @@ export default function EditProfileScreen() {
   // Baker profile state (Public Profile)
   const [isPublicProfile, setIsPublicProfile] = useState<boolean>(false);
   const [hasInitialBakerProfile, setHasInitialBakerProfile] = useState<boolean>(false);
+  const [publicName, setPublicName] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
   const [bio, setBio] = useState('');
   const [instagram, setInstagram] = useState('');
   const [city, setCity] = useState('');
@@ -78,6 +80,7 @@ export default function EditProfileScreen() {
     name: false,
     email: false,
     phone: false,
+    whatsapp: false,
   });
 
   // Populate baker profile fields once loaded asynchronously
@@ -95,6 +98,8 @@ export default function EditProfileScreen() {
           const profile = response.data.bakerProfile;
           setIsPublicProfile(true);
           setHasInitialBakerProfile(true);
+          setPublicName(profile.publicName || '');
+          setWhatsapp(profile.whatsapp ? formatPhoneInput(profile.whatsapp) : '');
           setBio(profile.bio || '');
           setInstagram(profile.instagram || '');
           setCity(profile.city || '');
@@ -113,6 +118,8 @@ export default function EditProfileScreen() {
         if (isMounted) {
           setIsPublicProfile(false);
           setHasInitialBakerProfile(false);
+          setPublicName('');
+          setWhatsapp('');
           setSelectedTags([]);
         }
       } finally {
@@ -168,10 +175,28 @@ export default function EditProfileScreen() {
     setPhone(formatPhoneInput(text));
   };
 
+  const handleWhatsAppChange = (text: string) => {
+    if (text.length < whatsapp.length) {
+      const rawClean = text.replace(/[^\d+]/g, '');
+      setWhatsapp(formatPhoneInput(rawClean));
+      return;
+    }
+    setWhatsapp(formatPhoneInput(text));
+  };
+
+  const isPhoneRequired = isBakerRole && isPublicProfile;
   const isNameFieldValid = isNameValid(name);
   const isEmailFieldValid = isEmailValid(email);
-  const isPhoneFieldValid = !phone.trim() || E164_REGEX.test(toE164(phone));
+  const isPhoneFieldValid = isPhoneRequired
+    ? Boolean(phone.trim()) && E164_REGEX.test(toE164(phone))
+    : !phone.trim() || E164_REGEX.test(toE164(phone));
+  const isWhatsAppFieldValid = !whatsapp.trim() || E164_REGEX.test(toE164(whatsapp));
   const hasLocationCoords = Boolean(locationCoords);
+
+  const isNameSuccess = Boolean(touched.name && isNameFieldValid);
+  const isEmailSuccess = Boolean(touched.email && isEmailFieldValid);
+  const isPhoneSuccess = Boolean(touched.phone && phone.trim() && isPhoneFieldValid);
+  const isWhatsAppSuccess = Boolean(touched.whatsapp && whatsapp.trim() && isWhatsAppFieldValid);
 
   const nameError = useMemo(() => {
     if (!touched.name) return '';
@@ -188,15 +213,23 @@ export default function EditProfileScreen() {
   }, [email, isEmailFieldValid, touched.email]);
 
   const phoneError = useMemo(() => {
-    if (!touched.phone && !(isBakerRole && isPublicProfile)) return '';
-    if (isBakerRole && isPublicProfile && !phone.trim()) {
-      return 'Telefone é obrigatório para perfil comercial.';
+    if (!touched.phone && !isPhoneRequired) return '';
+    if (isPhoneRequired && !phone.trim()) {
+      return 'Telefone de validação é obrigatório para manter o perfil comercial.';
     }
     if (phone.trim() && !E164_REGEX.test(toE164(phone))) {
       return 'Telefone incompleto ou inválido. Ex: (11) 99999-9999.';
     }
     return '';
-  }, [isBakerRole, isPublicProfile, phone, touched.phone]);
+  }, [isPhoneRequired, phone, touched.phone]);
+
+  const whatsAppError = useMemo(() => {
+    if (!touched.whatsapp) return '';
+    if (whatsapp.trim() && !E164_REGEX.test(toE164(whatsapp))) {
+      return 'WhatsApp comercial incompleto ou inválido. Ex: (11) 99999-9999.';
+    }
+    return '';
+  }, [touched.whatsapp, whatsapp]);
 
   // Handles intuitive location detection using expo-location
   const handleFetchLocation = async () => {
@@ -278,31 +311,27 @@ export default function EditProfileScreen() {
   const handleTogglePublicProfile = (targetValue: boolean) => {
     if (targetValue) {
       const rawCleanPhone = phone.trim();
-      if (!rawCleanPhone) {
+      const formattedPhone = rawCleanPhone ? toE164(rawCleanPhone) : null;
+      if (!formattedPhone || !E164_REGEX.test(formattedPhone)) {
+        setTouched((prev) => ({ ...prev, phone: true }));
         Alert.alert(
-          'Telefone Necessário',
-          'Para ativar seu perfil público de confeiteiro, é necessário cadastrar um telefone ou WhatsApp comercial para que seus clientes possam entrar em contato.',
-          [
-            {
-              text: 'Preencher Telefone',
-              onPress: () => setTouched((prev) => ({ ...prev, phone: true })),
-            },
-          ],
+          'Telefone de Validação Obrigatório',
+          'Para ativar seu perfil comercial, é obrigatório cadastrar um telefone válido na sua conta para validação e segurança. Seu número permanecerá estritamente privado.',
         );
         return;
       }
 
-      if (!E164_REGEX.test(toE164(rawCleanPhone))) {
+      if (whatsapp.trim() && !E164_REGEX.test(toE164(whatsapp))) {
         Alert.alert(
-          'Telefone Inválido',
-          'Por favor, informe um telefone válido com DDD antes de ativar o perfil público.',
+          'WhatsApp Comercial Inválido',
+          'Por favor, informe um WhatsApp comercial válido com DDD antes de ativar ou deixe o campo em branco.',
         );
         return;
       }
 
       Alert.alert(
-        'Tornar Perfil Público?',
-        'Ao ativar o perfil público, seu perfil comercial será criado e publicado imediatamente na plataforma. Suas informações comerciais (nome, bio, Instagram, localização e telefone) ficarão visíveis para todos os clientes.\n\nSeu e-mail permanecerá sempre confidencial. Deseja continuar?',
+        'Tornar Perfil Comercial Público?',
+        `Ao ativar o perfil comercial, sua página será criada e ficará visível para os clientes na busca do Meu Confeito.\n\n• Nome Público: O nome da sua conta (${user?.name}) será público na plataforma. Você pode adicionar um Nome Comercial opcional para ser exibido em destaque.\n• Contato Seguro: Seu telefone pessoal permanece estritamente privado para validação da conta. Apenas o WhatsApp comercial informado (se houver) será exibido aos clientes para contato direto.\n• E-mail: Permanece estritamente confidencial.\n\nDeseja ativar seu perfil comercial agora?`,
         [
           { text: 'Cancelar', style: 'cancel' },
           {
@@ -311,10 +340,11 @@ export default function EditProfileScreen() {
               try {
                 setIsTogglingPublic(true);
 
-                // 1. Ensure phone is persisted to user account first if changed
-                const formattedPhone = toE164(rawCleanPhone);
+                // 1. Ensure personal details are persisted to user account if changed
+                const rawCleanPhone = phone.trim();
+                const formattedPhone = rawCleanPhone ? toE164(rawCleanPhone) : null;
                 const userPayload: UserEditData = {};
-                if (formattedPhone !== user?.phone) {
+                if (formattedPhone !== (user?.phone ?? null)) {
                   userPayload.phone = formattedPhone;
                 }
                 if (name.trim() && name.trim() !== user?.name) {
@@ -330,8 +360,10 @@ export default function EditProfileScreen() {
                   }
                 }
 
-                // 2. Immediately send create request to API
+                // 2. Immediately send create request to API with publicName and whatsapp
                 const createData: BakerProfileRegisterInput = {
+                  publicName: publicName.trim() || null,
+                  whatsapp: whatsapp.trim() ? toE164(whatsapp) : null,
                   bio: bio.trim() || null,
                   instagram: instagram.trim() ? instagram.trim().replace(/^@/, '') : null,
                   city: city.trim() || null,
@@ -345,7 +377,7 @@ export default function EditProfileScreen() {
                 setHasInitialBakerProfile(true);
 
                 Alert.alert(
-                  'Perfil Público Ativado!',
+                  'Perfil Comercial Ativado!',
                   'Seu perfil comercial foi criado com sucesso e agora está público! Você pode preencher mais informações abaixo e salvá-las.',
                 );
               } catch (err) {
@@ -400,7 +432,7 @@ export default function EditProfileScreen() {
 
   // The save button only serves to update profile information
   async function handleEdit() {
-    setTouched({ name: true, email: true, phone: true });
+    setTouched({ name: true, email: true, phone: true, whatsapp: true });
 
     const trimmedName = name.trim();
     const trimmedEmail = email.trim().toLowerCase();
@@ -416,23 +448,28 @@ export default function EditProfileScreen() {
       return;
     }
 
-    if (isBakerRole && isPublicProfile && !formattedPhone) {
-      Alert.alert(
-        'Telefone obrigatório',
-        'Para manter o perfil público ativo, é obrigatório cadastrar um telefone de contato.',
-      );
-      return;
-    }
-
-    if (phone.trim() && !E164_REGEX.test(toE164(phone))) {
-      Alert.alert(
-        'Telefone inválido',
-        'O telefone deve estar em formato válido com DDD (ex: (11) 99999-9999).',
-      );
-      return;
-    }
-
     if (isBakerRole && isPublicProfile) {
+      if (!formattedPhone || !E164_REGEX.test(formattedPhone)) {
+        Alert.alert(
+          'Telefone de Validação Obrigatório',
+          'Para manter o perfil comercial ativo, o telefone de validação da conta é obrigatório. Ele permanecerá estritamente privado.',
+        );
+        return;
+      }
+      if (whatsapp.trim() && !E164_REGEX.test(toE164(whatsapp))) {
+        Alert.alert(
+          'WhatsApp comercial inválido',
+          'O WhatsApp comercial deve estar em formato válido com DDD (ex: (11) 99999-9999).',
+        );
+        return;
+      }
+      if (publicName.length > 100) {
+        Alert.alert(
+          'Nome comercial inválido',
+          'O nome comercial deve ter no máximo 100 caracteres.',
+        );
+        return;
+      }
       if (bio.length > 500) {
         Alert.alert('Bio muito longa', 'A bio deve ter no máximo 500 caracteres.');
         return;
@@ -449,6 +486,12 @@ export default function EditProfileScreen() {
         Alert.alert('Bairro inválido', 'O nome do bairro deve ter no máximo 100 caracteres.');
         return;
       }
+    } else if (phone.trim() && !E164_REGEX.test(toE164(phone))) {
+      Alert.alert(
+        'Telefone inválido',
+        'O telefone deve estar em formato válido com DDD (ex: (11) 99999-9999).',
+      );
+      return;
     }
 
     try {
@@ -476,6 +519,8 @@ export default function EditProfileScreen() {
       // 2. The save button updates the public baker profile if it exists
       if (isBakerRole && isPublicProfile && hasInitialBakerProfile) {
         const profileUpdate: BakerProfileUpdateInput = {
+          publicName: publicName.trim() || null,
+          whatsapp: whatsapp.trim() ? toE164(whatsapp) : null,
           bio: bio.trim() || null,
           instagram: instagram.trim() ? instagram.trim().replace(/^@/, '') : null,
           city: city.trim() || null,
@@ -556,7 +601,7 @@ export default function EditProfileScreen() {
                     <Text style={styles.badgeRequiredText}>obrigatório</Text>
                   </View>
                 </View>
-                {touched.name && isNameFieldValid && (
+                {isNameSuccess && (
                   <MaterialCommunityIcons
                     name="check-circle-outline"
                     size={16}
@@ -574,7 +619,7 @@ export default function EditProfileScreen() {
                 containerStyle={[
                   styles.inputContainer,
                   !!nameError && styles.inputError,
-                  touched.name && isNameFieldValid && styles.inputSuccess,
+                  isNameSuccess && styles.inputSuccess,
                 ]}
                 style={styles.inputText}
                 placeholderTextColor={theme.colors.placeholder}
@@ -612,7 +657,7 @@ export default function EditProfileScreen() {
                     <Text style={styles.badgeRequiredText}>obrigatório</Text>
                   </View>
                 </View>
-                {touched.email && isEmailFieldValid && (
+                {isEmailSuccess && (
                   <MaterialCommunityIcons
                     name="check-circle-outline"
                     size={16}
@@ -631,7 +676,7 @@ export default function EditProfileScreen() {
                 containerStyle={[
                   styles.inputContainer,
                   !!emailError && styles.inputError,
-                  touched.email && isEmailFieldValid && styles.inputSuccess,
+                  isEmailSuccess && styles.inputSuccess,
                 ]}
                 style={styles.inputText}
                 placeholderTextColor={theme.colors.placeholder}
@@ -653,24 +698,27 @@ export default function EditProfileScreen() {
               </View>
             </View>
 
-            {/* Phone input */}
+            {/* Personal Phone input */}
             <View style={styles.fieldWrapper}>
               <View style={styles.labelRow}>
                 <View style={styles.labelGroup}>
-                  <Text style={styles.label}>
-                    {isBakerRole ? 'Telefone / WhatsApp Comercial' : 'Telefone'}
-                  </Text>
-                  {isBakerRole && isPublicProfile ? (
-                    <View style={styles.badgeRequired}>
-                      <Text style={styles.badgeRequiredText}>obrigatório</Text>
-                    </View>
-                  ) : (
-                    <View style={styles.badgeOptional}>
-                      <Text style={styles.badgeOptionalText}>opcional</Text>
-                    </View>
-                  )}
+                  <View style={styles.labelWithIcon}>
+                    <Text style={styles.label}>Telefone Pessoal</Text>
+                    <MaterialCommunityIcons
+                      name="lock-outline"
+                      size={14}
+                      color={theme.colors.onSurfaceVariant}
+                    />
+                  </View>
+                  <View style={isPhoneRequired ? styles.badgeRequired : styles.badgeOptional}>
+                    <Text
+                      style={isPhoneRequired ? styles.badgeRequiredText : styles.badgeOptionalText}
+                    >
+                      {isPhoneRequired ? 'obrigatório' : 'opcional'}
+                    </Text>
+                  </View>
                 </View>
-                {touched.phone && phone.trim() && isPhoneFieldValid && (
+                {isPhoneSuccess && (
                   <MaterialCommunityIcons
                     name="check-circle-outline"
                     size={16}
@@ -687,7 +735,7 @@ export default function EditProfileScreen() {
                 containerStyle={[
                   styles.inputContainer,
                   !!phoneError && styles.inputError,
-                  touched.phone && phone.trim() && isPhoneFieldValid && styles.inputSuccess,
+                  isPhoneSuccess && styles.inputSuccess,
                 ]}
                 style={styles.inputText}
                 placeholderTextColor={theme.colors.placeholder}
@@ -705,9 +753,9 @@ export default function EditProfileScreen() {
                   </>
                 ) : (
                   <Text style={styles.helperText}>
-                    {isBakerRole && isPublicProfile
-                      ? 'Obrigatório: clientes poderão enviar mensagem no WhatsApp'
-                      : 'Opcional. Formato com DDD: (XX) 9XXXX-XXXX'}
+                    {isPhoneRequired
+                      ? 'Obrigatório para perfil comercial: utilizado apenas para validação e segurança (permanece privado).'
+                      : 'Confidencial: utilizado apenas para validação e segurança da conta.'}
                   </Text>
                 )}
               </View>
@@ -761,8 +809,10 @@ export default function EditProfileScreen() {
                   <View style={styles.alertBannerTextContainer}>
                     <Text style={styles.alertBannerTitle}>Seu perfil está público</Text>
                     <Text style={styles.alertBannerText}>
-                      As informações abaixo e suas receitas estão visíveis para todos os clientes no
-                      Meu Confeito. Seu e-mail permanece estritamente privado.
+                      O nome da sua conta ({user?.name}) é público no perfil comercial. Você pode
+                      definir um Nome Comercial abaixo para destaque. Seu telefone pessoal e e-mail
+                      permanecem privados — apenas o WhatsApp comercial informado será
+                      compartilhado.
                     </Text>
                   </View>
                 </View>
@@ -777,8 +827,9 @@ export default function EditProfileScreen() {
                   <View style={styles.alertBannerTextContainer}>
                     <Text style={styles.alertBannerTitlePrivate}>Perfil Privado</Text>
                     <Text style={styles.alertBannerText}>
-                      Ative o botão acima para criar e publicar seu perfil de confeiteiro,
-                      permitindo que clientes encontrem suas receitas e façam encomendas.
+                      Ao ativar, o nome da sua conta ({user?.name}) será público para clientes. Você
+                      poderá cadastrar um Nome Comercial opcional e WhatsApp para contato direto com
+                      clientes.
                     </Text>
                   </View>
                 </View>
@@ -815,6 +866,97 @@ export default function EditProfileScreen() {
               {/* Fields for public profile */}
               {isPublicProfile && (
                 <>
+                  {/* Public Name / Store Name input */}
+                  <View style={styles.fieldWrapper}>
+                    <View style={styles.labelRow}>
+                      <View style={styles.labelGroup}>
+                        <Text style={styles.label}>Nome Comercial / Público</Text>
+                        <View style={styles.badgeOptional}>
+                          <Text style={styles.badgeOptionalText}>opcional</Text>
+                        </View>
+                      </View>
+                    </View>
+                    <Input
+                      value={publicName}
+                      placeholder="Ex: Confeitaria Doce Sonho, Atelier Gourmet"
+                      autoCapitalize="words"
+                      maxLength={100}
+                      onChangeText={setPublicName}
+                      containerStyle={styles.inputContainer}
+                      style={styles.inputText}
+                      placeholderTextColor={theme.colors.placeholder}
+                      leftIcon={
+                        <MaterialCommunityIcons
+                          name="storefront-outline"
+                          size={20}
+                          color={theme.colors.onSurfaceVariant}
+                        />
+                      }
+                    />
+                    <Text style={styles.helperText}>
+                      Opcional. Exibido no lugar do nome da conta. Lembre-se: o nome da sua conta (
+                      {user?.name}) continuará público.
+                    </Text>
+                  </View>
+
+                  {/* Commercial WhatsApp input */}
+                  <View style={styles.fieldWrapper}>
+                    <View style={styles.labelRow}>
+                      <View style={styles.labelGroup}>
+                        <Text style={styles.label}>WhatsApp Comercial</Text>
+                        <View style={styles.badgeOptional}>
+                          <Text style={styles.badgeOptionalText}>opcional</Text>
+                        </View>
+                      </View>
+                      {isWhatsAppSuccess && (
+                        <MaterialCommunityIcons
+                          name="check-circle-outline"
+                          size={16}
+                          color={theme.colors.success}
+                        />
+                      )}
+                    </View>
+                    <Input
+                      value={whatsapp}
+                      placeholder="(11) 99999-9999"
+                      keyboardType="phone-pad"
+                      onChangeText={handleWhatsAppChange}
+                      onBlur={() => setTouched((prev) => ({ ...prev, whatsapp: true }))}
+                      containerStyle={[
+                        styles.inputContainer,
+                        !!whatsAppError && styles.inputError,
+                        isWhatsAppSuccess && styles.inputSuccess,
+                      ]}
+                      style={styles.inputText}
+                      placeholderTextColor={theme.colors.placeholder}
+                      leftIcon={
+                        <MaterialCommunityIcons
+                          name="whatsapp"
+                          size={20}
+                          color={theme.colors.onSurfaceVariant}
+                        />
+                      }
+                    />
+                    <View style={styles.helperRow}>
+                      {whatsAppError ? (
+                        <>
+                          <MaterialCommunityIcons
+                            name="alert-circle-outline"
+                            size={14}
+                            color={theme.colors.error}
+                            style={styles.helperIcon}
+                          />
+                          <Text style={styles.errorText}>{whatsAppError}</Text>
+                        </>
+                      ) : (
+                        <Text style={styles.helperText}>
+                          Opcional. Se não informar nada, o botão de WhatsApp será ocultado (seu
+                          telefone pessoal nunca é divulgado).
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+
                   {/* Location Section handled by expo-location */}
                   <View style={styles.locationSection}>
                     <View style={styles.locationHeaderRow}>
@@ -960,7 +1102,7 @@ export default function EditProfileScreen() {
                     </View>
                     <Input
                       value={bio}
-                      placeholder="Conte aos clientes sobre sua história, receitas especiais, encomendas e paixão pela confeitaria..."
+                      placeholder="Conte aos clientes sobre sua história, receitas especiais, criações e paixão pela confeitaria..."
                       multiline
                       numberOfLines={4}
                       maxLength={500}

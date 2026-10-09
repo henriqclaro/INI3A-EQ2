@@ -4,6 +4,7 @@ import {
   BakerProfileUpdateInput,
   NearbyBakersQuery,
   NearbyBakersResponse,
+  NeighborhoodBakersQuery,
   PublicBakerProfile,
 } from '../types/baker-profile';
 import {
@@ -76,6 +77,43 @@ export const BakerProfileService = {
     }
 
     const response = await api.get<NearbyBakersResponse>('/baker-profiles', {
+      params: queryParams,
+    });
+    return response.data;
+  },
+
+  getBakersByNeighborhood: async (
+    params: NeighborhoodBakersQuery,
+  ): Promise<NearbyBakersResponse> => {
+    const queryParams: Record<string, string> = {};
+
+    if (params.search !== undefined && params.search.trim()) {
+      queryParams.search = params.search.trim();
+    }
+
+    if (params.query !== undefined && params.query.trim()) {
+      queryParams.query = params.query.trim();
+    }
+
+    if (params.neighborhood !== undefined && params.neighborhood.trim()) {
+      queryParams.neighborhood = params.neighborhood.trim();
+    }
+
+    if (params.page !== undefined) {
+      queryParams.page = params.page.toString();
+    }
+
+    if (params.tags) {
+      if (Array.isArray(params.tags)) {
+        if (params.tags.length > 0) {
+          queryParams.tags = params.tags.join(',');
+        }
+      } else if (params.tags.trim()) {
+        queryParams.tags = params.tags.trim();
+      }
+    }
+
+    const response = await api.get<NearbyBakersResponse>('/baker-profiles/neighborhood', {
       params: queryParams,
     });
     return response.data;

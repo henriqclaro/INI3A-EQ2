@@ -81,7 +81,7 @@ export function ProductionCard({
         </View>
       </View>
 
-      {production.expirationDate && (
+      {Boolean(production.expirationDate) && (
         <View style={styles.expirationRow}>
           <MaterialCommunityIcons
             name="calendar-clock"

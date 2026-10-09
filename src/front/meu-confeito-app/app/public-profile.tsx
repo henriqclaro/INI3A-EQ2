@@ -59,8 +59,8 @@ export default function PublicProfileScreen() {
   };
 
   const handleOpenWhatsApp = async () => {
-    if (!publicProfile?.phone) return;
-    const cleanDigits = publicProfile.phone.replace(/\D/g, '');
+    if (!publicProfile?.whatsapp) return;
+    const cleanDigits = publicProfile.whatsapp.replace(/\D/g, '');
     const phoneWithCountry = cleanDigits.startsWith('55') ? cleanDigits : `55${cleanDigits}`;
     const url = `https://wa.me/${phoneWithCountry}`;
 
@@ -69,11 +69,11 @@ export default function PublicProfileScreen() {
       if (canOpen) {
         await Linking.openURL(url);
       } else {
-        await Linking.openURL(`tel:${publicProfile.phone}`);
+        await Linking.openURL(`tel:${publicProfile.whatsapp}`);
       }
     } catch (error) {
-      console.error('Error opening phone link:', error);
-      Alert.alert('Contato', `Telefone: ${formatPhoneInput(publicProfile.phone)}`);
+      console.error('Error opening WhatsApp link:', error);
+      Alert.alert('Contato WhatsApp', `Número: ${formatPhoneInput(publicProfile.whatsapp)}`);
     }
   };
 
@@ -213,7 +213,23 @@ export default function PublicProfileScreen() {
                 </View>
               </View>
 
-              <Text style={styles.bakerName}>{publicProfile.name}</Text>
+              <Text style={styles.bakerName}>
+                {publicProfile.publicName?.trim() || publicProfile.name}
+              </Text>
+
+              {publicProfile.publicName?.trim() &&
+              publicProfile.publicName.trim() !== publicProfile.name ? (
+                <View style={styles.accountAttributionRow}>
+                  <MaterialCommunityIcons
+                    name="account-outline"
+                    size={14}
+                    color={theme.colors.onSurfaceVariant}
+                  />
+                  <Text style={styles.accountAttributionText}>
+                    Conta pública: {publicProfile.name}
+                  </Text>
+                </View>
+              ) : null}
 
               {locationText ? (
                 <View style={styles.locationContainer}>
@@ -250,7 +266,7 @@ export default function PublicProfileScreen() {
 
               {/* Action buttons (WhatsApp, Instagram) */}
               <View style={styles.actionsContainer}>
-                {publicProfile.phone ? (
+                {publicProfile.whatsapp ? (
                   <TouchableOpacity
                     style={[styles.actionBtn, styles.actionBtnPrimary]}
                     onPress={handleOpenWhatsApp}
@@ -584,6 +600,18 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       color: theme.colors.espressoDark,
       textAlign: 'center',
       marginTop: 8,
+    },
+    accountAttributionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 4,
+      marginTop: 4,
+    },
+    accountAttributionText: {
+      fontFamily: theme.typography.bodySm.fontFamily,
+      fontSize: 13,
+      color: theme.colors.onSurfaceVariant,
     },
     locationContainer: {
       flexDirection: 'row',

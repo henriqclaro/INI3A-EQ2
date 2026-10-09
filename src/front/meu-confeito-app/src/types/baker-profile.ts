@@ -11,8 +11,10 @@ export interface BakerTag {
 export interface BakerProfile {
   userId: string;
   name: string;
+  publicName: string | null;
   email: string;
   phone: string | null;
+  whatsapp: string | null;
   pfpUrl: string | null;
   bio: string | null;
   instagram: string | null;
@@ -27,8 +29,10 @@ export interface BakerProfile {
 export interface PublicBakerProfile {
   userId: string;
   name: string;
+  publicName: string | null;
   pfpUrl: string | null;
   phone: string | null;
+  whatsapp: string | null;
   bio: string | null;
   instagram: string | null;
   neighborhood: string | null;
@@ -37,28 +41,35 @@ export interface PublicBakerProfile {
 }
 
 export interface BakerProfileRegisterInput {
+  publicName?: string | null;
   bio?: string | null;
   instagram?: string | null;
+  whatsapp?: string | null;
   neighborhood?: string | null;
   city?: string | null;
   location?: BakerProfileLocation | null;
   tagIds?: number[];
+  tags?: number[];
 }
 
 export interface BakerProfileUpdateInput {
+  publicName?: string | null;
   bio?: string | null;
   instagram?: string | null;
+  whatsapp?: string | null;
   neighborhood?: string | null;
   city?: string | null;
   location?: BakerProfileLocation | null;
   tagIds?: number[];
+  tags?: number[];
 }
 
 export interface NearbyBakerItem {
   userId: string;
   name: string;
+  publicName: string | null;
   pfpUrl: string | null;
-  distance: number;
+  distance?: number | null;
   neighborhood: string | null;
   city: string | null;
   tags?: BakerTag[];
@@ -72,7 +83,22 @@ export interface NearbyBakersQuery {
   tags?: string[] | string;
 }
 
+export interface NeighborhoodBakersQuery {
+  search?: string;
+  query?: string;
+  neighborhood?: string;
+  page?: number;
+  tags?: string[] | string;
+}
+
 export interface NearbyBakersResponse {
+  data: {
+    bakerProfiles: NearbyBakerItem[];
+  };
+  message?: string;
+}
+
+export interface NeighborhoodBakersResponse {
   data: {
     bakerProfiles: NearbyBakerItem[];
   };

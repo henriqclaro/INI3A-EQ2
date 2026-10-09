@@ -52,7 +52,7 @@ function CustomerHomeScreen() {
             <View style={styles.header}>
               <Text style={styles.title}>Olá, {firstName}!</Text>
               <Text style={styles.subtitle}>
-                Descubra confeitarias e doces artesanais perto de você.
+                Descubra confeitarias e doces artesanais por proximidade ou por cidade.
               </Text>
             </View>
           }
