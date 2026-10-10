@@ -813,12 +813,12 @@ export class RecipeService {
       throw new NotFoundError('Recipe not found', 'RESOURCE_NOT_FOUND');
     }
 
-    if (
-      recipe.status !== 'PUBLISHED' &&
-      recipe.userId !== context.userId &&
-      context.userRole !== 'ADMIN'
-    ) {
-      throw new NotFoundError('Recipe not found', 'RESOURCE_NOT_FOUND');
+    if (recipe.status !== 'PUBLISHED') {
+      throw new ForbiddenError('Only published recipes can be reviewed');
+    }
+
+    if (recipe.userId === context.userId) {
+      throw new ForbiddenError('Recipe creator cannot review their own recipe');
     }
 
     const existingReview = await prisma.recipeReview.findUnique({

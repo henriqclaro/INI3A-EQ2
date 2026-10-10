@@ -219,7 +219,7 @@ paths:
         '400':
           description: Erro na validação dos dados
         '403':
-          description: Ação negada por falta de privilégios
+          description: Ação negada por falta de privilégios, receita não publicada ou criador tentando avaliar a própria receita
         '404':
           description: Receita não encontrada
         '409':
