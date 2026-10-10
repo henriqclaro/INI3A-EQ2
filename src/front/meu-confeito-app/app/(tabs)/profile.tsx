@@ -235,6 +235,16 @@ export default function ProfileScreen() {
             />
           )}
 
+          {/* Reviewed Recipes Button (Bakers only) */}
+          {isBakerRole && (
+            <MenuOptionButton
+              title="Minhas Avaliações"
+              subtitle="Receitas da comunidade que você avaliou"
+              icon="star-outline"
+              onPress={() => router.push('/my-reviews')}
+            />
+          )}
+
           {/* Button to visualize how public profile looks (Bakers only) */}
           {isBakerRole && hasBakerProfile ? (
             <MenuOptionButton

@@ -80,3 +80,17 @@ export {
   PurchaseProjectionRequest,
   PurchaseProjectionResponse,
 } from './analytics';
+export {
+  CreateReviewInput,
+  CreateReviewResponse,
+  RatingCounts,
+  RecipeReviewItem,
+  RecipeReviewUser,
+  RecipeReviewsData,
+  RecipeReviewsResponse,
+  SelectUserReviewsResponse,
+  UpdateReviewInput,
+  UpdateReviewResponse,
+  UserReviewItem,
+  UserReviewSummaryRecipe,
+} from './review';

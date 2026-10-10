@@ -20,6 +20,7 @@ import {
   CustomizeRecipeModal,
   RecipeIngredientsSection,
   RecipeInstructionsSection,
+  RecipeReviewsSection,
 } from '@/src/components/recipe';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
@@ -1016,6 +1017,20 @@ export default function RecipeScreen() {
                 )}
               </View>
             </View>
+
+            <View style={styles.bottomSectionWrapper}>
+              <RecipeReviewsSection
+                recipeId={recipe.id}
+                recipeTitle={recipe.title}
+                isPublished={recipe.status === 'PUBLISHED'}
+                isOwner={isOwner}
+                initialUserReview={recipe.userReview}
+                initialTotalReviews={recipe.totalReviews}
+                initialAverageRating={recipe.averageRating}
+                initialRatingCounts={recipe.ratingCounts}
+                onReviewChanged={refetch}
+              />
+            </View>
           </ScrollView>
         )}
 
@@ -1077,6 +1092,10 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       flexDirection: isDesktop ? 'row' : 'column',
       alignItems: 'flex-start',
       gap: isDesktop ? 32 : 0,
+    },
+    bottomSectionWrapper: {
+      width: '100%',
+      maxWidth: isDesktop ? 1200 : 720,
     },
     leftColumn: {
       flex: isDesktop ? 1 : undefined,

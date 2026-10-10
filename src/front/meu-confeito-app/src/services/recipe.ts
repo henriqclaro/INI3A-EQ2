@@ -7,6 +7,7 @@ import {
   UpdateRecipeVisibilityInput,
   UpdateRecipeVisibilityResponseData,
 } from '../types/recipe';
+import { CreateReviewResponse, RecipeReviewsResponse, UpdateReviewResponse } from '../types/review';
 import { api } from './api';
 
 export interface RecipeResponse {
@@ -64,6 +65,26 @@ export const RecipeService = {
   },
   update: async (recipeId: string, data: RecipeUpdateInput) => {
     const response = await api.patch<RecipeResponse>(`/recipes/${recipeId}`, data);
+    return response.data;
+  },
+  getReviews: async (recipeId: string) => {
+    const response = await api.get<RecipeReviewsResponse>(`/recipes/${recipeId}/reviews`);
+    return response.data;
+  },
+  createReview: async (recipeId: string, rating: number) => {
+    const response = await api.post<CreateReviewResponse>(`/recipes/${recipeId}/reviews`, {
+      rating,
+    });
+    return response.data;
+  },
+  updateReview: async (recipeId: string, rating: number) => {
+    const response = await api.patch<UpdateReviewResponse>(`/recipes/${recipeId}/reviews`, {
+      rating,
+    });
+    return response.data;
+  },
+  deleteReview: async (recipeId: string) => {
+    const response = await api.delete(`/recipes/${recipeId}/reviews`);
     return response.data;
   },
 };

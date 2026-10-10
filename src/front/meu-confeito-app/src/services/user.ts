@@ -1,6 +1,7 @@
 import {
   PartialRecipe,
   SaveRecipeResponse,
+  SelectUserReviewsResponse,
   SelectUserSavesResponse,
   UserInventoryItem,
 } from '../types';
@@ -128,6 +129,10 @@ export const UserService = {
   },
   removeSavedRecipe: async (userId: string, recipeId: string) => {
     const response = await api.delete(`/users/${userId}/saves`, { data: { recipeId } });
+    return response.data;
+  },
+  getUserReviews: async (userId: string) => {
+    const response = await api.get<SelectUserReviewsResponse>(`/users/${userId}/reviews`);
     return response.data;
   },
 };

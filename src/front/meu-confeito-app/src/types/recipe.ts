@@ -1,4 +1,5 @@
 import { RecipeIngredient } from './ingredient';
+import { RatingCounts, RecipeReviewItem } from './review';
 import { PartialTag } from './tag';
 
 export type StandardUnit = 'G' | 'KG' | 'ML' | 'L' | 'UN';
@@ -102,6 +103,8 @@ export interface FullRecipe {
   totalSaves: number;
   totalReviews: number;
   averageRating: number | string;
+  userReview?: RecipeReviewItem | null;
+  ratingCounts?: RatingCounts;
 
   profitMargin: number | string;
   overhead: number | string;

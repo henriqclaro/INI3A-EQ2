@@ -71,3 +71,11 @@ export {
   type ShowcaseRecipePickerModalProps,
 } from '@/src/components/profile';
 export { DateInput, type DateInputProps } from '@/src/components/DateInput';
+export {
+  StarRatingInput,
+  RecipeReviewsSection,
+  ReviewedRecipeCard,
+  type StarRatingInputProps,
+  type RecipeReviewsSectionProps,
+  type ReviewedRecipeCardProps,
+} from '@/src/components/recipe';
