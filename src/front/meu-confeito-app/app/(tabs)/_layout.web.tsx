@@ -21,6 +21,10 @@ export default function TabsWebLayout() {
 
   const isCustomerRole = user?.role?.trim().toUpperCase() === 'CUSTOMER';
 
+  if (!user) {
+    return null;
+  }
+
   return (
     <View style={styles.container}>
       <Tabs

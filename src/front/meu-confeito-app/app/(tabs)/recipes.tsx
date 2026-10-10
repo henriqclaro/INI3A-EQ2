@@ -26,6 +26,7 @@ import { PartialRecipe } from '@/src/types';
 export default function RecipesScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
+  const isBakerRole = user?.role?.trim().toUpperCase() === 'BAKER';
   const { recipes, isLoading, refetch } = useUserRecipes(user?.id);
   const { width } = useWindowDimensions();
   const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
@@ -281,6 +282,10 @@ export default function RecipesScreen() {
 
   const itemSeparator = useCallback(() => <View style={styles.separator} />, [styles.separator]);
   const keyExtractor = useCallback((item: PartialRecipe) => item.id, []);
+
+  if (!user || !isBakerRole) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>

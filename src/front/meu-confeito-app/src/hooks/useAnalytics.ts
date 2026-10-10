@@ -6,6 +6,7 @@ import {
   ProfitSummaryData,
   PurchaseProjectionData,
 } from '../types/analytics';
+import { Storage } from '../utils/storage';
 
 export type AnalyticsPeriodPreset = '7d' | '15d' | '30d' | 'month';
 
@@ -43,40 +44,57 @@ export const getDatesForPreset = (
   };
 };
 
-export function useProfitSummary(initialPreset: AnalyticsPeriodPreset = '30d') {
+export function useProfitSummary(
+  initialPreset: AnalyticsPeriodPreset = '30d',
+  isEnabled: boolean = true,
+) {
   const [activePreset, setActivePreset] = useState<AnalyticsPeriodPreset>(initialPreset);
   const [dateRange, setDateRange] = useState(getDatesForPreset(initialPreset));
   const [summary, setSummary] = useState<ProfitSummaryData | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(isEnabled);
   const [hasError, setHasError] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const fetchSummary = useCallback(async (range: { startDate: string; endDate: string }) => {
-    setIsLoading(true);
-    setHasError(false);
-    setErrorMessage(null);
+  const fetchSummary = useCallback(
+    async (range: { startDate: string; endDate: string }) => {
+      if (!isEnabled) {
+        setIsLoading(false);
+        return;
+      }
 
-    try {
-      const response = await AnalyticsService.getProfitSummary({
-        startDate: range.startDate,
-        endDate: range.endDate,
-      });
-      setSummary(response.data.summary);
-    } catch (err: unknown) {
-      setHasError(true);
-      const apiErr = err as {
-        response?: { data?: { message?: string } };
-        message?: string;
-      };
-      const msg =
-        apiErr?.response?.data?.message ||
-        apiErr?.message ||
-        'Não foi possível carregar o demonstrativo de lucros.';
-      setErrorMessage(msg);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+      const token = Storage.getFastItem('access_token') || (await Storage.getItem('access_token'));
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      setHasError(false);
+      setErrorMessage(null);
+
+      try {
+        const response = await AnalyticsService.getProfitSummary({
+          startDate: range.startDate,
+          endDate: range.endDate,
+        });
+        setSummary(response.data.summary);
+      } catch (err: unknown) {
+        setHasError(true);
+        const apiErr = err as {
+          response?: { data?: { message?: string } };
+          message?: string;
+        };
+        const msg =
+          apiErr?.response?.data?.message ||
+          apiErr?.message ||
+          'Não foi possível carregar o demonstrativo de lucros.';
+        setErrorMessage(msg);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [isEnabled],
+  );
 
   const changePreset = useCallback(
     (preset: AnalyticsPeriodPreset) => {
@@ -105,6 +123,21 @@ export function useProfitSummary(initialPreset: AnalyticsPeriodPreset = '30d') {
     let isMounted = true;
 
     async function initialLoad() {
+      if (!isEnabled) {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      const token = Storage.getFastItem('access_token') || (await Storage.getItem('access_token'));
+      if (!token) {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+        return;
+      }
+
       setIsLoading(true);
       setHasError(false);
       setErrorMessage(null);
@@ -142,7 +175,7 @@ export function useProfitSummary(initialPreset: AnalyticsPeriodPreset = '30d') {
     return () => {
       isMounted = false;
     };
-  }, [dateRange.startDate, dateRange.endDate]);
+  }, [dateRange.startDate, dateRange.endDate, isEnabled]);
 
   return {
     summary,

@@ -28,6 +28,7 @@ type AnalyticsTab = 'profit' | 'projection';
 export default function ReportsScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
+  const isBakerRole = user?.role?.trim().toUpperCase() === 'BAKER';
   const { width } = useWindowDimensions();
   const [activeTab, setActiveTab] = useState<AnalyticsTab>('profit');
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -49,7 +50,7 @@ export default function ReportsScreen() {
     dateRange,
     changePreset,
     refetch: refetchProfit,
-  } = useProfitSummary('30d');
+  } = useProfitSummary('30d', isBakerRole);
 
   const {
     plannedProductions,
@@ -78,6 +79,10 @@ export default function ReportsScreen() {
   }, [activeTab, refetchProfit, plannedProductions.length, calculateProjection]);
 
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
+
+  if (!user || !isBakerRole) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>

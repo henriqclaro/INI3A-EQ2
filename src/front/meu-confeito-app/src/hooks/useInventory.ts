@@ -12,14 +12,26 @@ import {
   WasteRequest,
   WasteResponse,
 } from '../types/inventory';
+import { Storage } from '../utils/storage';
 
-export function useInventory() {
+export function useInventory(isEnabled: boolean = true) {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(isEnabled);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchInventory = useCallback(async () => {
+    if (!isEnabled) {
+      setIsLoading(false);
+      return;
+    }
+
+    const token = Storage.getFastItem('access_token') || (await Storage.getItem('access_token'));
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
@@ -32,12 +44,27 @@ export function useInventory() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [isEnabled]);
 
   useEffect(() => {
     let isMounted = true;
 
     async function load() {
+      if (!isEnabled) {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      const token = Storage.getFastItem('access_token') || (await Storage.getItem('access_token'));
+      if (!token) {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+        return;
+      }
+
       try {
         setIsLoading(true);
         setError(null);
@@ -63,7 +90,7 @@ export function useInventory() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [isEnabled]);
 
   const registerPurchase = async (data: PurchaseRequest): Promise<PurchaseResponse> => {
     try {
@@ -136,12 +163,26 @@ export function useInventory() {
   };
 }
 
-export function useInventoryTransactions(query?: TransactionQueryRequest) {
+export function useInventoryTransactions(
+  query?: TransactionQueryRequest,
+  isEnabled: boolean = true,
+) {
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(isEnabled);
   const [error, setError] = useState<string | null>(null);
 
   const fetchTransactions = useCallback(async () => {
+    if (!isEnabled) {
+      setIsLoading(false);
+      return;
+    }
+
+    const token = Storage.getFastItem('access_token') || (await Storage.getItem('access_token'));
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
@@ -154,12 +195,27 @@ export function useInventoryTransactions(query?: TransactionQueryRequest) {
     } finally {
       setIsLoading(false);
     }
-  }, [query]);
+  }, [query, isEnabled]);
 
   useEffect(() => {
     let isMounted = true;
 
     async function load() {
+      if (!isEnabled) {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      const token = Storage.getFastItem('access_token') || (await Storage.getItem('access_token'));
+      if (!token) {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+        return;
+      }
+
       try {
         setIsLoading(true);
         setError(null);
@@ -187,7 +243,7 @@ export function useInventoryTransactions(query?: TransactionQueryRequest) {
     return () => {
       isMounted = false;
     };
-  }, [query]);
+  }, [query, isEnabled]);
 
   return {
     transactions,

@@ -49,8 +49,8 @@ export default function ProfileScreen() {
         style: 'destructive',
         onPress: async () => {
           try {
-            await signOut();
             router.replace('/');
+            await signOut();
           } catch (error) {
             console.error('Error signing out: ', error);
             Alert.alert('Erro', 'Erro ao sair da conta. Tente novamente.');

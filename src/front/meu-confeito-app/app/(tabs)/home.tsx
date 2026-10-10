@@ -79,13 +79,14 @@ function BakerHomeScreen() {
     [theme, isSmallScreen, isDesktop, isLargeDesktop],
   );
 
+  const isBakerRole = user?.role?.trim().toUpperCase() === 'BAKER';
   const { recipes, refetch: refetchRecipes } = useUserRecipes(user?.id);
-  const { inventory, refetch: refetchInventory } = useInventory();
+  const { inventory, refetch: refetchInventory } = useInventory(isBakerRole);
   const {
     productions,
     isLoading: isLoadingProductions,
     refetch: refetchProductions,
-  } = useProductions();
+  } = useProductions(undefined, isBakerRole);
   const { savedRecipes, refetch: refetchSavedRecipes } = useSavedRecipes(user?.id);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -448,6 +449,11 @@ function BakerHomeScreen() {
 
 export default function HomeScreen() {
   const { user } = useAuth();
+
+  if (!user) {
+    return null;
+  }
+
   const isCustomerRole = user?.role?.trim().toUpperCase() === 'CUSTOMER';
 
   if (isCustomerRole) {

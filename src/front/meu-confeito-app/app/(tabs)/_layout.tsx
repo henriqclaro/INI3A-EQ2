@@ -27,6 +27,10 @@ export default function TabsLayout() {
     isCustomerRole,
   });
 
+  if (!user) {
+    return null;
+  }
+
   return (
     <View style={styles.container} {...swipeHandlers}>
       <Tabs

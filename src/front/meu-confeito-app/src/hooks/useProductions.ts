@@ -6,14 +6,26 @@ import {
   ProductionQueryParams,
   RegisterProductionInput,
 } from '../types/production';
+import { Storage } from '../utils/storage';
 
-export function useProductions(initialParams?: ProductionQueryParams) {
+export function useProductions(initialParams?: ProductionQueryParams, isEnabled: boolean = true) {
   const [productions, setProductions] = useState<ProductionItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(isEnabled);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProductions = useCallback(
     async (params?: ProductionQueryParams) => {
+      if (!isEnabled) {
+        setIsLoading(false);
+        return;
+      }
+
+      const token = Storage.getFastItem('access_token') || (await Storage.getItem('access_token'));
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
         setIsLoading(true);
         setError(null);
@@ -27,13 +39,28 @@ export function useProductions(initialParams?: ProductionQueryParams) {
         setIsLoading(false);
       }
     },
-    [initialParams],
+    [initialParams, isEnabled],
   );
 
   useEffect(() => {
     let isMounted = true;
 
     async function load() {
+      if (!isEnabled) {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      const token = Storage.getFastItem('access_token') || (await Storage.getItem('access_token'));
+      if (!token) {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+        return;
+      }
+
       try {
         setIsLoading(true);
         setError(null);
@@ -58,7 +85,7 @@ export function useProductions(initialParams?: ProductionQueryParams) {
     return () => {
       isMounted = false;
     };
-  }, [initialParams]);
+  }, [initialParams, isEnabled]);
 
   const cancelProduction = async (id: string) => {
     try {

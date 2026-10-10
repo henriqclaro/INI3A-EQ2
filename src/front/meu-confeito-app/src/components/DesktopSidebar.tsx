@@ -73,8 +73,8 @@ export function DesktopSidebar({
         style: 'destructive',
         onPress: async () => {
           try {
-            await signOut();
             router.replace('/');
+            await signOut();
           } catch (error) {
             console.error('Error signing out:', error);
           }

@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const refreshToken = await Storage.getItem('refresh_token');
 
-      if (refreshToken) {
+      if (refreshToken && refreshToken !== 'undefined' && refreshToken !== 'null') {
         await AuthService.logOut(refreshToken).catch((err) => {
           console.warn('Remote logout failed, proceeding with local logout:', err);
         });

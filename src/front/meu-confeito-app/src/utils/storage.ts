@@ -10,10 +10,19 @@ const inMemoryCache = new Map<string, string | null>();
 
 export const Storage = {
   getFastItem(key: string): string | null {
-    return inMemoryCache.get(key) ?? null;
+    const item = inMemoryCache.get(key) ?? null;
+    if (item === 'undefined' || item === 'null') {
+      return null;
+    }
+    return item;
   },
 
   async setItem(key: string, value: string): Promise<void> {
+    if (!value || value === 'undefined' || value === 'null') {
+      await this.removeItem(key);
+      return;
+    }
+
     inMemoryCache.set(key, value);
 
     if (Platform.OS === 'web') {
@@ -34,7 +43,12 @@ export const Storage = {
 
   async getItem(key: string): Promise<string | null> {
     if (inMemoryCache.has(key)) {
-      return inMemoryCache.get(key) ?? null;
+      const cached = inMemoryCache.get(key) ?? null;
+      if (cached === 'undefined' || cached === 'null') {
+        inMemoryCache.delete(key);
+        return null;
+      }
+      return cached;
     }
 
     let value: string | null = null;
@@ -61,6 +75,10 @@ export const Storage = {
           // Ignore
         }
       }
+    }
+
+    if (value === 'undefined' || value === 'null') {
+      value = null;
     }
 
     inMemoryCache.set(key, value);
