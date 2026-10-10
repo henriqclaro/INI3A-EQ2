@@ -8,32 +8,61 @@ import {
   useState,
 } from 'react';
 
-import { AppTheme, darkTheme, lightTheme } from '../theme/themes';
+import {
+  AppTheme,
+  darkTheme,
+  highContrastDarkTheme,
+  highContrastLightTheme,
+  lightTheme,
+  oledDarkTheme,
+} from '../theme/themes';
 import { Storage } from '../utils/storage';
 
 export type ThemeMode = 'light' | 'dark';
 
-interface ThemeContextType {
+export interface ThemeContextType {
   theme: AppTheme;
   currentMode: ThemeMode;
   isDarkMode: boolean;
+  isHighContrast: boolean;
+  isPureBlack: boolean;
+  isPureBlackAvailable: boolean;
   setMode: (mode: ThemeMode) => void;
   toggleTheme: () => void;
+  setIsHighContrast: (isEnabled: boolean) => void;
+  toggleHighContrast: () => void;
+  setIsPureBlack: (isEnabled: boolean) => void;
+  togglePureBlack: () => void;
 }
 
 const THEME_STORAGE_KEY = 'theme_mode';
+const HIGH_CONTRAST_STORAGE_KEY = 'theme_high_contrast';
+const PURE_BLACK_STORAGE_KEY = 'theme_pure_black';
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [themeMode, setThemeMode] = useState<ThemeMode>('light');
+  const [isHighContrast, setIsHighContrastState] = useState<boolean>(false);
+  const [isPureBlack, setIsPureBlackState] = useState<boolean>(false);
 
   useEffect(() => {
     async function loadStoredTheme() {
       try {
-        const storedTheme = await Storage.getItem(THEME_STORAGE_KEY);
+        const [storedTheme, storedHighContrast, storedPureBlack] = await Promise.all([
+          Storage.getItem(THEME_STORAGE_KEY),
+          Storage.getItem(HIGH_CONTRAST_STORAGE_KEY),
+          Storage.getItem(PURE_BLACK_STORAGE_KEY),
+        ]);
+
         if (storedTheme === 'dark' || storedTheme === 'light') {
           setThemeMode(storedTheme);
+        }
+        if (storedHighContrast !== null) {
+          setIsHighContrastState(storedHighContrast === 'true');
+        }
+        if (storedPureBlack !== null) {
+          setIsPureBlackState(storedPureBlack === 'true');
         }
       } catch (error) {
         console.error('Error loading stored theme mode:', error);
@@ -60,18 +89,82 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const handleSetHighContrast = useCallback((isEnabled: boolean) => {
+    setIsHighContrastState(isEnabled);
+    Storage.setItem(HIGH_CONTRAST_STORAGE_KEY, String(isEnabled)).catch((error) => {
+      console.error('Error saving high contrast mode to storage:', error);
+    });
+  }, []);
+
+  const toggleHighContrast = useCallback(() => {
+    setIsHighContrastState((prev) => {
+      const isNextValue = !prev;
+      Storage.setItem(HIGH_CONTRAST_STORAGE_KEY, String(isNextValue)).catch((error) => {
+        console.error('Error saving high contrast mode to storage:', error);
+      });
+      return isNextValue;
+    });
+  }, []);
+
+  const handleSetPureBlack = useCallback((isEnabled: boolean) => {
+    setIsPureBlackState(isEnabled);
+    Storage.setItem(PURE_BLACK_STORAGE_KEY, String(isEnabled)).catch((error) => {
+      console.error('Error saving pure black mode to storage:', error);
+    });
+  }, []);
+
+  const togglePureBlack = useCallback(() => {
+    setIsPureBlackState((prev) => {
+      const isNextValue = !prev;
+      Storage.setItem(PURE_BLACK_STORAGE_KEY, String(isNextValue)).catch((error) => {
+        console.error('Error saving pure black mode to storage:', error);
+      });
+      return isNextValue;
+    });
+  }, []);
+
   const isDarkMode = themeMode === 'dark';
-  const theme = isDarkMode ? darkTheme : lightTheme;
+  const isPureBlackAvailable = isDarkMode && !isHighContrast;
+
+  const theme = useMemo(() => {
+    if (isHighContrast) {
+      return isDarkMode ? highContrastDarkTheme : highContrastLightTheme;
+    }
+    if (isDarkMode && isPureBlack) {
+      return oledDarkTheme;
+    }
+    return isDarkMode ? darkTheme : lightTheme;
+  }, [isDarkMode, isHighContrast, isPureBlack]);
 
   const contextValue = useMemo(
     () => ({
       theme,
       currentMode: themeMode,
       isDarkMode,
+      isHighContrast,
+      isPureBlack,
+      isPureBlackAvailable,
       setMode: handleSetMode,
       toggleTheme,
+      setIsHighContrast: handleSetHighContrast,
+      toggleHighContrast,
+      setIsPureBlack: handleSetPureBlack,
+      togglePureBlack,
     }),
-    [theme, themeMode, isDarkMode, handleSetMode, toggleTheme],
+    [
+      theme,
+      themeMode,
+      isDarkMode,
+      isHighContrast,
+      isPureBlack,
+      isPureBlackAvailable,
+      handleSetMode,
+      toggleTheme,
+      handleSetHighContrast,
+      toggleHighContrast,
+      handleSetPureBlack,
+      togglePureBlack,
+    ],
   );
 
   return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>;

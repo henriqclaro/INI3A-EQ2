@@ -481,4 +481,280 @@ export const darkTheme: AppTheme = {
   breakpoints,
 };
 
+export const oledDarkColors = {
+  ...darkColors,
+  background: '#000000',
+  surface: '#000000',
+  surfaceDim: '#000000',
+  surfaceBright: '#12080A',
+  surfaceContainerLowest: '#000000',
+  surfaceContainerLow: '#0A0405',
+  surfaceContainer: '#12080A',
+  surfaceContainerHigh: '#1C0E11',
+  surfaceContainerHighest: '#261317',
+  surfaceVariant: '#1A0C0F',
+  borderSubtle: '#1F0E12',
+  colorBackdrop: 'rgba(0, 0, 0, 0.85)',
+};
+
+export const oledDarkTheme: AppTheme = {
+  ...darkTheme,
+  colors: {
+    ...darkTheme.colors,
+    ...oledDarkColors,
+    pitchBackground: '#000000',
+    backdrop: oledDarkColors.colorBackdrop,
+    secBorder: oledDarkColors.outlineVariant,
+    secondaryText: oledDarkColors.onSurfaceVariant,
+    mediumGray: oledDarkColors.onSurfaceVariant,
+    darkGray: oledDarkColors.espressoDark,
+    textMuted: oledDarkColors.onSurfaceVariant,
+    textSecondary: oledDarkColors.onSurfaceVariant,
+    onSurfaceDisabled: oledDarkColors.onSurfaceVariant,
+  },
+};
+
+export const highContrastLightColors = {
+  // Base & Surfaces
+  background: '#FFFFFF',
+  surface: '#FFFFFF',
+  surfaceDim: '#F6EDDC',
+  surfaceBright: '#FFFFFF',
+  surfaceContainerLowest: '#FFFFFF',
+  surfaceContainerLow: '#FFF0F1',
+  surfaceContainer: '#FFE9EA',
+  surfaceContainerHigh: '#FBE2E4',
+  surfaceContainerHighest: '#F5DDDE',
+  surfaceVariant: '#F5DDDE',
+  parchment: '#F6EDDC',
+
+  // Text & On-Surface
+  onSurface: '#40242B',
+  onSurfaceVariant: '#25181A',
+  espressoDark: '#40242B',
+  text: '#40242B',
+  inverseSurface: '#000000',
+  inverseOnSurface: '#FFFFFF',
+
+  // Primary
+  primary: '#A31940',
+  onPrimary: '#FFFFFF',
+  primaryContainer: '#FFD9DD',
+  onPrimaryContainer: '#400012',
+  primaryFixed: '#FFD9DD',
+  onPrimaryFixed: '#400012',
+
+  // Secondary
+  secondary: '#6F4137',
+  onSecondary: '#FFFFFF',
+  secondaryContainer: '#FFDADB',
+  onSecondaryContainer: '#40242B',
+  secondaryFixed: '#FFDADB',
+  onSecondaryFixed: '#40242B',
+
+  // Tertiary / Success
+  tertiary: '#006139',
+  onTertiary: '#FFFFFF',
+  tertiaryContainer: '#BBFFD0',
+  onTertiaryContainer: '#002110',
+  tertiaryFixed: '#93F7B8',
+  onTertiaryFixed: '#002110',
+
+  // Neutrals & Accents
+  accentBrown: '#6F4137',
+  placeholder: '#584143',
+  lightGray: '#E0BEC1',
+  white: '#FFFFFF',
+
+  // Borders & Outlines
+  border: '#40242B',
+  borderSubtle: '#40242B',
+  borderEmphasis: '#40242B',
+  outline: '#40242B',
+  outlineVariant: '#40242B',
+
+  // Status & Feedback
+  error: '#BA1A1A',
+  onError: '#FFFFFF',
+  errorContainer: '#FFDAD6',
+  onErrorContainer: '#93000A',
+  colorBackdrop: 'rgba(0, 0, 0, 0.85)',
+};
+
+export const highContrastDarkColors = {
+  // Base & Surfaces
+  background: '#000000',
+  surface: '#000000',
+  surfaceDim: '#000000',
+  surfaceBright: '#100608',
+  surfaceContainerLowest: '#000000',
+  surfaceContainerLow: '#000000',
+  surfaceContainer: '#000000',
+  surfaceContainerHigh: '#180E10',
+  surfaceContainerHighest: '#40242B',
+  surfaceVariant: '#000000',
+  parchment: '#180E10',
+
+  // Text & On-Surface
+  onSurface: '#F6EDDC',
+  onSurfaceVariant: '#FFFFFF',
+  espressoDark: '#FFFFFF',
+  text: '#F6EDDC',
+  inverseSurface: '#FFFFFF',
+  inverseOnSurface: '#000000',
+
+  // Primary
+  primary: '#FBA8AF',
+  onPrimary: '#000000',
+  primaryContainer: '#C53557',
+  onPrimaryContainer: '#FFFFFF',
+  primaryFixed: '#FBA8AF',
+  onPrimaryFixed: '#000000',
+
+  // Secondary
+  secondary: '#FFFFFF',
+  onSecondary: '#000000',
+  secondaryContainer: '#40242B',
+  onSecondaryContainer: '#FFFFFF',
+  secondaryFixed: '#FBA8AF',
+  onSecondaryFixed: '#000000',
+
+  // Tertiary / Success
+  tertiary: '#93F7B8',
+  onTertiary: '#000000',
+  tertiaryContainer: '#006139',
+  onTertiaryContainer: '#FFFFFF',
+  tertiaryFixed: '#93F7B8',
+  onTertiaryFixed: '#000000',
+
+  // Neutrals & Accents
+  accentBrown: '#F6EDDC',
+  placeholder: '#FBA8AF',
+  lightGray: '#FFFFFF',
+  white: '#FFFFFF',
+
+  // Borders & Outlines
+  border: '#FFFFFF',
+  borderSubtle: '#F6EDDC',
+  borderEmphasis: '#FBA8AF',
+  outline: '#FFFFFF',
+  outlineVariant: '#F6EDDC',
+
+  // Status & Feedback
+  error: '#FFB4AB',
+  onError: '#000000',
+  errorContainer: '#93000A',
+  onErrorContainer: '#FFFFFF',
+  colorBackdrop: 'rgba(0, 0, 0, 0.9)',
+};
+
+export const highContrastLightChips = {
+  primary: { background: '#FFD9DD', text: '#400012' },
+  secondary: { background: '#FFDADB', text: '#40242B' },
+  success: { background: '#93F7B8', text: '#002110' },
+  accent: { background: '#FBE2E4', text: '#400012' },
+};
+
+export const highContrastDarkChips = {
+  primary: { background: '#40242B', text: '#FFD9DD' },
+  secondary: { background: '#321C21', text: '#F6EDDC' },
+  success: { background: '#00391F', text: '#93F7B8' },
+  accent: { background: '#4A1D27', text: '#FFB2BB' },
+};
+
+export const highContrastShadows = {
+  soft: {
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+  },
+  hover: {
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+  },
+  modal: {
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+  },
+  glow: {
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+  },
+};
+
+export const highContrastLightTheme: AppTheme = {
+  ...MD3LightTheme,
+  colors: {
+    ...MD3LightTheme.colors,
+    ...highContrastLightColors,
+    secBorder: highContrastLightColors.border,
+    secondaryText: highContrastLightColors.onSurfaceVariant,
+    success: highContrastLightColors.tertiary,
+    danger: highContrastLightColors.error,
+    warning: colors.colorYellow,
+    backdrop: highContrastLightColors.colorBackdrop,
+    pitchBackground: '#FFFFFF',
+    mediumGray: highContrastLightColors.onSurfaceVariant,
+    darkGray: highContrastLightColors.espressoDark,
+    textMuted: highContrastLightColors.onSurfaceVariant,
+    textSecondary: highContrastLightColors.onSurfaceVariant,
+    chips: highContrastLightChips,
+    onSurfaceDisabled: '#40242B',
+    tags: {
+      product: '#FFA189',
+      variety: '#FFF25E',
+      attribute: '#8DFBFF',
+      user: '#F6EDDC',
+    },
+  },
+  rounded,
+  shadows: highContrastShadows,
+  typography,
+  spacing,
+  breakpoints,
+};
+
+export const highContrastDarkTheme: AppTheme = {
+  ...MD3DarkTheme,
+  colors: {
+    ...MD3DarkTheme.colors,
+    ...highContrastDarkColors,
+    secBorder: highContrastDarkColors.border,
+    secondaryText: highContrastDarkColors.onSurfaceVariant,
+    success: highContrastDarkColors.tertiary,
+    danger: highContrastDarkColors.error,
+    warning: '#FFF25E',
+    backdrop: highContrastDarkColors.colorBackdrop,
+    pitchBackground: '#000000',
+    mediumGray: highContrastDarkColors.onSurfaceVariant,
+    darkGray: highContrastDarkColors.espressoDark,
+    textMuted: highContrastDarkColors.onSurfaceVariant,
+    textSecondary: highContrastDarkColors.onSurfaceVariant,
+    chips: highContrastDarkChips,
+    onSurfaceDisabled: '#FFFFFF',
+    tags: {
+      product: '#FFA189',
+      variety: '#FFF25E',
+      attribute: '#8DFBFF',
+      user: '#F6EDDC',
+    },
+  },
+  rounded,
+  shadows: highContrastShadows,
+  typography,
+  spacing,
+  breakpoints,
+};
+
 export type AppTheme = typeof lightTheme;

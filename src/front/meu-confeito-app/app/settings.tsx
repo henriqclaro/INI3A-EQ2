@@ -147,7 +147,7 @@ export default function SettingsScreen() {
           {/* Section 2: Appearance & Theme Toggle */}
           <SettingsSection
             title="Aparência"
-            description="Alterne entre o tema claro artesanal e o tema escuro aconchegante"
+            description="Personalize cores, alto contraste e economia de bateria em telas OLED"
             icon="palette-outline"
           >
             <ThemeToggleCard />

@@ -426,7 +426,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
     previewBanner: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: theme.colors.parchment,
+      backgroundColor: theme.colors.surfaceContainerLow,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
       borderRadius: theme.rounded.md,

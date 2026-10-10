@@ -28,15 +28,26 @@ export function ThemeSwitch({
   const { theme } = useThemeMode();
   const { isHapticsEnabled, triggerHaptic } = useSettings();
 
-  const resolvedActiveThumbColor = activeThumbColor || theme.colors.primary;
-  const resolvedInactiveThumbColor = inactiveThumbColor || theme.colors.surfaceContainerHighest;
+  const isSwitchDisabled = Boolean(rest.disabled);
+
+  const resolvedActiveThumbColor = isSwitchDisabled
+    ? theme.colors.placeholder
+    : activeThumbColor || theme.colors.primary;
+  const resolvedInactiveThumbColor = isSwitchDisabled
+    ? theme.colors.surfaceContainerHighest
+    : inactiveThumbColor || theme.colors.surfaceContainerHighest;
   const resolvedThumbColor =
     thumbColor || (value ? resolvedActiveThumbColor : resolvedInactiveThumbColor);
 
-  const resolvedActiveTrackColor = activeTrackColor || theme.colors.primaryContainer;
+  const resolvedActiveTrackColor = isSwitchDisabled
+    ? theme.colors.outlineVariant
+    : activeTrackColor || theme.colors.primaryContainer;
   const resolvedInactiveTrackColor = inactiveTrackColor || theme.colors.outlineVariant;
 
   const handleValueChange = (newValue: boolean) => {
+    if (isSwitchDisabled) {
+      return;
+    }
     if (hasHapticFeedback && isHapticsEnabled) {
       triggerHaptic('selection');
     }
@@ -49,6 +60,7 @@ export function ThemeSwitch({
       ? ({
           activeThumbColor: resolvedActiveThumbColor,
           activeTrackColor: resolvedActiveTrackColor,
+          disabled: isSwitchDisabled,
         } as unknown as Partial<SwitchProps>)
       : {};
 
@@ -61,7 +73,7 @@ export function ThemeSwitch({
         false: resolvedInactiveTrackColor,
         true: resolvedActiveTrackColor,
       }}
-      style={[styles.switch, style]}
+      style={[styles.switch, isSwitchDisabled && styles.disabledSwitch, style]}
       {...webProps}
       {...rest}
     />
@@ -75,6 +87,14 @@ const styles = StyleSheet.create({
         height: 24,
         width: 48,
         cursor: 'pointer',
+      },
+    }),
+  },
+  disabledSwitch: {
+    opacity: 0.5,
+    ...Platform.select({
+      web: {
+        cursor: 'auto',
       },
     }),
   },
