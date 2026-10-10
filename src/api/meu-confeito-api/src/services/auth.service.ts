@@ -96,6 +96,8 @@ export class AuthService {
       },
     };
 
+    userData.auth.refreshToken = refreshToken;
+
     if (data.clientType === 'web') {
       const cookie = {
         name: 'refreshToken',
@@ -109,12 +111,9 @@ export class AuthService {
       };
 
       return { userData, cookie };
-    } else {
-      // mobile
-      userData.auth.refreshToken = refreshToken;
-
-      return { userData };
     }
+
+    return { userData };
   }
 
   async logOut(refreshToken: string) {
@@ -146,7 +145,7 @@ export class AuthService {
       role: storedToken.user.role,
     };
 
-    const newToken = jwt.sign(payload, env.JWT_SECRET, { expiresIn: '30' });
+    const newToken = jwt.sign(payload, env.JWT_SECRET, { expiresIn: '30m' });
 
     const auth = {
       accessToken: newToken,

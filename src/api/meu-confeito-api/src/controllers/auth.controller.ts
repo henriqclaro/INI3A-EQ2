@@ -39,7 +39,13 @@ export class AuthController {
     req: Request<any, unknown, AuthDTO.RefreshOrDeleteRequest>,
     res: Response<ApiResponse>,
   ) {
-    await this.authService.logOut(req.body.refreshToken);
+    const refreshToken = req.body?.refreshToken || req.cookies?.refreshToken;
+
+    if (refreshToken) {
+      await this.authService.logOut(refreshToken);
+    }
+
+    res.clearCookie('refreshToken');
 
     return new NoContentResponse(res, 'Logged out successfully').send();
   }
