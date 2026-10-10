@@ -69,7 +69,6 @@ export const ReviewedRecipeCard = memo(function ReviewedRecipeCard({
       style={styles.card}
       onPress={onPress}
       activeOpacity={0.85}
-      accessibilityRole="button"
       accessibilityLabel={`Receita avaliada: ${item.recipe.title}`}
     >
       <View style={styles.imageWrapper}>
