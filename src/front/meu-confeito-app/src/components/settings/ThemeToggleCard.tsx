@@ -3,7 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'r
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { ThemeSwitch } from '@/src/components/ThemeSwitch';
+import { ThemeSwitch } from '@/src/components/common';
 import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme, colors, darkColors } from '@/src/theme/themes';

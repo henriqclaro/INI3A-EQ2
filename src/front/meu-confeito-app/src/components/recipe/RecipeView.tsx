@@ -5,10 +5,10 @@ import { Image } from 'expo-image';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { useThemeMode } from '../contexts/ThemeContext';
-import { AppTheme } from '../theme/themes';
-import { PartialTag } from '../types';
-import { getTagColors } from '../utils/tag';
+import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { AppTheme } from '@/src/theme/themes';
+import { PartialTag } from '@/src/types';
+import { getTagColors } from '@/src/utils/tag';
 
 interface TagData {
   tag: PartialTag;

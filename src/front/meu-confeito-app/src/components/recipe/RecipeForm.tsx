@@ -17,10 +17,7 @@ import { Picker } from '@react-native-picker/picker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { ActivityIndicator } from 'react-native-paper';
 
-import { CustomButton } from '@/src/components/CustomButton';
-import { IngredientSelector } from '@/src/components/IngredientSelector';
-import { RecipeSelector } from '@/src/components/RecipeSelector';
-import { TagSelector } from '@/src/components/TagSelector';
+import { CustomButton, IngredientSelector, TagSelector } from '@/src/components/common';
 import { STANDARD_UNITS } from '@/src/constants/common-units';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useSettings } from '@/src/contexts/SettingsContext';
@@ -38,6 +35,8 @@ import {
 } from '@/src/types';
 import { ProcessedImage, pickRecipeCoverImage } from '@/src/utils/image';
 import { parseRecipeInstructions } from '@/src/utils/recipe';
+
+import { RecipeSelector } from './RecipeSelector';
 
 export type RecipeInstructionStepInput = RecipeInstructionStep;
 

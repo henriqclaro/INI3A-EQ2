@@ -9,17 +9,24 @@ import {
   View,
 } from 'react-native';
 
+import { Image } from 'expo-image';
+
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { useThemeMode } from '../contexts/ThemeContext';
-import { IngredientService } from '../services/ingredient';
-import { AppTheme } from '../theme/themes';
-import { PartialIngredient } from '../types/ingredient';
+import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { RecipeService } from '@/src/services/recipe';
+import { UserService } from '@/src/services/user';
+import { AppTheme } from '@/src/theme/themes';
+import { PartialRecipe } from '@/src/types/recipe';
+import { getTagColors } from '@/src/utils/tag';
 
-export interface IngredientSelectorProps {
-  selectedIngredientId?: number | string | null;
-  selectedIngredient?: PartialIngredient | null;
-  onSelectIngredient: (ingredient: PartialIngredient | null) => void;
+export interface RecipeSelectorProps {
+  selectedRecipeId?: string | null;
+  selectedRecipe?: PartialRecipe | null;
+  onSelectRecipe: (recipe: PartialRecipe | null) => void;
+  userId?: string;
+  onlyUserRecipes?: boolean;
+  excludeRecipeId?: string;
   label?: string;
   placeholder?: string;
   helperText?: string;
@@ -27,112 +34,110 @@ export interface IngredientSelectorProps {
   isRequired?: boolean;
   isDisabled?: boolean;
   canClear?: boolean;
-  initialIngredients?: PartialIngredient[];
-  excludeIngredientIds?: (number | string)[];
+  initialRecipes?: PartialRecipe[];
 }
 
-export function IngredientSelector({
-  selectedIngredientId,
-  selectedIngredient,
-  onSelectIngredient,
-  label = 'Ingrediente',
-  placeholder = 'Buscar insumo (ex: Leite, Farinha)...',
+export function RecipeSelector({
+  selectedRecipeId,
+  selectedRecipe,
+  onSelectRecipe,
+  userId,
+  onlyUserRecipes = true,
+  excludeRecipeId,
+  label = 'Sub-receita',
+  placeholder = 'Buscar sub-receita (ex: Brigadeiro)...',
   helperText,
   error,
   isRequired = false,
   isDisabled = false,
   canClear = true,
-  initialIngredients = [],
-  excludeIngredientIds = [],
-}: IngredientSelectorProps) {
+  initialRecipes = [],
+}: RecipeSelectorProps) {
   const { theme } = useThemeMode();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<PartialIngredient[]>([]);
+  const [searchResults, setSearchResults] = useState<PartialRecipe[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
-  const [fetchedIngredient, setFetchedIngredient] = useState<PartialIngredient | null>(null);
+  const [fetchedRecipe, setFetchedRecipe] = useState<PartialRecipe | null>(null);
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Excluded ID set
-  const excludedIdsSet = useMemo(
-    () => new Set(excludeIngredientIds.map((id) => String(id))),
-    [excludeIngredientIds],
-  );
+  // Active selected recipe resolution
+  const activeRecipe: PartialRecipe | null = useMemo(() => {
+    if (selectedRecipe) return selectedRecipe;
+    if (!selectedRecipeId) return null;
 
-  // Active selected ingredient resolution
-  const activeIngredient: PartialIngredient | null = useMemo(() => {
-    if (selectedIngredient) return selectedIngredient;
-    if (!selectedIngredientId) return null;
-
-    const fromInitial = initialIngredients.find(
-      (ing) => String(ing.id) === String(selectedIngredientId),
-    );
+    const fromInitial = initialRecipes.find((r) => r.id === selectedRecipeId);
     if (fromInitial) return fromInitial;
 
-    const fromSearch = searchResults.find((ing) => String(ing.id) === String(selectedIngredientId));
+    const fromSearch = searchResults.find((r) => r.id === selectedRecipeId);
     if (fromSearch) return fromSearch;
 
-    if (fetchedIngredient && String(fetchedIngredient.id) === String(selectedIngredientId)) {
-      return fetchedIngredient;
+    if (fetchedRecipe && fetchedRecipe.id === selectedRecipeId) {
+      return fetchedRecipe;
     }
 
     return null;
-  }, [
-    selectedIngredient,
-    selectedIngredientId,
-    initialIngredients,
-    searchResults,
-    fetchedIngredient,
-  ]);
+  }, [selectedRecipe, selectedRecipeId, initialRecipes, searchResults, fetchedRecipe]);
 
-  // Derived list of ingredients to display based on query & initial list
+  // Derived list of recipes to display based on query & initial list
   const currentList = useMemo(() => {
-    if (!searchQuery.trim() && searchResults.length === 0 && initialIngredients.length > 0) {
-      return initialIngredients;
+    if (!searchQuery.trim() && searchResults.length === 0 && initialRecipes.length > 0) {
+      return initialRecipes;
     }
     return searchResults;
-  }, [searchQuery, searchResults, initialIngredients]);
+  }, [searchQuery, searchResults, initialRecipes]);
 
-  // Fetch ingredient details if only ID is provided but object not found
+  // Fetch recipe details if only ID is provided
   useEffect(() => {
     let isCurrent = true;
 
-    if (selectedIngredientId && !activeIngredient) {
-      IngredientService.search(undefined, 0)
+    if (selectedRecipeId && !activeRecipe) {
+      RecipeService.getRecipe(selectedRecipeId)
         .then((res) => {
           if (!isCurrent) return;
-          const found = res?.data?.ingredients?.find(
-            (i) => String(i.id) === String(selectedIngredientId),
-          );
-          if (found) {
-            setFetchedIngredient(found);
+          if (res?.data?.recipe) {
+            setFetchedRecipe(res.data.recipe as unknown as PartialRecipe);
           }
         })
         .catch((err) => {
-          console.error('Error finding ingredient by ID:', err);
+          console.error('Error finding recipe by ID:', err);
         });
     }
 
     return () => {
       isCurrent = false;
     };
-  }, [selectedIngredientId, activeIngredient]);
+  }, [selectedRecipeId, activeRecipe]);
 
-  const fetchSuggestions = useCallback(async (term: string) => {
-    setIsSearching(true);
-    try {
-      const res = await IngredientService.search(term.trim() || undefined);
-      setSearchResults(res.data.ingredients || []);
-    } catch (err) {
-      console.error('Error searching ingredients:', err);
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  }, []);
+  const fetchSuggestions = useCallback(
+    async (term: string) => {
+      setIsSearching(true);
+      try {
+        if (onlyUserRecipes && userId) {
+          const res = await UserService.getRecipes(userId);
+          const list = res.data.recipes || [];
+          if (!term.trim()) {
+            setSearchResults(list);
+          } else {
+            const lower = term.toLowerCase();
+            setSearchResults(list.filter((r) => r.title.toLowerCase().includes(lower)));
+          }
+        } else {
+          const res = await RecipeService.search(term.trim() || undefined);
+          setSearchResults(res.data.recipes || []);
+        }
+      } catch (err) {
+        console.error('Error searching recipes:', err);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    },
+    [onlyUserRecipes, userId],
+  );
 
   const handleQueryChange = (text: string) => {
     setSearchQuery(text);
@@ -155,15 +160,15 @@ export function IngredientSelector({
     }
   };
 
-  const handleSelect = (item: PartialIngredient) => {
-    onSelectIngredient(item);
+  const handleSelect = (item: PartialRecipe) => {
+    onSelectRecipe(item);
     setSearchQuery('');
     setIsDropdownVisible(false);
   };
 
   const handleClear = () => {
     if (isDisabled) return;
-    onSelectIngredient(null);
+    onSelectRecipe(null);
     setSearchQuery('');
     setIsDropdownVisible(false);
   };
@@ -176,12 +181,12 @@ export function IngredientSelector({
     };
   }, []);
 
-  // Filter available suggestions (excluding blocked IDs)
+  // Filter available suggestions (excluding current recipe if editing)
   const availableSuggestions = useMemo(() => {
-    return currentList.filter((ing) => !excludedIdsSet.has(String(ing.id)));
-  }, [currentList, excludedIdsSet]);
+    return currentList.filter((r) => !excludeRecipeId || r.id !== excludeRecipeId);
+  }, [currentList, excludeRecipeId]);
 
-  const hasSelected = Boolean(activeIngredient);
+  const hasSelected = Boolean(activeRecipe);
   const hasError = Boolean(error);
 
   return (
@@ -198,46 +203,56 @@ export function IngredientSelector({
 
       {Boolean(helperText) && !hasSelected && <Text style={styles.helperText}>{helperText}</Text>}
 
-      {/* When an ingredient IS selected, show selected artisan card */}
-      {hasSelected && activeIngredient ? (
+      {/* When a recipe IS selected, show selected artisan card */}
+      {hasSelected && activeRecipe ? (
         <View style={[styles.selectedCard, hasError && styles.selectedCardError]}>
-          <View style={styles.selectedIconBox}>
-            <MaterialCommunityIcons
-              name="food-apple-outline"
-              size={22}
-              color={theme.colors.primary}
+          {activeRecipe.coverUrl ? (
+            <Image
+              source={{ uri: activeRecipe.coverUrl }}
+              style={styles.selectedImage}
+              contentFit="cover"
+              cachePolicy="memory-disk"
+              transition={150}
             />
-          </View>
+          ) : (
+            <View style={styles.selectedIconBox}>
+              <MaterialCommunityIcons
+                name="cake-variant-outline"
+                size={22}
+                color={theme.colors.primary}
+              />
+            </View>
+          )}
 
           <View style={styles.selectedInfo}>
             <Text style={styles.selectedTitle} numberOfLines={1}>
-              {activeIngredient.name}
+              {activeRecipe.title}
             </Text>
 
             <View style={styles.selectedMetaRow}>
-              {Boolean(activeIngredient.category) && (
-                <View style={styles.categoryChip}>
-                  <Text style={styles.categoryChipText}>{activeIngredient.category}</Text>
-                </View>
-              )}
-
-              <View style={styles.unitChip}>
-                <Text style={styles.unitChipText}>
-                  Unidade: {activeIngredient.baseUnit || 'un'}
-                </Text>
+              {activeRecipe.tags &&
+                activeRecipe.tags.length > 0 &&
+                (() => {
+                  const tagStyle = getTagColors(activeRecipe.tags[0].tag.type, theme);
+                  return (
+                    <View
+                      style={[
+                        styles.tagChip,
+                        {
+                          backgroundColor: tagStyle.backgroundColor,
+                          borderColor: tagStyle.borderColor,
+                        },
+                      ]}
+                    >
+                      <Text style={[styles.tagChipText, { color: tagStyle.textColor }]}>
+                        {activeRecipe.tags[0].tag.name}
+                      </Text>
+                    </View>
+                  );
+                })()}
+              <View style={styles.subRecipeBadge}>
+                <Text style={styles.subRecipeBadgeText}>Sub-receita</Text>
               </View>
-
-              {Boolean(activeIngredient.baseDimension) && (
-                <View style={styles.dimensionChip}>
-                  <Text style={styles.dimensionChipText}>
-                    {activeIngredient.baseDimension === 'MASS'
-                      ? 'Massa'
-                      : activeIngredient.baseDimension === 'VOLUME'
-                        ? 'Volume'
-                        : 'Unidade'}
-                  </Text>
-                </View>
-              )}
             </View>
           </View>
 
@@ -247,7 +262,7 @@ export function IngredientSelector({
               onPress={handleClear}
               activeOpacity={0.7}
               accessibilityRole="button"
-              accessibilityLabel="Trocar ou remover insumo selecionado"
+              accessibilityLabel="Trocar ou remover sub-receita selecionada"
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <MaterialCommunityIcons
@@ -259,7 +274,7 @@ export function IngredientSelector({
           )}
         </View>
       ) : (
-        /* When NO ingredient is selected, show Search Input + Dropdown */
+        /* When NO recipe is selected, show Search Input + Dropdown */
         <View style={styles.searchContainer}>
           <View
             style={[
@@ -330,29 +345,60 @@ export function IngredientSelector({
                       onPress={() => handleSelect(item)}
                       activeOpacity={0.7}
                       accessibilityRole="button"
-                      accessibilityLabel={`Selecionar insumo ${item.name}`}
+                      accessibilityLabel={`Selecionar receita ${item.title}`}
                     >
                       <View style={styles.dropdownItemContent}>
-                        <View style={styles.itemIconContainer}>
-                          <MaterialCommunityIcons
-                            name="food-apple-outline"
-                            size={16}
-                            color={theme.colors.primary}
+                        {item.coverUrl ? (
+                          <Image
+                            source={{ uri: item.coverUrl }}
+                            style={styles.dropdownItemImage}
+                            contentFit="cover"
+                            cachePolicy="memory-disk"
+                            recyclingKey={item.coverUrl}
+                            transition={150}
                           />
-                        </View>
+                        ) : (
+                          <View style={styles.dropdownItemIconContainer}>
+                            <MaterialCommunityIcons
+                              name="cake-variant-outline"
+                              size={16}
+                              color={theme.colors.primary}
+                            />
+                          </View>
+                        )}
 
                         <View style={styles.itemTextContainer}>
                           <Text style={styles.dropdownItemTitle} numberOfLines={1}>
-                            {item.name}
+                            {item.title}
                           </Text>
 
                           <View style={styles.dropdownItemMetaRow}>
-                            <View style={styles.dropdownCategoryChip}>
-                              <Text style={styles.dropdownCategoryChipText}>{item.category}</Text>
-                            </View>
-                            <Text style={styles.dropdownItemUnitText}>
-                              Unidade: {item.baseUnit || 'un'}
-                            </Text>
+                            {item.tags &&
+                              item.tags.length > 0 &&
+                              (() => {
+                                const tagStyle = getTagColors(item.tags[0].tag.type, theme);
+                                return (
+                                  <View
+                                    style={[
+                                      styles.dropdownTagChip,
+                                      {
+                                        backgroundColor: tagStyle.backgroundColor,
+                                        borderColor: tagStyle.borderColor,
+                                      },
+                                    ]}
+                                  >
+                                    <Text
+                                      style={[
+                                        styles.dropdownTagChipText,
+                                        { color: tagStyle.textColor },
+                                      ]}
+                                    >
+                                      {item.tags[0].tag.name}
+                                    </Text>
+                                  </View>
+                                );
+                              })()}
+                            <Text style={styles.dropdownItemSubtitle}>Sub-receita</Text>
                           </View>
                         </View>
                       </View>
@@ -369,18 +415,18 @@ export function IngredientSelector({
                 </ScrollView>
               ) : isSearching ? (
                 <View style={styles.dropdownEmptyState}>
-                  <Text style={styles.dropdownEmptyText}>Buscando insumos...</Text>
+                  <Text style={styles.dropdownEmptyText}>Buscando receitas...</Text>
                 </View>
               ) : searchQuery.trim().length > 0 ? (
                 <View style={styles.dropdownEmptyState}>
                   <Text style={styles.dropdownEmptyText}>
-                    Nenhum insumo encontrado para &quot;{searchQuery}&quot;
+                    Nenhuma receita encontrada para &quot;{searchQuery}&quot;
                   </Text>
                 </View>
               ) : (
                 <View style={styles.dropdownEmptyState}>
                   <Text style={styles.dropdownEmptyText}>
-                    Nenhum insumo disponível no catálogo.
+                    Nenhuma sub-receita cadastrada disponível.
                   </Text>
                 </View>
               )}
@@ -499,10 +545,17 @@ const createStyles = (theme: AppTheme) =>
       gap: 10,
       flex: 1,
     },
-    itemIconContainer: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
+    dropdownItemImage: {
+      width: 36,
+      height: 36,
+      borderRadius: theme.rounded.default,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+    },
+    dropdownItemIconContainer: {
+      width: 36,
+      height: 36,
+      borderRadius: theme.rounded.default,
       backgroundColor: theme.colors.surfaceContainerLow,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
@@ -524,19 +577,20 @@ const createStyles = (theme: AppTheme) =>
       alignItems: 'center',
       gap: 6,
     },
-    dropdownCategoryChip: {
+    dropdownTagChip: {
       backgroundColor: theme.colors.chips.secondary.background,
       paddingHorizontal: 6,
       paddingVertical: 1,
       borderRadius: theme.rounded.full,
+      borderWidth: 1,
     },
-    dropdownCategoryChipText: {
+    dropdownTagChipText: {
       fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 10,
       fontWeight: '600',
       color: theme.colors.chips.secondary.text,
     },
-    dropdownItemUnitText: {
+    dropdownItemSubtitle: {
       fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 11,
       color: theme.colors.onSurfaceVariant,
@@ -573,10 +627,17 @@ const createStyles = (theme: AppTheme) =>
     selectedCardError: {
       borderColor: theme.colors.error,
     },
+    selectedImage: {
+      width: 44,
+      height: 44,
+      borderRadius: theme.rounded.default,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+    },
     selectedIconBox: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
+      width: 44,
+      height: 44,
+      borderRadius: theme.rounded.default,
       backgroundColor: theme.colors.surfaceContainerLow,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
@@ -599,43 +660,30 @@ const createStyles = (theme: AppTheme) =>
       alignItems: 'center',
       gap: 6,
     },
-    categoryChip: {
+    tagChip: {
       backgroundColor: theme.colors.chips.secondary.background,
       paddingHorizontal: 8,
       paddingVertical: 2,
       borderRadius: theme.rounded.full,
+      borderWidth: 1,
     },
-    categoryChipText: {
+    tagChipText: {
       fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 11,
       fontWeight: '600',
       color: theme.colors.chips.secondary.text,
     },
-    unitChip: {
-      backgroundColor: theme.colors.chips.accent.background,
+    subRecipeBadge: {
+      backgroundColor: theme.colors.chips.primary.background,
       paddingHorizontal: 8,
       paddingVertical: 2,
       borderRadius: theme.rounded.full,
     },
-    unitChipText: {
+    subRecipeBadgeText: {
       fontFamily: theme.typography.labelSm.fontFamily,
       fontSize: 11,
       fontWeight: '600',
-      color: theme.colors.chips.accent.text,
-    },
-    dimensionChip: {
-      backgroundColor: theme.colors.surfaceContainerLow,
-      paddingHorizontal: 8,
-      paddingVertical: 2,
-      borderRadius: theme.rounded.full,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-    },
-    dimensionChipText: {
-      fontFamily: theme.typography.labelSm.fontFamily,
-      fontSize: 10,
-      fontWeight: '500',
-      color: theme.colors.onSurfaceVariant,
+      color: theme.colors.chips.primary.text,
     },
     changeBtn: {
       minWidth: 44,

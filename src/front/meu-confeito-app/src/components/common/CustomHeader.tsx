@@ -5,8 +5,8 @@ import { router } from 'expo-router';
 
 import { Appbar } from 'react-native-paper';
 
-import { useThemeMode } from '../contexts/ThemeContext';
-import { AppTheme } from '../theme/themes';
+import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { AppTheme } from '@/src/theme/themes';
 
 export interface CustomHeaderProps {
   route?: {

@@ -3,8 +3,8 @@ import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from '
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { useThemeMode } from '../contexts/ThemeContext';
-import { AppTheme } from '../theme/themes';
+import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { AppTheme } from '@/src/theme/themes';
 
 export interface MenuOptionButtonProps {
   title: string;

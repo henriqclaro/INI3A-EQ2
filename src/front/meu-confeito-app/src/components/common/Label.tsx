@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { useThemeMode } from '../contexts/ThemeContext';
-import { AppTheme } from '../theme/themes';
+import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { AppTheme } from '@/src/theme/themes';
 
 interface LabelProps {
   text?: string;

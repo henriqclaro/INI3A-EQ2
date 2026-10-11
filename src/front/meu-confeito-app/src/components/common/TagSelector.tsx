@@ -11,11 +11,11 @@ import {
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { useThemeMode } from '../contexts/ThemeContext';
-import { TagService } from '../services/tag';
-import { AppTheme } from '../theme/themes';
-import { Tag } from '../types/tag';
-import { getTagColors, getTagTypeLabel } from '../utils/tag';
+import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { TagService } from '@/src/services/tag';
+import { AppTheme } from '@/src/theme/themes';
+import { Tag } from '@/src/types/tag';
+import { getTagColors, getTagTypeLabel } from '@/src/utils/tag';
 
 export interface TagSelectorProps {
   selectedTags: Tag[];

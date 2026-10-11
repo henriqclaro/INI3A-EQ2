@@ -10,7 +10,7 @@ import {
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { ThemeSwitch } from '@/src/components/ThemeSwitch';
+import { ThemeSwitch } from '@/src/components/common';
 import { PriceDecimalPlaces, useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';

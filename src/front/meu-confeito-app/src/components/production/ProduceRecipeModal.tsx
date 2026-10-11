@@ -13,7 +13,7 @@ import {
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAvoidingView, KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import { DateInput } from '@/src/components/DateInput';
+import { DateInput } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useRegisterProduction } from '@/src/hooks/useProductions';
 import { AppTheme } from '@/src/theme/themes';

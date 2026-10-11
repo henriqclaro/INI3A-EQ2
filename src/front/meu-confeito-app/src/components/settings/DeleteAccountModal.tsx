@@ -4,10 +4,9 @@ import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { ActivityIndicator } from 'react-native-paper';
 
+import { CustomButton } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
-
-import { CustomButton } from '../CustomButton';
 
 export interface DeleteAccountModalProps {
   isVisible: boolean;

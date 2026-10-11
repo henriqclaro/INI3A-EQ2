@@ -5,8 +5,8 @@ import { Image } from 'expo-image';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { useThemeMode } from '../contexts/ThemeContext';
-import { AppTheme } from '../theme/themes';
+import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { AppTheme } from '@/src/theme/themes';
 
 export interface RecipeSmallViewProps {
   title: string;

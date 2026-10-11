@@ -13,7 +13,7 @@ import { Stack, router, useLocalSearchParams } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { RecipeForm, RecipeFormSubmitData } from '@/src/components/RecipeForm';
+import { RecipeForm, RecipeFormSubmitData } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useRecipeRegister, useRecipeUpdate, useSingleRecipe } from '@/src/hooks/useRecipes';

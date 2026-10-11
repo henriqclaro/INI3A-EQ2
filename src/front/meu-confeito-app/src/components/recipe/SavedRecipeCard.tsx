@@ -12,10 +12,10 @@ import { Image } from 'expo-image';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { useThemeMode } from '../contexts/ThemeContext';
-import { AppTheme } from '../theme/themes';
-import { UserSavedRecipeItem } from '../types/saved-recipe';
-import { getTagColors } from '../utils/tag';
+import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { AppTheme } from '@/src/theme/themes';
+import { UserSavedRecipeItem } from '@/src/types/saved-recipe';
+import { getTagColors } from '@/src/utils/tag';
 
 interface SavedRecipeCardProps {
   item: UserSavedRecipeItem;

@@ -17,8 +17,8 @@ import { router } from 'expo-router';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import { CustomButton } from '@/src/components/CustomButton';
 import { BakerCard } from '@/src/components/baker/BakerCard';
+import { CustomButton } from '@/src/components/common';
 import { DEFAULT_POPULAR_TAGS } from '@/src/constants/bakerTags';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useNearbyBakers } from '@/src/hooks/useBakerProfile';

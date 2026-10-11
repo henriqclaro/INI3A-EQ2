@@ -4,7 +4,7 @@ import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'reac
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAvoidingView, KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import { RecipeSelector } from '@/src/components/RecipeSelector';
+import { RecipeSelector } from '@/src/components/recipe';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
