@@ -103,6 +103,12 @@ components:
                         type: string
                       type:
                         type: string
+    RecipeCoverUploadResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          example: /storage/recipes/0927df61-f09b-4654-bf6d-a3dfb4b9b940/cover.webp
     RecipeSingleSelectResponse:
       type: object
       properties:

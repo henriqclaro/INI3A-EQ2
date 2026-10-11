@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import { RecipeController } from '../controllers/recipe.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
+import { uploadCoverMiddleware } from '../middlewares/upload.middleware';
 import { validate } from '../middlewares/validate.middleware';
 import * as recipe from '../validation/recipe.schema';
 
@@ -38,6 +39,21 @@ recipeRoutes.patch(
   '/:id/visibility',
   validate({ params: recipe.paramsSchema, body: recipe.updateVisibilitySchema }),
   recipeController.updateVisibility.bind(recipeController),
+);
+
+// Rotas de Capa / Storage ------------------------
+
+recipeRoutes.patch(
+  '/:id/cover',
+  validate({ params: recipe.paramsSchema }),
+  uploadCoverMiddleware,
+  recipeController.uploadCover.bind(recipeController),
+);
+
+recipeRoutes.delete(
+  '/:id/cover',
+  validate({ params: recipe.paramsSchema }),
+  recipeController.deleteCover.bind(recipeController),
 );
 
 recipeRoutes.patch(

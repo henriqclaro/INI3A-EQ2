@@ -49,6 +49,12 @@ components:
             updatedAt:
               type: string
               format: date-time
+    UserAvatarUploadResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          example: /storage/users/b8c6ef2e-749e-4e3a-9694-81d39dcfbd23/avatar.webp
     UserRecipesSelectResponse:
       type: object
       properties:

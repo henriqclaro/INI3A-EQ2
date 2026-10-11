@@ -10,6 +10,7 @@ import {
 } from '../responses/http.error';
 import type { RequestContext } from '../types/context.interface';
 import type { RecipeDTO } from '../types/dtos/recipe.dto';
+import { deleteRecipeCover, saveRecipeCover } from '../utils/storage.util';
 
 export class RecipeService {
   private checkPermission(context: RequestContext, id: string | null) {
@@ -1004,5 +1005,43 @@ export class RecipeService {
       averageRating: recipe.averageRating,
       ratingCounts,
     };
+  }
+
+  // Métodos de Storage / Capa ------------------------
+
+  async uploadCover(
+    context: RequestContext,
+    recipeId: string,
+    file: Express.Multer.File,
+  ): Promise<RecipeDTO.CoverUploadResponse> {
+    const recipe = await prisma.recipe.findUnique({
+      where: { id: recipeId },
+      select: { id: true, userId: true, status: true },
+    });
+
+    if (!recipe || recipe.status === 'SUSPENDED') {
+      throw new NotFoundError('Recipe not found', 'RESOURCE_NOT_FOUND');
+    }
+
+    this.checkPermission(context, recipe.userId);
+
+    const url = await saveRecipeCover(recipeId, file.buffer);
+
+    return { url };
+  }
+
+  async deleteCover(context: RequestContext, recipeId: string): Promise<void> {
+    const recipe = await prisma.recipe.findUnique({
+      where: { id: recipeId },
+      select: { id: true, userId: true, status: true },
+    });
+
+    if (!recipe || recipe.status === 'SUSPENDED') {
+      throw new NotFoundError('Recipe not found', 'RESOURCE_NOT_FOUND');
+    }
+
+    this.checkPermission(context, recipe.userId);
+
+    await deleteRecipeCover(recipeId);
   }
 }

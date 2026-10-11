@@ -59,6 +59,10 @@ export namespace RecipeDTO {
     recipe: Omit<SingleSelectResponse['recipe'], 'userReview' | 'ratingCounts'>;
   }
 
+  export interface CoverUploadResponse {
+    url: string;
+  }
+
   export interface SingleSelectResponse {
     recipe: {
       id: string;

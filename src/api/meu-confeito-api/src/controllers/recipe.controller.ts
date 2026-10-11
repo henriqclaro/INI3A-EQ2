@@ -189,4 +189,35 @@ export class RecipeController {
       'Recipe reviews selected successfully',
     ).send();
   }
+
+  // Métodos de Storage / Capa ------------------------
+
+  async uploadCover(
+    req: Request<RecipeDTO.RequestParams>,
+    res: Response<ApiResponse<RecipeDTO.CoverUploadResponse>>,
+  ) {
+    const context = this.extractProps(req);
+    const recipeId = req.params.id;
+
+    const responseData: RecipeDTO.CoverUploadResponse = await this.recipeService.uploadCover(
+      context,
+      recipeId,
+      req.file as Express.Multer.File,
+    );
+
+    return new DefaultSuccessResponse(
+      res,
+      responseData,
+      'Recipe cover updated successfully',
+    ).send();
+  }
+
+  async deleteCover(req: Request<RecipeDTO.RequestParams>, res: Response<ApiResponse>) {
+    const context = this.extractProps(req);
+    const recipeId = req.params.id;
+
+    await this.recipeService.deleteCover(context, recipeId);
+
+    return new NoContentResponse(res, 'Recipe cover deleted successfully').send();
+  }
 }

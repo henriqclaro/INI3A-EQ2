@@ -18,6 +18,7 @@ export const envSchema = z
     DB_PORT: z.coerce.number('Invalid DB_PORT').default(5432),
     DB_DATABASE: z.string('Invalid DB_DATABASE'),
     DB_PASSWORD: z.string('Invalid DB_PASSWORD'),
+    STORAGE_PATH: z.string('Invalid STORAGE_PATH').default('../storage'),
   })
   .transform((env) => {
     const databaseUrl = `postgresql://${env.DB_USERNAME}:${env.DB_PASSWORD}@${env.DB_HOST}:${env.DB_PORT}/${env.DB_DATABASE}?schema=public`;

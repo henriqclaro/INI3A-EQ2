@@ -6,6 +6,7 @@ import type { UserModel } from '../generated/prisma/models';
 import { ConflictError, ForbiddenError, GoneError, NotFoundError } from '../responses/http.error';
 import type { RequestContext } from '../types/context.interface';
 import type { UserDTO } from '../types/dtos/user.dto';
+import { deleteUserAvatar, saveUserAvatar } from '../utils/storage.util';
 
 export class UserService {
   private checkPermission(context: RequestContext, id: string) {
@@ -402,5 +403,39 @@ export class UserService {
     });
 
     return { reviews };
+  }
+
+  // Métodos de Storage / Avatar ------------------------
+
+  async uploadAvatar(
+    context: RequestContext,
+    targetUserId: string,
+    file: Express.Multer.File,
+  ): Promise<UserDTO.AvatarUploadResponse> {
+    this.checkPermission(context, targetUserId);
+
+    const user = await prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: { id: true, isActive: true },
+    });
+
+    this.checkUser(user);
+
+    const url = await saveUserAvatar(targetUserId, file.buffer);
+
+    return { url };
+  }
+
+  async deleteAvatar(context: RequestContext, targetUserId: string): Promise<void> {
+    this.checkPermission(context, targetUserId);
+
+    const user = await prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: { id: true, isActive: true },
+    });
+
+    this.checkUser(user);
+
+    await deleteUserAvatar(targetUserId);
   }
 }

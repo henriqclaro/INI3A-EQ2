@@ -162,4 +162,51 @@ export class UserController {
       'User reviews selected successfully',
     ).send();
   }
+
+  // Métodos de Storage / Avatar ------------------------
+
+  async uploadMyAvatar(req: Request, res: Response<ApiResponse<UserDTO.AvatarUploadResponse>>) {
+    const context = this.extractProps(req);
+
+    const responseData: UserDTO.AvatarUploadResponse = await this.userService.uploadAvatar(
+      context,
+      context.userId,
+      req.file as Express.Multer.File,
+    );
+
+    return new DefaultSuccessResponse(res, responseData, 'User avatar updated successfully').send();
+  }
+
+  async deleteMyAvatar(req: Request, res: Response<ApiResponse>) {
+    const context = this.extractProps(req);
+
+    await this.userService.deleteAvatar(context, context.userId);
+
+    return new NoContentResponse(res, 'User avatar deleted successfully').send();
+  }
+
+  async uploadUserAvatar(
+    req: Request<UserDTO.RequestParams>,
+    res: Response<ApiResponse<UserDTO.AvatarUploadResponse>>,
+  ) {
+    const context = this.extractProps(req);
+    const userId = req.params.id;
+
+    const responseData: UserDTO.AvatarUploadResponse = await this.userService.uploadAvatar(
+      context,
+      userId,
+      req.file as Express.Multer.File,
+    );
+
+    return new DefaultSuccessResponse(res, responseData, 'User avatar updated successfully').send();
+  }
+
+  async deleteUserAvatar(req: Request<UserDTO.RequestParams>, res: Response<ApiResponse>) {
+    const context = this.extractProps(req);
+    const userId = req.params.id;
+
+    await this.userService.deleteAvatar(context, userId);
+
+    return new NoContentResponse(res, 'User avatar deleted successfully').send();
+  }
 }

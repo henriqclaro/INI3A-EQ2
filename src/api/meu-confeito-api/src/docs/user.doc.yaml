@@ -21,6 +21,108 @@ paths:
           description: Erro na validação dos dados
         '409':
           description: E-mail já em uso
+  /users/me/avatar:
+    patch:
+      summary: Atualiza o avatar do próprio usuário
+      tags:
+        - Usuários
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - avatar
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+                  description: Arquivo de imagem do avatar (JPEG, PNG, WEBP, GIF, AVIF)
+      responses:
+        '200':
+          description: Avatar atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAvatarUploadResponse'
+        '400':
+          description: Formato de imagem inválido ou arquivo ausente
+        '401':
+          description: Token de autenticação ausente ou inválido
+        '413':
+          description: Arquivo excede o tamanho máximo permitido (5MB)
+    delete:
+      summary: Exclui o avatar do próprio usuário
+      tags:
+        - Usuários
+      responses:
+        '204':
+          description: Avatar excluído com sucesso
+        '401':
+          description: Token de autenticação ausente ou inválido
+        '404':
+          description: Imagem do avatar não encontrada
+  /users/{id}/avatar:
+    patch:
+      summary: Atualiza o avatar de um usuário específico (exclusivo para administradores)
+      tags:
+        - Usuários
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UserParamsSchema'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - avatar
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+                  description: Arquivo de imagem do avatar (JPEG, PNG, WEBP, GIF, AVIF)
+      responses:
+        '200':
+          description: Avatar atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAvatarUploadResponse'
+        '400':
+          description: Formato de imagem inválido ou arquivo ausente
+        '401':
+          description: Token de autenticação ausente ou inválido
+        '403':
+          description: Ação negada por falta de privilégios de administrador
+        '404':
+          description: Usuário não encontrado
+        '413':
+          description: Arquivo excede o tamanho máximo permitido (5MB)
+    delete:
+      summary: Exclui o avatar de um usuário específico (exclusivo para administradores)
+      tags:
+        - Usuários
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UserParamsSchema'
+      responses:
+        '204':
+          description: Avatar excluído com sucesso
+        '401':
+          description: Token de autenticação ausente ou inválido
+        '403':
+          description: Ação negada por falta de privilégios de administrador
+        '404':
+          description: Usuário ou imagem não encontrada
   /users/{id}:
     get:
       summary: Seleciona um usuário por ID

@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import { UserController } from '../controllers/user.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
+import { uploadAvatarMiddleware } from '../middlewares/upload.middleware';
 import { validate } from '../middlewares/validate.middleware';
 import * as user from '../validation/user.schema';
 
@@ -17,6 +18,29 @@ userRoutes.post(
 );
 
 userRoutes.use(authMiddleware);
+
+// Rotas de Avatar / Storage ------------------------
+
+userRoutes.patch(
+  '/me/avatar',
+  uploadAvatarMiddleware,
+  userController.uploadMyAvatar.bind(userController),
+);
+
+userRoutes.delete('/me/avatar', userController.deleteMyAvatar.bind(userController));
+
+userRoutes.patch(
+  '/:id/avatar',
+  validate({ params: user.paramsSchema }),
+  uploadAvatarMiddleware,
+  userController.uploadUserAvatar.bind(userController),
+);
+
+userRoutes.delete(
+  '/:id/avatar',
+  validate({ params: user.paramsSchema }),
+  userController.deleteUserAvatar.bind(userController),
+);
 
 userRoutes.get(
   '/:id',

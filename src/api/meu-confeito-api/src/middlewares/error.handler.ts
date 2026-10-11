@@ -5,6 +5,7 @@ import {
   PrismaClientValidationError,
 } from '@prisma/client/runtime/client';
 import jwt from 'jsonwebtoken';
+import multer from 'multer';
 import { ZodError, z } from 'zod';
 
 import { AppError } from '../responses/app.error';
@@ -52,6 +53,22 @@ export function errorHandler(err: Error, _req: Request, res: Response, __next: N
 
   if (err instanceof PrismaClientKnownRequestError && err.code === 'P2025') {
     throw new NotFoundError();
+  }
+
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({
+        status: 'fail',
+        message: 'File size exceeds maximum limit of 5MB',
+        code: 'PAYLOAD_TOO_LARGE',
+      });
+    }
+
+    return res.status(400).json({
+      status: 'fail',
+      message: err.message,
+      code: 'INVALID_FORMAT',
+    });
   }
 
   // Adicionar erros operacionais acima desse comentário, e não-operacionais abaixo

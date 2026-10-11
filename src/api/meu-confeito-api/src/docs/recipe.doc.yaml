@@ -141,6 +141,66 @@ paths:
           description: Ação negada por falta de privilégios
         '404':
           description: Receita não encontrada
+  /recipes/{id}/cover:
+    patch:
+      summary: Atualiza a foto de capa da receita
+      tags:
+        - Receitas
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/RecipeParamsSchema'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - cover
+              properties:
+                cover:
+                  type: string
+                  format: binary
+                  description: Arquivo de imagem de capa (JPEG, PNG, WEBP, GIF, AVIF)
+      responses:
+        '200':
+          description: Capa da receita atualizada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeCoverUploadResponse'
+        '400':
+          description: Formato de imagem inválido ou arquivo ausente
+        '401':
+          description: Token de autenticação ausente ou inválido
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Receita não encontrada
+        '413':
+          description: Arquivo excede o tamanho máximo permitido (5MB)
+    delete:
+      summary: Exclui a foto de capa da receita
+      tags:
+        - Receitas
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/RecipeParamsSchema'
+      responses:
+        '204':
+          description: Capa da receita excluída com sucesso
+        '401':
+          description: Token de autenticação ausente ou inválido
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Receita ou imagem de capa não encontrada
   /recipes/{id}/visibility:
     patch:
       summary: Atualiza a visibilidade da receita

@@ -35,6 +35,10 @@ export namespace UserDTO {
 
   export type DeleteRequest = z.infer<typeof user.deleteSchema>;
 
+  export interface AvatarUploadResponse {
+    url: string;
+  }
+
   export interface SelectUserRecipesResponse {
     recipes: {
       id: string;
