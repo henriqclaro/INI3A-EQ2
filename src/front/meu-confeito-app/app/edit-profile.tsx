@@ -24,7 +24,7 @@ import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useDeleteBakerProfile, useSaveBakerProfile } from '@/src/hooks/useBakerProfile';
 import { useUserEdit } from '@/src/hooks/useUsers';
 import { BakerProfileService } from '@/src/services/baker-profile';
-import { UserEditData } from '@/src/services/user';
+import { UserEditData, UserService } from '@/src/services/user';
 import { AppTheme } from '@/src/theme/themes';
 import {
   BakerProfileLocation,
@@ -32,6 +32,12 @@ import {
   BakerProfileUpdateInput,
   BakerTag,
 } from '@/src/types/baker-profile';
+import {
+  ProcessedImage,
+  createImageFormData,
+  getStorageUrl,
+  pickAvatarImage,
+} from '@/src/utils/image';
 import {
   E164_REGEX,
   formatPhoneInput,
@@ -63,6 +69,10 @@ export default function EditProfileScreen() {
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(formatPhoneInput(user?.phone || ''));
+  const [avatarUrl, setAvatarUrl] = useState(user?.pfpUrl || '');
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState<ProcessedImage | null>(null);
+  const [hasRemovedAvatar, setHasRemovedAvatar] = useState<boolean>(false);
+  const [isPickingAvatar, setIsPickingAvatar] = useState<boolean>(false);
 
   // Baker profile state (Public Profile)
   const [isPublicProfile, setIsPublicProfile] = useState<boolean>(false);
@@ -164,7 +174,59 @@ export default function EditProfileScreen() {
     isLoadingUserEdit ||
     isSavingBakerProfile ||
     isDeletingBakerProfile ||
-    isTogglingPublic;
+    isTogglingPublic ||
+    isPickingAvatar;
+
+  const handlePickAvatar = async () => {
+    setIsPickingAvatar(true);
+    try {
+      const processed = await pickAvatarImage();
+      if (processed) {
+        setSelectedAvatarFile(processed);
+        setAvatarUrl(processed.uri);
+        setHasRemovedAvatar(false);
+      }
+    } finally {
+      setIsPickingAvatar(false);
+    }
+  };
+
+  const handleRemoveAvatar = () => {
+    Alert.alert('Remover Foto de Perfil', 'Tem certeza de que deseja remover sua foto de perfil?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Remover',
+        style: 'destructive',
+        onPress: () => {
+          setSelectedAvatarFile(null);
+          setAvatarUrl('');
+          setHasRemovedAvatar(true);
+        },
+      },
+    ]);
+  };
+
+  const handleAvatarPress = () => {
+    if (avatarUrl.trim()) {
+      Alert.alert('Foto de Perfil', 'O que deseja fazer com sua foto de perfil?', [
+        {
+          text: 'Escolher Nova Foto',
+          onPress: handlePickAvatar,
+        },
+        {
+          text: 'Remover Foto',
+          style: 'destructive',
+          onPress: handleRemoveAvatar,
+        },
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+      ]);
+    } else {
+      handlePickAvatar();
+    }
+  };
 
   const handlePhoneChange = (text: string) => {
     if (text.length < phone.length) {
@@ -507,6 +569,20 @@ export default function EditProfileScreen() {
         userData.phone = formattedPhone;
       }
 
+      if (selectedAvatarFile) {
+        const avatarFormData = await createImageFormData('avatar', selectedAvatarFile);
+        const uploadRes = await UserService.uploadAvatar(avatarFormData);
+        const finalAvatarUrl = getStorageUrl(uploadRes.data.url);
+        userData.pfpUrl = finalAvatarUrl;
+      } else if (hasRemovedAvatar) {
+        try {
+          await UserService.deleteAvatar();
+        } catch (deleteError) {
+          console.warn('Failed to delete avatar on server:', deleteError);
+        }
+        await updateUser({ pfpUrl: null });
+      }
+
       if (Object.keys(userData).length > 0) {
         const response = await editUser(userData, user!.id);
         if (response?.data?.user) {
@@ -567,26 +643,63 @@ export default function EditProfileScreen() {
           {/* Account Information Card */}
           <View style={styles.card}>
             <View style={styles.avatarContainer}>
-              {user?.pfpUrl ? (
-                <Image
-                  source={{ uri: user?.pfpUrl }}
-                  alt="Foto de Perfil"
-                  style={styles.image}
-                  contentFit="cover"
-                  cachePolicy="memory-disk"
-                  recyclingKey={user?.pfpUrl}
-                  transition={150}
-                />
-              ) : (
-                <View style={[styles.image, styles.placeholderImage]}>
-                  <MaterialCommunityIcons
-                    name="account"
-                    size={64}
-                    color={theme.colors.onSurfaceVariant}
+              <TouchableOpacity
+                onPress={handleAvatarPress}
+                disabled={isPickingAvatar || isGlobalLoading}
+                accessibilityRole="button"
+                accessibilityLabel="Alterar foto de perfil"
+                style={styles.avatarTouchable}
+              >
+                {avatarUrl ? (
+                  <Image
+                    source={{ uri: avatarUrl }}
+                    alt="Foto de Perfil"
+                    style={styles.image}
+                    contentFit="cover"
+                    cachePolicy="memory-disk"
+                    recyclingKey={avatarUrl}
+                    transition={150}
                   />
+                ) : (
+                  <View style={[styles.image, styles.placeholderImage]}>
+                    <MaterialCommunityIcons
+                      name="account"
+                      size={64}
+                      color={theme.colors.onSurfaceVariant}
+                    />
+                  </View>
+                )}
+
+                <View style={styles.avatarBadge}>
+                  {isPickingAvatar ? (
+                    <ActivityIndicator size={16} color={theme.colors.onPrimary} />
+                  ) : (
+                    <MaterialCommunityIcons
+                      name="camera"
+                      size={16}
+                      color={theme.colors.onPrimary}
+                    />
+                  )}
                 </View>
-              )}
-              <Text style={styles.userName}>{user?.name}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleAvatarPress}
+                disabled={isPickingAvatar || isGlobalLoading}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  avatarUrl ? 'Alterar foto de perfil' : 'Adicionar foto de perfil'
+                }
+                style={styles.avatarActionBtn}
+              >
+                <Text style={styles.avatarActionBtnText}>
+                  {avatarUrl ? 'Alterar foto' : 'Adicionar foto'}
+                </Text>
+              </TouchableOpacity>
+
+              <Text style={styles.avatarHelperText}>Máx. 5MB • 300 x 300 pixels</Text>
+
+              <Text style={styles.userName}>{name.trim() || user?.name}</Text>
               <Text style={styles.userRole}>{isBakerRole ? 'Confeiteira(o)' : 'Cliente'}</Text>
             </View>
 
@@ -1211,6 +1324,46 @@ const createStyles = (theme: AppTheme) =>
     },
     avatarContainer: {
       alignItems: 'center',
+      marginBottom: 6,
+    },
+    avatarTouchable: {
+      position: 'relative',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minWidth: 48,
+      minHeight: 48,
+    },
+    avatarBadge: {
+      position: 'absolute',
+      bottom: 12,
+      right: 4,
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: theme.colors.primary,
+      borderWidth: 2.5,
+      borderColor: theme.colors.surfaceContainerLowest,
+      alignItems: 'center',
+      justifyContent: 'center',
+      ...theme.shadows.glow,
+    },
+    avatarActionBtn: {
+      minHeight: 48,
+      paddingHorizontal: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 2,
+    },
+    avatarActionBtnText: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.primary,
+    },
+    avatarHelperText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 11,
+      color: theme.colors.onSurfaceVariant,
       marginBottom: 6,
     },
     image: {

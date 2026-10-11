@@ -9,7 +9,9 @@ import { RecipeForm, RecipeFormSubmitData } from '@/src/components/RecipeForm';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useRecipeUpdate, useSingleRecipe } from '@/src/hooks/useRecipes';
+import { RecipeService } from '@/src/services/recipe';
 import { AppTheme } from '@/src/theme/themes';
+import { createImageFormData, getStorageUrl } from '@/src/utils/image';
 
 export default function EditRecipeScreen() {
   const { theme } = useThemeMode();
@@ -34,9 +36,24 @@ export default function EditRecipeScreen() {
     }
 
     try {
+      let finalCoverUrl = formData.coverUrl;
+
+      if (formData.hasRemovedCover) {
+        try {
+          await RecipeService.deleteCover(recipeId);
+        } catch (deleteError) {
+          console.warn('Failed to delete cover on server:', deleteError);
+        }
+        finalCoverUrl = null;
+      } else if (formData.coverImageFile) {
+        const coverFormData = await createImageFormData('cover', formData.coverImageFile);
+        const uploadRes = await RecipeService.uploadCover(recipeId, coverFormData);
+        finalCoverUrl = getStorageUrl(uploadRes.data.url);
+      }
+
       await updateRecipe(recipeId, {
         title: formData.title,
-        coverUrl: formData.coverUrl,
+        coverUrl: finalCoverUrl,
         instructions: formData.instructions,
         baseYield: formData.baseYield,
         yieldUnit: formData.yieldUnit,

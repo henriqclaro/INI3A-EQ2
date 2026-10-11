@@ -30,6 +30,12 @@ export interface RecipeVisibilityResponse {
   data: UpdateRecipeVisibilityResponseData;
 }
 
+export interface RecipeCoverUploadResponse {
+  data: {
+    url: string;
+  };
+}
+
 export const RecipeService = {
   getRecipe: async (recipeId: string) => {
     const response = await api.get<RecipeResponse>(`/recipes/${recipeId}`);
@@ -65,6 +71,22 @@ export const RecipeService = {
   },
   update: async (recipeId: string, data: RecipeUpdateInput) => {
     const response = await api.patch<RecipeResponse>(`/recipes/${recipeId}`, data);
+    return response.data;
+  },
+  uploadCover: async (recipeId: string, formData: FormData) => {
+    const response = await api.patch<RecipeCoverUploadResponse>(
+      `/recipes/${recipeId}/cover`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      },
+    );
+    return response.data;
+  },
+  deleteCover: async (recipeId: string) => {
+    const response = await api.delete(`/recipes/${recipeId}/cover`);
     return response.data;
   },
   getReviews: async (recipeId: string) => {

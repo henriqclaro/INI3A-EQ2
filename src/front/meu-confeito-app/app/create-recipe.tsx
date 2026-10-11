@@ -17,8 +17,10 @@ import { RecipeForm, RecipeFormSubmitData } from '@/src/components/RecipeForm';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useRecipeRegister, useRecipeUpdate, useSingleRecipe } from '@/src/hooks/useRecipes';
+import { RecipeService } from '@/src/services/recipe';
 import { AppTheme } from '@/src/theme/themes';
 import { RecipeRegisterInput } from '@/src/types';
+import { createImageFormData, getStorageUrl } from '@/src/utils/image';
 
 export default function CreateRecipeScreen() {
   const { theme } = useThemeMode();
@@ -58,9 +60,24 @@ export default function CreateRecipeScreen() {
 
     try {
       if (isEditMode && recipeId) {
+        let finalCoverUrl = formData.coverUrl;
+
+        if (formData.hasRemovedCover) {
+          try {
+            await RecipeService.deleteCover(recipeId);
+          } catch (deleteError) {
+            console.warn('Failed to delete cover on server:', deleteError);
+          }
+          finalCoverUrl = null;
+        } else if (formData.coverImageFile) {
+          const coverFormData = await createImageFormData('cover', formData.coverImageFile);
+          const uploadRes = await RecipeService.uploadCover(recipeId, coverFormData);
+          finalCoverUrl = getStorageUrl(uploadRes.data.url);
+        }
+
         await updateRecipe(recipeId, {
           title: formData.title,
-          coverUrl: formData.coverUrl,
+          coverUrl: finalCoverUrl,
           instructions: formData.instructions,
           baseYield: formData.baseYield,
           yieldUnit: formData.yieldUnit,
@@ -85,11 +102,12 @@ export default function CreateRecipeScreen() {
           },
         ]);
       } else {
+        const hasCoverImage = Boolean(formData.coverImageFile);
         const payload: RecipeRegisterInput = {
           userId: user.id,
           parentId: isCustomizing && sourceRecipeId ? sourceRecipeId : null,
           title: formData.title,
-          coverUrl: formData.coverUrl,
+          coverUrl: hasCoverImage ? null : formData.coverUrl,
           instructions: formData.instructions,
           baseYield: formData.baseYield,
           yieldUnit: formData.yieldUnit,
@@ -103,6 +121,22 @@ export default function CreateRecipeScreen() {
         };
 
         const res = await registerRecipe(payload);
+        const createdRecipeId = res?.data?.recipe?.id;
+
+        if (hasCoverImage && createdRecipeId && formData.coverImageFile) {
+          try {
+            const coverFormData = await createImageFormData('cover', formData.coverImageFile);
+            const uploadRes = await RecipeService.uploadCover(createdRecipeId, coverFormData);
+            const finalCoverUrl = getStorageUrl(uploadRes.data.url);
+            await RecipeService.update(createdRecipeId, { coverUrl: finalCoverUrl });
+          } catch (uploadError) {
+            console.error('Error uploading recipe cover after creation:', uploadError);
+            Alert.alert(
+              'Aviso',
+              'A receita foi cadastrada, mas houve uma falha ao enviar a foto de capa.',
+            );
+          }
+        }
 
         const successTitle = isCustomizing ? 'Receita Personalizada!' : 'Sucesso';
         const successMessage = isCustomizing
@@ -113,10 +147,10 @@ export default function CreateRecipeScreen() {
           {
             text: 'Visualizar',
             onPress: () => {
-              if (res?.data?.recipe?.id) {
+              if (createdRecipeId) {
                 router.replace({
                   pathname: '/single-recipe',
-                  params: { recipeId: res.data.recipe.id },
+                  params: { recipeId: createdRecipeId },
                 });
               } else {
                 router.replace('/(tabs)/recipes');

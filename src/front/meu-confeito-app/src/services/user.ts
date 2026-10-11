@@ -21,6 +21,13 @@ export interface UserEditData {
   name?: string | undefined;
   email?: string | undefined;
   phone?: string | null | undefined;
+  pfpUrl?: string | null | undefined;
+}
+
+export interface AvatarUploadResponse {
+  data: {
+    url: string;
+  };
 }
 
 export interface UserEditResponse {
@@ -84,6 +91,18 @@ export const UserService = {
   },
   edit: async (data: UserEditData, userId: string) => {
     const response = await api.patch<UserEditResponse>(`/users/${userId}`, data);
+    return response.data;
+  },
+  uploadAvatar: async (formData: FormData) => {
+    const response = await api.patch<AvatarUploadResponse>('/users/me/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+  deleteAvatar: async () => {
+    const response = await api.delete('/users/me/avatar');
     return response.data;
   },
   delete: async (userId: string) => {

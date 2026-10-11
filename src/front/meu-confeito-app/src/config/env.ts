@@ -13,3 +13,9 @@ if (!_env.success) {
 }
 
 export const env = _env.data;
+
+export const API_HOST_URL = env.EXPO_PUBLIC_API_URL.replace(/\/api\/v1\/?$/, '').replace(
+  /\/+$/,
+  '',
+);
+export const API_BASE_URL = `${API_HOST_URL}/api/v1`;

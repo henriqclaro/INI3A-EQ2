@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
-import { env } from '../config/env';
+import { API_BASE_URL, API_HOST_URL } from '../config/env';
 import { Storage } from '../utils/storage';
 
 interface RetryAxiosRequestConfig extends InternalAxiosRequestConfig {
@@ -64,7 +64,7 @@ const setAuthHeader = (requestConfig: RetryAxiosRequestConfig, token: string): v
 
 export async function requestTokenRefresh(refreshToken: string): Promise<string> {
   const response = await axios.post<RefreshTokenApiResponse>(
-    `${env.EXPO_PUBLIC_API_URL}/auth/tokens`,
+    `${API_BASE_URL}/auth/tokens`,
     { refreshToken },
     {
       headers: {
@@ -100,9 +100,10 @@ export async function requestTokenRefresh(refreshToken: string): Promise<string>
   return newAccessToken;
 }
 
+export { API_BASE_URL, API_HOST_URL };
 // eslint-disable-next-line import/no-named-as-default-member
 export const api = axios.create({
-  baseURL: env.EXPO_PUBLIC_API_URL,
+  baseURL: API_BASE_URL,
   timeout: 7500,
   headers: {
     'Content-Type': 'application/json',

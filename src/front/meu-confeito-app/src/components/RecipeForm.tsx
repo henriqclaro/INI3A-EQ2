@@ -36,6 +36,7 @@ import {
   Tag,
   TagType,
 } from '@/src/types';
+import { ProcessedImage, pickRecipeCoverImage } from '@/src/utils/image';
 import { parseRecipeInstructions } from '@/src/utils/recipe';
 
 export type RecipeInstructionStepInput = RecipeInstructionStep;
@@ -43,6 +44,8 @@ export type RecipeInstructionStepInput = RecipeInstructionStep;
 export interface RecipeFormSubmitData {
   title: string;
   coverUrl: string | null;
+  coverImageFile?: ProcessedImage | null;
+  hasRemovedCover?: boolean;
   instructions: { steps: RecipeInstructionStep[] } | Record<string, unknown>;
   baseYield: number;
   yieldUnit: StandardUnit;
@@ -159,6 +162,9 @@ export function RecipeForm({
   // Form States
   const [title, setTitle] = useState(initialRecipe?.title || '');
   const [coverUrl, setCoverUrl] = useState(initialRecipe?.coverUrl || '');
+  const [coverImageFile, setCoverImageFile] = useState<ProcessedImage | null>(null);
+  const [hasRemovedCover, setHasRemovedCover] = useState<boolean>(false);
+  const [isPickingCover, setIsPickingCover] = useState<boolean>(false);
   const [baseYield, setBaseYield] = useState(
     initialRecipe?.baseYield !== undefined && initialRecipe.baseYield !== null
       ? String(initialRecipe.baseYield)
@@ -292,6 +298,26 @@ export function RecipeForm({
     });
   };
 
+  const handlePickCover = async () => {
+    setIsPickingCover(true);
+    try {
+      const processed = await pickRecipeCoverImage();
+      if (processed) {
+        setCoverImageFile(processed);
+        setCoverUrl(processed.uri);
+        setHasRemovedCover(false);
+      }
+    } finally {
+      setIsPickingCover(false);
+    }
+  };
+
+  const handleRemoveCover = () => {
+    setCoverImageFile(null);
+    setCoverUrl('');
+    setHasRemovedCover(true);
+  };
+
   // Submission handler
   const handleSubmit = async () => {
     if (!title.trim()) {
@@ -380,7 +406,9 @@ export function RecipeForm({
 
     const payload: RecipeFormSubmitData = {
       title: title.trim(),
-      coverUrl: coverUrl.trim() ? coverUrl.trim() : null,
+      coverUrl: hasRemovedCover ? null : coverUrl.trim() ? coverUrl.trim() : null,
+      coverImageFile,
+      hasRemovedCover,
       instructions: {
         steps: validSteps,
       },
@@ -417,11 +445,6 @@ export function RecipeForm({
           : 'Preencha as informações abaixo para registrar sua receita no sistema.'}
       </Text>
 
-      {/* Cover Image Preview */}
-      {coverUrl.trim() ? (
-        <Image source={{ uri: coverUrl }} style={styles.imagePreview} contentFit="cover" />
-      ) : null}
-
       {/* Card: Basic Data */}
       <View style={styles.box}>
         <Text style={styles.secondaryTitle}>Dados Básicos</Text>
@@ -437,17 +460,97 @@ export function RecipeForm({
           />
         </View>
 
+        {/* Foto de Capa da Receita com upload via ImagePicker e restrições */}
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>URL da Imagem de Capa (opcional)</Text>
-          <TextInput
-            style={styles.textInput}
-            placeholder="https://exemplo.com/imagem.jpg"
-            placeholderTextColor={theme.colors.placeholder}
-            value={coverUrl}
-            onChangeText={setCoverUrl}
-            autoCapitalize="none"
-            keyboardType="url"
-          />
+          <View style={styles.coverHeaderRow}>
+            <Text style={styles.label}>Foto de Capa da Receita</Text>
+            <Text style={styles.coverHelperBadge}>Máx. 5MB • 1920x1080</Text>
+          </View>
+
+          {coverUrl.trim() ? (
+            <View style={styles.coverPreviewCard}>
+              <Image
+                source={{ uri: coverUrl }}
+                style={styles.coverImagePreview}
+                contentFit="cover"
+              />
+              <View style={styles.coverActionsRow}>
+                <TouchableOpacity
+                  style={styles.coverActionBtn}
+                  onPress={handlePickCover}
+                  disabled={isPickingCover || isSubmitting}
+                  accessibilityRole="button"
+                  accessibilityLabel="Trocar foto de capa da receita"
+                >
+                  {isPickingCover ? (
+                    <ActivityIndicator size="small" color={theme.colors.primary} />
+                  ) : (
+                    <>
+                      <MaterialCommunityIcons
+                        name="image-edit-outline"
+                        size={18}
+                        color={theme.colors.primary}
+                      />
+                      <Text style={styles.coverActionBtnText}>Trocar Capa</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.coverActionBtn, styles.coverRemoveBtn]}
+                  onPress={handleRemoveCover}
+                  disabled={isPickingCover || isSubmitting}
+                  accessibilityRole="button"
+                  accessibilityLabel="Remover foto de capa da receita"
+                >
+                  <MaterialCommunityIcons
+                    name="trash-can-outline"
+                    size={18}
+                    color={theme.colors.error}
+                  />
+                  <Text style={[styles.coverActionBtnText, styles.coverRemoveBtnText]}>
+                    Remover Capa
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={styles.coverUploadBox}
+              onPress={handlePickCover}
+              disabled={isPickingCover || isSubmitting}
+              accessibilityRole="button"
+              accessibilityLabel="Selecionar imagem de capa para a receita"
+            >
+              {isPickingCover ? (
+                <ActivityIndicator size="small" color={theme.colors.primary} />
+              ) : (
+                <>
+                  <View style={styles.coverUploadIconWrap}>
+                    <MaterialCommunityIcons
+                      name="image-plus"
+                      size={28}
+                      color={theme.colors.primary}
+                    />
+                  </View>
+                  <Text style={styles.coverUploadTitle}>Selecionar Imagem de Capa</Text>
+                  <Text style={styles.coverUploadSubtitle}>
+                    Toque para escolher da galeria (JPEG, PNG ou WEBP até 5MB)
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+          )}
+
+          {/* Campo de URL mantido de forma oculta para compatibilidade */}
+          <View style={styles.hiddenField} pointerEvents="none">
+            <TextInput
+              value={coverUrl}
+              editable={false}
+              accessibilityElementsHidden={true}
+              importantForAccessibility="no"
+            />
+          </View>
         </View>
 
         <View style={styles.row}>
@@ -886,14 +989,100 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       marginBottom: 20,
       lineHeight: 22,
     },
-    imagePreview: {
-      width: '50%',
-      aspectRatio: 4 / 3,
-      alignSelf: 'center',
-      borderRadius: theme.rounded.lg,
+    coverHeaderRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 6,
+    },
+    coverHelperBadge: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 11,
+      color: theme.colors.onSurfaceVariant,
+    },
+    coverPreviewCard: {
+      borderRadius: theme.rounded.md,
+      overflow: 'hidden',
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      marginBottom: 20,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      ...theme.shadows.soft,
+    },
+    coverImagePreview: {
+      width: '100%',
+      aspectRatio: 16 / 9,
+    },
+    coverActionsRow: {
+      flexDirection: 'row',
+      gap: 10,
+      padding: 10,
+      justifyContent: 'flex-end',
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.outlineVariant,
+    },
+    coverActionBtn: {
+      minHeight: 48,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      borderRadius: theme.rounded.default,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+    },
+    coverActionBtnText: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 13,
+      color: theme.colors.primary,
+      fontWeight: '600',
+    },
+    coverRemoveBtn: {
+      borderColor: theme.colors.errorContainer,
+    },
+    coverRemoveBtnText: {
+      color: theme.colors.error,
+    },
+    coverUploadBox: {
+      minHeight: 120,
+      borderRadius: theme.rounded.md,
+      borderWidth: 1.5,
+      borderStyle: 'dashed',
+      borderColor: theme.colors.outlineVariant,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 16,
+      gap: 4,
+    },
+    coverUploadIconWrap: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      marginBottom: 4,
+    },
+    coverUploadTitle: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 14,
+      fontWeight: '700',
+      color: theme.colors.espressoDark,
+    },
+    coverUploadSubtitle: {
+      fontFamily: theme.typography.bodySm.fontFamily,
+      fontSize: 12,
+      color: theme.colors.onSurfaceVariant,
+      textAlign: 'center',
+    },
+    hiddenField: {
+      display: 'none',
     },
     box: {
       backgroundColor: theme.colors.surfaceContainerLowest,

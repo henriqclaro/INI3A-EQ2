@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 
 import axios from 'axios';
 
-import { env } from '../config/env';
+import { API_BASE_URL } from '../config/env';
 import { api, requestTokenRefresh } from './api';
 
 export interface LogInData {
@@ -66,7 +66,7 @@ export const AuthService = {
   },
   refreshToken: async (refreshToken: string): Promise<RefreshTokenResponse> => {
     const response = await axios.post<RefreshTokenResponse>(
-      `${env.EXPO_PUBLIC_API_URL}/auth/tokens`,
+      `${API_BASE_URL}/auth/tokens`,
       { refreshToken },
       {
         headers: {
