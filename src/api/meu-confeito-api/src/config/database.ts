@@ -23,4 +23,14 @@ export async function connectDB() {
   }
 }
 
+export async function disconnectDB() {
+  try {
+    await prisma.$disconnect();
+    await pool.end();
+    console.log('Successfully disconnected from the database.');
+  } catch (error) {
+    console.error('Error disconnecting from database: ', error);
+  }
+}
+
 export default prisma;

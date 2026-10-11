@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import { AuthController } from '../controllers/auth.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
+import { authRateLimiter } from '../middlewares/rate-limit.middleware';
 import { validate } from '../middlewares/validate.middleware';
 import * as auth from '../validation/auth.schema';
 
@@ -10,6 +11,7 @@ const authController = new AuthController();
 
 authRoutes.post(
   '/sessions',
+  authRateLimiter,
   validate({ body: auth.logInSchema }),
   authController.logIn.bind(authController),
 );
@@ -22,6 +24,7 @@ authRoutes.delete(
 
 authRoutes.post(
   '/tokens',
+  authRateLimiter,
   validate({ body: auth.refreshOrDeleteSchema }),
   authController.toRefreshToken.bind(authController),
 );
@@ -29,6 +32,7 @@ authRoutes.post(
 authRoutes.patch(
   '/password',
   authMiddleware,
+  authRateLimiter,
   validate({ body: auth.resetPasswordSchema }),
   authController.resetPassword.bind(authController),
 );

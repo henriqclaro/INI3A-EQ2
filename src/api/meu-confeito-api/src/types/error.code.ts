@@ -4,7 +4,8 @@ export type ClientErrorCode =
   | 'INVALID_FORMAT'
   | 'PAYLOAD_TOO_LARGE'
   | 'INCOMPATIBLE_UNIT_DIMENSION'
-  | 'RECIPE_ITEM_INVALID_XOR';
+  | 'RECIPE_ITEM_INVALID_XOR'
+  | 'RATE_LIMIT_EXCEEDED';
 
 export type ResourceErrorCode =
   | 'RESOURCE_NOT_FOUND'

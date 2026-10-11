@@ -46,6 +46,15 @@ export class GoneError extends AppError {
   }
 }
 
+export class TooManyRequestsError extends AppError {
+  constructor(
+    message = 'Too many requests, please try again later',
+    errorCode: AppErrorCode = 'RATE_LIMIT_EXCEEDED',
+  ) {
+    super(429, message, errorCode);
+  }
+}
+
 export class InternalError extends AppError {
   constructor(
     message = 'An internal server error occurred',

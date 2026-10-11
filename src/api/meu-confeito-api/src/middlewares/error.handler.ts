@@ -52,7 +52,13 @@ export function errorHandler(err: Error, _req: Request, res: Response, __next: N
   }
 
   if (err instanceof PrismaClientKnownRequestError && err.code === 'P2025') {
-    throw new NotFoundError();
+    const notFoundError = new NotFoundError();
+
+    return res.status(notFoundError.statusCode).json({
+      status: notFoundError.status,
+      message: notFoundError.message,
+      code: notFoundError.errorCode,
+    });
   }
 
   if (err instanceof multer.MulterError) {
@@ -73,13 +79,27 @@ export function errorHandler(err: Error, _req: Request, res: Response, __next: N
 
   // Adicionar erros operacionais acima desse comentário, e não-operacionais abaixo
 
-  if (err instanceof PrismaClientKnownRequestError || err instanceof PrismaClientValidationError) {
-    console.error('Internal Prisma Error: ', err);
+  const reqIdPrefix = _req.id ? `[${_req.id}] ` : '';
 
-    throw new InternalError();
+  if (err instanceof PrismaClientKnownRequestError || err instanceof PrismaClientValidationError) {
+    console.error(`${reqIdPrefix}Internal Prisma Error: `, err);
+
+    const internalError = new InternalError();
+
+    return res.status(internalError.statusCode).json({
+      status: internalError.status,
+      message: internalError.message,
+      code: internalError.errorCode,
+    });
   }
 
-  console.error('Internal Server Error: ', err);
+  console.error(`${reqIdPrefix}Internal Server Error: `, err);
 
-  throw new InternalError();
+  const internalError = new InternalError();
+
+  return res.status(internalError.statusCode).json({
+    status: internalError.status,
+    message: internalError.message,
+    code: internalError.errorCode,
+  });
 }
