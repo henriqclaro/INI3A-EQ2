@@ -64,7 +64,7 @@ userRoutes.delete(
 
 userRoutes.get(
   '/:id/recipes',
-  validate({ params: user.paramsSchema }),
+  validate({ params: user.paramsSchema, query: user.recipeQuerySchema }),
   userController.selectUserRecipe.bind(userController),
 );
 

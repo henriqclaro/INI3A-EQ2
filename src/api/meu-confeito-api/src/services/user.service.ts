@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 
 import prisma from '../config/database';
 import { env } from '../config/env.config';
+import type { Prisma } from '../generated/prisma/client';
 import type { UserModel } from '../generated/prisma/models';
 import { ConflictError, ForbiddenError, GoneError, NotFoundError } from '../responses/http.error';
 import type { RequestContext } from '../types/context.interface';
@@ -169,12 +170,33 @@ export class UserService {
 
   // Queries de Relações ------------------------
 
-  async selectUserRecipe(context: RequestContext, id: string) {
+  async selectUserRecipe(
+    context: RequestContext,
+    id: string,
+    query?: UserDTO.RecipeQueryRequest,
+  ): Promise<UserDTO.SelectUserRecipesResponse> {
     this.checkPermission(context, id);
 
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { isActive: true },
+    });
+
+    this.checkUser(user);
+
+    const page = query?.page ?? 0;
+    const skip = page > 0 ? page * 10 : 0;
+
+    const where: Prisma.RecipeWhereInput = {
+      userId: id,
+      status: query?.status ? query.status : { not: 'SUSPENDED' },
+    };
+
     const recipes = await prisma.recipe.findMany({
-      where: { userId: id },
+      where,
+      skip,
       take: 10,
+      orderBy: { createdAt: 'desc' },
       select: {
         id: true,
         parent: {
@@ -185,6 +207,7 @@ export class UserService {
         },
         title: true,
         coverUrl: true,
+        status: true,
 
         /*
         profitMargin: true,

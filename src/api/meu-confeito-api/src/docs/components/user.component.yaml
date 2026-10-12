@@ -81,6 +81,13 @@ components:
                 type: string
                 format: url
                 nullable: true
+              status:
+                type: string
+                enum:
+                  - DRAFT
+                  - PUBLISHED
+                  - ARCHIVED
+                  - SUSPENDED
               prepTimeMinutes:
                 type: number
               createdAt:

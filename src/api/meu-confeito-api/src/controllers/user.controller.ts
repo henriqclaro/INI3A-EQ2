@@ -80,7 +80,7 @@ export class UserController {
   // Métodos de Relações ------------------------
 
   async selectUserRecipe(
-    req: Request<UserDTO.RequestParams>,
+    req: Request<UserDTO.RequestParams, unknown, unknown, UserDTO.RecipeQueryRequest>,
     res: Response<ApiResponse<UserDTO.SelectUserRecipesResponse>>,
   ) {
     const context = this.extractProps(req);
@@ -90,6 +90,7 @@ export class UserController {
     const responseData: UserDTO.SelectUserRecipesResponse = await this.userService.selectUserRecipe(
       context,
       userId,
+      req.query,
     );
 
     return new DefaultSuccessResponse(

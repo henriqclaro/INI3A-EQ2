@@ -12,6 +12,20 @@ export const paramsSchema = z.object({
   id: z.uuid('Invalid UUID for user ID'),
 });
 
+export const recipeQuerySchema = z.object({
+  status: z
+    .string()
+    .toUpperCase()
+    .pipe(z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']))
+    .optional(),
+  page: z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((val) => (val !== undefined && val !== null ? Number(val) : 0))
+    .pipe(z.number().int().min(0))
+    .optional(),
+});
+
 export const updateSchema = z
   .object({
     name: z.string().min(3, 'Name must have at least 3 characters'),

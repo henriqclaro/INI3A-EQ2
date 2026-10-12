@@ -204,15 +204,29 @@ paths:
   /users/{id}/recipes:
     get:
       summary: Seleciona as receitas próprias de um usuário
+      description: Retorna as receitas pertencentes ao usuário, com suporte a filtro opcional por status (DRAFT, PUBLISHED, ARCHIVED) e paginação.
       tags:
         - Usuários
         - Receitas
       parameters:
         - in: path
           name: id
-          required: true,
+          required: true
           schema:
             $ref: '#/components/schemas/UserParamsSchema'
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [DRAFT, PUBLISHED, ARCHIVED]
+          description: Filtra as receitas pelo status (DRAFT, PUBLISHED, ARCHIVED)
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Número da página (iniciando em 0)
       responses:
         '200':
           description: Receitas selecionadas com sucesso
@@ -220,8 +234,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserRecipesSelectResponse'
+        '400':
+          description: Erro na validação dos dados
         '403':
           description: Ação negada por falta de privilégios
+        '404':
+          description: Usuário não encontrado
+        '410':
+          description: Usuário suspenso ou excluído
   /users/{id}/saves:
     get:
       summary: Seleciona as receitas salvas por um usuário
