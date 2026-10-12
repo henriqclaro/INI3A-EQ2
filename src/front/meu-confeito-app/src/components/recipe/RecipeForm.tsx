@@ -575,7 +575,13 @@ export function RecipeForm({
                 dropdownIconColor={theme.colors.onSurface}
               >
                 {STANDARD_UNITS.map((u) => (
-                  <Picker.Item key={u.value} label={u.label} value={u.value} />
+                  <Picker.Item
+                    key={u.value}
+                    label={u.label}
+                    value={u.value}
+                    color={theme.colors.onSurface}
+                    style={styles.pickerItem}
+                  />
                 ))}
               </Picker>
             </View>
@@ -827,7 +833,13 @@ export function RecipeForm({
                     dropdownIconColor={theme.colors.onSurface}
                   >
                     {STANDARD_UNITS.map((u) => (
-                      <Picker.Item key={u.value} label={u.label} value={u.value} />
+                      <Picker.Item
+                        key={u.value}
+                        label={u.label}
+                        value={u.value}
+                        color={theme.colors.onSurface}
+                        style={styles.pickerItem}
+                      />
                     ))}
                   </Picker>
                 </View>
@@ -1159,6 +1171,7 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
     picker: {
       width: '100%',
       color: theme.colors.onSurface,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       ...Platform.select({
         android: {
           height: 48,
@@ -1168,8 +1181,14 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
           height: 48,
           paddingHorizontal: 8,
           borderWidth: 0,
+          backgroundColor: theme.colors.surfaceContainerLowest,
+          color: theme.colors.onSurface,
         },
       }),
+    },
+    pickerItem: {
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      color: theme.colors.onSurface,
     },
     ingredientCard: {
       backgroundColor: theme.colors.surfaceContainerLow,

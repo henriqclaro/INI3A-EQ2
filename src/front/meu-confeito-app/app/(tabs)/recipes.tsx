@@ -30,11 +30,20 @@ export default function RecipesScreen() {
   const isBakerRole = user?.role?.trim().toUpperCase() === 'BAKER';
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'PUBLISHED' | 'DRAFT' | 'SAVED'>('ALL');
 
+  const statusParam = useMemo(() => {
+    if (activeFilter === 'PUBLISHED') return 'PUBLISHED' as const;
+    if (activeFilter === 'DRAFT') return 'DRAFT' as const;
+    return undefined;
+  }, [activeFilter]);
+
   const {
     recipes: userRecipes,
     isLoading: isLoadingUserRecipes,
+    isLoadingMore: isLoadingMoreUserRecipes,
+    hasMore: hasMoreUserRecipes,
+    loadMore: loadMoreUserRecipes,
     refetch: refetchUserRecipes,
-  } = useUserRecipes(user?.id);
+  } = useUserRecipes(user?.id, statusParam);
   const {
     savedRecipes,
     isLoading: isLoadingSavedRecipes,
@@ -50,20 +59,7 @@ export default function RecipesScreen() {
     }
   }, [user]);
 
-  const ownActiveRecipes = useMemo(
-    () => userRecipes.filter((r) => r.status !== 'ARCHIVED'),
-    [userRecipes],
-  );
-  const publishedCount = useMemo(
-    () => ownActiveRecipes.filter((r) => r.status === 'PUBLISHED').length,
-    [ownActiveRecipes],
-  );
-  const draftCount = useMemo(
-    () => ownActiveRecipes.filter((r) => r.status === 'DRAFT').length,
-    [ownActiveRecipes],
-  );
   const savedCount = savedRecipes.length;
-  const allCount = ownActiveRecipes.length;
 
   const displayedRecipes: PartialRecipe[] = useMemo(() => {
     if (activeFilter === 'SAVED') {
@@ -82,16 +78,18 @@ export default function RecipesScreen() {
         packagingCost: s.recipe.packagingCost,
       }));
     }
-    if (activeFilter === 'PUBLISHED') {
-      return ownActiveRecipes.filter((r) => r.status === 'PUBLISHED');
-    }
-    if (activeFilter === 'DRAFT') {
-      return ownActiveRecipes.filter((r) => r.status === 'DRAFT');
-    }
-    return ownActiveRecipes;
-  }, [activeFilter, ownActiveRecipes, savedRecipes]);
+    return userRecipes.filter((r) => r.status !== 'ARCHIVED');
+  }, [activeFilter, savedRecipes, userRecipes]);
 
   const isLoading = isLoadingUserRecipes || (activeFilter === 'SAVED' && isLoadingSavedRecipes);
+  const hasMore = activeFilter !== 'SAVED' && hasMoreUserRecipes;
+  const isLoadingMore = activeFilter !== 'SAVED' && isLoadingMoreUserRecipes;
+
+  const handleEndReached = useCallback(() => {
+    if (activeFilter !== 'SAVED' && hasMoreUserRecipes && !isLoading && !isLoadingMoreUserRecipes) {
+      loadMoreUserRecipes();
+    }
+  }, [activeFilter, hasMoreUserRecipes, isLoading, isLoadingMoreUserRecipes, loadMoreUserRecipes]);
 
   const handleRefresh = useCallback(async () => {
     if (activeFilter === 'SAVED') {
@@ -183,24 +181,12 @@ export default function RecipesScreen() {
             <View style={styles.desktopHeaderTitleCol}>
               <Text style={styles.desktopHeaderTitle}>Suas Receitas</Text>
               <Text style={styles.desktopHeaderSubtitle}>
-                {allCount} {allCount === 1 ? 'receita cadastrada' : 'receitas cadastradas'}
+                {displayedRecipes.length}
+                {hasMore ? '+' : ''}{' '}
+                {displayedRecipes.length === 1 ? 'receita listada' : 'receitas listadas'}
               </Text>
             </View>
             <View style={styles.desktopHeaderActions}>
-              <TouchableOpacity
-                style={styles.desktopHeaderSecondaryBtn}
-                onPress={() => router.push('/saved-recipes')}
-                activeOpacity={0.85}
-                accessibilityRole="button"
-                accessibilityLabel="Ver receitas salvas"
-              >
-                <MaterialCommunityIcons
-                  name="bookmark-multiple-outline"
-                  size={18}
-                  color={theme.colors.onSurface}
-                />
-                <Text style={styles.desktopHeaderSecondaryBtnText}>Salvas</Text>
-              </TouchableOpacity>
               <TouchableOpacity
                 style={styles.desktopHeaderSecondaryBtn}
                 onPress={() => router.push('/public-recipes')}
@@ -239,21 +225,21 @@ export default function RecipesScreen() {
             icon="book-open-outline"
             isSelected={activeFilter === 'ALL'}
             onPress={() => setActiveFilter('ALL')}
-            count={allCount}
+            count={activeFilter === 'ALL' ? displayedRecipes.length : undefined}
           />
           <RecipeFilterChip
             label="Publicadas"
             icon="earth"
             isSelected={activeFilter === 'PUBLISHED'}
             onPress={() => setActiveFilter('PUBLISHED')}
-            count={publishedCount}
+            count={activeFilter === 'PUBLISHED' ? displayedRecipes.length : undefined}
           />
           <RecipeFilterChip
             label="Rascunhos"
             icon="file-document-edit-outline"
             isSelected={activeFilter === 'DRAFT'}
             onPress={() => setActiveFilter('DRAFT')}
-            count={draftCount}
+            count={activeFilter === 'DRAFT' ? displayedRecipes.length : undefined}
           />
           <RecipeFilterChip
             label="Salvas"
@@ -267,10 +253,9 @@ export default function RecipesScreen() {
     );
   }, [
     activeFilter,
-    allCount,
-    draftCount,
+    displayedRecipes.length,
     hasHeaderActions,
-    publishedCount,
+    hasMore,
     savedCount,
     styles,
     theme.colors.onPrimary,
@@ -281,6 +266,30 @@ export default function RecipesScreen() {
     if (isLoading || displayedRecipes.length === 0) return null;
     return (
       <View style={styles.footerWrapper}>
+        {isLoadingMore ? (
+          <View style={styles.footerLoadingWrapper}>
+            <ActivityIndicator size="small" color={theme.colors.primary} />
+            <Text style={styles.footerLoadingText}>Carregando mais receitas...</Text>
+          </View>
+        ) : hasMore ? (
+          <View style={styles.loadMoreWrapper}>
+            <TouchableOpacity
+              style={styles.loadMoreBtn}
+              onPress={loadMoreUserRecipes}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Carregar mais receitas"
+            >
+              <MaterialCommunityIcons
+                name="chevron-down-circle-outline"
+                size={18}
+                color={theme.colors.primary}
+              />
+              <Text style={styles.loadMoreBtnText}>Carregar mais receitas</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
+
         <View style={styles.bottomSuggestionCard}>
           <View style={styles.suggestionHeader}>
             <View style={styles.suggestionIconWrapper}>
@@ -329,7 +338,10 @@ export default function RecipesScreen() {
     );
   }, [
     displayedRecipes.length,
+    hasMore,
     isLoading,
+    isLoadingMore,
+    loadMoreUserRecipes,
     styles,
     theme.colors.onPrimary,
     theme.colors.onSurface,
@@ -452,6 +464,8 @@ export default function RecipesScreen() {
         ListHeaderComponent={listHeader}
         ListFooterComponent={listFooter}
         ListEmptyComponent={listEmpty}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.4}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
@@ -614,6 +628,44 @@ const createStyles = (
       maxWidth: isMobile ? cardWidth : containerWidth,
       alignSelf: 'center',
       marginTop: 24,
+    },
+    footerLoadingWrapper: {
+      paddingVertical: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'row',
+      gap: 10,
+      width: '100%',
+    },
+    footerLoadingText: {
+      fontFamily: theme.typography.bodyMd.fontFamily,
+      fontSize: 14,
+      color: theme.colors.onSurfaceVariant,
+    },
+    loadMoreWrapper: {
+      paddingVertical: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%',
+    },
+    loadMoreBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      borderRadius: theme.rounded.default,
+      minHeight: 48,
+      ...theme.shadows.soft,
+    },
+    loadMoreBtnText: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.colors.primary,
     },
     emptyWrapper: {
       width: '100%',

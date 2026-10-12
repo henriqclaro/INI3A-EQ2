@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { BakerProfileService } from '../services/baker-profile';
 import {
@@ -262,66 +262,139 @@ export function usePublicBakerProfile(userId: string | undefined) {
 export function useNearbyBakers() {
   const [bakers, setBakers] = useState<NearbyBakerItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+  const [hasMore, setHasMore] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(0);
   const [hasError, setHasError] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const searchBakers = useCallback(async (params: NearbyBakersQuery) => {
-    setIsLoading(true);
-    setHasError(false);
-    setErrorMessage(null);
-    try {
-      const response = await BakerProfileService.getNearbyBakers(params);
-      const list = response?.data?.bakerProfiles || [];
-      setBakers(list);
-      return list;
-    } catch (err: unknown) {
-      console.error('Error fetching nearby bakers:', err);
-      const apiErr = err as ApiError;
-      setHasError(true);
-      setErrorMessage(
-        apiErr?.response?.data?.message ||
-          apiErr?.message ||
-          'Não foi possível encontrar confeitarias na região.',
-      );
-      setBakers([]);
-      return [];
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const lastSearchRef = useRef<
+    | { type: 'nearby'; params: NearbyBakersQuery }
+    | { type: 'neighborhood'; params: NeighborhoodBakersQuery }
+    | null
+  >(null);
 
-  const searchBakersByNeighborhood = useCallback(async (params: NeighborhoodBakersQuery) => {
-    setIsLoading(true);
-    setHasError(false);
-    setErrorMessage(null);
-    try {
-      const response = await BakerProfileService.getBakersByNeighborhood(params);
-      const list = response?.data?.bakerProfiles || [];
-      setBakers(list);
-      return list;
-    } catch (err: unknown) {
-      console.error('Error fetching bakers by neighborhood:', err);
-      const apiErr = err as ApiError;
-      setHasError(true);
-      setErrorMessage(
-        apiErr?.response?.data?.message ||
-          apiErr?.message ||
-          'Não foi possível encontrar confeitarias para essa localização.',
-      );
-      setBakers([]);
-      return [];
-    } finally {
-      setIsLoading(false);
+  const searchBakers = useCallback(
+    async (params: NearbyBakersQuery, isAppend: boolean = false) => {
+      const pageToFetch = params.page ?? (isAppend ? currentPage + 1 : 0);
+
+      if (isAppend) {
+        setIsLoadingMore(true);
+      } else {
+        setIsLoading(true);
+        lastSearchRef.current = { type: 'nearby', params };
+      }
+      setHasError(false);
+      setErrorMessage(null);
+
+      try {
+        const response = await BakerProfileService.getNearbyBakers({
+          ...params,
+          page: pageToFetch,
+        });
+        const list = response?.data?.bakerProfiles || [];
+        if (isAppend) {
+          setBakers((prev) => [...prev, ...list]);
+        } else {
+          setBakers(list);
+        }
+        setCurrentPage(pageToFetch);
+        setHasMore(list.length >= 10);
+        return list;
+      } catch (err: unknown) {
+        console.error('Error fetching nearby bakers:', err);
+        const apiErr = err as ApiError;
+        setHasError(true);
+        setErrorMessage(
+          apiErr?.response?.data?.message ||
+            apiErr?.message ||
+            'Não foi possível encontrar confeitarias na região.',
+        );
+        if (!isAppend) {
+          setBakers([]);
+          setHasMore(false);
+        }
+        return [];
+      } finally {
+        setIsLoading(false);
+        setIsLoadingMore(false);
+      }
+    },
+    [currentPage],
+  );
+
+  const searchBakersByNeighborhood = useCallback(
+    async (params: NeighborhoodBakersQuery, isAppend: boolean = false) => {
+      const pageToFetch = params.page ?? (isAppend ? currentPage + 1 : 0);
+
+      if (isAppend) {
+        setIsLoadingMore(true);
+      } else {
+        setIsLoading(true);
+        lastSearchRef.current = { type: 'neighborhood', params };
+      }
+      setHasError(false);
+      setErrorMessage(null);
+
+      try {
+        const response = await BakerProfileService.getBakersByNeighborhood({
+          ...params,
+          page: pageToFetch,
+        });
+        const list = response?.data?.bakerProfiles || [];
+        if (isAppend) {
+          setBakers((prev) => [...prev, ...list]);
+        } else {
+          setBakers(list);
+        }
+        setCurrentPage(pageToFetch);
+        setHasMore(list.length >= 10);
+        return list;
+      } catch (err: unknown) {
+        console.error('Error fetching bakers by neighborhood:', err);
+        const apiErr = err as ApiError;
+        setHasError(true);
+        setErrorMessage(
+          apiErr?.response?.data?.message ||
+            apiErr?.message ||
+            'Não foi possível encontrar confeitarias para essa localização.',
+        );
+        if (!isAppend) {
+          setBakers([]);
+          setHasMore(false);
+        }
+        return [];
+      } finally {
+        setIsLoading(false);
+        setIsLoadingMore(false);
+      }
+    },
+    [currentPage],
+  );
+
+  const loadMore = useCallback(async () => {
+    if (!hasMore || isLoading || isLoadingMore || !lastSearchRef.current) {
+      return;
     }
-  }, []);
+    const nextPage = currentPage + 1;
+    if (lastSearchRef.current.type === 'nearby') {
+      await searchBakers({ ...lastSearchRef.current.params, page: nextPage }, true);
+    } else if (lastSearchRef.current.type === 'neighborhood') {
+      await searchBakersByNeighborhood({ ...lastSearchRef.current.params, page: nextPage }, true);
+    }
+  }, [currentPage, hasMore, isLoading, isLoadingMore, searchBakers, searchBakersByNeighborhood]);
 
   return {
     bakers,
     isLoading,
+    isLoadingMore,
+    hasMore,
+    currentPage,
     hasError,
     errorMessage,
     searchBakers,
     searchBakersByNeighborhood,
+    loadMore,
     setBakers,
   };
 }

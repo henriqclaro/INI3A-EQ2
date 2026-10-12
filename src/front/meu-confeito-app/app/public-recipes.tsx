@@ -28,7 +28,7 @@ export default function PublicRecipesScreen() {
   const [isDateModalVisible, setIsDateModalVisible] = useState(false);
 
   const { theme } = useThemeMode();
-  const { recipes, isLoading, refetch } = useManyRecipes({
+  const { recipes, isLoading, isLoadingMore, hasMore, loadMore, refetch } = useManyRecipes({
     search,
     sort: activeSort ?? undefined,
     dateLimit,
@@ -143,6 +143,58 @@ export default function PublicRecipesScreen() {
     theme.colors.primary,
   ]);
 
+  const handleEndReached = useCallback(() => {
+    if (hasMore && !isLoading && !isLoadingMore) {
+      loadMore();
+    }
+  }, [hasMore, isLoading, isLoadingMore, loadMore]);
+
+  const listFooter = useMemo(() => {
+    if (isLoading || recipes.length === 0) return null;
+
+    if (isLoadingMore) {
+      return (
+        <View style={styles.footerLoadingWrapper}>
+          <ActivityIndicator size="small" color={theme.colors.primary} />
+          <Text style={styles.footerLoadingText}>Carregando mais receitas...</Text>
+        </View>
+      );
+    }
+
+    if (hasMore) {
+      return (
+        <View style={styles.loadMoreWrapper}>
+          <TouchableOpacity
+            style={styles.loadMoreBtn}
+            onPress={loadMore}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Carregar mais receitas"
+          >
+            <MaterialCommunityIcons
+              name="chevron-down-circle-outline"
+              size={18}
+              color={theme.colors.primary}
+            />
+            <Text style={styles.loadMoreBtnText}>Carregar mais receitas</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    if (recipes.length >= 10) {
+      return (
+        <View style={styles.footerEndOfList}>
+          <Text style={styles.footerEndOfListText}>
+            Todas as receitas públicas foram carregadas.
+          </Text>
+        </View>
+      );
+    }
+
+    return null;
+  }, [hasMore, isLoading, isLoadingMore, loadMore, recipes.length, styles, theme.colors.primary]);
+
   const itemSeparator = useCallback(() => <View style={styles.separator} />, [styles.separator]);
   const keyExtractor = useCallback((item: PartialRecipe) => item.id, []);
 
@@ -209,8 +261,8 @@ export default function PublicRecipesScreen() {
               <View style={styles.metaRow}>
                 <Text style={styles.resultCountText}>
                   {hasActiveFilters
-                    ? `${recipes.length} ${recipes.length === 1 ? 'receita encontrada' : 'receitas encontradas'}`
-                    : `${recipes.length} ${recipes.length === 1 ? 'receita disponível' : 'receitas disponíveis'}`}
+                    ? `${recipes.length}${hasMore ? '+' : ''} ${recipes.length === 1 ? 'receita encontrada' : 'receitas encontradas'}`
+                    : `${recipes.length}${hasMore ? '+' : ''} ${recipes.length === 1 ? 'receita disponível' : 'receitas disponíveis'}`}
                 </Text>
               </View>
             )}
@@ -226,6 +278,9 @@ export default function PublicRecipesScreen() {
           columnWrapperStyle={isDesktop ? styles.columnWrapper : undefined}
           ItemSeparatorComponent={itemSeparator}
           ListEmptyComponent={listEmpty}
+          ListFooterComponent={listFooter}
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.4}
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContainer}
           showsVerticalScrollIndicator={false}
@@ -387,5 +442,52 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number, i
       fontSize: 14,
       fontWeight: '600',
       color: theme.colors.primary,
+    },
+    footerLoadingWrapper: {
+      paddingVertical: 24,
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'row',
+      gap: 10,
+    },
+    footerLoadingText: {
+      fontFamily: theme.typography.bodyMd.fontFamily,
+      fontSize: 14,
+      color: theme.colors.onSurfaceVariant,
+    },
+    loadMoreWrapper: {
+      paddingVertical: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%',
+    },
+    loadMoreBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      borderRadius: theme.rounded.default,
+      minHeight: 48,
+      ...theme.shadows.soft,
+    },
+    loadMoreBtnText: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.colors.primary,
+    },
+    footerEndOfList: {
+      paddingVertical: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    footerEndOfListText: {
+      fontFamily: theme.typography.bodySm.fontFamily,
+      fontSize: 13,
+      color: theme.colors.onSurfaceVariant,
     },
   });

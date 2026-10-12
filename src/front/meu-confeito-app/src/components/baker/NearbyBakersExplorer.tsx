@@ -84,6 +84,9 @@ export function NearbyBakersExplorer({
   const {
     bakers,
     isLoading: isLoadingBakers,
+    isLoadingMore: isLoadingMoreBakers,
+    hasMore: hasMoreBakers,
+    loadMore: loadMoreBakers,
     hasError,
     errorMessage,
     searchBakers,
@@ -591,10 +594,10 @@ export function NearbyBakersExplorer({
         <Text style={styles.resultsTitle}>
           {isLocationMode
             ? hasSearched
-              ? `Confeitarias Encontradas (${bakers.length})`
+              ? `Confeitarias Encontradas (${bakers.length}${hasMoreBakers ? '+' : ''})`
               : 'Confeitarias na Região'
             : hasNeighborhoodSearched
-              ? `Confeitarias Encontradas (${bakers.length})`
+              ? `Confeitarias Encontradas (${bakers.length}${hasMoreBakers ? '+' : ''})`
               : 'Confeitarias por Região'}
         </Text>
         {isLocationMode && hasSearched && (
@@ -634,12 +637,38 @@ export function NearbyBakersExplorer({
           />
         </View>
       ) : bakers.length > 0 ? (
-        <View style={styles.bakersList}>
-          {bakers.map((baker) => (
-            <View key={baker.userId} style={styles.bakerCardWrapper}>
-              <BakerCard baker={baker} onPress={() => handleBakerPress(baker)} />
+        <View style={styles.bakersListWrapper}>
+          <View style={styles.bakersList}>
+            {bakers.map((baker) => (
+              <View key={baker.userId} style={styles.bakerCardWrapper}>
+                <BakerCard baker={baker} onPress={() => handleBakerPress(baker)} />
+              </View>
+            ))}
+          </View>
+
+          {hasMoreBakers && (
+            <View style={styles.paginationWrapper}>
+              <CustomButton
+                title={
+                  isLoadingMoreBakers
+                    ? 'Carregando mais confeitarias...'
+                    : 'Carregar Mais Confeitarias'
+                }
+                variant="secondary"
+                isDisabled={isLoadingMoreBakers}
+                onPress={loadMoreBakers}
+                style={styles.loadMoreBtn}
+              />
             </View>
-          ))}
+          )}
+
+          {!hasMoreBakers && bakers.length >= 10 && (
+            <View style={styles.endOfResultsWrapper}>
+              <Text style={styles.endOfResultsText}>
+                Todas as confeitarias encontradas nesta busca foram exibidas.
+              </Text>
+            </View>
+          )}
         </View>
       ) : isLocationMode && hasSearched ? (
         <View style={styles.emptyCard}>
@@ -1154,6 +1183,10 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isLargeDesktop: boole
       fontSize: 13,
       color: theme.colors.onSurfaceVariant,
     },
+    bakersListWrapper: {
+      width: '100%',
+      gap: theme.spacing.space3,
+    },
     bakersList: {
       width: '100%',
       flexDirection: 'column',
@@ -1161,6 +1194,26 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isLargeDesktop: boole
     },
     bakerCardWrapper: {
       width: '100%',
+    },
+    paginationWrapper: {
+      width: '100%',
+      alignItems: 'center',
+      marginTop: theme.spacing.space2,
+    },
+    loadMoreBtn: {
+      minWidth: 240,
+      minHeight: theme.spacing.touchable,
+    },
+    endOfResultsWrapper: {
+      width: '100%',
+      alignItems: 'center',
+      paddingVertical: theme.spacing.space3,
+    },
+    endOfResultsText: {
+      fontFamily: theme.typography.bodySm.fontFamily,
+      fontSize: 13,
+      color: theme.colors.onSurfaceVariant,
+      textAlign: 'center',
     },
     loadingContainer: {
       paddingVertical: 40,

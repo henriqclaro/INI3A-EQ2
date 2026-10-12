@@ -25,28 +25,51 @@ export function useManyRecipes(
   dateLimitParam?: number,
 ) {
   const search = typeof searchOrOptions === 'object' ? searchOrOptions.search : searchOrOptions;
-  const page = typeof searchOrOptions === 'object' ? searchOrOptions.page : pageParam;
+  const initialPage = (typeof searchOrOptions === 'object' ? searchOrOptions.page : pageParam) ?? 0;
   const sort = typeof searchOrOptions === 'object' ? searchOrOptions.sort : sortParam;
   const dateLimit =
     typeof searchOrOptions === 'object' ? searchOrOptions.dateLimit : dateLimitParam;
 
   const [recipes, setRecipes] = useState<PartialRecipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchRecipes = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const res = await RecipeService.search({ search, page, sort, dateLimit });
-      setRecipes(res.data.recipes);
-    } catch (err) {
-      console.error('Error fetching Recipes: ', err);
-      setError('Error searching recipes.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [search, page, sort, dateLimit]);
+  const fetchRecipes = useCallback(
+    async (pageToFetch: number = 0, isAppend: boolean = false) => {
+      try {
+        if (isAppend) {
+          setIsLoadingMore(true);
+        } else {
+          setIsLoading(true);
+        }
+        setError(null);
+        const res = await RecipeService.search({
+          search,
+          page: pageToFetch,
+          sort,
+          dateLimit,
+        });
+        const newRecipes = res.data?.recipes ?? [];
+        if (isAppend) {
+          setRecipes((prev) => [...prev, ...newRecipes]);
+        } else {
+          setRecipes(newRecipes);
+        }
+        setCurrentPage(pageToFetch);
+        setHasMore(newRecipes.length >= 10);
+      } catch (err) {
+        console.error('Error fetching Recipes: ', err);
+        setError('Error searching recipes.');
+      } finally {
+        setIsLoading(false);
+        setIsLoadingMore(false);
+      }
+    },
+    [search, sort, dateLimit],
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -55,9 +78,17 @@ export function useManyRecipes(
       try {
         setIsLoading(true);
         setError(null);
-        const res = await RecipeService.search({ search, page, sort, dateLimit });
+        const res = await RecipeService.search({
+          search,
+          page: initialPage,
+          sort,
+          dateLimit,
+        });
+        const newRecipes = res.data?.recipes ?? [];
         if (isMounted) {
-          setRecipes(res.data.recipes);
+          setRecipes(newRecipes);
+          setCurrentPage(initialPage);
+          setHasMore(newRecipes.length >= 10);
         }
       } catch (err) {
         if (isMounted) {
@@ -76,9 +107,31 @@ export function useManyRecipes(
     return () => {
       isMounted = false;
     };
-  }, [search, page, sort, dateLimit]);
+  }, [search, sort, dateLimit, initialPage]);
 
-  return { recipes, isLoading, error, refetch: fetchRecipes };
+  const loadMore = useCallback(async () => {
+    if (!hasMore || isLoading || isLoadingMore) {
+      return;
+    }
+    await fetchRecipes(currentPage + 1, true);
+  }, [hasMore, isLoading, isLoadingMore, fetchRecipes, currentPage]);
+
+  const refetch = useCallback(async () => {
+    setCurrentPage(initialPage);
+    setHasMore(true);
+    await fetchRecipes(initialPage, false);
+  }, [fetchRecipes, initialPage]);
+
+  return {
+    recipes,
+    isLoading,
+    isLoadingMore,
+    hasMore,
+    error,
+    refetch,
+    loadMore,
+    page: currentPage,
+  };
 }
 
 export function useSingleRecipe(recipeId: string, userId?: string) {
@@ -169,30 +222,48 @@ export function useSingleRecipe(recipeId: string, userId?: string) {
 export function useUserRecipes(
   userId: string | undefined,
   status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED',
-  page?: number,
+  initialPage: number = 0,
 ) {
   const [recipes, setRecipes] = useState<PartialRecipe[]>([]);
   const [isLoading, setIsLoading] = useState(Boolean(userId));
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUserRecipes = useCallback(async () => {
-    if (!userId) {
-      setIsLoading(false);
-      return;
-    }
+  const fetchUserRecipes = useCallback(
+    async (pageToFetch: number = 0, isAppend: boolean = false) => {
+      if (!userId) {
+        setIsLoading(false);
+        return;
+      }
 
-    try {
-      setIsLoading(true);
-      setError(null);
-      const res = await UserService.getRecipes(userId, status, page);
-      setRecipes(res.data.recipes);
-    } catch (err) {
-      console.error('Error fetching User Recipes: ', err);
-      setError('Error fetching recipes.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [userId, status, page]);
+      try {
+        if (isAppend) {
+          setIsLoadingMore(true);
+        } else {
+          setIsLoading(true);
+        }
+        setError(null);
+        const res = await UserService.getRecipes(userId, status, pageToFetch);
+        const newRecipes = res.data?.recipes ?? [];
+        if (isAppend) {
+          setRecipes((prev) => [...prev, ...newRecipes]);
+        } else {
+          setRecipes(newRecipes);
+        }
+        setCurrentPage(pageToFetch);
+        setHasMore(newRecipes.length >= 10);
+      } catch (err) {
+        console.error('Error fetching User Recipes: ', err);
+        setError('Error fetching recipes.');
+      } finally {
+        setIsLoading(false);
+        setIsLoadingMore(false);
+      }
+    },
+    [userId, status],
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -205,9 +276,12 @@ export function useUserRecipes(
       try {
         setIsLoading(true);
         setError(null);
-        const res = await UserService.getRecipes(userId!, status, page);
+        const res = await UserService.getRecipes(userId!, status, initialPage);
+        const newRecipes = res.data?.recipes ?? [];
         if (isMounted) {
-          setRecipes(res.data.recipes);
+          setRecipes(newRecipes);
+          setCurrentPage(initialPage);
+          setHasMore(newRecipes.length >= 10);
         }
       } catch (err) {
         if (isMounted) {
@@ -226,9 +300,31 @@ export function useUserRecipes(
     return () => {
       isMounted = false;
     };
-  }, [userId, status, page]);
+  }, [userId, status, initialPage]);
 
-  return { recipes, isLoading, error, refetch: fetchUserRecipes };
+  const loadMore = useCallback(async () => {
+    if (!hasMore || isLoading || isLoadingMore || !userId) {
+      return;
+    }
+    await fetchUserRecipes(currentPage + 1, true);
+  }, [hasMore, isLoading, isLoadingMore, userId, fetchUserRecipes, currentPage]);
+
+  const refetch = useCallback(async () => {
+    setCurrentPage(initialPage);
+    setHasMore(true);
+    await fetchUserRecipes(initialPage, false);
+  }, [fetchUserRecipes, initialPage]);
+
+  return {
+    recipes,
+    isLoading,
+    isLoadingMore,
+    hasMore,
+    error,
+    refetch,
+    loadMore,
+    page: currentPage,
+  };
 }
 
 export function useRecipeRegister() {
