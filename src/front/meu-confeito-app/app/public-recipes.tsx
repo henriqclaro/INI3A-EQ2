@@ -15,7 +15,7 @@ import { Stack, router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { Input, RecipeView } from '@/src/components';
+import { Input, RecipeDateFilterModal, RecipeFilterChip, RecipeView } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useManyRecipes } from '@/src/hooks/useRecipes';
 import { AppTheme } from '@/src/theme/themes';
@@ -23,22 +23,38 @@ import { PartialRecipe } from '@/src/types';
 
 export default function PublicRecipesScreen() {
   const [search, setSearch] = useState('');
+  const [activeSort, setActiveSort] = useState<'saves' | 'reviews' | 'rating' | null>(null);
+  const [dateLimit, setDateLimit] = useState<number | undefined>(undefined);
+  const [isDateModalVisible, setIsDateModalVisible] = useState(false);
 
   const { theme } = useThemeMode();
-  const { recipes, isLoading, refetch } = useManyRecipes(search);
+  const { recipes, isLoading, refetch } = useManyRecipes({
+    search,
+    sort: activeSort ?? undefined,
+    dateLimit,
+  });
   const { width } = useWindowDimensions();
 
   const isDesktop = width >= 768;
+  const isWeb = Platform.OS === 'web';
   const numCols = isDesktop ? 3 : 1;
   const containerWidth = Math.min(width - (isDesktop ? 48 : 32), 1200);
   const cardWidth = isDesktop
     ? Math.floor((containerWidth - (numCols - 1) * 16) / numCols)
     : Math.min(width - 32, 480);
   const hasActiveSearch = Boolean(search.trim().length > 0);
+  const hasDateFilter = typeof dateLimit === 'number' && dateLimit > 0;
+  const hasActiveFilters = Boolean(hasActiveSearch || activeSort !== null || hasDateFilter);
+
+  const dateFilterLabel = useMemo(() => {
+    if (dateLimit === 7) return '7 dias';
+    if (dateLimit === 30) return '30 dias';
+    return 'Sem data';
+  }, [dateLimit]);
 
   const styles = useMemo(
-    () => createStyles(theme, isDesktop, cardWidth),
-    [theme, isDesktop, cardWidth],
+    () => createStyles(theme, isDesktop, cardWidth, isWeb),
+    [theme, isDesktop, cardWidth, isWeb],
   );
 
   const renderRecipeItem = useCallback(
@@ -49,6 +65,8 @@ export default function PublicRecipesScreen() {
           coverUrl={item.coverUrl}
           tags={item.tags}
           prepTimeMinutes={item.prepTimeMinutes}
+          rating={item.averageRating}
+          totalReviews={item.totalReviews}
           maxTagRows={2}
           isCustomized={Boolean(item.parent)}
           hasParent={Boolean(item.parent)}
@@ -81,35 +99,40 @@ export default function PublicRecipesScreen() {
             />
           </View>
           <Text style={styles.emptyTitle}>
-            {hasActiveSearch ? 'Nenhuma receita encontrada' : 'Nenhuma receita pública no momento'}
+            {hasActiveFilters ? 'Nenhuma receita encontrada' : 'Nenhuma receita pública no momento'}
           </Text>
           <Text style={styles.emptySubtitle}>
-            {hasActiveSearch
-              ? `Não encontramos resultados para "${search}". Tente buscar por outros termos ou ingredientes.`
+            {hasActiveFilters
+              ? `Não encontramos resultados com os filtros aplicados. Tente buscar por outros termos, alterar a ordenação ou o período selecionado.`
               : 'Explore novamente mais tarde para descobrir novas receitas compartilhadas.'}
           </Text>
 
-          {hasActiveSearch && (
+          {hasActiveFilters && (
             <TouchableOpacity
               style={styles.clearSearchBtn}
-              onPress={() => setSearch('')}
+              onPress={() => {
+                setSearch('');
+                setActiveSort(null);
+                setDateLimit(undefined);
+              }}
               activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel="Limpar todos os filtros"
             >
               <MaterialCommunityIcons
                 name="close-circle-outline"
                 size={18}
                 color={theme.colors.primary}
               />
-              <Text style={styles.clearSearchBtnText}>Limpar busca</Text>
+              <Text style={styles.clearSearchBtnText}>Limpar filtros</Text>
             </TouchableOpacity>
           )}
         </View>
       </View>
     );
   }, [
-    hasActiveSearch,
+    hasActiveFilters,
     isLoading,
-    search,
     styles.clearSearchBtn,
     styles.clearSearchBtnText,
     styles.emptyIconWrapper,
@@ -127,48 +150,71 @@ export default function PublicRecipesScreen() {
     <>
       <Stack.Screen options={{ title: 'Receitas Públicas' }} />
 
+      <RecipeDateFilterModal
+        isVisible={isDateModalVisible}
+        selectedLimit={dateLimit}
+        onSelectLimit={setDateLimit}
+        onClose={() => setIsDateModalVisible(false)}
+      />
+
       <View style={styles.container}>
         <View style={styles.headerContent}>
-          <Input
-            value={search}
-            placeholder="Buscar por título ou ingredientes..."
-            onChangeText={setSearch}
-            containerStyle={styles.searchInput}
-            leftIcon={
-              <MaterialCommunityIcons
-                name="magnify"
-                size={22}
-                color={theme.colors.onSurfaceVariant}
-              />
-            }
-            isClearable={true}
-            onClear={() => setSearch('')}
-          />
-
-          {!isLoading && (
-            <View style={styles.metaRow}>
-              <Text style={styles.resultCountText}>
-                {hasActiveSearch
-                  ? `${recipes.length} ${recipes.length === 1 ? 'receita encontrada' : 'receitas encontradas'}`
-                  : `${recipes.length} ${recipes.length === 1 ? 'receita disponível' : 'receitas disponíveis'}`}
-              </Text>
-
-              <TouchableOpacity
-                style={styles.savedLinkBtn}
-                onPress={() => router.push('/saved-recipes')}
-                activeOpacity={0.8}
-                accessibilityRole="button"
-                accessibilityLabel="Ver receitas salvas"
-              >
+          <View style={styles.searchFilterContainer}>
+            <Input
+              value={search}
+              placeholder="Buscar por título ou ingredientes..."
+              onChangeText={setSearch}
+              containerStyle={styles.searchInput}
+              leftIcon={
                 <MaterialCommunityIcons
-                  name="bookmark-multiple-outline"
-                  size={16}
-                  color={theme.colors.primary}
+                  name="magnify"
+                  size={22}
+                  color={theme.colors.onSurfaceVariant}
                 />
-                <Text style={styles.savedLinkText}>Ver Salvas</Text>
-              </TouchableOpacity>
+              }
+              isClearable={true}
+              onClear={() => setSearch('')}
+            />
+
+            <View style={styles.filtersRow}>
+              <RecipeFilterChip
+                label="Mais Salvas"
+                icon="bookmark-multiple-outline"
+                isSelected={activeSort === 'saves'}
+                onPress={() => setActiveSort((prev) => (prev === 'saves' ? null : 'saves'))}
+              />
+              <RecipeFilterChip
+                label="Mais Avaliadas"
+                icon="comment-text-multiple-outline"
+                isSelected={activeSort === 'reviews'}
+                onPress={() => setActiveSort((prev) => (prev === 'reviews' ? null : 'reviews'))}
+              />
+              <RecipeFilterChip
+                label="Melhores Avaliações"
+                icon="star"
+                isSelected={activeSort === 'rating'}
+                onPress={() => setActiveSort((prev) => (prev === 'rating' ? null : 'rating'))}
+              />
+              <RecipeFilterChip
+                label={dateFilterLabel}
+                icon="calendar-clock-outline"
+                trailingIcon="chevron-down"
+                isSelected={hasDateFilter}
+                onPress={() => setIsDateModalVisible(true)}
+                accessibilityLabel={`Filtrar por período. Seleção atual: ${dateFilterLabel}`}
+              />
             </View>
-          )}
+
+            {!isLoading && (
+              <View style={styles.metaRow}>
+                <Text style={styles.resultCountText}>
+                  {hasActiveFilters
+                    ? `${recipes.length} ${recipes.length === 1 ? 'receita encontrada' : 'receitas encontradas'}`
+                    : `${recipes.length} ${recipes.length === 1 ? 'receita disponível' : 'receitas disponíveis'}`}
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
 
         <FlatList
@@ -201,7 +247,7 @@ export default function PublicRecipesScreen() {
   );
 }
 
-const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number) =>
+const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number, isWeb?: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -216,9 +262,13 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number) =
       paddingTop: 12,
       paddingBottom: 4,
     },
+    searchFilterContainer: {
+      width: '100%',
+      maxWidth: isDesktop ? 860 : '100%',
+      alignItems: isWeb ? 'center' : 'stretch',
+    },
     searchInput: {
       width: '100%',
-      maxWidth: 600,
       height: 52,
       minHeight: 48,
       borderRadius: theme.rounded.default,
@@ -227,11 +277,20 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number) =
       backgroundColor: theme.colors.surfaceContainerLowest,
       margin: 0,
     },
+    filtersRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      justifyContent: isWeb ? 'center' : 'flex-start',
+      gap: 8,
+      width: '100%',
+      marginTop: 10,
+      marginBottom: 4,
+    },
     metaRow: {
       width: '100%',
-      maxWidth: 600,
       flexDirection: 'row',
-      justifyContent: 'space-between',
+      justifyContent: isWeb ? 'center' : 'flex-start',
       alignItems: 'center',
       paddingHorizontal: 4,
       marginTop: 8,
@@ -241,24 +300,6 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number) =
       fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 13,
       color: theme.colors.onSurfaceVariant,
-    },
-    savedLinkBtn: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-      paddingVertical: 4,
-      paddingHorizontal: 8,
-      borderRadius: theme.rounded.sm,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      backgroundColor: theme.colors.surfaceContainerLowest,
-      minHeight: 48,
-    },
-    savedLinkText: {
-      fontFamily: theme.typography.labelMd.fontFamily,
-      fontSize: 12,
-      fontWeight: '600',
-      color: theme.colors.primary,
     },
     scrollView: {
       flex: 1,

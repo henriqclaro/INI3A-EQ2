@@ -11,7 +11,25 @@ import {
   UpdateRecipeVisibilityInput,
 } from '../types/recipe';
 
-export function useManyRecipes(search?: string, page?: number) {
+export interface UseManyRecipesOptions {
+  search?: string;
+  page?: number;
+  sort?: string;
+  dateLimit?: number;
+}
+
+export function useManyRecipes(
+  searchOrOptions?: string | UseManyRecipesOptions,
+  pageParam?: number,
+  sortParam?: string,
+  dateLimitParam?: number,
+) {
+  const search = typeof searchOrOptions === 'object' ? searchOrOptions.search : searchOrOptions;
+  const page = typeof searchOrOptions === 'object' ? searchOrOptions.page : pageParam;
+  const sort = typeof searchOrOptions === 'object' ? searchOrOptions.sort : sortParam;
+  const dateLimit =
+    typeof searchOrOptions === 'object' ? searchOrOptions.dateLimit : dateLimitParam;
+
   const [recipes, setRecipes] = useState<PartialRecipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +38,7 @@ export function useManyRecipes(search?: string, page?: number) {
     try {
       setIsLoading(true);
       setError(null);
-      const res = await RecipeService.search(search, page);
+      const res = await RecipeService.search({ search, page, sort, dateLimit });
       setRecipes(res.data.recipes);
     } catch (err) {
       console.error('Error fetching Recipes: ', err);
@@ -28,7 +46,7 @@ export function useManyRecipes(search?: string, page?: number) {
     } finally {
       setIsLoading(false);
     }
-  }, [search, page]);
+  }, [search, page, sort, dateLimit]);
 
   useEffect(() => {
     let isMounted = true;
@@ -37,7 +55,7 @@ export function useManyRecipes(search?: string, page?: number) {
       try {
         setIsLoading(true);
         setError(null);
-        const res = await RecipeService.search(search, page);
+        const res = await RecipeService.search({ search, page, sort, dateLimit });
         if (isMounted) {
           setRecipes(res.data.recipes);
         }
@@ -58,7 +76,7 @@ export function useManyRecipes(search?: string, page?: number) {
     return () => {
       isMounted = false;
     };
-  }, [search, page]);
+  }, [search, page, sort, dateLimit]);
 
   return { recipes, isLoading, error, refetch: fetchRecipes };
 }
@@ -148,7 +166,11 @@ export function useSingleRecipe(recipeId: string, userId?: string) {
   return { recipe, isLoading, error, refetch: fetchRecipe, updateVisibility, isUpdatingVisibility };
 }
 
-export function useUserRecipes(userId: string | undefined) {
+export function useUserRecipes(
+  userId: string | undefined,
+  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED',
+  page?: number,
+) {
   const [recipes, setRecipes] = useState<PartialRecipe[]>([]);
   const [isLoading, setIsLoading] = useState(Boolean(userId));
   const [error, setError] = useState<string | null>(null);
@@ -162,7 +184,7 @@ export function useUserRecipes(userId: string | undefined) {
     try {
       setIsLoading(true);
       setError(null);
-      const res = await UserService.getRecipes(userId);
+      const res = await UserService.getRecipes(userId, status, page);
       setRecipes(res.data.recipes);
     } catch (err) {
       console.error('Error fetching User Recipes: ', err);
@@ -170,7 +192,7 @@ export function useUserRecipes(userId: string | undefined) {
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, [userId, status, page]);
 
   useEffect(() => {
     let isMounted = true;
@@ -183,7 +205,7 @@ export function useUserRecipes(userId: string | undefined) {
       try {
         setIsLoading(true);
         setError(null);
-        const res = await UserService.getRecipes(userId!);
+        const res = await UserService.getRecipes(userId!, status, page);
         if (isMounted) {
           setRecipes(res.data.recipes);
         }
@@ -204,7 +226,7 @@ export function useUserRecipes(userId: string | undefined) {
     return () => {
       isMounted = false;
     };
-  }, [userId]);
+  }, [userId, status, page]);
 
   return { recipes, isLoading, error, refetch: fetchUserRecipes };
 }

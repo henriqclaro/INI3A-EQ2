@@ -36,6 +36,13 @@ export interface RecipeCoverUploadResponse {
   };
 }
 
+export interface RecipeSearchParams {
+  search?: string;
+  page?: number;
+  sort?: string;
+  dateLimit?: number;
+}
+
 export const RecipeService = {
   getRecipe: async (recipeId: string) => {
     const response = await api.get<RecipeResponse>(`/recipes/${recipeId}`);
@@ -45,14 +52,43 @@ export const RecipeService = {
     const response = await api.get<RecipeResponse>(`/recipes/${recipeId}/users/${userId}`);
     return response.data;
   },
-  search: async (search?: string, page?: number) => {
+  search: async (
+    searchOrParams?: string | RecipeSearchParams,
+    page?: number,
+    sort?: string,
+    dateLimit?: number,
+  ) => {
     const params = new URLSearchParams();
-    if (search) {
-      params.append('search', search);
+    let searchQuery: string | undefined;
+    let pageNum: number | undefined;
+    let sortOption: string | undefined;
+    let dateLimitDays: number | undefined;
+
+    if (typeof searchOrParams === 'object' && searchOrParams !== null) {
+      searchQuery = searchOrParams.search;
+      pageNum = searchOrParams.page;
+      sortOption = searchOrParams.sort;
+      dateLimitDays = searchOrParams.dateLimit;
+    } else {
+      searchQuery = searchOrParams;
+      pageNum = page;
+      sortOption = sort;
+      dateLimitDays = dateLimit;
     }
-    if (page !== undefined) {
-      params.append('page', page.toString());
+
+    if (searchQuery) {
+      params.append('search', searchQuery);
     }
+    if (pageNum !== undefined) {
+      params.append('page', pageNum.toString());
+    }
+    if (sortOption) {
+      params.append('sort', sortOption);
+    }
+    if (dateLimitDays !== undefined && dateLimitDays > 0) {
+      params.append('date_limit', dateLimitDays.toString());
+    }
+
     const queryString = params.toString();
     const url = queryString ? `/recipes?${queryString}` : '/recipes';
     const response = await api.get<SearchResponse>(url);

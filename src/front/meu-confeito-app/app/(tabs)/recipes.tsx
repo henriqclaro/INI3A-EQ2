@@ -16,10 +16,11 @@ import { router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { FloatingActionItem, FloatingButton, RecipeView } from '@/src/components';
+import { FloatingActionItem, FloatingButton, RecipeFilterChip, RecipeView } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useUserRecipes } from '@/src/hooks/useRecipes';
+import { useSavedRecipes } from '@/src/hooks/useSavedRecipes';
 import { AppTheme } from '@/src/theme/themes';
 import { PartialRecipe } from '@/src/types';
 
@@ -27,7 +28,19 @@ export default function RecipesScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
   const isBakerRole = user?.role?.trim().toUpperCase() === 'BAKER';
-  const { recipes, isLoading, refetch } = useUserRecipes(user?.id);
+  const [activeFilter, setActiveFilter] = useState<'ALL' | 'PUBLISHED' | 'DRAFT' | 'SAVED'>('ALL');
+
+  const {
+    recipes: userRecipes,
+    isLoading: isLoadingUserRecipes,
+    refetch: refetchUserRecipes,
+  } = useUserRecipes(user?.id);
+  const {
+    savedRecipes,
+    isLoading: isLoadingSavedRecipes,
+    refetch: refetchSavedRecipes,
+  } = useSavedRecipes(user?.id);
+
   const { width } = useWindowDimensions();
   const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
 
@@ -36,6 +49,57 @@ export default function RecipesScreen() {
       router.replace('/(tabs)/home');
     }
   }, [user]);
+
+  const ownActiveRecipes = useMemo(
+    () => userRecipes.filter((r) => r.status !== 'ARCHIVED'),
+    [userRecipes],
+  );
+  const publishedCount = useMemo(
+    () => ownActiveRecipes.filter((r) => r.status === 'PUBLISHED').length,
+    [ownActiveRecipes],
+  );
+  const draftCount = useMemo(
+    () => ownActiveRecipes.filter((r) => r.status === 'DRAFT').length,
+    [ownActiveRecipes],
+  );
+  const savedCount = savedRecipes.length;
+  const allCount = ownActiveRecipes.length;
+
+  const displayedRecipes: PartialRecipe[] = useMemo(() => {
+    if (activeFilter === 'SAVED') {
+      return savedRecipes.map((s) => ({
+        id: s.recipe.id,
+        title: s.recipe.title,
+        coverUrl: s.recipe.coverUrl,
+        prepTimeMinutes: s.recipe.prepTimeMinutes,
+        tags: s.recipe.tags ?? [],
+        parent: null,
+        createdAt: s.savedAt,
+        updatedAt: s.savedAt,
+        profitMargin: s.recipe.profitMargin,
+        overhead: s.recipe.overhead,
+        hourlyLabor: s.recipe.hourlyLabor,
+        packagingCost: s.recipe.packagingCost,
+      }));
+    }
+    if (activeFilter === 'PUBLISHED') {
+      return ownActiveRecipes.filter((r) => r.status === 'PUBLISHED');
+    }
+    if (activeFilter === 'DRAFT') {
+      return ownActiveRecipes.filter((r) => r.status === 'DRAFT');
+    }
+    return ownActiveRecipes;
+  }, [activeFilter, ownActiveRecipes, savedRecipes]);
+
+  const isLoading = isLoadingUserRecipes || (activeFilter === 'SAVED' && isLoadingSavedRecipes);
+
+  const handleRefresh = useCallback(async () => {
+    if (activeFilter === 'SAVED') {
+      await refetchSavedRecipes();
+    } else {
+      await Promise.all([refetchUserRecipes(), refetchSavedRecipes()]);
+    }
+  }, [activeFilter, refetchSavedRecipes, refetchUserRecipes]);
 
   const isWebSidebarPresent = Platform.OS === 'web' && width >= theme.breakpoints.lg;
   const effectiveWidth = isWebSidebarPresent ? width - 260 : width;
@@ -81,9 +145,11 @@ export default function RecipesScreen() {
     [],
   );
 
+  const isWeb = Platform.OS === 'web';
+
   const styles = useMemo(
-    () => createStyles(theme, isMobile, isTablet, numCols, containerWidth, cardWidth),
-    [theme, isMobile, isTablet, numCols, containerWidth, cardWidth],
+    () => createStyles(theme, isMobile, isTablet, numCols, containerWidth, cardWidth, isWeb),
+    [theme, isMobile, isTablet, numCols, containerWidth, cardWidth, isWeb],
   );
 
   const renderRecipeItem = useCallback(
@@ -94,6 +160,9 @@ export default function RecipesScreen() {
           coverUrl={item.coverUrl}
           tags={item.tags}
           prepTimeMinutes={item.prepTimeMinutes}
+          rating={item.averageRating}
+          totalReviews={item.totalReviews}
+          status={activeFilter !== 'SAVED' ? item.status : undefined}
           isCustomized={Boolean(item.parent)}
           hasParent={Boolean(item.parent)}
           style={numCols > 1 ? styles.desktopCard : undefined}
@@ -103,72 +172,113 @@ export default function RecipesScreen() {
         />
       </View>
     ),
-    [numCols, styles.cardWrapper, styles.desktopCard],
+    [activeFilter, numCols, styles.cardWrapper, styles.desktopCard],
   );
 
   const listHeader = useMemo(() => {
-    if (!hasHeaderActions || recipes.length === 0) return null;
     return (
-      <View style={styles.desktopHeaderWrapper}>
-        <View style={styles.desktopHeader}>
-          <View style={styles.desktopHeaderTitleCol}>
-            <Text style={styles.desktopHeaderTitle}>Suas Receitas</Text>
-            <Text style={styles.desktopHeaderSubtitle}>
-              {recipes.length}{' '}
-              {recipes.length === 1 ? 'receita cadastrada' : 'receitas cadastradas'}
-            </Text>
+      <View style={styles.headerWrapper}>
+        {hasHeaderActions && (
+          <View style={styles.desktopHeader}>
+            <View style={styles.desktopHeaderTitleCol}>
+              <Text style={styles.desktopHeaderTitle}>Suas Receitas</Text>
+              <Text style={styles.desktopHeaderSubtitle}>
+                {allCount} {allCount === 1 ? 'receita cadastrada' : 'receitas cadastradas'}
+              </Text>
+            </View>
+            <View style={styles.desktopHeaderActions}>
+              <TouchableOpacity
+                style={styles.desktopHeaderSecondaryBtn}
+                onPress={() => router.push('/saved-recipes')}
+                activeOpacity={0.85}
+                accessibilityRole="button"
+                accessibilityLabel="Ver receitas salvas"
+              >
+                <MaterialCommunityIcons
+                  name="bookmark-multiple-outline"
+                  size={18}
+                  color={theme.colors.onSurface}
+                />
+                <Text style={styles.desktopHeaderSecondaryBtnText}>Salvas</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.desktopHeaderSecondaryBtn}
+                onPress={() => router.push('/public-recipes')}
+                activeOpacity={0.85}
+                accessibilityRole="button"
+                accessibilityLabel="Buscar receitas públicas"
+              >
+                <MaterialCommunityIcons
+                  name="book-search-outline"
+                  size={18}
+                  color={theme.colors.onSurface}
+                />
+                <Text style={styles.desktopHeaderSecondaryBtnText}>Públicas</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.desktopHeaderPrimaryBtn}
+                onPress={() => router.push('/create-recipe')}
+                activeOpacity={0.85}
+                accessibilityRole="button"
+                accessibilityLabel="Criar nova receita"
+              >
+                <MaterialCommunityIcons
+                  name="notebook-plus-outline"
+                  size={18}
+                  color={theme.colors.onPrimary}
+                />
+                <Text style={styles.desktopHeaderPrimaryBtnText}>Nova Receita</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          <View style={styles.desktopHeaderActions}>
-            <TouchableOpacity
-              style={styles.desktopHeaderSecondaryBtn}
-              onPress={() => router.push('/saved-recipes')}
-              activeOpacity={0.85}
-              accessibilityRole="button"
-              accessibilityLabel="Ver receitas salvas"
-            >
-              <MaterialCommunityIcons
-                name="bookmark-multiple-outline"
-                size={18}
-                color={theme.colors.onSurface}
-              />
-              <Text style={styles.desktopHeaderSecondaryBtnText}>Salvas</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.desktopHeaderSecondaryBtn}
-              onPress={() => router.push('/public-recipes')}
-              activeOpacity={0.85}
-              accessibilityRole="button"
-              accessibilityLabel="Buscar receitas públicas"
-            >
-              <MaterialCommunityIcons
-                name="book-search-outline"
-                size={18}
-                color={theme.colors.onSurface}
-              />
-              <Text style={styles.desktopHeaderSecondaryBtnText}>Públicas</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.desktopHeaderPrimaryBtn}
-              onPress={() => router.push('/create-recipe')}
-              activeOpacity={0.85}
-              accessibilityRole="button"
-              accessibilityLabel="Criar nova receita"
-            >
-              <MaterialCommunityIcons
-                name="notebook-plus-outline"
-                size={18}
-                color={theme.colors.onPrimary}
-              />
-              <Text style={styles.desktopHeaderPrimaryBtnText}>Nova Receita</Text>
-            </TouchableOpacity>
-          </View>
+        )}
+
+        <View style={styles.filterChipsRow}>
+          <RecipeFilterChip
+            label="Todas"
+            icon="book-open-outline"
+            isSelected={activeFilter === 'ALL'}
+            onPress={() => setActiveFilter('ALL')}
+            count={allCount}
+          />
+          <RecipeFilterChip
+            label="Publicadas"
+            icon="earth"
+            isSelected={activeFilter === 'PUBLISHED'}
+            onPress={() => setActiveFilter('PUBLISHED')}
+            count={publishedCount}
+          />
+          <RecipeFilterChip
+            label="Rascunhos"
+            icon="file-document-edit-outline"
+            isSelected={activeFilter === 'DRAFT'}
+            onPress={() => setActiveFilter('DRAFT')}
+            count={draftCount}
+          />
+          <RecipeFilterChip
+            label="Salvas"
+            icon="bookmark-multiple-outline"
+            isSelected={activeFilter === 'SAVED'}
+            onPress={() => setActiveFilter('SAVED')}
+            count={savedCount}
+          />
         </View>
       </View>
     );
-  }, [hasHeaderActions, recipes.length, styles, theme.colors.onPrimary, theme.colors.onSurface]);
+  }, [
+    activeFilter,
+    allCount,
+    draftCount,
+    hasHeaderActions,
+    publishedCount,
+    savedCount,
+    styles,
+    theme.colors.onPrimary,
+    theme.colors.onSurface,
+  ]);
 
   const listFooter = useMemo(() => {
-    if (isLoading || recipes.length === 0) return null;
+    if (isLoading || displayedRecipes.length === 0) return null;
     return (
       <View style={styles.footerWrapper}>
         <View style={styles.bottomSuggestionCard}>
@@ -218,8 +328,8 @@ export default function RecipesScreen() {
       </View>
     );
   }, [
+    displayedRecipes.length,
     isLoading,
-    recipes.length,
     styles,
     theme.colors.onPrimary,
     theme.colors.onSurface,
@@ -234,51 +344,84 @@ export default function RecipesScreen() {
         </View>
       );
     }
+
+    let emptyTitle = 'Seu caderno está esperando!';
+    let emptySubtitle =
+      'Você ainda não possui receitas cadastradas. Que tal registrar sua primeira receita ou buscar inspiração nas receitas públicas?';
+
+    if (activeFilter === 'PUBLISHED') {
+      emptyTitle = 'Nenhuma receita publicada';
+      emptySubtitle =
+        'Você ainda não possui receitas publicadas para a comunidade. Ao publicar, sua receita ficará disponível para outros artesãos.';
+    } else if (activeFilter === 'DRAFT') {
+      emptyTitle = 'Nenhum rascunho';
+      emptySubtitle =
+        'Você não possui receitas em rascunho. Receitas salvas em modo rascunho ficam visíveis apenas para você.';
+    } else if (activeFilter === 'SAVED') {
+      emptyTitle = 'Nenhuma receita salva';
+      emptySubtitle =
+        'Você ainda não salvou receitas da comunidade. Navegue pelas receitas públicas e salve suas favoritas para acessá-las aqui.';
+    }
+
     return (
       <View style={styles.emptyWrapper}>
         <View style={styles.emptyContainer}>
           <View style={styles.emptyIconCircle}>
             <MaterialCommunityIcons
-              name="cake-variant-outline"
+              name={activeFilter === 'SAVED' ? 'bookmark-multiple-outline' : 'cake-variant-outline'}
               size={44}
               color={theme.colors.primary}
             />
           </View>
-          <Text style={styles.emptyTitle}>Seu caderno está esperando!</Text>
-          <Text style={styles.emptySubtitle}>
-            Você ainda não possui receitas cadastradas. Que tal registrar sua primeira receita ou
-            buscar inspiração nas receitas públicas?
-          </Text>
+          <Text style={styles.emptyTitle}>{emptyTitle}</Text>
+          <Text style={styles.emptySubtitle}>{emptySubtitle}</Text>
           <View style={styles.emptyActionsRow}>
+            {activeFilter !== 'SAVED' ? (
+              <TouchableOpacity
+                style={styles.emptyPrimaryBtn}
+                onPress={() => router.push('/create-recipe')}
+                activeOpacity={0.85}
+              >
+                <MaterialCommunityIcons
+                  name="notebook-plus-outline"
+                  size={18}
+                  color={theme.colors.onPrimary}
+                />
+                <Text style={styles.emptyPrimaryBtnText}>Criar Primeira Receita</Text>
+              </TouchableOpacity>
+            ) : null}
             <TouchableOpacity
-              style={styles.emptyPrimaryBtn}
-              onPress={() => router.push('/create-recipe')}
-              activeOpacity={0.85}
-            >
-              <MaterialCommunityIcons
-                name="notebook-plus-outline"
-                size={18}
-                color={theme.colors.onPrimary}
-              />
-              <Text style={styles.emptyPrimaryBtnText}>Criar Primeira Receita</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.emptySecondaryBtn}
+              style={activeFilter === 'SAVED' ? styles.emptyPrimaryBtn : styles.emptySecondaryBtn}
               onPress={() => router.push('/public-recipes')}
               activeOpacity={0.85}
             >
               <MaterialCommunityIcons
                 name="book-search-outline"
                 size={18}
-                color={theme.colors.onSurface}
+                color={activeFilter === 'SAVED' ? theme.colors.onPrimary : theme.colors.onSurface}
               />
-              <Text style={styles.emptySecondaryBtnText}>Ver Receitas Públicas</Text>
+              <Text
+                style={
+                  activeFilter === 'SAVED'
+                    ? styles.emptyPrimaryBtnText
+                    : styles.emptySecondaryBtnText
+                }
+              >
+                Ver Receitas Públicas
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
       </View>
     );
-  }, [isLoading, styles, theme.colors.onPrimary, theme.colors.onSurface, theme.colors.primary]);
+  }, [
+    activeFilter,
+    isLoading,
+    styles,
+    theme.colors.onPrimary,
+    theme.colors.onSurface,
+    theme.colors.primary,
+  ]);
 
   const itemSeparator = useCallback(() => <View style={styles.separator} />, [styles.separator]);
   const keyExtractor = useCallback((item: PartialRecipe) => item.id, []);
@@ -299,7 +442,7 @@ export default function RecipesScreen() {
       )}
 
       <FlatList
-        data={isLoading ? [] : recipes}
+        data={isLoading ? [] : displayedRecipes}
         keyExtractor={keyExtractor}
         renderItem={renderRecipeItem}
         numColumns={numCols}
@@ -319,7 +462,7 @@ export default function RecipesScreen() {
         refreshControl={
           <RefreshControl
             refreshing={isLoading}
-            onRefresh={refetch}
+            onRefresh={handleRefresh}
             tintColor={theme.colors.primary}
             colors={[theme.colors.primary]}
           />
@@ -347,6 +490,7 @@ const createStyles = (
   numCols: number,
   containerWidth: number,
   cardWidth: number,
+  isWeb: boolean,
 ) =>
   StyleSheet.create({
     container: {
@@ -448,14 +592,22 @@ const createStyles = (
       alignItems: 'center',
       width: '100%',
     },
-    desktopHeaderWrapper: {
+    headerWrapper: {
       width: '100%',
       maxWidth: containerWidth,
       alignSelf: 'center',
-      marginBottom: 24,
-      paddingBottom: 20,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.outlineVariant,
+      marginBottom: 20,
+      gap: 16,
+    },
+    filterChipsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      justifyContent: isWeb ? 'center' : 'flex-start',
+      gap: 8,
+      width: '100%',
+      paddingHorizontal: 4,
+      paddingVertical: 4,
     },
     footerWrapper: {
       width: isMobile ? cardWidth : '100%',

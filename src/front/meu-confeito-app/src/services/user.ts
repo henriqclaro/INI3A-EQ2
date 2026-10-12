@@ -109,8 +109,23 @@ export const UserService = {
     const response = await api.delete(`/users/${userId}`, { data: { state: 'DELETED' } });
     return response.data;
   },
-  getRecipes: async (userId: string) => {
-    const response = await api.get<UserRecipesResponse>(`/users/${userId}/recipes`);
+  getRecipes: async (
+    userId: string,
+    status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED',
+    page?: number,
+  ) => {
+    const params = new URLSearchParams();
+    if (status) {
+      params.append('status', status);
+    }
+    if (page !== undefined) {
+      params.append('page', page.toString());
+    }
+    const queryString = params.toString();
+    const url = queryString
+      ? `/users/${userId}/recipes?${queryString}`
+      : `/users/${userId}/recipes`;
+    const response = await api.get<UserRecipesResponse>(url);
     return response.data;
   },
   getInventory: async (_userId?: string) => {

@@ -58,6 +58,10 @@ export interface PartialRecipe {
   hourlyLabor?: number | string;
   packagingCost?: number | string;
   prepTimeMinutes: number;
+  status?: RecipeStatus | string;
+  totalSaves?: number;
+  totalReviews?: number;
+  averageRating?: number | string;
   createdAt: Date | string;
   updatedAt: Date | string;
   baseYield?: number | string;

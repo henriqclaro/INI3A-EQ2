@@ -235,6 +235,16 @@ export default function ProfileScreen() {
             />
           )}
 
+          {/* Archived Recipes Button (Bakers only) */}
+          {isBakerRole && (
+            <MenuOptionButton
+              title="Receitas Arquivadas"
+              subtitle="Consulte e gerencie suas receitas arquivadas"
+              icon="archive-outline"
+              onPress={() => router.push('/archived-recipes')}
+            />
+          )}
+
           {/* Reviewed Recipes Button (Bakers only) */}
           {isBakerRole && (
             <MenuOptionButton

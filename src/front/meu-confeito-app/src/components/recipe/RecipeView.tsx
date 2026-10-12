@@ -7,7 +7,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
-import { PartialTag } from '@/src/types';
+import { PartialTag, RecipeStatus } from '@/src/types';
 import { getTagColors } from '@/src/utils/tag';
 
 interface TagData {
@@ -24,6 +24,9 @@ interface RecipeViewProps {
   maxTagRows?: 1 | 2;
   isCustomized?: boolean;
   hasParent?: boolean;
+  rating?: number | string | null;
+  totalReviews?: number;
+  status?: RecipeStatus | string;
 }
 
 export const RecipeView = memo(function RecipeView({
@@ -36,6 +39,9 @@ export const RecipeView = memo(function RecipeView({
   maxTagRows = 1,
   isCustomized = false,
   hasParent = false,
+  rating,
+  totalReviews,
+  status,
 }: RecipeViewProps) {
   const { theme } = useThemeMode();
   const [hasImageError, setHasImageError] = useState(false);
@@ -55,10 +61,19 @@ export const RecipeView = memo(function RecipeView({
     });
   }, [tags, theme]);
 
+  const formattedRating = useMemo(() => {
+    if (rating === undefined || rating === null) return null;
+    const num = typeof rating === 'number' ? rating : parseFloat(String(rating));
+    if (isNaN(num)) return null;
+    return num > 0 ? num.toFixed(1) : '0.0';
+  }, [rating]);
+
+  const totalReviewsCount = typeof totalReviews === 'number' ? totalReviews : 0;
   const hasValidCover = Boolean(coverUrl && coverUrl.trim().length > 0 && !hasImageError);
   const maxTags = maxTagRows === 2 ? 4 : 2;
   const visibleTags = styledTags.slice(0, maxTags);
   const remainingTagsCount = styledTags.length - maxTags;
+  const hasTopBadges = isCustomized || hasParent || status === 'DRAFT' || status === 'ARCHIVED';
 
   return (
     <TouchableOpacity
@@ -92,10 +107,38 @@ export const RecipeView = memo(function RecipeView({
       )}
 
       <View style={styles.infoContainer}>
-        {(isCustomized || hasParent) && (
-          <View style={styles.customizedBadge}>
-            <MaterialCommunityIcons name="source-fork" size={12} color={theme.colors.secondary} />
-            <Text style={styles.customizedBadgeText}>Adaptada</Text>
+        {hasTopBadges && (
+          <View style={styles.topBadgesRow}>
+            {(isCustomized || hasParent) && (
+              <View style={styles.customizedBadge}>
+                <MaterialCommunityIcons
+                  name="source-fork"
+                  size={12}
+                  color={theme.colors.secondary}
+                />
+                <Text style={styles.customizedBadgeText}>Adaptada</Text>
+              </View>
+            )}
+            {status === 'DRAFT' && (
+              <View style={styles.draftBadge}>
+                <MaterialCommunityIcons
+                  name="file-document-edit-outline"
+                  size={12}
+                  color={theme.colors.onSurfaceVariant}
+                />
+                <Text style={styles.draftBadgeText}>Rascunho</Text>
+              </View>
+            )}
+            {status === 'ARCHIVED' && (
+              <View style={styles.archivedBadge}>
+                <MaterialCommunityIcons
+                  name="archive-outline"
+                  size={12}
+                  color={theme.colors.onSurfaceVariant}
+                />
+                <Text style={styles.archivedBadgeText}>Arquivada</Text>
+              </View>
+            )}
           </View>
         )}
         <Text style={styles.title} numberOfLines={2}>
@@ -133,18 +176,32 @@ export const RecipeView = memo(function RecipeView({
             )}
           </View>
 
-          {prepTimeMinutes > 0 ? (
-            <View style={styles.timeBadge}>
-              <MaterialCommunityIcons
-                name="timer-outline"
-                size={16}
-                color={theme.colors.onSurfaceVariant}
-              />
-              <Text style={styles.timeText}>{prepTimeMinutes} min</Text>
-            </View>
-          ) : (
-            <View style={[styles.timeBadge, styles.timeBadgePlaceholder]} />
-          )}
+          <View style={styles.metaRow}>
+            {prepTimeMinutes > 0 ? (
+              <View style={styles.timeBadge}>
+                <MaterialCommunityIcons
+                  name="timer-outline"
+                  size={15}
+                  color={theme.colors.onSurfaceVariant}
+                />
+                <Text style={styles.timeText}>{prepTimeMinutes} min</Text>
+              </View>
+            ) : (
+              <View />
+            )}
+
+            {formattedRating !== null ? (
+              <View style={styles.ratingSection}>
+                <View style={styles.ratingBadge}>
+                  <MaterialCommunityIcons name="star" size={13} color="#D97706" />
+                  <Text style={styles.ratingText}>{formattedRating}</Text>
+                </View>
+                <Text style={styles.reviewsLabel}>
+                  {totalReviewsCount} {totalReviewsCount === 1 ? 'avaliação' : 'avaliações'}
+                </Text>
+              </View>
+            ) : null}
+          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -197,6 +254,13 @@ const createStyles = (theme: AppTheme, maxTagRows: 1 | 2) =>
       flexGrow: 1,
       justifyContent: 'space-between',
     },
+    topBadgesRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: 6,
+      marginBottom: 6,
+    },
     customizedBadge: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -208,13 +272,48 @@ const createStyles = (theme: AppTheme, maxTagRows: 1 | 2) =>
       paddingVertical: 2,
       paddingHorizontal: 8,
       gap: 4,
-      marginBottom: 6,
     },
     customizedBadgeText: {
       fontSize: 11,
       fontFamily: theme.typography.labelSm.fontFamily,
       fontWeight: '600',
       color: theme.colors.secondary,
+    },
+    draftBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      backgroundColor: theme.colors.surfaceContainerHigh,
+      borderColor: theme.colors.outlineVariant,
+      borderWidth: 1,
+      borderRadius: theme.rounded.full,
+      paddingVertical: 2,
+      paddingHorizontal: 8,
+      gap: 4,
+    },
+    draftBadgeText: {
+      fontSize: 11,
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontWeight: '600',
+      color: theme.colors.onSurfaceVariant,
+    },
+    archivedBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      backgroundColor: theme.colors.surfaceContainerHigh,
+      borderColor: theme.colors.outlineVariant,
+      borderWidth: 1,
+      borderRadius: theme.rounded.full,
+      paddingVertical: 2,
+      paddingHorizontal: 8,
+      gap: 4,
+    },
+    archivedBadgeText: {
+      fontSize: 11,
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontWeight: '600',
+      color: theme.colors.onSurfaceVariant,
     },
     title: {
       fontSize: 18,
@@ -266,6 +365,14 @@ const createStyles = (theme: AppTheme, maxTagRows: 1 | 2) =>
     tagPlaceholder: {
       height: maxTagRows === 2 ? 56 : 26,
     },
+    metaRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      flexWrap: 'wrap',
+      gap: 8,
+      minHeight: 28,
+    },
     timeBadge: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -289,5 +396,33 @@ const createStyles = (theme: AppTheme, maxTagRows: 1 | 2) =>
       fontFamily: theme.typography.labelSm.fontFamily,
       fontWeight: '600',
       color: theme.colors.espressoDark,
+    },
+    ratingSection: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    ratingBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      paddingVertical: 4,
+      paddingHorizontal: 8,
+      borderRadius: theme.rounded.full,
+      gap: 4,
+      minHeight: 28,
+    },
+    ratingText: {
+      fontSize: 12,
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontWeight: '700',
+      color: theme.colors.espressoDark,
+    },
+    reviewsLabel: {
+      fontSize: 11,
+      fontFamily: theme.typography.bodySm.fontFamily,
+      color: theme.colors.onSurfaceVariant,
     },
   });
