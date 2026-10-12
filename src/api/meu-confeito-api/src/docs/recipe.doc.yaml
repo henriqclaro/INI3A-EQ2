@@ -34,6 +34,18 @@ paths:
           name: search
           schema:
             type: string
+        - in: query
+          name: sort
+          description: 'Critérios de ordenação separados por vírgula (ex: rating, reviews, saves). Sinônimos aceitos como order ou orderBy. Em caso de múltiplos parâmetros, a ordem define a precedência.'
+          schema:
+            type: string
+          example: rating, reviews
+        - in: query
+          name: date_limit
+          description: 'Limite de data em dias a partir da criação da receita (ex: 30 para receitas dos últimos 30 dias). Sinônimos aceitos como dateLimit, limit_days ou days.'
+          schema:
+            type: integer
+          example: 30
       responses:
         '200':
           description: Receitas selecionadas com sucesso

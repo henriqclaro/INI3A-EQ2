@@ -403,7 +403,19 @@ export class RecipeService {
     };
   }
 
-  async search(search?: string, page?: number) {
+  async search(query?: RecipeDTO.QueryRequest | string, pageParam?: number) {
+    const normalizedQuery: RecipeDTO.QueryRequest =
+      typeof query === 'string' ? { search: query, page: pageParam ?? 0 } : (query ?? { page: 0 });
+
+    const search = normalizedQuery.search;
+    const page = normalizedQuery.page;
+    const dateLimit =
+      normalizedQuery.date_limit ??
+      normalizedQuery.dateLimit ??
+      normalizedQuery.limit_days ??
+      normalizedQuery.days;
+    const rawSort = normalizedQuery.sort ?? normalizedQuery.orderBy ?? normalizedQuery.order;
+
     const baseFilter: Prisma.RecipeWhereInput = {
       status: 'PUBLISHED',
     };
@@ -431,16 +443,75 @@ export class RecipeService {
       ];
     }
 
+    if (dateLimit !== undefined && dateLimit > 0) {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - dateLimit);
+      baseFilter.createdAt = {
+        gte: cutoffDate,
+      };
+    }
+
     const safePage = Number(page);
     const skipValue = !isNaN(safePage) && safePage > 0 ? safePage * 10 : 0;
+
+    const orderBy: Prisma.RecipeOrderByWithRelationInput[] = [];
+
+    if (rawSort) {
+      const rawList = Array.isArray(rawSort) ? rawSort : [rawSort];
+      const tokens = rawList
+        .flatMap((item) => item.split(','))
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+      const seenFields = new Set<string>();
+
+      for (const token of tokens) {
+        const parts = token.split(':');
+        const rawField = parts[0];
+        const rawDir = parts[1];
+
+        if (!rawField) continue;
+
+        const field = rawField.trim().toLowerCase();
+        const direction: 'asc' | 'desc' = rawDir?.trim().toLowerCase() === 'asc' ? 'asc' : 'desc';
+
+        if (
+          ['rating', 'ratings', 'average_rating', 'stars', 'highest_rating'].includes(field) &&
+          !seenFields.has('averageRating')
+        ) {
+          orderBy.push({ averageRating: direction });
+          seenFields.add('averageRating');
+        } else if (
+          ['reviews', 'review', 'most_reviews', 'ratings_count'].includes(field) &&
+          !seenFields.has('totalReviews')
+        ) {
+          orderBy.push({ totalReviews: direction });
+          seenFields.add('totalReviews');
+        } else if (
+          ['saves', 'saved', 'favorites', 'most_saves'].includes(field) &&
+          !seenFields.has('totalSaves')
+        ) {
+          orderBy.push({ totalSaves: direction });
+          seenFields.add('totalSaves');
+        } else if (
+          ['newest', 'recent', 'created_at', 'createdat', 'date'].includes(field) &&
+          !seenFields.has('createdAt')
+        ) {
+          orderBy.push({ createdAt: direction });
+          seenFields.add('createdAt');
+        }
+      }
+    }
+
+    if (!orderBy.some((order) => 'createdAt' in order)) {
+      orderBy.push({ createdAt: 'desc' });
+    }
 
     const recipes = await prisma.recipe.findMany({
       where: baseFilter,
       take: 10,
       skip: skipValue,
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy,
       select: {
         id: true,
         parent: {
@@ -457,6 +528,10 @@ export class RecipeService {
         hourlyLabor: true,
         packagingCost: true,
         prepTimeMinutes: true,
+
+        totalSaves: true,
+        totalReviews: true,
+        averageRating: true,
 
         createdAt: true,
         updatedAt: true,

@@ -72,13 +72,85 @@ export const userInventoryParamsSchema = z.object({
   userId: z.uuid('Invalid UUID for user ID'),
 });
 
+const sortFieldSchema = z
+  .union([z.string(), z.array(z.string())])
+  .optional()
+  .refine(
+    (val) => {
+      if (!val) return true;
+      const tokens = (Array.isArray(val) ? val : [val])
+        .flatMap((item) => item.split(','))
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+      return tokens.every((token) => {
+        const parts = token.toLowerCase().split(':');
+        const field = parts[0];
+        const dir = parts[1];
+
+        if (!field) return false;
+
+        const isValidField = [
+          'rating',
+          'ratings',
+          'average_rating',
+          'stars',
+          'highest_rating',
+          'reviews',
+          'review',
+          'most_reviews',
+          'ratings_count',
+          'saves',
+          'saved',
+          'favorites',
+          'most_saves',
+          'newest',
+          'recent',
+          'created_at',
+          'createdat',
+          'date',
+        ].includes(field);
+        const isValidDir = !dir || ['asc', 'desc'].includes(dir);
+
+        return isValidField && isValidDir;
+      });
+    },
+    {
+      message: 'Invalid sort parameter. Allowed options are: rating, reviews, saves (and synonyms)',
+    },
+  );
+
+const dateLimitFieldSchema = z
+  .union([z.string(), z.number()])
+  .optional()
+  .transform((val) => {
+    if (val === undefined || val === null || val === '') return undefined;
+    const num = Number(val);
+
+    return isNaN(num) ? val : num;
+  })
+  .pipe(
+    z
+      .number({ error: 'Date limit must be a positive integer' })
+      .int('Date limit must be an integer')
+      .positive('Date limit must be a positive number of days')
+      .optional(),
+  );
+
 export const querySchema = z.object({
   page: z
     .string()
     .optional()
     .transform((val) => (val ? parseInt(val, 10) : 0))
-    .pipe(z.number().int()),
+    .pipe(z.number().int().min(0)),
   search: z.string('Search query must be a single string').trim().optional(),
+  sort: sortFieldSchema,
+  order: sortFieldSchema,
+  orderBy: sortFieldSchema,
+  date_limit: dateLimitFieldSchema,
+  dateLimit: dateLimitFieldSchema,
+  limit_days: dateLimitFieldSchema,
+  days: dateLimitFieldSchema,
 });
 
 export const updateVisibilitySchema = z.object({

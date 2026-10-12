@@ -75,10 +75,8 @@ export class RecipeController {
   }
 
   async search(req: Request, res: Response<ApiResponse<RecipeDTO.SearchResponse>>) {
-    const search = req.query.search as string | undefined;
-    const page = req.query.page as unknown as number | undefined;
-
-    const responseData: RecipeDTO.SearchResponse = await this.recipeService.search(search, page);
+    const query = req.query as unknown as RecipeDTO.QueryRequest;
+    const responseData: RecipeDTO.SearchResponse = await this.recipeService.search(query);
 
     return new DefaultSuccessResponse(res, responseData, 'Recipes selected successfully').send();
   }

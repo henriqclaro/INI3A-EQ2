@@ -217,6 +217,9 @@ export namespace RecipeDTO {
         id: string;
         title: string;
       } | null;
+      totalSaves: number;
+      totalReviews: number;
+      averageRating: Decimal;
       createdAt: Date;
       updatedAt: Date;
       tags: {
