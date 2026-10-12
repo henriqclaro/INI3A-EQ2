@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react';
 
-import { requestTokenRefresh, setAuthFailureListener } from '../services/api';
+import { isRateLimitError, requestTokenRefresh, setAuthFailureListener } from '../services/api';
 import { AuthService, LogInData, LogInResponse } from '../services/auth';
 import { Storage } from '../utils/storage';
 
@@ -61,11 +61,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             try {
               await requestTokenRefresh(storedRefreshToken);
               setUser(parsedUser);
-            } catch {
-              await Storage.removeItem('access_token');
-              await Storage.removeItem('refresh_token');
-              await Storage.removeItem('user_profile');
-              setUser(null);
+            } catch (refreshErr) {
+              if (isRateLimitError(refreshErr)) {
+                // Keep the stored user session so rate limiting does not wipe the account
+                setUser(parsedUser);
+              } else {
+                await Storage.removeItem('access_token');
+                await Storage.removeItem('refresh_token');
+                await Storage.removeItem('user_profile');
+                setUser(null);
+              }
             }
           }
         }

@@ -9,5 +9,7 @@ export * from './IngredientSelector';
 export * from './Input';
 export * from './Label';
 export * from './MenuOptionButton';
+export * from './RateLimitBanner';
+export * from './RateLimitLabel';
 export * from './TagSelector';
 export * from './ThemeSwitch';

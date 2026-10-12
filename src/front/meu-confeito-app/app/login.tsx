@@ -9,10 +9,11 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { ActivityIndicator } from 'react-native-paper';
 
-import { CustomButton, Input } from '@/src/components';
+import { CustomButton, Input, RateLimitLabel } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
+import { getRateLimitInfo, isRateLimitError } from '@/src/utils/rateLimit';
 import { isEmailValid } from '@/src/utils/validation';
 
 export default function LogInScreen() {
@@ -26,6 +27,11 @@ export default function LogInScreen() {
     email: false,
     password: false,
   });
+
+  const [rateLimitNotice, setRateLimitNotice] = useState<{
+    message: string;
+    retryAfterSeconds?: number;
+  } | null>(null);
 
   const { signIn } = useAuth();
 
@@ -67,7 +73,16 @@ export default function LogInScreen() {
       router.replace('/home');
     } catch (error: unknown) {
       console.log('Login error: ', error);
-      Alert.alert('Falha no login', 'Verifique suas credenciais e tente novamente.');
+      if (isRateLimitError(error)) {
+        const info = getRateLimitInfo(error);
+        setRateLimitNotice({
+          message: info.message,
+          retryAfterSeconds: info.retryAfterSeconds,
+        });
+        Alert.alert('Limite de Tentativas', info.message);
+      } else {
+        Alert.alert('Falha no login', 'Verifique suas credenciais e tente novamente.');
+      }
     } finally {
       setLoading(false);
     }
@@ -123,7 +138,10 @@ export default function LogInScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
-              onChangeText={setEmail}
+              onChangeText={(text) => {
+                setEmail(text);
+                if (rateLimitNotice) setRateLimitNotice(null);
+              }}
               onBlur={() => setTouched((prev) => ({ ...prev, email: true }))}
               containerStyle={[
                 styles.inputContainer,
@@ -169,7 +187,10 @@ export default function LogInScreen() {
               placeholder="Digite sua senha"
               secureTextEntry
               autoCapitalize="none"
-              onChangeText={setPassword}
+              onChangeText={(text) => {
+                setPassword(text);
+                if (rateLimitNotice) setRateLimitNotice(null);
+              }}
               onBlur={() => setTouched((prev) => ({ ...prev, password: true }))}
               containerStyle={[
                 styles.inputContainer,
@@ -207,6 +228,14 @@ export default function LogInScreen() {
 
           {/* Action buttons */}
           <View style={styles.btnActionContainer}>
+            {rateLimitNotice && (
+              <RateLimitLabel
+                message={rateLimitNotice.message}
+                retryAfterSeconds={rateLimitNotice.retryAfterSeconds}
+                onDismiss={() => setRateLimitNotice(null)}
+              />
+            )}
+
             {isLoading ? (
               <ActivityIndicator size="large" color={theme.colors.primary} />
             ) : (

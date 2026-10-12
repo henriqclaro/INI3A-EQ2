@@ -8,7 +8,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { ActivityIndicator, PaperProvider } from 'react-native-paper';
 import { pt, registerTranslation } from 'react-native-paper-dates';
 
-import { CustomHeader, DesktopAlert } from '@/src/components';
+import { CustomHeader, DesktopAlert, RateLimitBanner } from '@/src/components';
 import { AuthProvider, useAuth } from '@/src/contexts/AuthContext';
 import { SettingsProvider } from '@/src/contexts/SettingsContext';
 import { ThemeProvider, useThemeMode } from '@/src/contexts/ThemeContext';
@@ -89,6 +89,7 @@ function RootLayoutContent() {
         <Stack.Screen name="reset-password" options={{ title: 'Alterar Senha' }} />
       </Stack>
       <DesktopAlert />
+      <RateLimitBanner />
     </PaperProvider>
   );
 }

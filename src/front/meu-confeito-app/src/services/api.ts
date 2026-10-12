@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 import { API_BASE_URL, API_HOST_URL } from '../config/env';
+import { getRateLimitInfo, isRateLimitError, rateLimitManager } from '../utils/rateLimit';
 import { Storage } from '../utils/storage';
 
 interface RetryAxiosRequestConfig extends InternalAxiosRequestConfig {
@@ -63,41 +64,49 @@ const setAuthHeader = (requestConfig: RetryAxiosRequestConfig, token: string): v
 };
 
 export async function requestTokenRefresh(refreshToken: string): Promise<string> {
-  const response = await axios.post<RefreshTokenApiResponse>(
-    `${API_BASE_URL}/auth/tokens`,
-    { refreshToken },
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        'x-client-type': Platform.OS,
+  try {
+    const response = await axios.post<RefreshTokenApiResponse>(
+      `${API_BASE_URL}/auth/tokens`,
+      { refreshToken },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-client-type': Platform.OS,
+        },
+        timeout: 7500,
       },
-      timeout: 7500,
-    },
-  );
+    );
 
-  const newAccessToken =
-    response.data?.data?.auth?.accessToken ??
-    response.data?.data?.accessToken ??
-    response.data?.auth?.accessToken ??
-    response.data?.accessToken;
+    const newAccessToken =
+      response.data?.data?.auth?.accessToken ??
+      response.data?.data?.accessToken ??
+      response.data?.auth?.accessToken ??
+      response.data?.accessToken;
 
-  if (!newAccessToken) {
-    throw new Error('New access token not found in refresh response');
+    if (!newAccessToken) {
+      throw new Error('New access token not found in refresh response');
+    }
+
+    await Storage.setItem('access_token', newAccessToken);
+
+    const newRefreshToken =
+      response.data?.data?.auth?.refreshToken ??
+      response.data?.data?.refreshToken ??
+      response.data?.auth?.refreshToken ??
+      response.data?.refreshToken;
+
+    if (newRefreshToken) {
+      await Storage.setItem('refresh_token', newRefreshToken);
+    }
+
+    return newAccessToken;
+  } catch (error) {
+    if (isRateLimitError(error)) {
+      const rateLimitInfo = getRateLimitInfo(error, `${API_BASE_URL}/auth/tokens`);
+      rateLimitManager.notify(rateLimitInfo, { isAlertShown: true });
+    }
+    throw error;
   }
-
-  await Storage.setItem('access_token', newAccessToken);
-
-  const newRefreshToken =
-    response.data?.data?.auth?.refreshToken ??
-    response.data?.data?.refreshToken ??
-    response.data?.auth?.refreshToken ??
-    response.data?.refreshToken;
-
-  if (newRefreshToken) {
-    await Storage.setItem('refresh_token', newRefreshToken);
-  }
-
-  return newAccessToken;
 }
 
 export { API_BASE_URL, API_HOST_URL };
@@ -172,6 +181,16 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as RetryAxiosRequestConfig | undefined;
 
+    if (isRateLimitError(error)) {
+      const rateLimitInfo = getRateLimitInfo(error, originalRequest?.url);
+      if (error.response?.data && typeof error.response.data === 'object') {
+        (error.response.data as { message?: string }).message = rateLimitInfo.message;
+      }
+      error.message = rateLimitInfo.message;
+      rateLimitManager.notify(rateLimitInfo, { isAlertShown: true });
+      return Promise.reject(error);
+    }
+
     if (
       !originalRequest ||
       !error.response ||
@@ -229,6 +248,12 @@ api.interceptors.response.use(
     } catch (refreshError: unknown) {
       processQueue(refreshError, null);
 
+      if (isRateLimitError(refreshError)) {
+        const rateLimitInfo = getRateLimitInfo(refreshError, `${API_BASE_URL}/auth/tokens`);
+        rateLimitManager.notify(rateLimitInfo, { isAlertShown: true });
+        return Promise.reject(refreshError);
+      }
+
       await Storage.removeItem('access_token');
       await Storage.removeItem('refresh_token');
       await Storage.removeItem('user_profile');
@@ -241,3 +266,5 @@ api.interceptors.response.use(
     }
   },
 );
+
+export { isRateLimitError, getRateLimitInfo, rateLimitManager } from '../utils/rateLimit';

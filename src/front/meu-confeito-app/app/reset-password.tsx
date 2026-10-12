@@ -7,10 +7,11 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { ActivityIndicator } from 'react-native-paper';
 
-import { CustomButton, Input } from '@/src/components';
+import { CustomButton, Input, RateLimitLabel } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useResetPassword } from '@/src/hooks/useUsers';
 import { AppTheme } from '@/src/theme/themes';
+import { getRateLimitInfo, isRateLimitError } from '@/src/utils/rateLimit';
 import { isPasswordValid as checkPasswordValid } from '@/src/utils/validation';
 
 export default function ResetPasswordScreen() {
@@ -21,6 +22,11 @@ export default function ResetPasswordScreen() {
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  const [rateLimitNotice, setRateLimitNotice] = useState<{
+    message: string;
+    retryAfterSeconds?: number;
+  } | null>(null);
 
   const [touched, setTouched] = useState({
     oldPassword: false,
@@ -115,6 +121,13 @@ export default function ResetPasswordScreen() {
           'Senha Atual Incorreta',
           'A senha atual informada não confere. Verifique seus dados e tente novamente.',
         );
+      } else if (isRateLimitError(err)) {
+        const info = getRateLimitInfo(err);
+        setRateLimitNotice({
+          message: info.message,
+          retryAfterSeconds: info.retryAfterSeconds,
+        });
+        Alert.alert('Limite de Tentativas Excedido', info.message);
       } else {
         const errorMsg =
           apiErr?.response?.data?.message ||
@@ -160,6 +173,7 @@ export default function ResetPasswordScreen() {
                 value={oldPassword}
                 onChangeText={(val) => {
                   setOldPassword(val);
+                  if (rateLimitNotice) setRateLimitNotice(null);
                   if (!touched.oldPassword) {
                     setTouched((prev) => ({ ...prev, oldPassword: true }));
                   }
@@ -188,6 +202,7 @@ export default function ResetPasswordScreen() {
                 value={newPassword}
                 onChangeText={(val) => {
                   setNewPassword(val);
+                  if (rateLimitNotice) setRateLimitNotice(null);
                   if (!touched.newPassword) {
                     setTouched((prev) => ({ ...prev, newPassword: true }));
                   }
@@ -216,6 +231,7 @@ export default function ResetPasswordScreen() {
                 value={confirmPassword}
                 onChangeText={(val) => {
                   setConfirmPassword(val);
+                  if (rateLimitNotice) setRateLimitNotice(null);
                   if (!touched.confirmPassword) {
                     setTouched((prev) => ({ ...prev, confirmPassword: true }));
                   }
@@ -274,6 +290,14 @@ export default function ResetPasswordScreen() {
 
             {/* Submit & Cancel Actions */}
             <View style={styles.actionsContainer}>
+              {rateLimitNotice && (
+                <RateLimitLabel
+                  message={rateLimitNotice.message}
+                  retryAfterSeconds={rateLimitNotice.retryAfterSeconds}
+                  onDismiss={() => setRateLimitNotice(null)}
+                />
+              )}
+
               {isLoading ? (
                 <ActivityIndicator size="large" color={theme.colors.primary} />
               ) : (

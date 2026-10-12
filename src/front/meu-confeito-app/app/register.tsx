@@ -14,6 +14,7 @@ import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useUserRegister } from '@/src/hooks/useUsers';
 import { AppTheme } from '@/src/theme/themes';
+import { getRateLimitInfo, isRateLimitError } from '@/src/utils/rateLimit';
 import {
   E164_REGEX,
   EMAIL_REGEX,
@@ -182,27 +183,46 @@ export default function RegisterScreen() {
         router.replace('/home');
       } catch (loginErr) {
         console.error('Auto-login error after registration:', loginErr);
-        Alert.alert(
-          'Cadastro realizado com sucesso!',
-          'Sua conta foi criada. Por favor, entre com seu e-mail e senha para continuar.',
-          [
-            {
-              text: 'Ir para o Login',
-              onPress: () => router.replace('/login'),
-            },
-          ],
-        );
+        if (isRateLimitError(loginErr)) {
+          const info = getRateLimitInfo(loginErr);
+          Alert.alert(
+            'Cadastro realizado!',
+            `Sua conta foi criada, mas o limite de requisições foi atingido: ${info.message}. Prossiga para a tela de login.`,
+            [
+              {
+                text: 'Ir para o Login',
+                onPress: () => router.replace('/login'),
+              },
+            ],
+          );
+        } else {
+          Alert.alert(
+            'Cadastro realizado com sucesso!',
+            'Sua conta foi criada. Por favor, entre com seu e-mail e senha para continuar.',
+            [
+              {
+                text: 'Ir para o Login',
+                onPress: () => router.replace('/login'),
+              },
+            ],
+          );
+        }
       } finally {
         setIsLoggingIn(false);
       }
     } catch (err: unknown) {
       console.error('Registration error:', err);
-      const apiError = err as { response?: { data?: { message?: string } }; message?: string };
-      const message =
-        apiError?.response?.data?.message ||
-        apiError?.message ||
-        'Erro ao realizar cadastro. Verifique seus dados e tente novamente.';
-      Alert.alert('Erro no cadastro', message);
+      if (isRateLimitError(err)) {
+        const info = getRateLimitInfo(err);
+        Alert.alert('Limite de Requisições', info.message);
+      } else {
+        const apiError = err as { response?: { data?: { message?: string } }; message?: string };
+        const message =
+          apiError?.response?.data?.message ||
+          apiError?.message ||
+          'Erro ao realizar cadastro. Verifique seus dados e tente novamente.';
+        Alert.alert('Erro no cadastro', message);
+      }
     }
   }
 

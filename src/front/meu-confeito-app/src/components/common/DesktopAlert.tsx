@@ -60,6 +60,10 @@ export function DesktopAlert() {
     iconName = 'alert-outline';
     iconColor = theme.colors.error;
     iconBgColor = theme.colors.errorContainer;
+  } else if (lowerTitle.includes('limite')) {
+    iconName = 'clock-alert-outline';
+    iconColor = theme.colors.error;
+    iconBgColor = theme.colors.errorContainer;
   }
 
   const handleBackdropPress = () => {
