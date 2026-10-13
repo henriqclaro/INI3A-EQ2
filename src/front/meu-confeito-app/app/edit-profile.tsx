@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { Image } from 'expo-image';
 import * as Location from 'expo-location';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 
@@ -19,6 +18,7 @@ import {
   ShowcaseManager,
   ThemeSwitch,
 } from '@/src/components';
+import { UserAvatar } from '@/src/components/common/UserAvatar';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useDeleteBakerProfile, useSaveBakerProfile } from '@/src/hooks/useBakerProfile';
@@ -650,25 +650,18 @@ export default function EditProfileScreen() {
                 accessibilityLabel="Alterar foto de perfil"
                 style={styles.avatarTouchable}
               >
-                {avatarUrl ? (
-                  <Image
-                    source={{ uri: avatarUrl }}
-                    alt="Foto de Perfil"
-                    style={styles.image}
-                    contentFit="cover"
-                    cachePolicy="memory-disk"
-                    recyclingKey={avatarUrl}
-                    transition={150}
-                  />
-                ) : (
-                  <View style={[styles.image, styles.placeholderImage]}>
-                    <MaterialCommunityIcons
-                      name="account"
-                      size={64}
-                      color={theme.colors.onSurfaceVariant}
-                    />
-                  </View>
-                )}
+                <UserAvatar
+                  url={avatarUrl}
+                  name={name}
+                  size={110}
+                  fallbackType="icon"
+                  fallbackIcon="account"
+                  fallbackIconColor={theme.colors.onSurfaceVariant}
+                  fallbackBackgroundColor={theme.colors.surfaceContainerLow}
+                  borderColor={theme.colors.primary}
+                  borderWidth={3}
+                  style={styles.avatarSpacing}
+                />
 
                 <View style={styles.avatarBadge}>
                   {isPickingAvatar ? (
@@ -1366,18 +1359,8 @@ const createStyles = (theme: AppTheme) =>
       color: theme.colors.onSurfaceVariant,
       marginBottom: 6,
     },
-    image: {
-      width: 110,
-      height: 110,
-      borderRadius: 55,
-      borderWidth: 3,
-      borderColor: theme.colors.primary,
+    avatarSpacing: {
       marginBottom: 8,
-    },
-    placeholderImage: {
-      backgroundColor: theme.colors.surfaceContainerLow,
-      justifyContent: 'center',
-      alignItems: 'center',
     },
     userName: {
       fontFamily: theme.typography.headlineMd.fontFamily,

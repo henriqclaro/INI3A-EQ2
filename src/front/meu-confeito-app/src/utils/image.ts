@@ -35,7 +35,30 @@ export function getStorageUrl(pathOrUrl?: string | null): string {
   }
 
   const trimmed = pathOrUrl.trim();
+  if (trimmed.startsWith('blob:') || trimmed.startsWith('data:') || trimmed.startsWith('file://')) {
+    return trimmed;
+  }
+
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    try {
+      const urlObj = new URL(trimmed);
+      // Normalize any asset pointing to the backend's /storage directory
+      if (urlObj.pathname.includes('/storage/')) {
+        const storageIndex = urlObj.pathname.indexOf('/storage/');
+        const storagePath = urlObj.pathname.slice(storageIndex);
+        return `${API_HOST_URL}${storagePath}${urlObj.search}`;
+      }
+
+      if (
+        (urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1') &&
+        !API_HOST_URL.includes('localhost') &&
+        !API_HOST_URL.includes('127.0.0.1')
+      ) {
+        return `${API_HOST_URL}${urlObj.pathname}${urlObj.search}`;
+      }
+    } catch {
+      // ignore parsing error
+    }
     return trimmed;
   }
 

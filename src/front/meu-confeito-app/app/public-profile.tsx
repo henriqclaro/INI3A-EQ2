@@ -12,12 +12,11 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
-import { Image } from 'expo-image';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { RecipeSmallView } from '@/src/components';
+import { RecipeSmallView, UserAvatar } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { usePublicBakerProfile, usePublicShowcase } from '@/src/hooks/useBakerProfile';
@@ -187,21 +186,17 @@ export default function PublicProfileScreen() {
             {/* Baker details card */}
             <View style={styles.bakerCard}>
               <View style={styles.avatarContainer}>
-                {publicProfile.pfpUrl ? (
-                  <Image
-                    source={{ uri: publicProfile.pfpUrl }}
-                    alt="Foto do Confeiteiro"
-                    style={styles.avatar}
-                    contentFit="cover"
-                    cachePolicy="memory-disk"
-                    recyclingKey={publicProfile.pfpUrl}
-                    transition={150}
-                  />
-                ) : (
-                  <View style={[styles.avatar, styles.placeholderAvatar]}>
-                    <MaterialCommunityIcons name="account" size={64} color={theme.colors.outline} />
-                  </View>
-                )}
+                <UserAvatar
+                  url={publicProfile.pfpUrl}
+                  name={publicProfile.publicName || publicProfile.name}
+                  size={110}
+                  fallbackType="icon"
+                  fallbackIcon="account"
+                  fallbackIconColor={theme.colors.outline}
+                  fallbackBackgroundColor={theme.colors.surfaceContainerLow}
+                  borderColor={theme.colors.primary}
+                  borderWidth={3}
+                />
 
                 <View style={styles.publicBadge}>
                   <MaterialCommunityIcons
@@ -558,19 +553,6 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       alignSelf: 'center',
       position: 'relative',
       marginBottom: 12,
-    },
-    avatar: {
-      width: 110,
-      height: 110,
-      borderRadius: 55,
-      borderWidth: 3,
-      borderColor: theme.colors.primary,
-      alignSelf: 'center',
-    },
-    placeholderAvatar: {
-      backgroundColor: theme.colors.surfaceContainerLow,
-      alignItems: 'center',
-      justifyContent: 'center',
     },
     publicBadge: {
       flexDirection: 'row',

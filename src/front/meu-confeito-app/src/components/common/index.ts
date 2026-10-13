@@ -15,3 +15,4 @@ export * from './TagSelector';
 export * from './ThemeSwitch';
 export * from './DraftRecoveryBanner';
 export * from './ToastContainer';
+export * from './UserAvatar';

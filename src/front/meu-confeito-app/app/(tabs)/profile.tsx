@@ -10,12 +10,11 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
-import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { CustomButton, MenuOptionButton } from '@/src/components';
+import { CustomButton, MenuOptionButton, UserAvatar } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useMyBakerProfile } from '@/src/hooks/useBakerProfile';
@@ -102,21 +101,18 @@ export default function ProfileScreen() {
         {/* Main Profile Card Container */}
         <View style={styles.card}>
           <View style={styles.avatarWrapper}>
-            {user?.pfpUrl ? (
-              <Image
-                source={{ uri: user.pfpUrl }}
-                alt="Foto de Perfil"
-                style={styles.image}
-                contentFit="cover"
-                cachePolicy="memory-disk"
-                recyclingKey={user.pfpUrl}
-                transition={150}
-              />
-            ) : (
-              <View style={[styles.image, styles.placeholderImage]}>
-                <MaterialCommunityIcons name="account" size={64} color={theme.colors.placeholder} />
-              </View>
-            )}
+            <UserAvatar
+              url={user?.pfpUrl}
+              name={user?.name}
+              size={110}
+              fallbackType="icon"
+              fallbackIcon="account"
+              fallbackIconColor={theme.colors.placeholder}
+              fallbackBackgroundColor={theme.colors.surfaceContainerLow}
+              borderColor={theme.colors.primary}
+              borderWidth={3}
+              style={styles.avatarImage}
+            />
 
             {/* Small Badge indicating Public vs Private Profile (bakers only) */}
             {isBakerRole &&
@@ -334,19 +330,8 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       marginBottom: theme.spacing.space2,
       position: 'relative',
     },
-    image: {
-      width: 110,
-      height: 110,
-      borderRadius: theme.rounded.full,
-      borderWidth: 3,
-      borderColor: theme.colors.primary,
-      backgroundColor: theme.colors.surfaceContainerLow,
+    avatarImage: {
       marginBottom: theme.spacing.space2,
-    },
-    placeholderImage: {
-      backgroundColor: theme.colors.surfaceContainerLow,
-      justifyContent: 'center',
-      alignItems: 'center',
     },
     publicBadge: {
       flexDirection: 'row',

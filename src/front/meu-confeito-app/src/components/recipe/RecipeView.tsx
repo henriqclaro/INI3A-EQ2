@@ -8,6 +8,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { PartialTag, RecipeStatus } from '@/src/types';
+import { getStorageUrl } from '@/src/utils/image';
 import { getTagColors } from '@/src/utils/tag';
 
 interface TagData {
@@ -69,7 +70,8 @@ export const RecipeView = memo(function RecipeView({
   }, [rating]);
 
   const totalReviewsCount = typeof totalReviews === 'number' ? totalReviews : 0;
-  const hasValidCover = Boolean(coverUrl && coverUrl.trim().length > 0 && !hasImageError);
+  const resolvedCoverUrl = getStorageUrl(coverUrl);
+  const hasValidCover = Boolean(resolvedCoverUrl && !hasImageError);
   const maxTags = maxTagRows === 2 ? 4 : 2;
   const visibleTags = styledTags.slice(0, maxTags);
   const remainingTagsCount = styledTags.length - maxTags;
@@ -85,11 +87,11 @@ export const RecipeView = memo(function RecipeView({
     >
       {hasValidCover ? (
         <Image
-          source={{ uri: coverUrl! }}
+          source={{ uri: resolvedCoverUrl }}
           style={styles.image}
           contentFit="cover"
           cachePolicy="memory-disk"
-          recyclingKey={coverUrl!}
+          recyclingKey={resolvedCoverUrl}
           transition={150}
           onError={() => setHasImageError(true)}
         />

@@ -1,11 +1,11 @@
 import { memo, useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
+import { UserAvatar } from '@/src/components/common/UserAvatar';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { NearbyBakerItem } from '@/src/types/baker-profile';
@@ -57,27 +57,17 @@ export const BakerCard = memo(function BakerCard({ baker, onPress }: BakerCardPr
       accessibilityRole="button"
       accessibilityLabel={`Confeitaria ${displayName}${formattedDistance ? `, a ${formattedDistance}` : ''}`}
     >
-      <View style={styles.avatarContainer}>
-        {baker.pfpUrl ? (
-          <Image
-            source={{ uri: baker.pfpUrl }}
-            alt={displayName}
-            style={styles.avatar}
-            contentFit="cover"
-            cachePolicy="memory-disk"
-            recyclingKey={baker.pfpUrl}
-            transition={150}
-          />
-        ) : (
-          <View style={[styles.avatar, styles.placeholderAvatar]}>
-            <MaterialCommunityIcons
-              name="cake-variant-outline"
-              size={26}
-              color={theme.colors.primary}
-            />
-          </View>
-        )}
-      </View>
+      <UserAvatar
+        url={baker.pfpUrl}
+        name={displayName}
+        size={52}
+        fallbackType="icon"
+        fallbackIcon="cake-variant-outline"
+        fallbackIconColor={theme.colors.primary}
+        fallbackBackgroundColor={theme.colors.surfaceContainerLow}
+        borderColor={theme.colors.outlineVariant}
+        borderWidth={1}
+      />
 
       <View style={styles.infoCol}>
         <View style={styles.headerRow}>
@@ -135,24 +125,6 @@ const createStyles = (theme: AppTheme) =>
       width: '100%',
       gap: theme.spacing.space3,
       ...theme.shadows.soft,
-    },
-    avatarContainer: {
-      width: 52,
-      height: 52,
-      borderRadius: theme.rounded.full,
-      overflow: 'hidden',
-    },
-    avatar: {
-      width: '100%',
-      height: '100%',
-      borderRadius: theme.rounded.full,
-    },
-    placeholderAvatar: {
-      backgroundColor: theme.colors.surfaceContainerLow,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      alignItems: 'center',
-      justifyContent: 'center',
     },
     infoCol: {
       flex: 1,

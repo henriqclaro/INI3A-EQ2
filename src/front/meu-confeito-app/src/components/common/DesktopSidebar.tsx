@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { Image } from 'expo-image';
@@ -11,7 +11,8 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
-import { getStorageUrl } from '@/src/utils/image';
+
+import { UserAvatar } from './UserAvatar';
 
 type TabsProps = ComponentProps<typeof Tabs>;
 type TabBarProps = Parameters<NonNullable<TabsProps['tabBar']>>[0];
@@ -33,15 +34,7 @@ export function DesktopSidebar({
   const hiddenTabNames = isCustomerRole ? ['recipes', 'reports'] : [];
   const visibleRoutes = state.routes.filter((route) => !hiddenTabNames.includes(route.name));
 
-  const userInitial = user?.name ? user.name.trim().charAt(0).toUpperCase() : 'C';
   const roleLabel = isCustomerRole ? 'CLIENTE' : 'CONFEITEIRA';
-
-  const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
-
-  const avatarUri = user?.pfpUrl ? getStorageUrl(user.pfpUrl) : null;
-  const hasValidAvatar = Boolean(
-    avatarUri && avatarUri.trim().length > 0 && failedAvatarUrl !== avatarUri,
-  );
 
   const quickLinks = useMemo(
     () => [
@@ -229,26 +222,15 @@ export function DesktopSidebar({
           accessibilityRole="button"
           accessibilityLabel="Acessar perfil de usuário"
         >
-          <View style={styles.avatar}>
-            {hasValidAvatar ? (
-              <Image
-                source={{ uri: avatarUri! }}
-                alt="Foto de Perfil"
-                style={styles.avatarImage}
-                contentFit="cover"
-                cachePolicy="memory-disk"
-                recyclingKey={avatarUri!}
-                transition={150}
-                onError={() => {
-                  if (avatarUri) {
-                    setFailedAvatarUrl(avatarUri);
-                  }
-                }}
-              />
-            ) : (
-              <Text style={styles.avatarText}>{userInitial}</Text>
-            )}
-          </View>
+          <UserAvatar
+            url={user?.pfpUrl}
+            name={user?.name || (isCustomerRole ? 'Cliente' : 'Confeiteira')}
+            size={38}
+            fallbackType="initial"
+            fallbackBackgroundColor={theme.colors.primaryFixed}
+            borderColor={theme.colors.outlineVariant}
+            borderWidth={1}
+          />
           <View style={styles.userNameCol}>
             <Text style={styles.userName} numberOfLines={1}>
               {user?.name || (isCustomerRole ? 'Cliente' : 'Confeiteira')}
@@ -453,28 +435,6 @@ const createStyles = (theme: AppTheme) =>
       paddingHorizontal: theme.spacing.space2,
       borderRadius: theme.rounded.md,
       gap: theme.spacing.space3,
-    },
-    avatar: {
-      width: 38,
-      height: 38,
-      borderRadius: theme.rounded.full,
-      backgroundColor: theme.colors.primaryFixed,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      alignItems: 'center',
-      justifyContent: 'center',
-      overflow: 'hidden',
-    },
-    avatarImage: {
-      width: '100%',
-      height: '100%',
-      borderRadius: theme.rounded.full,
-    },
-    avatarText: {
-      fontFamily: theme.typography.labelMd.fontFamily,
-      fontSize: 16,
-      fontWeight: '700',
-      color: theme.colors.onPrimaryFixed,
     },
     userNameCol: {
       flex: 1,

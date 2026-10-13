@@ -1,7 +1,6 @@
 import { memo, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -11,6 +10,7 @@ import { useThemeMode } from '../../contexts/ThemeContext';
 import { useRecipeReviews } from '../../hooks/useRecipeReviews';
 import { AppTheme } from '../../theme/themes';
 import { RatingCounts, RecipeReviewItem } from '../../types/review';
+import { UserAvatar } from '../common/UserAvatar';
 import { StarRatingInput } from './StarRatingInput';
 
 export interface RecipeReviewsSectionProps {
@@ -367,19 +367,16 @@ export const RecipeReviewsSection = memo(function RecipeReviewsSection({
                 <View key={rev.id} style={styles.reviewItemCard}>
                   <View style={styles.reviewItemHeader}>
                     <View style={styles.reviewItemUser}>
-                      {rev.user?.pfpUrl ? (
-                        <Image
-                          source={{ uri: rev.user.pfpUrl }}
-                          style={styles.reviewerAvatar}
-                          contentFit="cover"
-                        />
-                      ) : (
-                        <View style={styles.reviewerAvatarPlaceholder}>
-                          <Text style={styles.reviewerAvatarInitial}>
-                            {(rev.user?.name || 'U').charAt(0).toUpperCase()}
-                          </Text>
-                        </View>
-                      )}
+                      <UserAvatar
+                        url={rev.user?.pfpUrl}
+                        name={rev.user?.name}
+                        size={32}
+                        fallbackType="initial"
+                        fallbackBackgroundColor={theme.colors.primaryContainer}
+                        initialTextStyle={{ color: theme.colors.onPrimaryContainer }}
+                        borderColor={theme.colors.outlineVariant}
+                        borderWidth={1}
+                      />
                       <View>
                         <Text style={styles.reviewerName}>
                           {rev.user?.name || 'Confeiteira(o)'}
@@ -717,26 +714,6 @@ const createStyles = (theme: AppTheme) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
-    },
-    reviewerAvatar: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
-      backgroundColor: theme.colors.surfaceContainerLow,
-    },
-    reviewerAvatarPlaceholder: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
-      backgroundColor: theme.colors.primaryContainer,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    reviewerAvatarInitial: {
-      fontFamily: theme.typography.labelMd.fontFamily,
-      fontSize: 14,
-      fontWeight: '600',
-      color: theme.colors.onPrimaryContainer,
     },
     reviewerName: {
       fontFamily: theme.typography.bodySm.fontFamily,
