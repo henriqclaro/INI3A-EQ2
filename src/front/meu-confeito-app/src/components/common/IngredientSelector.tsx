@@ -15,6 +15,7 @@ import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { IngredientService } from '@/src/services/ingredient';
 import { AppTheme } from '@/src/theme/themes';
 import { PartialIngredient } from '@/src/types/ingredient';
+import { matchesSearch } from '@/src/utils/text';
 
 export interface IngredientSelectorProps {
   selectedIngredientId?: number | string | null;
@@ -90,10 +91,18 @@ export function IngredientSelector({
 
   // Derived list of ingredients to display based on query & initial list
   const currentList = useMemo(() => {
-    if (!searchQuery.trim() && searchResults.length === 0 && initialIngredients.length > 0) {
-      return initialIngredients;
+    if (searchResults.length > 0) {
+      return searchResults;
     }
-    return searchResults;
+    if (initialIngredients.length > 0) {
+      if (!searchQuery.trim()) {
+        return initialIngredients;
+      }
+      return initialIngredients.filter(
+        (ing) => matchesSearch(ing.name, searchQuery) || matchesSearch(ing.category, searchQuery),
+      );
+    }
+    return [];
   }, [searchQuery, searchResults, initialIngredients]);
 
   // Fetch ingredient details if only ID is provided but object not found

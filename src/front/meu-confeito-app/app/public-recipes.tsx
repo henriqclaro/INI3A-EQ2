@@ -17,19 +17,21 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { Input, RecipeDateFilterModal, RecipeFilterChip, RecipeView } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { useDebounce } from '@/src/hooks/useDebounce';
 import { useManyRecipes } from '@/src/hooks/useRecipes';
 import { AppTheme } from '@/src/theme/themes';
 import { PartialRecipe } from '@/src/types';
 
 export default function PublicRecipesScreen() {
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
   const [activeSort, setActiveSort] = useState<'saves' | 'reviews' | 'rating' | null>(null);
   const [dateLimit, setDateLimit] = useState<number | undefined>(undefined);
   const [isDateModalVisible, setIsDateModalVisible] = useState(false);
 
   const { theme } = useThemeMode();
   const { recipes, isLoading, isLoadingMore, hasMore, loadMore, refetch } = useManyRecipes({
-    search,
+    search: debouncedSearch,
     sort: activeSort ?? undefined,
     dateLimit,
   });

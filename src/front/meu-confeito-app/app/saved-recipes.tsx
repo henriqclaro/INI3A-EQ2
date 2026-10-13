@@ -19,15 +19,18 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Input, SavedRecipeCard } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { useDebounce } from '@/src/hooks/useDebounce';
 import { useSavedRecipes } from '@/src/hooks/useSavedRecipes';
 import { AppTheme } from '@/src/theme/themes';
 import { UserSavedRecipeItem } from '@/src/types';
+import { matchesSearch } from '@/src/utils/text';
 
 export default function SavedRecipesScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
   const { width } = useWindowDimensions();
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 200);
   const [removingId, setRemovingId] = useState<string | null>(null);
 
   const isDesktop = width >= 768;
@@ -35,20 +38,19 @@ export default function SavedRecipesScreen() {
 
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
-  const hasActiveSearch = Boolean(search.trim().length > 0);
+  const hasActiveSearch = Boolean(debouncedSearch.trim().length > 0);
 
   const filteredSaves: UserSavedRecipeItem[] = useMemo(() => {
-    const trimmed = search.trim().toLowerCase();
-    if (!trimmed) return savedRecipes;
+    if (!debouncedSearch.trim()) return savedRecipes;
 
     return savedRecipes.filter((item) => {
-      const hasTitleMatch = item.recipe.title.toLowerCase().includes(trimmed);
+      const hasTitleMatch = matchesSearch(item.recipe.title, debouncedSearch);
       const hasTagMatch = Boolean(
-        item.recipe.tags?.some((t) => t?.tag?.name?.toLowerCase().includes(trimmed)),
+        item.recipe.tags?.some((t) => matchesSearch(t?.tag?.name, debouncedSearch)),
       );
       return hasTitleMatch || hasTagMatch;
     });
-  }, [savedRecipes, search]);
+  }, [savedRecipes, debouncedSearch]);
 
   const handleRemove = useCallback(
     (recipeId: string, recipeTitle: string) => {
