@@ -13,8 +13,10 @@ export function InteractionSettingsCard() {
   const {
     isSwipeNavigationEnabled,
     isHapticsEnabled,
+    isRoutePersistenceEnabled,
     toggleSwipeNavigation,
     toggleHaptics,
+    toggleRoutePersistence,
     triggerHaptic,
   } = useSettings();
 
@@ -122,6 +124,40 @@ export function InteractionSettingsCard() {
           </TouchableOpacity>
         </View>
       ) : null}
+
+      <View style={styles.divider} />
+
+      {/* Setting 3: Route Persistence */}
+      <View style={styles.settingRow}>
+        <View style={styles.settingInfo}>
+          <View style={styles.iconCircle}>
+            <MaterialCommunityIcons name="history" size={22} color={theme.colors.primary} />
+          </View>
+          <View style={styles.textColumn}>
+            <View style={styles.titleWithBadge}>
+              <Text style={styles.title}>Retomar Última Tela</Text>
+              <View style={isRoutePersistenceEnabled ? styles.activeBadge : styles.inactiveBadge}>
+                <Text
+                  style={
+                    isRoutePersistenceEnabled ? styles.activeBadgeText : styles.inactiveBadgeText
+                  }
+                >
+                  {isRoutePersistenceEnabled ? 'Ativado' : 'Desativado'}
+                </Text>
+              </View>
+            </View>
+            <Text style={styles.subtitle}>
+              Retoma automaticamente a última receita ou tela aberta após fechar ou reiniciar o app
+            </Text>
+          </View>
+        </View>
+
+        <ThemeSwitch
+          value={isRoutePersistenceEnabled}
+          onValueChange={toggleRoutePersistence}
+          accessibilityLabel="Ativar ou desativar persistência de rota ao reabrir o app"
+        />
+      </View>
 
       {/* Info Callout */}
       <View style={styles.infoCallout}>

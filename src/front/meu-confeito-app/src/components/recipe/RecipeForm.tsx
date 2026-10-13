@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Platform,
@@ -17,11 +17,17 @@ import { Picker } from '@react-native-picker/picker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { ActivityIndicator } from 'react-native-paper';
 
-import { CustomButton, IngredientSelector, TagSelector } from '@/src/components/common';
+import {
+  CustomButton,
+  DraftRecoveryBanner,
+  IngredientSelector,
+  TagSelector,
+} from '@/src/components/common';
 import { STANDARD_UNITS } from '@/src/constants/common-units';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { useFormDraft } from '@/src/hooks/useFormDraft';
 import { useIngredients } from '@/src/hooks/useIngredients';
 import { useUserRecipes } from '@/src/hooks/useRecipes';
 import { AppTheme } from '@/src/theme/themes';
@@ -74,6 +80,20 @@ interface RecipeFormItem {
   displayQuantity: string;
   displayUnit: string;
   notes: string;
+}
+
+export interface RecipeDraftData {
+  title: string;
+  baseYield: string;
+  yieldUnit: StandardUnit;
+  prepTimeMinutes: string;
+  profitMargin: string;
+  overhead: string;
+  hourlyLabor: string;
+  packagingCost: string;
+  items: RecipeFormItem[];
+  steps: RecipeInstructionStep[];
+  selectedTags: Tag[];
 }
 
 export function RecipeForm({
@@ -222,6 +242,89 @@ export function RecipeForm({
 
   // Tags State
   const [selectedTags, setSelectedTags] = useState<Tag[]>(initialTags);
+
+  // Form Draft Persistence (react-native-mmkv / KV storage)
+  const draftKey = useMemo(() => {
+    return isEditMode && initialRecipe?.id
+      ? `draft_recipe_edit_${initialRecipe.id}`
+      : 'draft_recipe_create';
+  }, [isEditMode, initialRecipe?.id]);
+
+  const { hasDraft, draftTimestamp, saveDraft, clearDraft, discardDraft, restoreDraft } =
+    useFormDraft<RecipeDraftData>(draftKey);
+
+  const [isDraftDismissed, setIsDraftDismissed] = useState(false);
+  const isDraftBannerVisible = hasDraft && !isDraftDismissed;
+  const isInitialMount = useRef(true);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    const hasMeaningfulContent =
+      title.trim().length > 0 ||
+      baseYield.trim().length > 0 ||
+      items.some(
+        (it) =>
+          it.ingredientId.trim().length > 0 ||
+          it.subRecipeId.trim().length > 0 ||
+          it.quantity.trim().length > 0,
+      );
+
+    if (hasMeaningfulContent) {
+      saveDraft({
+        title,
+        baseYield,
+        yieldUnit,
+        prepTimeMinutes,
+        profitMargin,
+        overhead,
+        hourlyLabor,
+        packagingCost,
+        items,
+        steps,
+        selectedTags,
+      });
+    }
+  }, [
+    title,
+    baseYield,
+    yieldUnit,
+    prepTimeMinutes,
+    profitMargin,
+    overhead,
+    hourlyLabor,
+    packagingCost,
+    items,
+    steps,
+    selectedTags,
+    saveDraft,
+  ]);
+
+  const handleRestoreDraft = () => {
+    const data = restoreDraft();
+    if (data) {
+      if (typeof data.title === 'string') setTitle(data.title);
+      if (typeof data.baseYield === 'string') setBaseYield(data.baseYield);
+      if (data.yieldUnit) setYieldUnit(data.yieldUnit);
+      if (typeof data.prepTimeMinutes === 'string') setPrepTimeMinutes(data.prepTimeMinutes);
+      if (typeof data.profitMargin === 'string') setProfitMargin(data.profitMargin);
+      if (typeof data.overhead === 'string') setOverhead(data.overhead);
+      if (typeof data.hourlyLabor === 'string') setHourlyLabor(data.hourlyLabor);
+      if (typeof data.packagingCost === 'string') setPackagingCost(data.packagingCost);
+      if (Array.isArray(data.items) && data.items.length > 0) setItems(data.items);
+      if (Array.isArray(data.steps) && data.steps.length > 0) setSteps(data.steps);
+      if (Array.isArray(data.selectedTags)) setSelectedTags(data.selectedTags);
+    }
+    setIsDraftDismissed(true);
+  };
+
+  const handleDiscardDraft = () => {
+    discardDraft();
+    setIsDraftDismissed(true);
+  };
 
   // Add & Remove Items
   const handleAddItem = () => {
@@ -423,6 +526,7 @@ export function RecipeForm({
     };
 
     await onSubmit(payload);
+    clearDraft();
   };
 
   const defaultButtonLabel = isEditMode ? 'Salvar Alterações' : 'Cadastrar Receita';
@@ -443,6 +547,13 @@ export function RecipeForm({
           ? 'Atualize as informações da sua receita abaixo.'
           : 'Preencha as informações abaixo para registrar sua receita no sistema.'}
       </Text>
+
+      <DraftRecoveryBanner
+        isVisible={isDraftBannerVisible}
+        draftTimestamp={draftTimestamp}
+        onRestore={handleRestoreDraft}
+        onDiscard={handleDiscardDraft}
+      />
 
       {/* Card: Basic Data */}
       <View style={styles.box}>

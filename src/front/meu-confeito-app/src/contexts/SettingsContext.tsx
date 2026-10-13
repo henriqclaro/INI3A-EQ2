@@ -18,11 +18,14 @@ export const DEFAULT_PRICE_DECIMAL_PLACES: PriceDecimalPlaces = 4;
 export interface SettingsContextData {
   isSwipeNavigationEnabled: boolean;
   isHapticsEnabled: boolean;
+  isRoutePersistenceEnabled: boolean;
   isLoadingSettings: boolean;
   setIsSwipeNavigationEnabled: (isEnabled: boolean) => void;
   toggleSwipeNavigation: () => void;
   setIsHapticsEnabled: (isEnabled: boolean) => void;
   toggleHaptics: () => void;
+  setIsRoutePersistenceEnabled: (isEnabled: boolean) => void;
+  toggleRoutePersistence: () => void;
   triggerHaptic: (type?: HapticFeedbackType) => void;
 
   // Operational Preferences (Recipe default values & display precision)
@@ -56,6 +59,7 @@ export interface SettingsContextData {
 
 const SWIPE_NAV_STORAGE_KEY = 'settings_swipe_nav_enabled';
 const HAPTICS_STORAGE_KEY = 'settings_haptics_enabled';
+const ROUTE_PERSISTENCE_STORAGE_KEY = 'settings_route_persistence_enabled';
 
 const PRICE_DECIMAL_PLACES_STORAGE_KEY = 'settings_price_decimal_places';
 
@@ -76,6 +80,7 @@ const SettingsContext = createContext<SettingsContextData>({} as SettingsContext
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [isSwipeNavigationEnabled, setIsSwipeNavigationEnabledState] = useState(true);
   const [isHapticsEnabled, setIsHapticsEnabledState] = useState(true);
+  const [isRoutePersistenceEnabled, setIsRoutePersistenceEnabledState] = useState(true);
   const [isLoadingSettings, setIsLoadingSettings] = useState(true);
 
   // Operational Preferences States
@@ -101,6 +106,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         const [
           storedSwipe,
           storedHaptics,
+          storedRoutePersistence,
           storedOverheadEnabled,
           storedOverheadValue,
           storedProfitMarginEnabled,
@@ -113,6 +119,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         ] = await Promise.all([
           Storage.getItem(SWIPE_NAV_STORAGE_KEY),
           Storage.getItem(HAPTICS_STORAGE_KEY),
+          Storage.getItem(ROUTE_PERSISTENCE_STORAGE_KEY),
           Storage.getItem(DEFAULT_OVERHEAD_ENABLED_KEY),
           Storage.getItem(DEFAULT_OVERHEAD_VALUE_KEY),
           Storage.getItem(DEFAULT_PROFIT_MARGIN_ENABLED_KEY),
@@ -132,6 +139,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           const isHapticsActive = storedHaptics === 'true';
           setIsHapticsEnabledState(isHapticsActive);
           setGlobalHapticsEnabled(isHapticsActive);
+        }
+
+        if (storedRoutePersistence !== null) {
+          setIsRoutePersistenceEnabledState(storedRoutePersistence === 'true');
         }
 
         if (storedPriceDecimalPlaces !== null) {
@@ -205,6 +216,17 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       triggerGlobalHaptic('selection');
     }
   }, [handleSetHapticsEnabled, isHapticsEnabled]);
+
+  const handleSetRoutePersistenceEnabled = useCallback((isEnabled: boolean) => {
+    setIsRoutePersistenceEnabledState(isEnabled);
+    Storage.setItem(ROUTE_PERSISTENCE_STORAGE_KEY, String(isEnabled)).catch((error) => {
+      console.error('Error saving route persistence setting:', error);
+    });
+  }, []);
+
+  const toggleRoutePersistence = useCallback(() => {
+    handleSetRoutePersistenceEnabled(!isRoutePersistenceEnabled);
+  }, [handleSetRoutePersistenceEnabled, isRoutePersistenceEnabled]);
 
   useEffect(() => {
     setGlobalHapticsEnabled(isHapticsEnabled);
@@ -305,11 +327,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     () => ({
       isSwipeNavigationEnabled,
       isHapticsEnabled,
+      isRoutePersistenceEnabled,
       isLoadingSettings,
       setIsSwipeNavigationEnabled: handleSetSwipeNavigationEnabled,
       toggleSwipeNavigation,
       setIsHapticsEnabled: handleSetHapticsEnabled,
       toggleHaptics,
+      setIsRoutePersistenceEnabled: handleSetRoutePersistenceEnabled,
+      toggleRoutePersistence,
       triggerHaptic,
 
       // Operational Preferences
@@ -343,11 +368,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     [
       isSwipeNavigationEnabled,
       isHapticsEnabled,
+      isRoutePersistenceEnabled,
       isLoadingSettings,
       handleSetSwipeNavigationEnabled,
       toggleSwipeNavigation,
       handleSetHapticsEnabled,
       toggleHaptics,
+      handleSetRoutePersistenceEnabled,
+      toggleRoutePersistence,
       triggerHaptic,
 
       priceDecimalPlaces,

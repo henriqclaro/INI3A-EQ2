@@ -8,10 +8,12 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { ActivityIndicator, PaperProvider } from 'react-native-paper';
 import { pt, registerTranslation } from 'react-native-paper-dates';
 
-import { CustomHeader, DesktopAlert, RateLimitBanner } from '@/src/components';
+import { CustomHeader, DesktopAlert, RateLimitBanner, ToastContainer } from '@/src/components';
 import { AuthProvider, useAuth } from '@/src/contexts/AuthContext';
 import { SettingsProvider } from '@/src/contexts/SettingsContext';
 import { ThemeProvider, useThemeMode } from '@/src/contexts/ThemeContext';
+import { ToastProvider } from '@/src/contexts/ToastContext';
+import { useRoutePersistence } from '@/src/hooks/useRoutePersistence';
 import { AppTheme } from '@/src/theme/themes';
 
 registerTranslation('pt', pt);
@@ -48,6 +50,7 @@ function RootLayoutContent() {
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   useProtectedRoute();
+  useRoutePersistence();
 
   if (isLoadingStorage) {
     return (
@@ -91,6 +94,7 @@ function RootLayoutContent() {
       </Stack>
       <DesktopAlert />
       <RateLimitBanner />
+      <ToastContainer />
     </PaperProvider>
   );
 }
@@ -109,11 +113,13 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <SettingsProvider>
-        <AuthProvider>
-          <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
-            <RootLayoutContent />
-          </KeyboardProvider>
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
+              <RootLayoutContent />
+            </KeyboardProvider>
+          </AuthProvider>
+        </ToastProvider>
       </SettingsProvider>
     </ThemeProvider>
   );
