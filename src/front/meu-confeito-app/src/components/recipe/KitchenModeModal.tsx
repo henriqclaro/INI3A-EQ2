@@ -1,22 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Modal,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { RecipeInstructionStep, RecipeItem } from '@/src/types';
+import { shareRecipeSummary } from '@/src/utils/share';
 
 import { RecipeScalerBar } from './RecipeScalerBar';
 
@@ -26,6 +20,7 @@ export interface KitchenModeModalProps {
   recipeTitle: string;
   baseYield: number;
   yieldUnit: string;
+  prepTimeMinutes?: number | string | null;
   scaleFactor: number;
   onScaleChange: (scale: number) => void;
   items: RecipeItem[];
@@ -38,6 +33,7 @@ export function KitchenModeModal({
   recipeTitle,
   baseYield,
   yieldUnit,
+  prepTimeMinutes,
   scaleFactor,
   onScaleChange,
   items,
@@ -94,6 +90,24 @@ export function KitchenModeModal({
   const completedStepsCount = completedSteps.size;
   const progressPercent = totalSteps > 0 ? Math.round((completedStepsCount / totalSteps) * 100) : 0;
 
+  const handleShare = () => {
+    triggerHaptic('light');
+    const scaledYield = baseYield
+      ? (baseYield * scaleFactor).toFixed(2).replace(/\.00$/, '')
+      : null;
+    const scaledItems = items.map((it) => ({
+      ...it,
+      quantity: parseFloat(((Number(it.quantity) || 0) * scaleFactor).toFixed(2)),
+    }));
+    shareRecipeSummary({
+      title: recipeTitle,
+      baseYield: scaledYield,
+      yieldUnit,
+      prepTimeMinutes,
+      items: scaledItems,
+    });
+  };
+
   return (
     <Modal
       visible={isVisible}
@@ -101,7 +115,7 @@ export function KitchenModeModal({
       presentationStyle="fullScreen"
       onRequestClose={onClose}
     >
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom', 'left', 'right']}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
@@ -118,15 +132,31 @@ export function KitchenModeModal({
             </Text>
           </View>
 
-          <TouchableOpacity
-            style={styles.closeBtn}
-            onPress={onClose}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel="Sair do modo cozinha"
-          >
-            <MaterialCommunityIcons name="close" size={24} color={theme.colors.onSurface} />
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              style={styles.headerIconBtn}
+              onPress={handleShare}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Compartilhar resumo da receita"
+            >
+              <MaterialCommunityIcons
+                name="share-variant-outline"
+                size={22}
+                color={theme.colors.onSurface}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.closeBtn}
+              onPress={onClose}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Sair do modo cozinha"
+            >
+              <MaterialCommunityIcons name="close" size={24} color={theme.colors.onSurface} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Scaler Bar */}
@@ -337,6 +367,19 @@ const createStyles = (theme: AppTheme) =>
       fontSize: 18,
       fontWeight: '700',
       color: theme.colors.espressoDark,
+    },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    headerIconBtn: {
+      width: 48,
+      height: 48,
+      borderRadius: theme.rounded.default,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     closeBtn: {
       width: 48,

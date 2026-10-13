@@ -62,7 +62,6 @@ export const RecipeDateFilterModal = memo(function RecipeDateFilterModal({
       <Pressable
         style={styles.backdrop}
         onPress={onClose}
-        accessibilityRole="button"
         accessibilityLabel="Fechar menu de filtro de período"
       >
         <Pressable

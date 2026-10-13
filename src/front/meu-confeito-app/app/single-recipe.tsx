@@ -32,6 +32,7 @@ import { AppTheme } from '@/src/theme/themes';
 import { PartialTag, RecipeInstructionStep, RecipeItem, RecipeStatus } from '@/src/types';
 import { getStorageUrl } from '@/src/utils/image';
 import { parseRecipeInstructions } from '@/src/utils/recipe';
+import { shareRecipeSummary } from '@/src/utils/share';
 import { getTagColors } from '@/src/utils/tag';
 
 export type FormattedInstructionStep = RecipeInstructionStep;
@@ -125,6 +126,21 @@ export default function RecipeScreen() {
         : null,
     }));
   }, [recipeItems, scaleFactor]);
+
+  const handleShareRecipe = useCallback(async () => {
+    if (!recipe) return;
+    const currentYield = recipe.baseYield
+      ? (Number(recipe.baseYield) * scaleFactor).toFixed(2).replace(/\.00$/, '')
+      : null;
+
+    await shareRecipeSummary({
+      title: recipe.title,
+      baseYield: currentYield,
+      yieldUnit: recipe.yieldUnit,
+      prepTimeMinutes: recipe.prepTimeMinutes,
+      items: scaledRecipeItems,
+    });
+  }, [recipe, scaleFactor, scaledRecipeItems]);
 
   const recipeTags = useMemo(() => {
     const rawTags = (recipe as { tags?: { tag: PartialTag }[] })?.tags;
@@ -289,6 +305,21 @@ export default function RecipeScreen() {
           title: recipe?.title || 'Receita',
           headerRight: () => (
             <View style={styles.headerRightRow}>
+              {recipe && (
+                <TouchableOpacity
+                  onPress={handleShareRecipe}
+                  style={styles.headerShareBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel="Compartilhar resumo da receita"
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <MaterialCommunityIcons
+                    name="share-variant-outline"
+                    size={22}
+                    color={theme.colors.primary}
+                  />
+                </TouchableOpacity>
+              )}
               {recipe && (
                 <TouchableOpacity
                   onPress={() => setIsKitchenModeOpen(true)}
@@ -591,6 +622,22 @@ export default function RecipeScreen() {
                     </TouchableOpacity>
 
                     <View style={styles.ownerActionButtons}>
+                      {/* Botão Compartilhar */}
+                      <TouchableOpacity
+                        style={styles.btnActionShare}
+                        onPress={handleShareRecipe}
+                        activeOpacity={0.8}
+                        accessibilityRole="button"
+                        accessibilityLabel="Compartilhar resumo da receita"
+                      >
+                        <MaterialCommunityIcons
+                          name="share-variant-outline"
+                          size={18}
+                          color={theme.colors.primary}
+                        />
+                        <Text style={styles.btnActionTextShare}>Compartilhar</Text>
+                      </TouchableOpacity>
+
                       {/* Botão Editar */}
                       <TouchableOpacity
                         style={styles.btnActionEdit}
@@ -811,6 +858,22 @@ export default function RecipeScreen() {
                           )}
                         </TouchableOpacity>
                       )}
+
+                      {/* Botão Compartilhar */}
+                      <TouchableOpacity
+                        style={styles.btnActionShareGuest}
+                        onPress={handleShareRecipe}
+                        activeOpacity={0.85}
+                        accessibilityRole="button"
+                        accessibilityLabel="Compartilhar resumo da receita"
+                      >
+                        <MaterialCommunityIcons
+                          name="share-variant-outline"
+                          size={18}
+                          color={theme.colors.primary}
+                        />
+                        <Text style={styles.btnActionTextShareGuest}>Compartilhar</Text>
+                      </TouchableOpacity>
                     </View>
                   </View>
                 )}
@@ -1105,6 +1168,7 @@ export default function RecipeScreen() {
             recipeTitle={recipe.title}
             baseYield={Number(recipe.baseYield) || 1}
             yieldUnit={recipe.yieldUnit || 'UN'}
+            prepTimeMinutes={recipe.prepTimeMinutes}
             scaleFactor={scaleFactor}
             onScaleChange={setScaleFactor}
             items={recipeItems}
@@ -1353,6 +1417,13 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       alignItems: 'center',
       gap: 4,
     },
+    headerShareBtn: {
+      minWidth: 48,
+      minHeight: 48,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 8,
+    },
     headerKitchenBtn: {
       minWidth: 48,
       minHeight: 48,
@@ -1409,6 +1480,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     },
     ownerActionButtons: {
       flexDirection: isSmallScreen ? 'column' : 'row',
+      flexWrap: 'wrap',
       gap: 8,
     },
     btnActionProduce: {
@@ -1428,8 +1500,29 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       fontWeight: '700',
       color: theme.colors.onPrimary,
     },
+    btnActionShare: {
+      flex: 1,
+      minWidth: isSmallScreen ? '100%' : 130,
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.default,
+      paddingHorizontal: 12,
+      gap: 6,
+    },
+    btnActionTextShare: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.primary,
+    },
     btnActionEdit: {
       flex: 1,
+      minWidth: isSmallScreen ? '100%' : 130,
       minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',
@@ -1449,6 +1542,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     },
     btnActionPublish: {
       flex: 1.2,
+      minWidth: isSmallScreen ? '100%' : 130,
       minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',
@@ -1467,6 +1561,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     },
     btnActionDraft: {
       flex: 1.2,
+      minWidth: isSmallScreen ? '100%' : 130,
       minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',
@@ -1486,6 +1581,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     },
     btnActionArchive: {
       flex: 1,
+      minWidth: isSmallScreen ? '100%' : 130,
       minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',
@@ -1505,6 +1601,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     },
     btnActionUnarchive: {
       flex: 1,
+      minWidth: isSmallScreen ? '100%' : 130,
       minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',
@@ -1603,13 +1700,14 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     },
     guestSecondaryActions: {
       flexDirection: isSmallScreen ? 'column' : 'row',
+      flexWrap: 'wrap',
       alignItems: 'center',
       gap: 8,
       width: '100%',
     },
     btnActionCustomizeGuest: {
       flex: 1,
-      width: isSmallScreen ? '100%' : undefined,
+      minWidth: isSmallScreen ? '100%' : 120,
       minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',
@@ -1630,7 +1728,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     },
     btnActionSaveGuest: {
       flex: 1,
-      width: isSmallScreen ? '100%' : undefined,
+      minWidth: isSmallScreen ? '100%' : 120,
       minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',
@@ -1654,6 +1752,27 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     },
     btnActionTextSaveGuestActive: {
       color: theme.colors.onPrimaryContainer,
+    },
+    btnActionShareGuest: {
+      flex: 1,
+      minWidth: isSmallScreen ? '100%' : 120,
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderWidth: 1.5,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.default,
+      paddingHorizontal: 14,
+      gap: 6,
+      ...theme.shadows.soft,
+    },
+    btnActionTextShareGuest: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 13,
+      fontWeight: '700',
+      color: theme.colors.primary,
     },
     metaRow: {
       flexDirection: 'row',
