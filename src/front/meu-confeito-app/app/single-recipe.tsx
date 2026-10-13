@@ -18,9 +18,11 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { ProduceRecipeModal } from '@/src/components/production';
 import {
   CustomizeRecipeModal,
+  KitchenModeModal,
   RecipeIngredientsSection,
   RecipeInstructionsSection,
   RecipeReviewsSection,
+  RecipeScalerBar,
 } from '@/src/components/recipe';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
@@ -28,6 +30,7 @@ import { useSingleRecipe } from '@/src/hooks/useRecipes';
 import { useSavedRecipes } from '@/src/hooks/useSavedRecipes';
 import { AppTheme } from '@/src/theme/themes';
 import { PartialTag, RecipeInstructionStep, RecipeItem, RecipeStatus } from '@/src/types';
+import { getStorageUrl } from '@/src/utils/image';
 import { parseRecipeInstructions } from '@/src/utils/recipe';
 import { getTagColors } from '@/src/utils/tag';
 
@@ -58,6 +61,8 @@ export default function RecipeScreen() {
   const [viewMode, setViewMode] = useState<'recipe' | 'pricing'>('recipe');
   const [isProduceModalOpen, setIsProduceModalOpen] = useState(false);
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
+  const [scaleFactor, setScaleFactor] = useState(1);
+  const [isKitchenModeOpen, setIsKitchenModeOpen] = useState(false);
 
   const handleToggleSave = async () => {
     if (!user) {
@@ -100,9 +105,8 @@ export default function RecipeScreen() {
     [theme, isDesktop, isSmallScreen],
   );
 
-  const hasValidCover = Boolean(
-    recipe?.coverUrl && recipe.coverUrl.trim().length > 0 && !hasImageError,
-  );
+  const resolvedCoverUrl = getStorageUrl(recipe?.coverUrl);
+  const hasValidCover = Boolean(resolvedCoverUrl && !hasImageError);
 
   const isOwner = Boolean(user?.id && recipe?.userId && user.id === recipe.userId);
 
@@ -110,6 +114,17 @@ export default function RecipeScreen() {
     () => recipe?.items || (recipe as { ingredients?: RecipeItem[] })?.ingredients || [],
     [recipe],
   );
+
+  const scaledRecipeItems: RecipeItem[] = useMemo(() => {
+    if (scaleFactor === 1) return recipeItems;
+    return recipeItems.map((item) => ({
+      ...item,
+      quantity: parseFloat((Number(item.quantity) * scaleFactor).toFixed(2)),
+      displayQuantity: item.displayQuantity
+        ? parseFloat((Number(item.displayQuantity) * scaleFactor).toFixed(2))
+        : null,
+    }));
+  }, [recipeItems, scaleFactor]);
 
   const recipeTags = useMemo(() => {
     const rawTags = (recipe as { tags?: { tag: PartialTag }[] })?.tags;
@@ -274,6 +289,17 @@ export default function RecipeScreen() {
           title: recipe?.title || 'Receita',
           headerRight: () => (
             <View style={styles.headerRightRow}>
+              {recipe && (
+                <TouchableOpacity
+                  onPress={() => setIsKitchenModeOpen(true)}
+                  style={styles.headerKitchenBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel="Abrir modo cozinha com tela ativa"
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <MaterialCommunityIcons name="chef-hat" size={22} color={theme.colors.primary} />
+                </TouchableOpacity>
+              )}
               {recipe && user && recipe.status === 'PUBLISHED' && (
                 <TouchableOpacity
                   onPress={handleToggleSave}
@@ -371,11 +397,11 @@ export default function RecipeScreen() {
                 {/* Recipe Cover or Placeholder */}
                 {hasValidCover ? (
                   <Image
-                    source={{ uri: recipe.coverUrl! }}
+                    source={{ uri: resolvedCoverUrl }}
                     style={styles.heroImage}
                     contentFit="cover"
                     cachePolicy="memory-disk"
-                    recyclingKey={recipe.coverUrl!}
+                    recyclingKey={resolvedCoverUrl}
                     transition={150}
                     onError={() => setHasImageError(true)}
                   />
@@ -855,7 +881,13 @@ export default function RecipeScreen() {
                 {/* Recipe View Mode */}
                 {viewMode === 'recipe' ? (
                   <View style={styles.modeContainer}>
-                    <RecipeIngredientsSection recipeItems={recipeItems} />
+                    <RecipeScalerBar
+                      baseYield={Number(recipe.baseYield) || 1}
+                      yieldUnit={recipe.yieldUnit || 'UN'}
+                      scaleFactor={scaleFactor}
+                      onScaleChange={setScaleFactor}
+                    />
+                    <RecipeIngredientsSection recipeItems={scaledRecipeItems} />
                     <RecipeInstructionsSection instructions={parsedInstructions} />
                   </View>
                 ) : (
@@ -1063,6 +1095,20 @@ export default function RecipeScreen() {
             onClose={() => setIsCustomizeModalOpen(false)}
             onConfirm={handleConfirmCustomize}
             recipeTitle={recipe.title}
+          />
+        )}
+
+        {recipe && (
+          <KitchenModeModal
+            isVisible={isKitchenModeOpen}
+            onClose={() => setIsKitchenModeOpen(false)}
+            recipeTitle={recipe.title}
+            baseYield={Number(recipe.baseYield) || 1}
+            yieldUnit={recipe.yieldUnit || 'UN'}
+            scaleFactor={scaleFactor}
+            onScaleChange={setScaleFactor}
+            items={recipeItems}
+            instructions={parsedInstructions}
           />
         )}
       </View>
@@ -1306,6 +1352,13 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       flexDirection: 'row',
       alignItems: 'center',
       gap: 4,
+    },
+    headerKitchenBtn: {
+      minWidth: 48,
+      minHeight: 48,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 8,
     },
     headerSaveBtn: {
       minWidth: 48,

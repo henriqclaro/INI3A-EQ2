@@ -11,3 +11,5 @@ export * from './RecipeView';
 export * from './SavedRecipeCard';
 export * from './RecipeFilterChip';
 export * from './RecipeDateFilterModal';
+export * from './RecipeScalerBar';
+export * from './KitchenModeModal';

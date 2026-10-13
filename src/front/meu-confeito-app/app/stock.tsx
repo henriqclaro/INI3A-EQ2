@@ -25,10 +25,13 @@ import {
   StockSummaryBanner,
 } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { useDebounce } from '@/src/hooks/useDebounce';
 import { useInventory } from '@/src/hooks/useInventory';
 import { AppTheme } from '@/src/theme/themes';
 import { InventoryItem } from '@/src/types/inventory';
 import { isExpired, isExpiringSoon } from '@/src/utils/formatters';
+import { shareShoppingList } from '@/src/utils/share';
+import { matchesSearch } from '@/src/utils/text';
 
 type FilterType = 'all' | 'in_stock' | 'out_of_stock' | 'expired' | 'expiring';
 
@@ -54,6 +57,7 @@ export default function StockScreen() {
 
   // Search & Filter state
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 250);
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
 
   // Operation Modal state
@@ -100,15 +104,30 @@ export default function StockScreen() {
     };
   }, [inventory]);
 
-  // Filtered inventory list
+  // Share missing items to WhatsApp / System Share
+  const handleShareMissingStock = useCallback(() => {
+    const missingItems = inventory
+      .filter((item) => Number(item.currentQuantity) <= 0)
+      .map((item) => ({
+        name: item.ingredient?.name || 'Insumo',
+        quantity: null,
+        unit: item.ingredient?.baseUnit || 'un',
+        category: item.ingredient?.category || null,
+      }));
+
+    shareShoppingList(missingItems, 'Insumos em Falta no Estoque');
+  }, [inventory]);
+
+  // Filtered inventory list with diacritic-agnostic search
   const filteredInventory = useMemo(() => {
     return inventory.filter((item) => {
-      const ingredientName = item.ingredient?.name?.toLowerCase() || '';
-      const categoryName = item.ingredient?.category?.toLowerCase() || '';
-      const searchLower = search.toLowerCase().trim();
+      const ingredientName = item.ingredient?.name;
+      const categoryName = item.ingredient?.category;
 
       const hasSearchMatch =
-        !searchLower || ingredientName.includes(searchLower) || categoryName.includes(searchLower);
+        !debouncedSearch.trim() ||
+        matchesSearch(ingredientName, debouncedSearch) ||
+        matchesSearch(categoryName, debouncedSearch);
 
       if (!hasSearchMatch) return false;
 
@@ -128,7 +147,7 @@ export default function StockScreen() {
           return true;
       }
     });
-  }, [inventory, search, selectedFilter]);
+  }, [inventory, debouncedSearch, selectedFilter]);
 
   // Actions
   const handleOpenAdjust = useCallback((item: InventoryItem) => {
@@ -196,14 +215,34 @@ export default function StockScreen() {
             </Text>
           </View>
 
-          {!isMobile && (
-            <CustomButton
-              title="+ Novo Insumo"
-              variant="primary"
-              onPress={handleNavigateToRegister}
-              style={styles.desktopAddButton}
-            />
-          )}
+          <View style={styles.headerActions}>
+            {summaryMetrics.outOfStockCount > 0 && (
+              <CustomButton
+                variant="outline"
+                onPress={handleShareMissingStock}
+                style={styles.shareButton}
+                accessibilityLabel="Compartilhar lista de compras de insumos em falta"
+              >
+                <View style={styles.shareBtnContent}>
+                  <MaterialCommunityIcons
+                    name="share-variant-outline"
+                    size={18}
+                    color={theme.colors.primary}
+                  />
+                  <Text style={styles.shareBtnText}>Compartilhar Falta</Text>
+                </View>
+              </CustomButton>
+            )}
+
+            {!isMobile && (
+              <CustomButton
+                title="+ Novo Insumo"
+                variant="primary"
+                onPress={handleNavigateToRegister}
+                style={styles.desktopAddButton}
+              />
+            )}
+          </View>
         </View>
 
         <StockSummaryBanner
@@ -334,6 +373,7 @@ export default function StockScreen() {
     ),
     [
       handleNavigateToRegister,
+      handleShareMissingStock,
       inventory.length,
       isMobile,
       search,
@@ -345,6 +385,7 @@ export default function StockScreen() {
       summaryMetrics.totalItems,
       summaryMetrics.totalStockValue,
       theme.colors.onSurfaceVariant,
+      theme.colors.primary,
     ],
   );
 
@@ -537,6 +578,33 @@ const createStyles = (
       borderRadius: theme.rounded.default,
       paddingHorizontal: 20,
       width: undefined,
+    },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      flexWrap: 'wrap',
+    },
+    shareButton: {
+      height: 48,
+      minHeight: 48,
+      margin: 0,
+      paddingHorizontal: 16,
+      borderRadius: theme.rounded.default,
+      borderColor: theme.colors.outlineVariant,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      width: undefined,
+    },
+    shareBtnContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    shareBtnText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.primary,
     },
     searchRow: {
       width: '100%',
