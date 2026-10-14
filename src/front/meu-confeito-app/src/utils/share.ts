@@ -2,6 +2,8 @@ import { Alert, Platform, Share } from 'react-native';
 
 import * as Clipboard from 'expo-clipboard';
 
+import { parseRecipeInstructions } from './recipe';
+
 export interface ShoppingListItem {
   name: string;
   quantity?: number | string | null;
@@ -98,7 +100,7 @@ export async function shareShoppingList(
   return { isShared: false, isCopied: false };
 }
 
-export async function shareRecipeSummary(recipe: {
+export interface ShareRecipeData {
   title: string;
   baseYield?: number | string | null;
   yieldUnit?: string | null;
@@ -109,7 +111,12 @@ export async function shareRecipeSummary(recipe: {
     ingredient?: { name?: string | null } | null;
     subRecipe?: { title?: string | null } | null;
   }[];
-}): Promise<{ isShared: boolean; isCopied: boolean }> {
+  instructions?: unknown;
+}
+
+export async function shareRecipeSummary(
+  recipe: ShareRecipeData,
+): Promise<{ isShared: boolean; isCopied: boolean }> {
   const yieldText = recipe.baseYield
     ? `Rendimento: ${recipe.baseYield} ${recipe.yieldUnit || 'UN'}`
     : '';
@@ -118,20 +125,38 @@ export async function shareRecipeSummary(recipe: {
 
   const ingredientsList = (recipe.items || []).map((it) => {
     const name = it.ingredient?.name || it.subRecipe?.title || 'Insumo';
-    return `• ${it.quantity} ${it.unit || ''} - ${name}`;
+    const quantityStr =
+      it.quantity !== undefined && it.quantity !== null && it.quantity !== ''
+        ? `${it.quantity} `
+        : '';
+    const unitStr = it.unit ? `${it.unit} - ` : '';
+    return `• ${quantityStr}${unitStr}${name}`;
   });
 
-  const message = [
-    `🍰 *${recipe.title}*`,
-    metaParts ? `_${metaParts}_` : '',
-    '',
-    '*Ingredientes:*',
-    ingredientsList.join('\n'),
-    '',
-    '_Meu Confeito • Confeitaria Artesanal_',
-  ]
-    .filter((l) => l !== null && l !== undefined)
-    .join('\n');
+  const parsedSteps = parseRecipeInstructions(recipe.instructions);
+  const stepsList = parsedSteps.map((step, index) => {
+    const stepNumber = step.step || index + 1;
+    const titlePart = step.title?.trim() ? `*${step.title.trim()}:* ` : '';
+    return `${stepNumber}. ${titlePart}${step.description?.trim() || ''}`;
+  });
+
+  const messageParts: string[] = [`🍰 *${recipe.title}*`];
+
+  if (metaParts) {
+    messageParts.push(`_${metaParts}_`);
+  }
+
+  if (ingredientsList.length > 0) {
+    messageParts.push('', '*Ingredientes:*', ingredientsList.join('\n'));
+  }
+
+  if (stepsList.length > 0) {
+    messageParts.push('', '*Modo de Preparo:*', stepsList.join('\n'));
+  }
+
+  messageParts.push('', '_Meu Confeito • Confeitaria Artesanal_');
+
+  const message = messageParts.join('\n');
 
   const hasNativeShare = isShareSupported();
 

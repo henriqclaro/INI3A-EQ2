@@ -105,6 +105,7 @@ export function KitchenModeModal({
       yieldUnit,
       prepTimeMinutes,
       items: scaledItems,
+      instructions,
     });
   };
 

@@ -144,6 +144,7 @@ export default function RecipeScreen() {
       yieldUnit: recipe.yieldUnit,
       prepTimeMinutes: recipe.prepTimeMinutes,
       items: scaledRecipeItems,
+      instructions: recipe.instructions,
     });
   }, [recipe, scaleFactor, scaledRecipeItems]);
 
