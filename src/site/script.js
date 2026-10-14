@@ -293,24 +293,24 @@ function initInteractiveMap() {
       baker: "Mariana Silva",
       address: "Vila Madalena, São Paulo - SP",
       specialty: "Brigadeiros Gourmet & Copos da Felicidade",
-      status: "Pronta Entrega Disponível",
-      rating: "4.9 ★ (128 avaliações)",
+      status: "Contato Disponível",
+      channels: "WhatsApp & Instagram no perfil",
     },
     p2: {
       name: "Confeitaria Encanto",
       baker: "Beatriz Costa",
       address: "Pinheiros, São Paulo - SP",
       specialty: "Bolo no Pote Vulcão & Bentô Cakes",
-      status: "Aceitando Encomendas para Hoje",
-      rating: "5.0 ★ (94 avaliações)",
+      status: "Contato Disponível",
+      channels: "WhatsApp & Instagram no perfil",
     },
     p3: {
       name: "Lúcia Doces Artesanais",
       baker: "Lúcia Ferreira",
       address: "Jardins, São Paulo - SP",
       specialty: "Sobremesas Finas & Brownies Recheados",
-      status: "Pronta Entrega até 18h",
-      rating: "4.8 ★ (76 avaliações)",
+      status: "Contato Disponível",
+      channels: "WhatsApp & Instagram no perfil",
     },
   };
 
@@ -334,8 +334,8 @@ function initInteractiveMap() {
           <p style="font-size:13px; color:var(--mc-on-surface); margin-bottom:6px;"><strong>Especialidades:</strong> ${data.specialty}</p>
           <p style="font-size:12px; color:var(--mc-outline);">📍 ${data.address}</p>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:10px; border-top:1px solid var(--mc-surface-container-high);">
-            <span style="font-size:12px; font-weight:600; color:var(--mc-primary);">${data.rating}</span>
-            <button class="btn btn--primary btn--sm" onclick="alert('Funcionalidade de contato direto com a confeiteira no app Meu Confeito!')">Visitar Ponto Físico</button>
+            <span style="font-size:12px; font-weight:600; color:var(--mc-primary);">${data.channels}</span>
+            <button class="btn btn--primary btn--sm" onclick="alert('No Meu Confeito, você visualiza os canais de contato da confeiteira (WhatsApp e Instagram) para conversar diretamente!')">Ver Meios de Contato</button>
           </div>
         `;
       }
