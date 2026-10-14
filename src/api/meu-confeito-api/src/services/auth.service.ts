@@ -4,7 +4,7 @@ import { randomBytes } from 'node:crypto';
 
 import prisma from '../config/database';
 import { env } from '../config/env.config';
-import type { Role } from '../generated/prisma/client';
+import type { Prisma, Role } from '../generated/prisma/client';
 import { AuthError, DefaultAppError, GoneError, NotFoundError } from '../responses/http.error';
 import type { RequestContext } from '../types/context.interface';
 import type { AuthDTO } from '../types/dtos/auth.dto';
@@ -17,6 +17,34 @@ export class AuthService {
     }
 
     return null;
+  }
+
+  async purgeExpiredTokens(client: Prisma.TransactionClient | typeof prisma = prisma) {
+    await client.refreshToken.deleteMany({
+      where: {
+        expiresAt: { lte: new Date() },
+      },
+    });
+  }
+
+  private async enforceActiveTokensLimit(tx: Prisma.TransactionClient, userId: string) {
+    const activeTokens = await tx.refreshToken.findMany({
+      where: {
+        userId,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true },
+    });
+
+    if (activeTokens.length > env.MAX_ACTIVE_TOKENS) {
+      const tokensToDelete = activeTokens.slice(env.MAX_ACTIVE_TOKENS).map((t) => t.id);
+      await tx.refreshToken.deleteMany({
+        where: {
+          id: { in: tokensToDelete },
+        },
+      });
+    }
   }
 
   async logIn(data: AuthDTO.LogInRequest) {
@@ -74,19 +102,28 @@ export class AuthService {
 
     const expireDate = new Date();
     expireDate.setDate(expireDate.getDate() + env.RT_TTL_DAYS);
+    const now = new Date();
 
-    await prisma.refreshToken.upsert({
-      where: { userId_sessionId: { userId: foundUser.id, sessionId: data.sessionId } },
-      update: {
-        token: refreshToken,
-        expiresAt: expireDate,
-      },
-      create: {
-        token: refreshToken,
-        userId: foundUser.id,
-        sessionId: data.sessionId,
-        expiresAt: expireDate,
-      },
+    await prisma.$transaction(async (tx) => {
+      await this.purgeExpiredTokens(tx);
+
+      await tx.refreshToken.upsert({
+        where: { userId_sessionId: { userId: foundUser.id, sessionId: data.sessionId } },
+        update: {
+          token: refreshToken,
+          expiresAt: expireDate,
+          createdAt: now,
+        },
+        create: {
+          token: refreshToken,
+          userId: foundUser.id,
+          sessionId: data.sessionId,
+          expiresAt: expireDate,
+          createdAt: now,
+        },
+      });
+
+      await this.enforceActiveTokensLimit(tx, foundUser.id);
     });
 
     const userData: AuthDTO.LogInResponse = {
@@ -122,6 +159,8 @@ export class AuthService {
     await prisma.refreshToken.deleteMany({
       where: { token: refreshToken },
     });
+
+    await this.purgeExpiredTokens();
   }
 
   async toRefreshToken(incomingRefreshToken: string) {
@@ -135,12 +174,12 @@ export class AuthService {
     }
 
     if (new Date() > storedToken.expiresAt) {
-      await prisma.refreshToken.delete({
-        where: { id: storedToken.id },
-      });
+      await this.purgeExpiredTokens();
 
       throw new AuthError('Session expired. Log in again', 'AUTH_TOKEN_EXPIRED');
     }
+
+    await this.purgeExpiredTokens();
 
     const payload = {
       id: storedToken.user.id,

@@ -13,6 +13,11 @@ export const envSchema = z
       .string('Invalid JWT_SECRET')
       .min(10, 'JWT_SECRET must have at least 10 characters'),
     RT_TTL_DAYS: z.coerce.number('Invalid refresh token live time in RT_TTL_DAYS'),
+    MAX_ACTIVE_TOKENS: z.coerce
+      .number('Invalid MAX_ACTIVE_TOKENS')
+      .int('MAX_ACTIVE_TOKENS must be an integer')
+      .positive('MAX_ACTIVE_TOKENS must be a positive integer')
+      .default(4),
     DB_USERNAME: z.string('Invalid DB_USERNAME'),
     DB_HOST: z.string('Invalid DB_HOST'),
     DB_PORT: z.coerce.number('Invalid DB_PORT').default(5432),
