@@ -21,6 +21,7 @@ import {
   MenuOptionButton,
   OperationalPreferencesCard,
   SettingsSection,
+  StorageSettingsCard,
   ThemeToggleCard,
 } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
@@ -175,7 +176,16 @@ export default function SettingsScreen() {
             </SettingsSection>
           )}
 
-          {/* Section 5: App Info & About */}
+          {/* Section 5: Data & Storage */}
+          <SettingsSection
+            title="Dados e Armazenamento"
+            description="Gerencie o cache local, arquivos temporários e o uso de memória do aplicativo"
+            icon="database-outline"
+          >
+            <StorageSettingsCard />
+          </SettingsSection>
+
+          {/* Section 6: App Info & About */}
           <SettingsSection
             title="Sobre o Aplicativo"
             description="Informações da versão e suporte"
@@ -207,7 +217,7 @@ export default function SettingsScreen() {
             </View>
           </SettingsSection>
 
-          {/* Section 6: Danger Zone (Account Deletion) */}
+          {/* Section 7: Danger Zone (Account Deletion) */}
           <SettingsSection
             title="Zona de Perigo"
             description="Ações irreversíveis e encerramento permanente da conta"
