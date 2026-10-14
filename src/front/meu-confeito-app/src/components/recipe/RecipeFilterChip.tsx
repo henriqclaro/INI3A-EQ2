@@ -104,7 +104,7 @@ const createStyles = (theme: AppTheme) =>
     },
     labelSelected: {
       color: theme.colors.onPrimary,
-      fontWeight: '700',
+      fontWeight: '600',
     },
     countBadge: {
       backgroundColor: theme.colors.surfaceContainerHigh,

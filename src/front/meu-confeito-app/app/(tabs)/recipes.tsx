@@ -59,8 +59,6 @@ export default function RecipesScreen() {
     }
   }, [user]);
 
-  const savedCount = savedRecipes.length;
-
   const displayedRecipes: PartialRecipe[] = useMemo(() => {
     if (activeFilter === 'SAVED') {
       return savedRecipes.map((s) => ({
@@ -225,28 +223,24 @@ export default function RecipesScreen() {
             icon="book-open-outline"
             isSelected={activeFilter === 'ALL'}
             onPress={() => setActiveFilter('ALL')}
-            count={activeFilter === 'ALL' ? displayedRecipes.length : undefined}
           />
           <RecipeFilterChip
             label="Publicadas"
             icon="earth"
             isSelected={activeFilter === 'PUBLISHED'}
             onPress={() => setActiveFilter('PUBLISHED')}
-            count={activeFilter === 'PUBLISHED' ? displayedRecipes.length : undefined}
           />
           <RecipeFilterChip
             label="Rascunhos"
             icon="file-document-edit-outline"
             isSelected={activeFilter === 'DRAFT'}
             onPress={() => setActiveFilter('DRAFT')}
-            count={activeFilter === 'DRAFT' ? displayedRecipes.length : undefined}
           />
           <RecipeFilterChip
             label="Salvas"
             icon="bookmark-multiple-outline"
             isSelected={activeFilter === 'SAVED'}
             onPress={() => setActiveFilter('SAVED')}
-            count={savedCount}
           />
         </View>
       </View>
@@ -256,7 +250,6 @@ export default function RecipesScreen() {
     displayedRecipes.length,
     hasHeaderActions,
     hasMore,
-    savedCount,
     styles,
     theme.colors.onPrimary,
     theme.colors.onSurface,
