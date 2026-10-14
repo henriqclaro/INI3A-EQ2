@@ -108,7 +108,7 @@ model RefreshToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, sessionId])
-  @@index([userId])
+  @@index([userId, createdAt(sort: Desc)])
   @@map("refresh_token")
 }
 

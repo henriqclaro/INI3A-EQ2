@@ -1,3 +1,6 @@
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
+
 -- CreateExtension
 CREATE EXTENSION IF NOT EXISTS "postgis";
 
@@ -62,8 +65,10 @@ CREATE TABLE "password_reset" (
 -- CreateTable
 CREATE TABLE "baker_profile" (
     "user_id" TEXT NOT NULL,
+    "public_name" TEXT,
     "bio" TEXT,
     "instagram" TEXT,
+    "whatsapp" TEXT,
     "location" geometry(Point, 4326),
     "neighborhood" TEXT,
     "city" TEXT,
@@ -261,7 +266,7 @@ CREATE UNIQUE INDEX "user_provider_id_key" ON "user"("provider_id");
 CREATE UNIQUE INDEX "refresh_token_token_key" ON "refresh_token"("token");
 
 -- CreateIndex
-CREATE INDEX "refresh_token_user_id_idx" ON "refresh_token"("user_id");
+CREATE INDEX "refresh_token_user_id_created_at_idx" ON "refresh_token"("user_id", "created_at" DESC);
 
 -- CreateIndex
 CREATE UNIQUE INDEX "refresh_token_user_id_session_id_key" ON "refresh_token"("user_id", "session_id");
