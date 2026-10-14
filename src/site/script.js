@@ -334,8 +334,8 @@ function initInteractiveMap() {
           </div>
           <p style="font-size:13px; color:var(--mc-on-surface); margin-bottom:6px;"><strong>Especialidades:</strong> ${data.specialty}</p>
           <p style="font-size:12px; color:var(--mc-outline);">📍 ${data.address}</p>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:10px; border-top:1px solid var(--mc-surface-container-high);">
-            <span style="font-size:12px; font-weight:600; color:var(--mc-primary);">${data.channels}</span>
+          <div class="map-point-footer">
+            <span class="map-point-channels">${data.channels}</span>
             <button class="btn btn--primary btn--sm" onclick="alert('No Meu Confeito, você visualiza os canais de contato da confeiteira (WhatsApp e Instagram) para conversar diretamente!')">Ver Meios de Contato</button>
           </div>
         `;

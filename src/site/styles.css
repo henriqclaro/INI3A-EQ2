@@ -1583,6 +1583,23 @@ ol {
   border-color: var(--mc-tooltip-bg) transparent transparent transparent;
 }
 
+.map-point-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--mc-space-3);
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--mc-surface-container-high);
+}
+
+.map-point-channels {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mc-primary);
+}
+
 /* ==========================================================================
    Technology Stack & Architecture (CONCEPT.md specifications)
    ========================================================================== */
@@ -1717,7 +1734,7 @@ ol {
 
 .cta-banner {
   background: linear-gradient(135deg, #40242b 0%, #200f14 100%);
-  color: var(--mc-inverse-on-surface);
+  color: #ffeced;
   border-radius: var(--mc-radius-xl);
   padding: var(--mc-space-12) var(--mc-space-8);
   text-align: center;
@@ -1752,8 +1769,19 @@ ol {
 .cta-desc {
   max-width: 600px;
   margin: 0 auto var(--mc-space-6);
-  color: var(--mc-surface-container-high);
+  color: #fbe2e4;
   font-size: 16px;
+}
+
+.cta-banner .btn--secondary {
+  background-color: #ffdadb;
+  color: #2d1519;
+  border-color: #fba8af;
+}
+
+.cta-banner .btn--secondary:hover {
+  background-color: #ffffff;
+  color: #200f14;
 }
 
 /* ==========================================================================
@@ -2039,6 +2067,17 @@ ol {
 
   .map-pin-tooltip {
     display: none;
+  }
+
+  .map-point-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--mc-space-3);
+  }
+
+  .map-point-footer .btn {
+    width: 100%;
+    justify-content: center;
   }
 
   .footer-grid {
