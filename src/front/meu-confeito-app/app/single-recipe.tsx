@@ -455,29 +455,59 @@ export default function RecipeScreen() {
                 {/* Title, Meta, Status and Tags Header */}
                 <View style={styles.headerSection}>
                   <View style={styles.titleRow}>
-                    <Text style={styles.primaryTitle}>{recipe.title}</Text>
-                    <View style={styles.titleBadgesRow}>
-                      {Boolean(recipe.parent) && (
-                        <View style={styles.forkBadge}>
+                    {!isDesktop && (
+                      <View style={styles.titleBadgesRow}>
+                        {Boolean(recipe.parent) && (
+                          <View style={styles.forkBadge}>
+                            <MaterialCommunityIcons
+                              name="source-fork"
+                              size={13}
+                              color={theme.colors.secondary}
+                            />
+                            <Text style={styles.forkBadgeText}>Versão Adaptada</Text>
+                          </View>
+                        )}
+                        <View
+                          style={[styles.statusBadge, { backgroundColor: statusBadge.bgColor }]}
+                        >
                           <MaterialCommunityIcons
-                            name="source-fork"
-                            size={13}
-                            color={theme.colors.secondary}
+                            name={statusBadge.icon}
+                            size={14}
+                            color={statusBadge.color}
                           />
-                          <Text style={styles.forkBadgeText}>Versão Adaptada</Text>
+                          <Text style={[styles.statusBadgeText, { color: statusBadge.color }]}>
+                            {statusBadge.label}
+                          </Text>
                         </View>
-                      )}
-                      <View style={[styles.statusBadge, { backgroundColor: statusBadge.bgColor }]}>
-                        <MaterialCommunityIcons
-                          name={statusBadge.icon}
-                          size={14}
-                          color={statusBadge.color}
-                        />
-                        <Text style={[styles.statusBadgeText, { color: statusBadge.color }]}>
-                          {statusBadge.label}
-                        </Text>
                       </View>
-                    </View>
+                    )}
+                    <Text style={styles.primaryTitle}>{recipe.title}</Text>
+                    {isDesktop && (
+                      <View style={styles.titleBadgesRow}>
+                        {Boolean(recipe.parent) && (
+                          <View style={styles.forkBadge}>
+                            <MaterialCommunityIcons
+                              name="source-fork"
+                              size={13}
+                              color={theme.colors.secondary}
+                            />
+                            <Text style={styles.forkBadgeText}>Versão Adaptada</Text>
+                          </View>
+                        )}
+                        <View
+                          style={[styles.statusBadge, { backgroundColor: statusBadge.bgColor }]}
+                        >
+                          <MaterialCommunityIcons
+                            name={statusBadge.icon}
+                            size={14}
+                            color={statusBadge.color}
+                          />
+                          <Text style={[styles.statusBadgeText, { color: statusBadge.color }]}>
+                            {statusBadge.label}
+                          </Text>
+                        </View>
+                      </View>
+                    )}
                   </View>
 
                   {/* Parent Recipe Link Banner */}
@@ -1314,13 +1344,14 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       gap: 10,
     },
     titleRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
+      flexDirection: isDesktop ? 'row' : 'column',
+      justifyContent: isDesktop ? 'space-between' : 'flex-start',
       alignItems: 'flex-start',
-      gap: 12,
+      gap: isDesktop ? 12 : 8,
     },
     primaryTitle: {
-      flex: 1,
+      flex: isDesktop ? 1 : undefined,
+      width: isDesktop ? undefined : '100%',
       color: theme.colors.espressoDark,
       fontFamily: theme.typography.headlineLg.fontFamily,
       fontSize: 26,
@@ -1328,8 +1359,10 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       fontWeight: 'bold',
     },
     titleBadgesRow: {
+      width: isDesktop ? undefined : '100%',
       flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'flex-end',
       flexWrap: 'wrap',
       gap: 6,
     },
@@ -1502,7 +1535,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     },
     btnActionShare: {
       flex: 1,
-      minWidth: isSmallScreen ? '100%' : 130,
+      minWidth: isSmallScreen ? '100%' : '45%',
       minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',
@@ -1522,7 +1555,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     },
     btnActionEdit: {
       flex: 1,
-      minWidth: isSmallScreen ? '100%' : 130,
+      minWidth: isSmallScreen ? '100%' : '45%',
       minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',
@@ -1541,8 +1574,8 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       color: theme.colors.primary,
     },
     btnActionPublish: {
-      flex: 1.2,
-      minWidth: isSmallScreen ? '100%' : 130,
+      flex: 1,
+      minWidth: isSmallScreen ? '100%' : '45%',
       minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',
@@ -1560,8 +1593,8 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       color: theme.colors.onTertiary,
     },
     btnActionDraft: {
-      flex: 1.2,
-      minWidth: isSmallScreen ? '100%' : 130,
+      flex: 1,
+      minWidth: isSmallScreen ? '100%' : '45%',
       minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',
@@ -1581,7 +1614,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     },
     btnActionArchive: {
       flex: 1,
-      minWidth: isSmallScreen ? '100%' : 130,
+      minWidth: isSmallScreen ? '100%' : '45%',
       minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',
@@ -1601,7 +1634,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     },
     btnActionUnarchive: {
       flex: 1,
-      minWidth: isSmallScreen ? '100%' : 130,
+      minWidth: isSmallScreen ? '100%' : '45%',
       minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',

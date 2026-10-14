@@ -216,7 +216,7 @@ export default function StockScreen() {
           </View>
 
           <View style={styles.headerActions}>
-            {summaryMetrics.outOfStockCount > 0 && (
+            {!isMobile && summaryMetrics.outOfStockCount > 0 && (
               <CustomButton
                 variant="outline"
                 onPress={handleShareMissingStock}
@@ -252,6 +252,26 @@ export default function StockScreen() {
           expiringSoonCount={summaryMetrics.expiringSoonCount}
           expiredCount={summaryMetrics.expiredCount}
         />
+
+        {isMobile && summaryMetrics.outOfStockCount > 0 && (
+          <View style={styles.mobileShareButtonWrapper}>
+            <CustomButton
+              variant="outline"
+              onPress={handleShareMissingStock}
+              style={styles.mobileShareButton}
+              accessibilityLabel="Compartilhar lista de compras de insumos em falta"
+            >
+              <View style={styles.shareBtnContent}>
+                <MaterialCommunityIcons
+                  name="share-variant-outline"
+                  size={18}
+                  color={theme.colors.primary}
+                />
+                <Text style={styles.shareBtnText}>Compartilhar Falta</Text>
+              </View>
+            </CustomButton>
+          </View>
+        )}
 
         <View style={styles.searchRow}>
           <Input
@@ -595,9 +615,28 @@ const createStyles = (
       backgroundColor: theme.colors.surfaceContainerLowest,
       width: undefined,
     },
+    mobileShareButtonWrapper: {
+      width: '100%',
+      marginTop: 12,
+      marginBottom: 6,
+    },
+    mobileShareButton: {
+      width: '100%',
+      height: 48,
+      minHeight: 48,
+      margin: 0,
+      paddingHorizontal: 16,
+      borderRadius: theme.rounded.default,
+      borderColor: theme.colors.outlineVariant,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      justifyContent: 'center',
+      alignItems: 'center',
+      ...theme.shadows.soft,
+    },
     shareBtnContent: {
       flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'center',
       gap: 6,
     },
     shareBtnText: {

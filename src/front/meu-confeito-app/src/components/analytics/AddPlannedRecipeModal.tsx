@@ -199,7 +199,7 @@ export function AddPlannedRecipeModal({
               accessibilityRole="button"
               accessibilityLabel="Adicionar receita ao plano"
             >
-              <MaterialCommunityIcons name="plus" size={18} color={theme.colors.white} />
+              <MaterialCommunityIcons name="plus" size={18} color={theme.colors.onPrimary} />
               <Text style={styles.primaryBtnText}>Adicionar ao Plano</Text>
             </TouchableOpacity>
           </View>
@@ -356,7 +356,7 @@ const createStyles = (theme: AppTheme) =>
       fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
       fontWeight: '600',
-      color: theme.colors.white,
+      color: theme.colors.onPrimary,
     },
     btnDisabled: {
       opacity: 0.5,

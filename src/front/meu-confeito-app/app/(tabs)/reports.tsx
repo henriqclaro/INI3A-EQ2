@@ -132,7 +132,9 @@ export default function ReportsScreen() {
               <MaterialCommunityIcons
                 name="finance"
                 size={18}
-                color={activeTab === 'profit' ? theme.colors.white : theme.colors.espressoDark}
+                color={
+                  activeTab === 'profit' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant
+                }
               />
               <Text
                 style={[styles.tabButtonText, activeTab === 'profit' && styles.tabButtonTextActive]}
@@ -151,7 +153,11 @@ export default function ReportsScreen() {
               <MaterialCommunityIcons
                 name="cart-outline"
                 size={18}
-                color={activeTab === 'projection' ? theme.colors.white : theme.colors.espressoDark}
+                color={
+                  activeTab === 'projection'
+                    ? theme.colors.onPrimary
+                    : theme.colors.onSurfaceVariant
+                }
               />
               <Text
                 style={[
@@ -305,10 +311,10 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.espressoDark,
+      color: theme.colors.onSurfaceVariant,
     },
     tabButtonTextActive: {
-      color: theme.colors.white,
+      color: theme.colors.onPrimary,
     },
     advisoryBanner: {
       width: '100%',

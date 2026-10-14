@@ -71,7 +71,7 @@ export function PurchaseProjectionSection({
             accessibilityRole="button"
             accessibilityLabel="Adicionar receita ao planejamento de compras"
           >
-            <MaterialCommunityIcons name="plus" size={20} color={theme.colors.white} />
+            <MaterialCommunityIcons name="plus" size={20} color={theme.colors.onPrimary} />
             <Text style={styles.addRecipeBtnText}>Adicionar Receita</Text>
           </TouchableOpacity>
         </View>
@@ -176,9 +176,13 @@ export function PurchaseProjectionSection({
                 accessibilityLabel="Calcular insumos faltantes e projeção de compras"
               >
                 {isCalculating ? (
-                  <ActivityIndicator size="small" color={theme.colors.white} />
+                  <ActivityIndicator size="small" color={theme.colors.onPrimary} />
                 ) : (
-                  <MaterialCommunityIcons name="calculator" size={18} color={theme.colors.white} />
+                  <MaterialCommunityIcons
+                    name="calculator"
+                    size={18}
+                    color={theme.colors.onPrimary}
+                  />
                 )}
                 <Text style={styles.calculateBtnText}>
                   {isCalculating ? 'Calculando...' : 'Calcular Insumos Faltantes'}
@@ -382,7 +386,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.white,
+      color: theme.colors.onPrimary,
     },
     emptyPlanCard: {
       width: '100%',
@@ -512,7 +516,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.white,
+      color: theme.colors.onPrimary,
     },
     errorCard: {
       flexDirection: 'row',

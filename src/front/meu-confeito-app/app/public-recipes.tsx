@@ -198,6 +198,64 @@ export default function PublicRecipesScreen() {
   }, [hasMore, isLoading, isLoadingMore, loadMore, recipes.length, styles, theme.colors.primary]);
 
   const itemSeparator = useCallback(() => <View style={styles.separator} />, [styles.separator]);
+  const listHeader = useMemo(
+    () => (
+      <View style={styles.listHeaderWrapper}>
+        <View style={styles.filtersRow}>
+          <RecipeFilterChip
+            label="Mais Salvas"
+            icon="bookmark-multiple-outline"
+            isSelected={activeSort === 'saves'}
+            onPress={() => setActiveSort((prev) => (prev === 'saves' ? null : 'saves'))}
+          />
+          <RecipeFilterChip
+            label="Mais Avaliadas"
+            icon="comment-text-multiple-outline"
+            isSelected={activeSort === 'reviews'}
+            onPress={() => setActiveSort((prev) => (prev === 'reviews' ? null : 'reviews'))}
+          />
+          <RecipeFilterChip
+            label="Melhores Avaliações"
+            icon="star"
+            isSelected={activeSort === 'rating'}
+            onPress={() => setActiveSort((prev) => (prev === 'rating' ? null : 'rating'))}
+          />
+          <RecipeFilterChip
+            label={dateFilterLabel}
+            icon="calendar-clock-outline"
+            trailingIcon="chevron-down"
+            isSelected={hasDateFilter}
+            onPress={() => setIsDateModalVisible(true)}
+            accessibilityLabel={`Filtrar por período. Seleção atual: ${dateFilterLabel}`}
+          />
+        </View>
+
+        {!isLoading && (
+          <View style={styles.metaRow}>
+            <Text style={styles.resultCountText}>
+              {hasActiveFilters
+                ? `${recipes.length}${hasMore ? '+' : ''} ${recipes.length === 1 ? 'receita encontrada' : 'receitas encontradas'}`
+                : `${recipes.length}${hasMore ? '+' : ''} ${recipes.length === 1 ? 'receita disponível' : 'receitas disponíveis'}`}
+            </Text>
+          </View>
+        )}
+      </View>
+    ),
+    [
+      activeSort,
+      dateFilterLabel,
+      hasActiveFilters,
+      hasDateFilter,
+      hasMore,
+      isLoading,
+      recipes.length,
+      styles.filtersRow,
+      styles.listHeaderWrapper,
+      styles.metaRow,
+      styles.resultCountText,
+    ],
+  );
+
   const keyExtractor = useCallback((item: PartialRecipe) => item.id, []);
 
   return (
@@ -229,45 +287,6 @@ export default function PublicRecipesScreen() {
               isClearable={true}
               onClear={() => setSearch('')}
             />
-
-            <View style={styles.filtersRow}>
-              <RecipeFilterChip
-                label="Mais Salvas"
-                icon="bookmark-multiple-outline"
-                isSelected={activeSort === 'saves'}
-                onPress={() => setActiveSort((prev) => (prev === 'saves' ? null : 'saves'))}
-              />
-              <RecipeFilterChip
-                label="Mais Avaliadas"
-                icon="comment-text-multiple-outline"
-                isSelected={activeSort === 'reviews'}
-                onPress={() => setActiveSort((prev) => (prev === 'reviews' ? null : 'reviews'))}
-              />
-              <RecipeFilterChip
-                label="Melhores Avaliações"
-                icon="star"
-                isSelected={activeSort === 'rating'}
-                onPress={() => setActiveSort((prev) => (prev === 'rating' ? null : 'rating'))}
-              />
-              <RecipeFilterChip
-                label={dateFilterLabel}
-                icon="calendar-clock-outline"
-                trailingIcon="chevron-down"
-                isSelected={hasDateFilter}
-                onPress={() => setIsDateModalVisible(true)}
-                accessibilityLabel={`Filtrar por período. Seleção atual: ${dateFilterLabel}`}
-              />
-            </View>
-
-            {!isLoading && (
-              <View style={styles.metaRow}>
-                <Text style={styles.resultCountText}>
-                  {hasActiveFilters
-                    ? `${recipes.length}${hasMore ? '+' : ''} ${recipes.length === 1 ? 'receita encontrada' : 'receitas encontradas'}`
-                    : `${recipes.length}${hasMore ? '+' : ''} ${recipes.length === 1 ? 'receita disponível' : 'receitas disponíveis'}`}
-                </Text>
-              </View>
-            )}
           </View>
         </View>
 
@@ -278,6 +297,7 @@ export default function PublicRecipesScreen() {
           numColumns={isDesktop ? 3 : 1}
           key={isDesktop ? 'desktop-grid' : 'mobile-list'}
           columnWrapperStyle={isDesktop ? styles.columnWrapper : undefined}
+          ListHeaderComponent={listHeader}
           ItemSeparatorComponent={itemSeparator}
           ListEmptyComponent={listEmpty}
           ListFooterComponent={listFooter}
@@ -334,6 +354,13 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number, i
       backgroundColor: theme.colors.surfaceContainerLowest,
       margin: 0,
     },
+    listHeaderWrapper: {
+      width: '100%',
+      maxWidth: isDesktop ? 1200 : '100%',
+      alignSelf: 'center',
+      alignItems: isWeb ? 'center' : 'stretch',
+      paddingBottom: 8,
+    },
     filtersRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
@@ -341,17 +368,21 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number, i
       justifyContent: isWeb ? 'center' : 'flex-start',
       gap: 8,
       width: '100%',
-      marginTop: 10,
+      maxWidth: isDesktop ? 860 : '100%',
+      alignSelf: isDesktop ? 'center' : 'flex-start',
+      marginTop: 2,
       marginBottom: 4,
     },
     metaRow: {
       width: '100%',
+      maxWidth: isDesktop ? 860 : '100%',
+      alignSelf: isDesktop ? 'center' : 'flex-start',
       flexDirection: 'row',
       justifyContent: isWeb ? 'center' : 'flex-start',
       alignItems: 'center',
       paddingHorizontal: 4,
       marginTop: 8,
-      marginBottom: 4,
+      marginBottom: 8,
     },
     resultCountText: {
       fontFamily: theme.typography.bodySm.fontFamily,

@@ -482,10 +482,10 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
-      color: theme.colors.espressoDark,
+      color: theme.colors.onSurfaceVariant,
     },
     presetChipTextActive: {
-      color: theme.colors.white,
+      color: theme.colors.onPrimary,
     },
     errorBanner: {
       flexDirection: 'row',
