@@ -39,7 +39,7 @@ app.use(
   '/storage',
   express.static(STORAGE_ROOT, {
     maxAge: 7 * 24 * 60 * 60 * 1000,
-    immutable: true,
+    immutable: false,
     dotfiles: 'ignore',
     etag: true,
     lastModified: true,

@@ -21,6 +21,7 @@ import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { usePublicBakerProfile, usePublicShowcase } from '@/src/hooks/useBakerProfile';
 import { AppTheme } from '@/src/theme/themes';
+import { clearImageCache } from '@/src/utils/image';
 import { formatPhoneInput } from '@/src/utils/validation';
 
 export default function PublicProfileScreen() {
@@ -54,6 +55,7 @@ export default function PublicProfileScreen() {
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
   const handleRefresh = async () => {
+    clearImageCache().catch(() => {});
     await Promise.all([refetchProfile(), refetchShowcase()]);
   };
 
@@ -379,7 +381,7 @@ export default function PublicProfileScreen() {
                       <RecipeSmallView
                         title={item.recipe.title}
                         coverUrl={item.recipe.coverUrl}
-                        updatedAt={(item.recipe as { updatedAt?: string | Date }).updatedAt}
+                        updatedAt={item.recipe.updatedAt}
                         rating={item.recipe.averageRating}
                         totalReviews={item.recipe.totalReviews}
                         isClickable={isBakerRole}

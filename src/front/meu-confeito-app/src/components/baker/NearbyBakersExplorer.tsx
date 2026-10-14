@@ -25,6 +25,7 @@ import { useNearbyBakers } from '@/src/hooks/useBakerProfile';
 import { useTags } from '@/src/hooks/useTags';
 import { AppTheme } from '@/src/theme/themes';
 import { NearbyBakerItem } from '@/src/types/baker-profile';
+import { clearImageCache } from '@/src/utils/image';
 
 interface RadiusOption {
   label: string;
@@ -257,6 +258,7 @@ export function NearbyBakersExplorer({
 
   // Refresh handler
   const handleRefresh = () => {
+    clearImageCache().catch(() => {});
     if (isLocationMode) {
       if (userCoords) {
         performSearch(userCoords, selectedRadius, selectedTags);

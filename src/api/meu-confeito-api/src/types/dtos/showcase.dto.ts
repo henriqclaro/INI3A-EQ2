@@ -23,6 +23,7 @@ export namespace ShowcaseDTO {
       averageRating: Decimal;
       totalReviews: number;
       status?: string;
+      updatedAt: Date;
     };
   }
 

@@ -5,6 +5,7 @@ export interface ShowcaseRecipeData {
   averageRating: number | string;
   totalReviews: number;
   status?: string;
+  updatedAt?: Date | string;
 }
 
 export interface ShowcaseRecipeItem {

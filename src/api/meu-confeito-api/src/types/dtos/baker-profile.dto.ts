@@ -48,6 +48,7 @@ export namespace BakerProfileDTO {
       neighborhood: string | null;
       city: string | null;
       tags: BakerTag[];
+      updatedAt: Date;
     };
   }
 
@@ -63,6 +64,7 @@ export namespace BakerProfileDTO {
       neighborhood: string | null;
       city: string | null;
       tags: BakerTag[];
+      updatedAt: Date;
     }[];
   }
 
@@ -77,6 +79,7 @@ export namespace BakerProfileDTO {
       neighborhood: string | null;
       city: string | null;
       tags: BakerTag[];
+      updatedAt: Date;
     }[];
   }
 }
