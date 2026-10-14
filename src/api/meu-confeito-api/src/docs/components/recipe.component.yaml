@@ -787,6 +787,9 @@ components:
                     type: string
                     format: url
                     nullable: true
+                  updatedAt:
+                    type: string
+                    format: date-time
         totalReviews:
           type: integer
         averageRating:

@@ -103,6 +103,7 @@ export default function ProfileScreen() {
           <View style={styles.avatarWrapper}>
             <UserAvatar
               url={user?.pfpUrl}
+              updatedAt={user?.updatedAt}
               name={user?.name}
               size={110}
               fallbackType="icon"

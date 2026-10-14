@@ -27,6 +27,7 @@ export interface LogInResponse {
       } | null;
       pfpUrl: string | null;
       role: string;
+      updatedAt?: Date | string;
     };
     auth: {
       accessToken: string;

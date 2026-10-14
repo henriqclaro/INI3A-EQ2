@@ -252,6 +252,7 @@ function BakerHomeScreen() {
                           <RecipeSmallView
                             title={recipe.title}
                             coverUrl={recipe.coverUrl}
+                            updatedAt={recipe.updatedAt}
                             prepTimeMinutes={recipe.prepTimeMinutes}
                             onPress={() => {
                               router.push({
@@ -400,6 +401,7 @@ function BakerHomeScreen() {
                         key={recipe.id}
                         title={recipe.title}
                         coverUrl={recipe.coverUrl}
+                        updatedAt={recipe.updatedAt}
                         prepTimeMinutes={recipe.prepTimeMinutes}
                         onPress={() => {
                           router.push({

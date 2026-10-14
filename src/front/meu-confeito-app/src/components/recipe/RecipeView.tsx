@@ -1,4 +1,4 @@
-import { memo, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 
 import { Image } from 'expo-image';
@@ -18,6 +18,7 @@ interface TagData {
 interface RecipeViewProps {
   title: string;
   coverUrl: string | null;
+  updatedAt?: string | Date | null;
   tags?: TagData[];
   prepTimeMinutes?: number;
   onPress: () => void;
@@ -33,6 +34,7 @@ interface RecipeViewProps {
 export const RecipeView = memo(function RecipeView({
   title,
   coverUrl,
+  updatedAt,
   tags = [],
   prepTimeMinutes = 0,
   onPress,
@@ -70,7 +72,12 @@ export const RecipeView = memo(function RecipeView({
   }, [rating]);
 
   const totalReviewsCount = typeof totalReviews === 'number' ? totalReviews : 0;
-  const resolvedCoverUrl = getStorageUrl(coverUrl);
+  const resolvedCoverUrl = useMemo(() => getStorageUrl(coverUrl, updatedAt), [coverUrl, updatedAt]);
+
+  useEffect(() => {
+    setHasImageError(false);
+  }, [resolvedCoverUrl]);
+
   const hasValidCover = Boolean(resolvedCoverUrl && !hasImageError);
   const maxTags = maxTagRows === 2 ? 4 : 2;
   const visibleTags = styledTags.slice(0, maxTags);

@@ -30,8 +30,8 @@ export const updateSchema = z
   .object({
     name: z.string().min(3, 'Name must have at least 3 characters'),
     email: z.email('Invalid email format'),
-    phone: z.e164('Invalid E164 for phone number'),
-    pfpUrl: z.url('Invalid URL for photo'),
+    phone: z.e164('Invalid E164 for phone number').nullable(),
+    pfpUrl: z.url('Invalid URL for photo').nullable(),
   })
   .partial();
 

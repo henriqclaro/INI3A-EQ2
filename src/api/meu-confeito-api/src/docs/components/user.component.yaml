@@ -140,6 +140,9 @@ components:
                     type: number
                   prepTimeMinutes:
                     type: number
+                  updatedAt:
+                    type: string
+                    format: date-time
                   tags:
                     type: array
                     items:
@@ -214,3 +217,6 @@ components:
                     type: number
                   totalReviews:
                     type: integer
+                  updatedAt:
+                    type: string
+                    format: date-time

@@ -34,6 +34,7 @@ import {
 } from '@/src/types/baker-profile';
 import {
   ProcessedImage,
+  clearImageCache,
   createImageFormData,
   getStorageUrl,
   pickAvatarImage,
@@ -574,21 +575,30 @@ export default function EditProfileScreen() {
         const uploadRes = await UserService.uploadAvatar(avatarFormData);
         const finalAvatarUrl = getStorageUrl(uploadRes.data.url);
         userData.pfpUrl = finalAvatarUrl;
+        await clearImageCache();
       } else if (hasRemovedAvatar) {
         try {
           await UserService.deleteAvatar();
         } catch (deleteError) {
           console.warn('Failed to delete avatar on server:', deleteError);
         }
-        await updateUser({ pfpUrl: null });
+        userData.pfpUrl = null;
+        await clearImageCache();
       }
 
       if (Object.keys(userData).length > 0) {
-        const response = await editUser(userData, user!.id);
-        if (response?.data?.user) {
-          await updateUser(response.data.user);
-        } else {
+        try {
+          const response = await editUser(userData, user!.id);
+          if (response?.data?.user) {
+            await updateUser(response.data.user);
+          } else {
+            await updateUser(userData);
+          }
+        } catch (updateError) {
+          console.warn('Failed to update user profile on server:', updateError);
+          // If the server rejects null pfpUrl, keep local state in sync so UI doesn't crash
           await updateUser(userData);
+          throw updateError;
         }
       }
 
@@ -652,6 +662,7 @@ export default function EditProfileScreen() {
               >
                 <UserAvatar
                   url={avatarUrl}
+                  updatedAt={user?.updatedAt}
                   name={name}
                   size={110}
                   fallbackType="icon"

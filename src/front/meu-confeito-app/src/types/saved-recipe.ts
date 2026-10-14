@@ -9,6 +9,7 @@ export interface SavedRecipeDetail {
   hourlyLabor?: number | string;
   packagingCost?: number | string;
   prepTimeMinutes: number;
+  updatedAt?: string | Date;
   tags?: {
     tag: PartialTag;
   }[];

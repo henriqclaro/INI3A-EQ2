@@ -58,7 +58,7 @@ export default function RecipeScreen() {
   const isDesktop = width >= 768;
   const isSmallScreen = width < 360;
 
-  const [hasImageError, setHasImageError] = useState(false);
+  const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'recipe' | 'pricing'>('recipe');
   const [isProduceModalOpen, setIsProduceModalOpen] = useState(false);
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
@@ -106,7 +106,12 @@ export default function RecipeScreen() {
     [theme, isDesktop, isSmallScreen],
   );
 
-  const resolvedCoverUrl = getStorageUrl(recipe?.coverUrl);
+  const resolvedCoverUrl = useMemo(
+    () => getStorageUrl(recipe?.coverUrl, recipe?.updatedAt),
+    [recipe?.coverUrl, recipe?.updatedAt],
+  );
+
+  const hasImageError = Boolean(resolvedCoverUrl && failedImageUrl === resolvedCoverUrl);
   const hasValidCover = Boolean(resolvedCoverUrl && !hasImageError);
 
   const isOwner = Boolean(user?.id && recipe?.userId && user.id === recipe.userId);
@@ -434,7 +439,7 @@ export default function RecipeScreen() {
                     cachePolicy="memory-disk"
                     recyclingKey={resolvedCoverUrl}
                     transition={150}
-                    onError={() => setHasImageError(true)}
+                    onError={() => setFailedImageUrl(resolvedCoverUrl)}
                   />
                 ) : (
                   <View style={styles.heroPlaceholder}>

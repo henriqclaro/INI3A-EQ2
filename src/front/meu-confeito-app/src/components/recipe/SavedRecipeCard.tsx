@@ -1,4 +1,4 @@
-import { memo, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   GestureResponderEvent,
@@ -15,6 +15,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { UserSavedRecipeItem } from '@/src/types/saved-recipe';
+import { getStorageUrl } from '@/src/utils/image';
 import { getTagColors } from '@/src/utils/tag';
 
 interface SavedRecipeCardProps {
@@ -35,8 +36,20 @@ export const SavedRecipeCard = memo(function SavedRecipeCard({
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
+  const recipeCoverUrl = item.recipe.coverUrl;
+  const recipeUpdatedAt = (item.recipe as { updatedAt?: string | Date }).updatedAt || item.savedAt;
+
+  const resolvedCoverUrl = useMemo(
+    () => getStorageUrl(recipeCoverUrl, recipeUpdatedAt),
+    [recipeCoverUrl, recipeUpdatedAt],
+  );
+
+  useEffect(() => {
+    setHasImageError(false);
+  }, [resolvedCoverUrl]);
+
   const hasValidCover = Boolean(
-    item.recipe.coverUrl && item.recipe.coverUrl.trim().length > 0 && !hasImageError,
+    resolvedCoverUrl && resolvedCoverUrl.trim().length > 0 && !hasImageError,
   );
 
   const formattedDate = useMemo(() => {
@@ -82,11 +95,11 @@ export const SavedRecipeCard = memo(function SavedRecipeCard({
       <View style={styles.imageWrapper}>
         {hasValidCover ? (
           <Image
-            source={{ uri: item.recipe.coverUrl! }}
+            source={{ uri: resolvedCoverUrl }}
             style={styles.image}
             contentFit="cover"
             cachePolicy="memory-disk"
-            recyclingKey={item.recipe.coverUrl!}
+            recyclingKey={resolvedCoverUrl}
             transition={150}
             onError={() => setHasImageError(true)}
           />

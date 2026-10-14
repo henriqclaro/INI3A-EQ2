@@ -89,6 +89,10 @@ export const UserService = {
     const response = await api.post<UserRegisterResponse>('/users', data);
     return response.data;
   },
+  getById: async (userId: string) => {
+    const response = await api.get<UserEditResponse>(`/users/${userId}`);
+    return response.data;
+  },
   edit: async (data: UserEditData, userId: string) => {
     const response = await api.patch<UserEditResponse>(`/users/${userId}`, data);
     return response.data;

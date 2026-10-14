@@ -10,6 +10,7 @@ import { getStorageUrl } from '@/src/utils/image';
 
 export interface UserAvatarProps {
   url?: string | null;
+  updatedAt?: string | Date | number | null;
   name?: string | null;
   size?: number;
   fallbackType?: 'initial' | 'icon';
@@ -27,6 +28,7 @@ export interface UserAvatarProps {
 
 export const UserAvatar = memo(function UserAvatar({
   url,
+  updatedAt,
   name,
   size = 52,
   fallbackType = 'icon',
@@ -44,7 +46,7 @@ export const UserAvatar = memo(function UserAvatar({
   const { theme } = useThemeMode();
   const [hasImageError, setHasImageError] = useState(false);
 
-  const resolvedUrl = useMemo(() => getStorageUrl(url), [url]);
+  const resolvedUrl = useMemo(() => getStorageUrl(url, updatedAt), [url, updatedAt]);
   const hasValidImage = Boolean(resolvedUrl && resolvedUrl.trim().length > 0 && !hasImageError);
 
   useEffect(() => {

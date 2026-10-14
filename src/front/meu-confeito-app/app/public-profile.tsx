@@ -188,6 +188,7 @@ export default function PublicProfileScreen() {
               <View style={styles.avatarContainer}>
                 <UserAvatar
                   url={publicProfile.pfpUrl}
+                  updatedAt={publicProfile.updatedAt}
                   name={publicProfile.publicName || publicProfile.name}
                   size={110}
                   fallbackType="icon"
@@ -378,6 +379,7 @@ export default function PublicProfileScreen() {
                       <RecipeSmallView
                         title={item.recipe.title}
                         coverUrl={item.recipe.coverUrl}
+                        updatedAt={(item.recipe as { updatedAt?: string | Date }).updatedAt}
                         rating={item.recipe.averageRating}
                         totalReviews={item.recipe.totalReviews}
                         isClickable={isBakerRole}

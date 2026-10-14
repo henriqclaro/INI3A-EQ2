@@ -59,6 +59,10 @@ export const BakerCard = memo(function BakerCard({ baker, onPress }: BakerCardPr
     >
       <UserAvatar
         url={baker.pfpUrl}
+        updatedAt={
+          (baker as { updatedAt?: string | Date }).updatedAt ||
+          (baker as { user?: { updatedAt?: string | Date } }).user?.updatedAt
+        }
         name={displayName}
         size={52}
         fallbackType="icon"

@@ -224,6 +224,7 @@ export function DesktopSidebar({
         >
           <UserAvatar
             url={user?.pfpUrl}
+            updatedAt={user?.updatedAt}
             name={user?.name || (isCustomerRole ? 'Cliente' : 'Confeiteira')}
             size={38}
             fallbackType="initial"

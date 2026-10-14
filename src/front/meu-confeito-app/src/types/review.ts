@@ -2,6 +2,7 @@ export interface RecipeReviewUser {
   id: string;
   name: string;
   pfpUrl: string | null;
+  updatedAt?: string | Date;
 }
 
 export interface RecipeReviewItem {
@@ -59,6 +60,7 @@ export interface UserReviewSummaryRecipe {
   coverUrl: string | null;
   averageRating: number | string;
   totalReviews: number;
+  updatedAt?: string | Date;
 }
 
 export interface UserReviewItem {

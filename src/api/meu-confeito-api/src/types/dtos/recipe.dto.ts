@@ -279,6 +279,7 @@ export namespace RecipeDTO {
         id: string;
         name: string;
         pfpUrl: string | null;
+        updatedAt: Date;
       };
     }[];
     totalReviews: number;

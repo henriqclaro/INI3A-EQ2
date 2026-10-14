@@ -369,6 +369,7 @@ export const RecipeReviewsSection = memo(function RecipeReviewsSection({
                     <View style={styles.reviewItemUser}>
                       <UserAvatar
                         url={rev.user?.pfpUrl}
+                        updatedAt={rev.user?.updatedAt || rev.updatedAt}
                         name={rev.user?.name}
                         size={32}
                         fallbackType="initial"

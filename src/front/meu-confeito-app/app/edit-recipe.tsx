@@ -11,7 +11,7 @@ import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useRecipeUpdate, useSingleRecipe } from '@/src/hooks/useRecipes';
 import { RecipeService } from '@/src/services/recipe';
 import { AppTheme } from '@/src/theme/themes';
-import { createImageFormData, getStorageUrl } from '@/src/utils/image';
+import { clearImageCache, createImageFormData, getStorageUrl } from '@/src/utils/image';
 
 export default function EditRecipeScreen() {
   const { theme } = useThemeMode();
@@ -45,10 +45,12 @@ export default function EditRecipeScreen() {
           console.warn('Failed to delete cover on server:', deleteError);
         }
         finalCoverUrl = null;
+        await clearImageCache();
       } else if (formData.coverImageFile) {
         const coverFormData = await createImageFormData('cover', formData.coverImageFile);
         const uploadRes = await RecipeService.uploadCover(recipeId, coverFormData);
         finalCoverUrl = getStorageUrl(uploadRes.data.url);
+        await clearImageCache();
       }
 
       await updateRecipe(recipeId, {

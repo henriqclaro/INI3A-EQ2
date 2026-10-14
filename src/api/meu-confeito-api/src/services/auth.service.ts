@@ -29,6 +29,7 @@ export class AuthService {
         "user".profile_picture_url as "pfpUrl",
         "user".password_hash as "passwordHash",
         "user".role as role,
+        "user".updated_at as "updatedAt",
         ST_AsGeoJSON(bp.location)::json as location
       FROM "user"
       LEFT JOIN "baker_profile" bp ON bp.user_id = "user".id
@@ -60,6 +61,7 @@ export class AuthService {
       location: this.parseLocation(foundUser.location),
       pfpUrl: foundUser.pfpUrl,
       role: foundUser.role as Role,
+      updatedAt: foundUser.updatedAt,
     };
 
     const payload = {

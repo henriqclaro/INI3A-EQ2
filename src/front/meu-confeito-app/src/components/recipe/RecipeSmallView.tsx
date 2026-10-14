@@ -1,4 +1,4 @@
-import { memo, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { Image } from 'expo-image';
@@ -7,10 +7,12 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
+import { getStorageUrl } from '@/src/utils/image';
 
 export interface RecipeSmallViewProps {
   title: string;
   coverUrl: string | null;
+  updatedAt?: string | Date | null;
   prepTimeMinutes?: number;
   rating?: number | string | null;
   totalReviews?: number;
@@ -21,6 +23,7 @@ export interface RecipeSmallViewProps {
 export const RecipeSmallView = memo(function RecipeSmallView({
   title,
   coverUrl,
+  updatedAt,
   prepTimeMinutes,
   rating,
   totalReviews,
@@ -32,7 +35,15 @@ export const RecipeSmallView = memo(function RecipeSmallView({
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
-  const hasValidCover = Boolean(coverUrl && coverUrl.trim().length > 0 && !hasImageError);
+  const resolvedCoverUrl = useMemo(() => getStorageUrl(coverUrl, updatedAt), [coverUrl, updatedAt]);
+
+  useEffect(() => {
+    setHasImageError(false);
+  }, [resolvedCoverUrl]);
+
+  const hasValidCover = Boolean(
+    resolvedCoverUrl && resolvedCoverUrl.trim().length > 0 && !hasImageError,
+  );
   const isInteractive = Boolean(isClickable !== undefined ? isClickable : onPress);
   const hasPrepTime = typeof prepTimeMinutes === 'number' && prepTimeMinutes > 0;
 
@@ -47,11 +58,11 @@ export const RecipeSmallView = memo(function RecipeSmallView({
     <>
       {hasValidCover ? (
         <Image
-          source={{ uri: coverUrl! }}
+          source={{ uri: resolvedCoverUrl }}
           style={styles.image}
           contentFit="cover"
           cachePolicy="memory-disk"
-          recyclingKey={coverUrl!}
+          recyclingKey={resolvedCoverUrl}
           transition={150}
           onError={() => setHasImageError(true)}
         />

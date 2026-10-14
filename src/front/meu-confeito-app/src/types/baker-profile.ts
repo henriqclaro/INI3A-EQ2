@@ -38,6 +38,7 @@ export interface PublicBakerProfile {
   neighborhood: string | null;
   city: string | null;
   tags: BakerTag[];
+  updatedAt?: Date | string;
 }
 
 export interface BakerProfileRegisterInput {

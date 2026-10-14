@@ -1049,6 +1049,7 @@ export class RecipeService {
               id: true,
               name: true,
               pfpUrl: true,
+              updatedAt: true,
             },
           },
         },
@@ -1102,6 +1103,11 @@ export class RecipeService {
 
     const url = await saveRecipeCover(recipeId, file.buffer);
 
+    await prisma.recipe.update({
+      where: { id: recipeId },
+      data: { coverUrl: url },
+    });
+
     return { url };
   }
 
@@ -1118,5 +1124,10 @@ export class RecipeService {
     this.checkPermission(context, recipe.userId);
 
     await deleteRecipeCover(recipeId);
+
+    await prisma.recipe.update({
+      where: { id: recipeId },
+      data: { coverUrl: null },
+    });
   }
 }

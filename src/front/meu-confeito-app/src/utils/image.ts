@@ -1,5 +1,6 @@
 import { Alert, Platform } from 'react-native';
 
+import { Image } from 'expo-image';
 import { SaveFormat, manipulateAsync } from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -29,7 +30,54 @@ export interface ProcessedImage {
   file?: File;
 }
 
-export function getStorageUrl(pathOrUrl?: string | null): string {
+export function formatCacheBusterVersion(
+  versionOrDate?: string | number | Date | null,
+): string | null {
+  if (versionOrDate === null || versionOrDate === undefined) {
+    return null;
+  }
+
+  if (versionOrDate instanceof Date) {
+    const time = versionOrDate.getTime();
+    return isNaN(time) ? null : String(time);
+  }
+
+  if (typeof versionOrDate === 'number') {
+    return isNaN(versionOrDate) ? null : String(versionOrDate);
+  }
+
+  if (typeof versionOrDate === 'string') {
+    const trimmed = versionOrDate.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    const timestamp = Date.parse(trimmed);
+    if (!isNaN(timestamp)) {
+      return String(timestamp);
+    }
+
+    return encodeURIComponent(trimmed);
+  }
+
+  return null;
+}
+
+export async function clearImageCache(shouldClearDisk: boolean = false): Promise<void> {
+  try {
+    await Image.clearMemoryCache();
+    if (shouldClearDisk) {
+      await Image.clearDiskCache();
+    }
+  } catch (error) {
+    console.warn('Failed to clear image cache:', error);
+  }
+}
+
+export function getStorageUrl(
+  pathOrUrl?: string | null,
+  versionOrDate?: string | number | Date | null,
+): string {
   if (!pathOrUrl || !pathOrUrl.trim()) {
     return '';
   }
@@ -39,6 +87,8 @@ export function getStorageUrl(pathOrUrl?: string | null): string {
     return trimmed;
   }
 
+  let finalUrl = trimmed;
+
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
     try {
       const urlObj = new URL(trimmed);
@@ -46,24 +96,35 @@ export function getStorageUrl(pathOrUrl?: string | null): string {
       if (urlObj.pathname.includes('/storage/')) {
         const storageIndex = urlObj.pathname.indexOf('/storage/');
         const storagePath = urlObj.pathname.slice(storageIndex);
-        return `${API_HOST_URL}${storagePath}${urlObj.search}`;
-      }
-
-      if (
+        finalUrl = `${API_HOST_URL}${storagePath}${urlObj.search}`;
+      } else if (
         (urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1') &&
         !API_HOST_URL.includes('localhost') &&
         !API_HOST_URL.includes('127.0.0.1')
       ) {
-        return `${API_HOST_URL}${urlObj.pathname}${urlObj.search}`;
+        finalUrl = `${API_HOST_URL}${urlObj.pathname}${urlObj.search}`;
       }
     } catch {
       // ignore parsing error
     }
-    return trimmed;
+  } else {
+    const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+    finalUrl = `${API_HOST_URL}${cleanPath}`;
   }
 
-  const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
-  return `${API_HOST_URL}${cleanPath}`;
+  const versionParam = formatCacheBusterVersion(versionOrDate);
+  if (versionParam) {
+    try {
+      const parsedUrl = new URL(finalUrl);
+      parsedUrl.searchParams.set('v', versionParam);
+      return parsedUrl.toString();
+    } catch {
+      const separator = finalUrl.includes('?') ? '&' : '?';
+      return `${finalUrl}${separator}v=${versionParam}`;
+    }
+  }
+
+  return finalUrl;
 }
 
 export function calculateScaledDimensions(

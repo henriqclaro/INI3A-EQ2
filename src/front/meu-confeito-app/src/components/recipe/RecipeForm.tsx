@@ -39,7 +39,7 @@ import {
   Tag,
   TagType,
 } from '@/src/types';
-import { ProcessedImage, pickRecipeCoverImage } from '@/src/utils/image';
+import { ProcessedImage, getStorageUrl, pickRecipeCoverImage } from '@/src/utils/image';
 import { parseRecipeInstructions } from '@/src/utils/recipe';
 
 import { RecipeSelector } from './RecipeSelector';
@@ -180,7 +180,14 @@ export function RecipeForm({
 
   // Form States
   const [title, setTitle] = useState(initialRecipe?.title || '');
-  const [coverUrl, setCoverUrl] = useState(initialRecipe?.coverUrl || '');
+  const [coverUrl, setCoverUrl] = useState(
+    initialRecipe?.coverUrl
+      ? getStorageUrl(
+          initialRecipe.coverUrl,
+          (initialRecipe as { updatedAt?: string | Date }).updatedAt,
+        )
+      : '',
+  );
   const [coverImageFile, setCoverImageFile] = useState<ProcessedImage | null>(null);
   const [hasRemovedCover, setHasRemovedCover] = useState<boolean>(false);
   const [isPickingCover, setIsPickingCover] = useState<boolean>(false);

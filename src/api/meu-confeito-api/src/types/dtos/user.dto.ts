@@ -80,6 +80,7 @@ export namespace UserDTO {
         hourlyLabor: Decimal;
         packagingCost: Decimal;
         prepTimeMinutes: number;
+        updatedAt: Date;
         tags: {
           tag: {
             name: string;
@@ -117,6 +118,7 @@ export namespace UserDTO {
         coverUrl: string | null;
         averageRating: Decimal;
         totalReviews: number;
+        updatedAt: Date;
       };
     }[];
   }

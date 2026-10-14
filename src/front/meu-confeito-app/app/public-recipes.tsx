@@ -65,6 +65,7 @@ export default function PublicRecipesScreen() {
         <RecipeView
           title={item.title}
           coverUrl={item.coverUrl}
+          updatedAt={item.updatedAt}
           tags={item.tags}
           prepTimeMinutes={item.prepTimeMinutes}
           rating={item.averageRating}

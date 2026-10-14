@@ -16,6 +16,7 @@ export namespace AuthDTO {
       } | null;
       pfpUrl: string | null;
       role: string;
+      updatedAt: Date;
     };
     auth: {
       accessToken: string;

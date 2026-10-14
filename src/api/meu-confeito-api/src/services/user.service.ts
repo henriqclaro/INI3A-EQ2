@@ -258,6 +258,7 @@ export class UserService {
             hourlyLabor: true,
             packagingCost: true,
             prepTimeMinutes: true,
+            updatedAt: true,
 
             tags: {
               select: {
@@ -420,6 +421,7 @@ export class UserService {
             coverUrl: true,
             averageRating: true,
             totalReviews: true,
+            updatedAt: true,
           },
         },
       },
@@ -446,6 +448,11 @@ export class UserService {
 
     const url = await saveUserAvatar(targetUserId, file.buffer);
 
+    await prisma.user.update({
+      where: { id: targetUserId },
+      data: { pfpUrl: url },
+    });
+
     return { url };
   }
 
@@ -460,5 +467,10 @@ export class UserService {
     this.checkUser(user);
 
     await deleteUserAvatar(targetUserId);
+
+    await prisma.user.update({
+      where: { id: targetUserId },
+      data: { pfpUrl: null },
+    });
   }
 }

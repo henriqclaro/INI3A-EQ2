@@ -18,6 +18,7 @@ import { RecipeService } from '@/src/services/recipe';
 import { UserService } from '@/src/services/user';
 import { AppTheme } from '@/src/theme/themes';
 import { PartialRecipe } from '@/src/types/recipe';
+import { getStorageUrl } from '@/src/utils/image';
 import { getTagColors } from '@/src/utils/tag';
 
 export interface RecipeSelectorProps {
@@ -208,10 +209,11 @@ export function RecipeSelector({
         <View style={[styles.selectedCard, hasError && styles.selectedCardError]}>
           {activeRecipe.coverUrl ? (
             <Image
-              source={{ uri: activeRecipe.coverUrl }}
+              source={{ uri: getStorageUrl(activeRecipe.coverUrl, activeRecipe.updatedAt) }}
               style={styles.selectedImage}
               contentFit="cover"
               cachePolicy="memory-disk"
+              recyclingKey={getStorageUrl(activeRecipe.coverUrl, activeRecipe.updatedAt)}
               transition={150}
             />
           ) : (
@@ -350,11 +352,11 @@ export function RecipeSelector({
                       <View style={styles.dropdownItemContent}>
                         {item.coverUrl ? (
                           <Image
-                            source={{ uri: item.coverUrl }}
+                            source={{ uri: getStorageUrl(item.coverUrl, item.updatedAt) }}
                             style={styles.dropdownItemImage}
                             contentFit="cover"
                             cachePolicy="memory-disk"
-                            recyclingKey={item.coverUrl}
+                            recyclingKey={getStorageUrl(item.coverUrl, item.updatedAt)}
                             transition={150}
                           />
                         ) : (
