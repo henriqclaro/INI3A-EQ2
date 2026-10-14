@@ -97,6 +97,9 @@ components:
             city:
               type: string
               nullable: true
+            updatedAt:
+              type: string
+              format: date-time
             tags:
               type: array
               items:
@@ -135,6 +138,9 @@ components:
               city:
                 type: string
                 nullable: true
+              updatedAt:
+                type: string
+                format: date-time
               tags:
                 type: array
                 items:
@@ -170,6 +176,9 @@ components:
               city:
                 type: string
                 nullable: true
+              updatedAt:
+                type: string
+                format: date-time
               tags:
                 type: array
                 items:

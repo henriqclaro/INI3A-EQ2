@@ -37,6 +37,9 @@ components:
                 status:
                   type: string
                   nullable: true
+                updatedAt:
+                  type: string
+                  format: date-time
     ShowcaseListResponse:
       type: object
       properties:
@@ -76,3 +79,6 @@ components:
                   status:
                     type: string
                     nullable: true
+                  updatedAt:
+                    type: string
+                    format: date-time

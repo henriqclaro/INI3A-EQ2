@@ -362,12 +362,14 @@ export class BakerProfileService {
         whatsapp: true,
         neighborhood: true,
         city: true,
+        updatedAt: true,
         user: {
           select: {
             name: true,
             phone: true,
             pfpUrl: true,
             isActive: true,
+            updatedAt: true,
           },
         },
         profileTags: {
@@ -390,6 +392,9 @@ export class BakerProfileService {
       throw new NotFoundError('Baker profile not found', 'RESOURCE_NOT_FOUND');
     }
 
+    const latestUpdatedAt =
+      profile.user.updatedAt > profile.updatedAt ? profile.user.updatedAt : profile.updatedAt;
+
     return {
       bakerProfile: {
         userId: profile.userId,
@@ -406,6 +411,7 @@ export class BakerProfileService {
           id: pt.tag.id,
           name: pt.tag.name,
         })),
+        updatedAt: latestUpdatedAt,
       },
     };
   }
@@ -456,6 +462,7 @@ export class BakerProfileService {
         "user".name,
         bp.public_name as "publicName",
         "user".profile_picture_url as "pfpUrl",
+        GREATEST("user".updated_at, bp.updated_at) as "updatedAt",
         bp.neighborhood,
         bp.city,
         ROUND(ST_Distance(bp.location::geography, ST_SetSRID(ST_MakePoint(${data.lng}, ${data.lat}), 4326)::geography)::numeric, 2)::float as distance,
@@ -489,6 +496,7 @@ export class BakerProfileService {
       neighborhood: row.neighborhood,
       city: row.city,
       tags: this.parseTags(row.tags),
+      updatedAt: row.updatedAt,
     }));
 
     return { bakerProfiles };
@@ -560,6 +568,7 @@ export class BakerProfileService {
         "user".name,
         bp.public_name as "publicName",
         "user".profile_picture_url as "pfpUrl",
+        GREATEST("user".updated_at, bp.updated_at) as "updatedAt",
         bp.neighborhood,
         bp.city,
         COALESCE(
@@ -590,6 +599,7 @@ export class BakerProfileService {
       neighborhood: row.neighborhood,
       city: row.city,
       tags: this.parseTags(row.tags),
+      updatedAt: row.updatedAt,
     }));
 
     return { bakerProfiles };
