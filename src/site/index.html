@@ -25,6 +25,27 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="media/Logo-MeuConfeito.png" />
 
+    <!-- Color Scheme & Theme Initialization (Prevents FOUC) -->
+    <meta name="color-scheme" content="light dark" />
+    <script>
+      (function () {
+        try {
+          const savedTheme = localStorage.getItem("mc-theme");
+          const prefersDark = window.matchMedia(
+            "(prefers-color-scheme: dark)",
+          ).matches;
+          const theme = savedTheme
+            ? savedTheme
+            : prefersDark
+              ? "dark"
+              : "light";
+          document.documentElement.setAttribute("data-theme", theme);
+          const meta = document.querySelector('meta[name="color-scheme"]');
+          if (meta) meta.content = theme;
+        } catch (e) {}
+      })();
+    </script>
+
     <!-- Stylesheet -->
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -52,45 +73,98 @@
           </div>
         </a>
 
-        <!-- Desktop Navigation Links -->
-        <nav class="nav-desktop" aria-label="Navegação Principal">
-          <ul class="nav-links">
-            <li><a href="#sobre" class="nav-link">Visão Geral</a></li>
-            <li><a href="#solucao" class="nav-link">O Desafio & Solução</a></li>
-            <li><a href="#diferenciais" class="nav-link">Diferenciais</a></li>
-            <li><a href="#calculadora" class="nav-link">Ficha Técnica</a></li>
-            <li>
-              <a href="#tendencias" class="nav-link">Tendências & Mapa</a>
-            </li>
-            <li><a href="#tecnologias" class="nav-link">Tecnologias</a></li>
-            <li><a href="#faq" class="nav-link">Dúvidas</a></li>
-          </ul>
-          <a href="#calculadora" class="btn btn--primary btn--sm"
-            >Testar Simulador</a
-          >
-        </nav>
+        <div class="header-right">
+          <!-- Desktop Navigation Links -->
+          <nav class="nav-desktop" aria-label="Navegação Principal">
+            <ul class="nav-links">
+              <li><a href="#sobre" class="nav-link">Visão Geral</a></li>
+              <li>
+                <a href="#solucao" class="nav-link">O Desafio & Solução</a>
+              </li>
+              <li><a href="#diferenciais" class="nav-link">Diferenciais</a></li>
+              <li><a href="#calculadora" class="nav-link">Ficha Técnica</a></li>
+              <li>
+                <a href="#tendencias" class="nav-link">Tendências & Mapa</a>
+              </li>
+              <li><a href="#tecnologias" class="nav-link">Tecnologias</a></li>
+              <li><a href="#faq" class="nav-link">Dúvidas</a></li>
+            </ul>
+            <a href="#calculadora" class="btn btn--primary btn--sm"
+              >Testar Simulador</a
+            >
+          </nav>
 
-        <!-- Mobile Navigation Hamburger Toggle -->
-        <button
-          class="mobile-menu-toggle"
-          id="mobileMenuToggle"
-          aria-label="Abrir Menu"
-          aria-expanded="false"
-          aria-controls="mobileNavDrawer"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
+          <!-- Header Actions (Theme Toggle & Mobile Menu) -->
+          <div class="header-actions">
+            <!-- Theme Toggle Button (Light / Dark Mode) -->
+            <button
+              class="theme-toggle-btn"
+              id="themeToggleBtn"
+              type="button"
+              aria-label="Alternar para modo escuro"
+              title="Alternar entre modo claro e escuro"
+            >
+              <!-- Sun Icon (shown in dark mode) -->
+              <svg
+                class="theme-icon theme-icon--sun"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg>
+              <!-- Moon Icon (shown in light mode) -->
+              <svg
+                class="theme-icon theme-icon--moon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
+                ></path>
+              </svg>
+            </button>
+
+            <!-- Mobile Navigation Hamburger Toggle -->
+            <button
+              class="mobile-menu-toggle"
+              id="mobileMenuToggle"
+              aria-label="Abrir Menu"
+              aria-expanded="false"
+              aria-controls="mobileNavDrawer"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
     </header>
 

@@ -5,6 +5,7 @@
  */
 
 document.addEventListener("DOMContentLoaded", () => {
+  initThemeToggle();
   initMobileNavigation();
   initRecipeCalculator();
   initTrendFilters();
@@ -394,5 +395,79 @@ function initSmoothScroll() {
         });
       }
     });
+  });
+}
+
+/**
+ * Fast Theme Toggle (Light / Dark Mode)
+ * Synchronizes with document attributes, meta color-scheme, localStorage, and system preference.
+ */
+function initThemeToggle() {
+  const toggleBtn = document.getElementById("themeToggleBtn");
+  if (!toggleBtn) return;
+
+  function updateAriaLabel(theme) {
+    if (theme === "dark") {
+      toggleBtn.setAttribute("aria-label", "Alternar para modo claro");
+      toggleBtn.setAttribute("title", "Alternar para modo claro");
+    } else {
+      toggleBtn.setAttribute("aria-label", "Alternar para modo escuro");
+      toggleBtn.setAttribute("title", "Alternar para modo escuro");
+    }
+  }
+
+  function getCurrentTheme() {
+    const attr = document.documentElement.getAttribute("data-theme");
+    if (attr) return attr;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  }
+
+  function applyTheme(theme, save = true) {
+    document.documentElement.setAttribute("data-theme", theme);
+    const meta = document.querySelector('meta[name="color-scheme"]');
+    if (meta) {
+      meta.content = theme;
+    }
+    updateAriaLabel(theme);
+    if (save) {
+      try {
+        localStorage.setItem("mc-theme", theme);
+      } catch (e) {
+        // Fallback if localStorage is inaccessible
+      }
+    }
+  }
+
+  // Ensure accessible label matches current rendered theme on init
+  updateAriaLabel(getCurrentTheme());
+
+  toggleBtn.addEventListener("click", () => {
+    const currentTheme = getCurrentTheme();
+    const nextTheme = currentTheme === "dark" ? "light" : "dark";
+    applyTheme(nextTheme, true);
+  });
+
+  // Listen to OS theme change when user hasn't explicitly overridden
+  try {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    mediaQuery.addEventListener("change", (e) => {
+      let hasStored = false;
+      try {
+        hasStored = !!localStorage.getItem("mc-theme");
+      } catch (err) {}
+
+      if (!hasStored) {
+        applyTheme(e.matches ? "dark" : "light", false);
+      }
+    });
+  } catch (e) {}
+
+  // Keep multiple tabs in sync
+  window.addEventListener("storage", (e) => {
+    if (e.key === "mc-theme" && e.newValue) {
+      applyTheme(e.newValue, false);
+    }
   });
 }
