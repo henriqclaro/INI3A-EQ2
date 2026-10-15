@@ -59,6 +59,69 @@ export class UserService {
     return { user };
   }
 
+  async search(
+    context: RequestContext,
+    query?: UserDTO.QueryRequest,
+  ): Promise<UserDTO.SearchResponse> {
+    if (context.userRole !== 'ADMIN') {
+      throw new ForbiddenError('Action denied for lack of privileges');
+    }
+
+    const emailFilter = query?.email?.trim() || query?.search?.trim();
+    const page = query?.page ?? 0;
+    const skip = page > 0 ? page * 15 : 0;
+
+    const where: Prisma.UserWhereInput = {
+      isActive: true,
+    };
+
+    if (emailFilter) {
+      where.email = {
+        contains: emailFilter,
+        mode: 'insensitive',
+      };
+    }
+
+    const users = await prisma.user.findMany({
+      where,
+      take: 15,
+      skip,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      select: {
+        id: true,
+        name: true,
+        role: true,
+        pfpUrl: true,
+        profile: {
+          select: {
+            publicName: true,
+          },
+        },
+        recipes: {
+          where: {
+            status: 'PUBLISHED',
+          },
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
+    return {
+      users: users.map((u) => ({
+        id: u.id,
+        name: u.name,
+        role: u.role,
+        pfpUrl: u.pfpUrl,
+        publicName: u.profile?.publicName ?? null,
+        recipes: u.recipes.map((r) => r.id),
+      })),
+    };
+  }
+
   async select(context: RequestContext, id: string) {
     this.checkPermission(context, id);
 

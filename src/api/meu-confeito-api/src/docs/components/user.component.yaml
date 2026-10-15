@@ -220,3 +220,35 @@ components:
                   updatedAt:
                     type: string
                     format: date-time
+    UserSearchResponse:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              name:
+                type: string
+              role:
+                type: string
+                enum:
+                  - ADMIN
+                  - MODERATOR
+                  - BAKER
+                  - CUSTOMER
+              pfpUrl:
+                type: string
+                format: url
+                nullable: true
+              publicName:
+                type: string
+                nullable: true
+              recipes:
+                type: array
+                items:
+                  type: string
+                  format: uuid

@@ -21,6 +21,38 @@ paths:
           description: Erro na validação dos dados
         '409':
           description: E-mail já em uso
+    get:
+      summary: Pesquisa usuários por e-mail
+      tags:
+        - Usuários
+      parameters:
+        - in: query
+          name: email
+          required: false
+          schema:
+            type: string
+          description: E-mail do usuário para pesquisa
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Número da página para paginação
+      responses:
+        '200':
+          description: Usuários selecionados com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSearchResponse'
+        '400':
+          description: Erro na validação dos dados
+        '401':
+          description: Token de autenticação ausente ou inválido
+        '403':
+          description: Ação negada por falta de privilégios
   /users/me/avatar:
     patch:
       summary: Atualiza o avatar do próprio usuário

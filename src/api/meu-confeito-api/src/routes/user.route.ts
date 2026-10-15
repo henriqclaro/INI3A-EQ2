@@ -19,6 +19,12 @@ userRoutes.post(
 
 userRoutes.use(authMiddleware);
 
+userRoutes.get(
+  '/',
+  validate({ query: user.querySchema }),
+  userController.search.bind(userController),
+);
+
 // Rotas de Avatar / Storage ------------------------
 
 userRoutes.patch(

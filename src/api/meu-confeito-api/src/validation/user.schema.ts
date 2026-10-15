@@ -12,6 +12,17 @@ export const paramsSchema = z.object({
   id: z.uuid('Invalid UUID for user ID'),
 });
 
+export const querySchema = z.object({
+  email: z.string('Email query must be a string').trim().optional(),
+  search: z.string('Search query must be a string').trim().optional(),
+  page: z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((val) => (val !== undefined && val !== null ? Number(val) : 0))
+    .pipe(z.number().int().min(0))
+    .optional(),
+});
+
 export const recipeQuerySchema = z.object({
   status: z
     .string()

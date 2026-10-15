@@ -34,6 +34,17 @@ export class UserController {
     return new CreatedResponse(res, responseData, 'User created successfully').send();
   }
 
+  async search(
+    req: Request<Record<string, string>, unknown, unknown, UserDTO.QueryRequest>,
+    res: Response<ApiResponse<UserDTO.SearchResponse>>,
+  ) {
+    const context = this.extractProps(req);
+
+    const responseData: UserDTO.SearchResponse = await this.userService.search(context, req.query);
+
+    return new DefaultSuccessResponse(res, responseData, 'Users selected successfully').send();
+  }
+
   async select(
     req: Request<UserDTO.RequestParams>,
     res: Response<ApiResponse<UserDTO.SelectResponse>>,

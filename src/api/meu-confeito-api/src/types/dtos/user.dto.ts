@@ -1,7 +1,7 @@
 import type { Decimal } from '@prisma/client/runtime/client';
 import type { z } from 'zod';
 
-import type { RecipeStatus, TagType } from '../../generated/prisma/client';
+import type { RecipeStatus, Role, TagType } from '../../generated/prisma/client';
 import type * as user from '../../validation/user.schema';
 
 export namespace UserDTO {
@@ -17,7 +17,19 @@ export namespace UserDTO {
   }
 
   export type RequestParams = z.infer<typeof user.paramsSchema>;
+  export type QueryRequest = z.infer<typeof user.querySchema>;
   export type RecipeQueryRequest = z.infer<typeof user.recipeQuerySchema>;
+
+  export interface SearchResponse {
+    users: {
+      id: string;
+      name: string;
+      role: Role;
+      pfpUrl: string | null;
+      publicName: string | null;
+      recipes: string[];
+    }[];
+  }
 
   export interface SelectResponse {
     user: {
