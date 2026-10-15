@@ -26,7 +26,7 @@ import {
 } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
-import { useUserDelete, useUserSuspend } from '@/src/hooks/useUsers';
+import { useUserDelete } from '@/src/hooks/useUsers';
 import { AppTheme } from '@/src/theme/themes';
 import { getRoleLabel, isCustomer } from '@/src/utils/roles';
 
@@ -38,7 +38,6 @@ export default function SettingsScreen() {
 
   const { user, signOut } = useAuth();
   const { deleteUser, isLoading: isDeletingUser } = useUserDelete();
-  const { suspendUser, isLoading: isSuspendingUser } = useUserSuspend();
 
   const isCustomerRole = isCustomer(user?.role);
 
@@ -87,51 +86,6 @@ export default function SettingsScreen() {
         'Não foi possível excluir sua conta. Verifique sua conexão e tente novamente.';
       Alert.alert('Falha na Exclusão', errorMsg);
     }
-  };
-
-  const handleConfirmSuspendAccount = () => {
-    if (!user?.id) {
-      Alert.alert('Erro', 'Usuário não autenticado.');
-      return;
-    }
-
-    Alert.alert(
-      'Desativar Conta',
-      'Tem certeza de que deseja suspender sua conta temporariamente? Suas receitas públicas e perfil de confeitaria serão ocultados e sua sessão será encerrada. Suas credenciais e dados serão preservados para quando você desejar reativar sua conta.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Desativar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await suspendUser(user.id);
-              await signOut();
-              Alert.alert(
-                'Conta Desativada',
-                'Sua conta foi suspensa temporariamente. Seus dados foram preservados para posterior recuperação.',
-                [
-                  {
-                    text: 'OK',
-                    onPress: () => router.replace('/login'),
-                  },
-                ],
-              );
-            } catch (err: unknown) {
-              const apiErr = err as {
-                response?: { data?: { message?: string } };
-                message?: string;
-              };
-              const errorMsg =
-                apiErr?.response?.data?.message ||
-                apiErr?.message ||
-                'Não foi possível desativar sua conta. Tente novamente.';
-              Alert.alert('Falha na Desativação', errorMsg);
-            }
-          },
-        },
-      ],
-    );
   };
 
   return (
@@ -265,38 +219,9 @@ export default function SettingsScreen() {
           {/* Section 7: Danger Zone (Account Deletion) */}
           <SettingsSection
             title="Zona de Perigo"
-            description="Ações de encerramento temporário ou permanente da conta"
+            description="Ações irreversíveis de encerramento da conta"
             icon="alert-octagon-outline"
           >
-            {/* Desativação Temporária */}
-            <View style={styles.suspendCard}>
-              <View style={styles.dangerCardHeader}>
-                <View style={styles.suspendIconBadge}>
-                  <MaterialCommunityIcons
-                    name="pause-circle-outline"
-                    size={22}
-                    color={theme.colors.onSurfaceVariant}
-                  />
-                </View>
-                <View style={styles.dangerHeaderTextWrapper}>
-                  <Text style={styles.suspendCardTitle}>Desativação Temporária de Conta</Text>
-                  <Text style={styles.dangerCardSubtitle}>
-                    Suspenda sua conta temporariamente. Suas receitas e perfil público serão
-                    ocultados da comunidade e sua sessão será encerrada, mas seus dados serão
-                    preservados para posterior recuperação.
-                  </Text>
-                </View>
-              </View>
-
-              <CustomButton
-                title={isSuspendingUser ? 'Desativando...' : 'Desativar Minha Conta'}
-                variant="outline"
-                isDisabled={isSuspendingUser}
-                style={styles.deleteAccountBtn}
-                onPress={handleConfirmSuspendAccount}
-              />
-            </View>
-
             {/* Exclusão Definitiva */}
             <View style={styles.dangerCard}>
               <View style={styles.dangerCardHeader}>
@@ -485,32 +410,6 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       fontWeight: '700',
       color: theme.colors.onSurfaceVariant,
       textTransform: 'uppercase',
-    },
-    suspendCard: {
-      backgroundColor: theme.colors.surfaceContainerLowest,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      borderRadius: theme.rounded.lg,
-      padding: theme.spacing.space5,
-      width: '100%',
-      gap: theme.spacing.space4,
-      ...theme.shadows.soft,
-    },
-    suspendIconBadge: {
-      width: 38,
-      height: 38,
-      borderRadius: theme.rounded.md,
-      backgroundColor: theme.colors.surfaceContainerLow,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    suspendCardTitle: {
-      fontFamily: theme.typography.headlineMd.fontFamily,
-      fontSize: 16,
-      fontWeight: '700',
-      color: theme.colors.espressoDark,
     },
     dangerCard: {
       backgroundColor: theme.colors.surfaceContainerLowest,

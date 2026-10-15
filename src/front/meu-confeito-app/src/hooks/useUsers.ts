@@ -213,10 +213,10 @@ export function useUserSuspend() {
       const response = await UserService.suspend(userId);
       return response;
     } catch (err: unknown) {
-      console.error('Error suspending user:', err);
+      console.error('Error banning/suspending user:', err);
       const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
       const apiMessage =
-        apiErr?.response?.data?.message || apiErr?.message || 'Erro ao suspender usuário.';
+        apiErr?.response?.data?.message || apiErr?.message || 'Erro ao banir usuário.';
       setError(apiMessage);
       throw err;
     } finally {
@@ -224,8 +224,10 @@ export function useUserSuspend() {
     }
   };
 
-  return { suspendUser, isLoading, error };
+  return { suspendUser, banUser: suspendUser, isLoading, error };
 }
+
+export const useUserBan = useUserSuspend;
 
 export function useUserSearch() {
   const [users, setUsers] = useState<SearchUserItem[]>([]);

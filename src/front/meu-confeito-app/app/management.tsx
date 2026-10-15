@@ -17,9 +17,9 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { CustomButton, Input, UserAvatar } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
-import { SearchUserItem, useUserSearch, useUserSuspend } from '@/src/hooks/useUsers';
+import { SearchUserItem, useUserBan, useUserSearch } from '@/src/hooks/useUsers';
 import { AppTheme } from '@/src/theme/themes';
-import { getRoleLabel, isAdmin, isStaff } from '@/src/utils/roles';
+import { getRoleLabel, isAdmin, isModerator, isStaff } from '@/src/utils/roles';
 
 export default function ManagementScreen() {
   const { theme } = useThemeMode();
@@ -29,6 +29,7 @@ export default function ManagementScreen() {
 
   const isStaffUser = isStaff(user?.role);
   const isAdminUser = isAdmin(user?.role);
+  const isModeratorUser = isModerator(user?.role);
 
   const [searchEmail, setSearchEmail] = useState('');
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
@@ -41,16 +42,16 @@ export default function ManagementScreen() {
     error: searchError,
   } = useUserSearch();
 
-  const { suspendUser, isLoading: isSuspendingUser } = useUserSuspend();
+  const { banUser, isLoading: isBanningUser } = useUserBan();
 
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
-  // Load initial active users when admin enters the screen
+  // Load initial active users when staff enters the screen
   useEffect(() => {
-    if (isAdminUser) {
+    if (isStaffUser) {
       searchUsers('').catch((err) => console.error('Error fetching initial users list:', err));
     }
-  }, [isAdminUser, searchUsers]);
+  }, [isStaffUser, searchUsers]);
 
   // Protect route against unauthorized common users
   if (!user || !isStaffUser) {
@@ -92,12 +93,12 @@ export default function ManagementScreen() {
     setExpandedUserId((prev) => (prev === id ? null : id));
   };
 
-  const executeSuspension = async (targetUser: SearchUserItem) => {
+  const executeBan = async (targetUser: SearchUserItem) => {
     try {
-      await suspendUser(targetUser.id);
+      await banUser(targetUser.id);
       Alert.alert(
-        'Usuário Suspenso',
-        `A conta de "${targetUser.name}" foi suspensa com sucesso. Todos os acessos ativos foram revogados.`,
+        'Usuário Banido',
+        `A conta de "${targetUser.name}" foi banida com sucesso. Todos os acessos ativos foram revogados.`,
       );
       setUsers((prev) => prev.filter((item) => item.id !== targetUser.id));
       if (expandedUserId === targetUser.id) {
@@ -111,34 +112,43 @@ export default function ManagementScreen() {
       const msg =
         apiErr?.response?.data?.message ||
         apiErr?.message ||
-        'Não foi possível suspender o usuário. Verifique suas permissões.';
-      Alert.alert('Erro ao Suspender', msg);
+        'Não foi possível banir o usuário. Verifique suas permissões.';
+      Alert.alert('Erro ao Banir', msg);
     }
   };
 
-  const handlePromptSuspend = (targetUser: SearchUserItem) => {
-    if (!isAdminUser) {
-      Alert.alert('Acesso Restrito', 'Apenas administradores podem suspender usuários.');
-      return;
-    }
-
+  const handlePromptBan = (targetUser: SearchUserItem) => {
     if (targetUser.id === user.id) {
       Alert.alert(
         'Ação Inválida',
-        'Você não pode suspender sua própria conta através desta ferramenta administrativa.',
+        'Você não pode banir sua própria conta através desta ferramenta administrativa.',
       );
       return;
     }
 
+    const isTargetStaff = isStaff(targetUser.role);
+    if (isModeratorUser && isTargetStaff) {
+      Alert.alert(
+        'Acesso Restrito',
+        'Moderadores não possuem permissão para banir administradores ou outros moderadores.',
+      );
+      return;
+    }
+
+    if (!isAdminUser && !isModeratorUser) {
+      Alert.alert('Acesso Restrito', 'Apenas moderadores e administradores podem banir usuários.');
+      return;
+    }
+
     Alert.alert(
-      'Confirmar Suspensão',
-      `Deseja realmente suspender a conta de "${targetUser.name}"? O usuário perderá o acesso imediato à plataforma e suas receitas e perfil público serão desativados.`,
+      'Confirmar Banimento',
+      `Deseja realmente banir a conta de "${targetUser.name}"? O usuário perderá o acesso imediato à plataforma, suas receitas públicas serão desativadas e novas tentativas de cadastro com este e-mail/telefone serão bloqueadas.`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'Suspender',
+          text: 'Banir',
           style: 'destructive',
-          onPress: () => executeSuspension(targetUser),
+          onPress: () => executeBan(targetUser),
         },
       ],
     );
@@ -189,334 +199,314 @@ export default function ManagementScreen() {
               <View style={styles.cardHeaderTextCol}>
                 <View style={styles.cardTitleRow}>
                   <Text style={styles.cardTitle}>Gerenciamento de Usuários</Text>
-                  {!isAdminUser && (
-                    <View style={styles.restrictedBadge}>
-                      <MaterialCommunityIcons
-                        name="lock-outline"
-                        size={12}
-                        color={theme.colors.onSurfaceVariant}
-                      />
-                      <Text style={styles.restrictedBadgeText}>Apenas Admin</Text>
-                    </View>
-                  )}
                 </View>
                 <Text style={styles.cardSubtitle}>
-                  Busque contas por e-mail para inspecionar perfil comercial, receitas ou suspender.
+                  Busque contas por e-mail para inspecionar perfil comercial, receitas ou aplicar
+                  banimento.
                 </Text>
               </View>
             </View>
 
-            {isAdminUser ? (
-              <View style={styles.searchSectionWrapper}>
-                {/* Search Bar Row */}
-                <View style={styles.searchRow}>
-                  <Input
-                    value={searchEmail}
-                    onChangeText={setSearchEmail}
-                    placeholder="Buscar usuário por e-mail..."
-                    placeholderTextColor={theme.colors.placeholder}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    returnKeyType="search"
-                    onSubmitEditing={handleSearch}
-                    containerStyle={styles.searchInput}
-                    isClearable={true}
-                    onClear={handleClear}
-                    leftIcon={
-                      <MaterialCommunityIcons
-                        name="email-search-outline"
-                        size={20}
-                        color={theme.colors.onSurfaceVariant}
-                      />
-                    }
-                  />
-
-                  <TouchableOpacity
-                    style={[styles.searchButton, isSearchingUsers && styles.buttonDisabled]}
-                    onPress={handleSearch}
-                    disabled={isSearchingUsers}
-                    activeOpacity={0.8}
-                    accessibilityRole="button"
-                    accessibilityLabel="Buscar usuários por e-mail"
-                  >
-                    {isSearchingUsers ? (
-                      <ActivityIndicator size="small" color={theme.colors.primary} />
-                    ) : (
-                      <>
-                        <MaterialCommunityIcons
-                          name="magnify"
-                          size={20}
-                          color={theme.colors.primary}
-                        />
-                        {isDesktop && <Text style={styles.searchButtonText}>Buscar</Text>}
-                      </>
-                    )}
-                  </TouchableOpacity>
-                </View>
-
-                {searchError ? (
-                  <View style={styles.errorBanner}>
+            <View style={styles.searchSectionWrapper}>
+              {/* Search Bar Row */}
+              <View style={styles.searchRow}>
+                <Input
+                  value={searchEmail}
+                  onChangeText={setSearchEmail}
+                  placeholder="Buscar usuário por e-mail..."
+                  placeholderTextColor={theme.colors.placeholder}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  returnKeyType="search"
+                  onSubmitEditing={handleSearch}
+                  containerStyle={styles.searchInput}
+                  isClearable={true}
+                  onClear={handleClear}
+                  leftIcon={
                     <MaterialCommunityIcons
-                      name="alert-circle-outline"
-                      size={16}
-                      color={theme.colors.error}
-                    />
-                    <Text style={styles.errorBannerText}>{searchError}</Text>
-                  </View>
-                ) : null}
-
-                {/* Users Results List */}
-                {isSearchingUsers && users.length === 0 ? (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color={theme.colors.primary} />
-                    <Text style={styles.loadingText}>Buscando usuários...</Text>
-                  </View>
-                ) : users.length === 0 ? (
-                  <View style={styles.emptyContainer}>
-                    <MaterialCommunityIcons
-                      name="account-question-outline"
-                      size={36}
+                      name="email-search-outline"
+                      size={20}
                       color={theme.colors.onSurfaceVariant}
                     />
-                    <Text style={styles.emptyTitle}>Nenhum usuário encontrado</Text>
-                    <Text style={styles.emptySubtitle}>
-                      {searchEmail.trim()
-                        ? `Não encontramos usuários cadastrados com o e-mail "${searchEmail.trim()}".`
-                        : 'Nenhum usuário ativo retornado.'}
-                    </Text>
-                  </View>
-                ) : (
-                  <View style={styles.usersList}>
-                    <Text style={styles.resultsCountLabel}>
-                      {users.length}{' '}
-                      {users.length === 1 ? 'usuário encontrado' : 'usuários encontrados'}
-                    </Text>
+                  }
+                />
 
-                    {users.map((targetUser) => {
-                      const isExpanded = expandedUserId === targetUser.id;
-                      const hasBakerProfile = Boolean(targetUser.publicName);
-                      const hasPublicRecipes = Boolean(
-                        targetUser.recipes && targetUser.recipes.length > 0,
-                      );
-                      const canSuspendUser = isAdminUser && targetUser.id !== user.id;
-                      const hasAnyAction = hasBakerProfile || hasPublicRecipes || canSuspendUser;
+                <TouchableOpacity
+                  style={[styles.searchButton, isSearchingUsers && styles.buttonDisabled]}
+                  onPress={handleSearch}
+                  disabled={isSearchingUsers}
+                  activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Buscar usuários por e-mail"
+                >
+                  {isSearchingUsers ? (
+                    <ActivityIndicator size="small" color={theme.colors.primary} />
+                  ) : (
+                    <>
+                      <MaterialCommunityIcons
+                        name="magnify"
+                        size={20}
+                        color={theme.colors.primary}
+                      />
+                      {isDesktop && <Text style={styles.searchButtonText}>Buscar</Text>}
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
 
-                      const roleColors = getRoleBadgeColors(targetUser.role, theme);
+              {searchError ? (
+                <View style={styles.errorBanner}>
+                  <MaterialCommunityIcons
+                    name="alert-circle-outline"
+                    size={16}
+                    color={theme.colors.error}
+                  />
+                  <Text style={styles.errorBannerText}>{searchError}</Text>
+                </View>
+              ) : null}
 
-                      return (
-                        <View key={targetUser.id} style={styles.userCard}>
-                          {/* Card Header (clickable accordion toggle) */}
-                          <TouchableOpacity
-                            style={styles.userCardHeader}
-                            onPress={() => handleToggleExpand(targetUser.id)}
-                            activeOpacity={0.7}
-                            accessibilityRole="button"
-                            accessibilityLabel={`Detalhes de ${targetUser.name}`}
-                          >
-                            <UserAvatar
-                              url={targetUser.pfpUrl}
-                              name={targetUser.name}
-                              size={44}
-                              fallbackType="initial"
-                            />
+              {/* Users Results List */}
+              {isSearchingUsers && users.length === 0 ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color={theme.colors.primary} />
+                  <Text style={styles.loadingText}>Buscando usuários...</Text>
+                </View>
+              ) : users.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                  <MaterialCommunityIcons
+                    name="account-question-outline"
+                    size={36}
+                    color={theme.colors.onSurfaceVariant}
+                  />
+                  <Text style={styles.emptyTitle}>Nenhum usuário encontrado</Text>
+                  <Text style={styles.emptySubtitle}>
+                    {searchEmail.trim()
+                      ? `Não encontramos usuários cadastrados com o e-mail "${searchEmail.trim()}".`
+                      : 'Nenhum usuário ativo retornado.'}
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.usersList}>
+                  <Text style={styles.resultsCountLabel}>
+                    {users.length}{' '}
+                    {users.length === 1 ? 'usuário encontrado' : 'usuários encontrados'}
+                  </Text>
 
-                            <View style={styles.userDetailsCol}>
-                              <View style={styles.userNameRow}>
-                                <Text style={styles.userNameText} numberOfLines={1}>
-                                  {targetUser.name}
+                  {users.map((targetUser) => {
+                    const isExpanded = expandedUserId === targetUser.id;
+                    const hasBakerProfile = Boolean(targetUser.publicName);
+                    const hasPublicRecipes = Boolean(
+                      targetUser.recipes && targetUser.recipes.length > 0,
+                    );
+                    const isTargetStaff = isStaff(targetUser.role);
+                    const canBanUser =
+                      (isAdminUser || (isModeratorUser && !isTargetStaff)) &&
+                      targetUser.id !== user.id;
+                    const hasAnyAction = hasBakerProfile || hasPublicRecipes || canBanUser;
+
+                    const roleColors = getRoleBadgeColors(targetUser.role, theme);
+
+                    return (
+                      <View key={targetUser.id} style={styles.userCard}>
+                        {/* Card Header (clickable accordion toggle) */}
+                        <TouchableOpacity
+                          style={styles.userCardHeader}
+                          onPress={() => handleToggleExpand(targetUser.id)}
+                          activeOpacity={0.7}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Detalhes de ${targetUser.name}`}
+                        >
+                          <UserAvatar
+                            url={targetUser.pfpUrl}
+                            name={targetUser.name}
+                            size={44}
+                            fallbackType="initial"
+                          />
+
+                          <View style={styles.userDetailsCol}>
+                            <View style={styles.userNameRow}>
+                              <Text style={styles.userNameText} numberOfLines={1}>
+                                {targetUser.name}
+                              </Text>
+                              {targetUser.publicName ? (
+                                <Text style={styles.userPublicNameText} numberOfLines={1}>
+                                  ({targetUser.publicName})
                                 </Text>
-                                {targetUser.publicName ? (
-                                  <Text style={styles.userPublicNameText} numberOfLines={1}>
-                                    ({targetUser.publicName})
-                                  </Text>
-                                ) : null}
-                              </View>
-
-                              <View style={styles.userMetaBadgesRow}>
-                                <View
-                                  style={[
-                                    styles.userRoleBadge,
-                                    {
-                                      backgroundColor: roleColors.bg,
-                                      borderColor: roleColors.border,
-                                    },
-                                  ]}
-                                >
-                                  <Text style={[styles.userRoleText, { color: roleColors.text }]}>
-                                    {getRoleLabel(targetUser.role)}
-                                  </Text>
-                                </View>
-
-                                {hasPublicRecipes ? (
-                                  <View style={styles.recipesCountBadge}>
-                                    <MaterialCommunityIcons
-                                      name="book-open-outline"
-                                      size={12}
-                                      color={theme.colors.onSurfaceVariant}
-                                    />
-                                    <Text style={styles.recipesCountBadgeText}>
-                                      {targetUser.recipes.length}{' '}
-                                      {targetUser.recipes.length === 1 ? 'receita' : 'receitas'}
-                                    </Text>
-                                  </View>
-                                ) : null}
-                              </View>
+                              ) : null}
                             </View>
 
-                            <MaterialCommunityIcons
-                              name={isExpanded ? 'chevron-up' : 'chevron-down'}
-                              size={24}
-                              color={theme.colors.onSurfaceVariant}
-                            />
-                          </TouchableOpacity>
-
-                          {/* Expanded Action Menu */}
-                          {isExpanded && (
-                            <View style={styles.userExpandedContent}>
-                              {/* Metadata Info */}
-                              <View style={styles.userExpandedMeta}>
-                                <View style={styles.metaInfoRow}>
-                                  <Text style={styles.metaLabel}>ID:</Text>
-                                  <Text style={styles.metaValue} selectable numberOfLines={1}>
-                                    {targetUser.id}
-                                  </Text>
-                                </View>
-
-                                {targetUser.publicName ? (
-                                  <View style={styles.metaInfoRow}>
-                                    <Text style={styles.metaLabel}>Nome Comercial:</Text>
-                                    <Text style={styles.metaValue} numberOfLines={1}>
-                                      {targetUser.publicName}
-                                    </Text>
-                                  </View>
-                                ) : null}
-
-                                <View style={styles.metaInfoRow}>
-                                  <Text style={styles.metaLabel}>Receitas Públicas:</Text>
-                                  <Text style={styles.metaValue}>
-                                    {targetUser.recipes?.length ?? 0}
-                                  </Text>
-                                </View>
+                            <View style={styles.userMetaBadgesRow}>
+                              <View
+                                style={[
+                                  styles.userRoleBadge,
+                                  {
+                                    backgroundColor: roleColors.bg,
+                                    borderColor: roleColors.border,
+                                  },
+                                ]}
+                              >
+                                <Text style={[styles.userRoleText, { color: roleColors.text }]}>
+                                  {getRoleLabel(targetUser.role)}
+                                </Text>
                               </View>
 
-                              {/* Action Buttons Row / Column */}
-                              {hasAnyAction ? (
-                                <View style={styles.actionsContainer}>
-                                  {/* Action 1: Public Profile (Baker) */}
-                                  {hasBakerProfile && (
-                                    <TouchableOpacity
-                                      style={styles.actionBtnSecondary}
-                                      onPress={() =>
-                                        router.push({
-                                          pathname: '/public-profile',
-                                          params: { id: targetUser.id },
-                                        })
-                                      }
-                                      activeOpacity={0.8}
-                                      accessibilityRole="button"
-                                      accessibilityLabel={`Ver perfil público de ${targetUser.name}`}
-                                    >
-                                      <MaterialCommunityIcons
-                                        name="storefront-outline"
-                                        size={18}
-                                        color={theme.colors.primary}
-                                      />
-                                      <Text style={styles.actionBtnSecondaryText} numberOfLines={1}>
-                                        Perfil Comercial
-                                      </Text>
-                                    </TouchableOpacity>
-                                  )}
-
-                                  {/* Action 2: Public Recipes */}
-                                  {hasPublicRecipes && (
-                                    <TouchableOpacity
-                                      style={styles.actionBtnSecondary}
-                                      onPress={() =>
-                                        router.push({
-                                          pathname: '/public-recipes',
-                                          params: {
-                                            userId: targetUser.id,
-                                            userName: targetUser.publicName || targetUser.name,
-                                          },
-                                        })
-                                      }
-                                      activeOpacity={0.8}
-                                      accessibilityRole="button"
-                                      accessibilityLabel={`Ver receitas públicas de ${targetUser.name}`}
-                                    >
-                                      <MaterialCommunityIcons
-                                        name="book-open-page-variant"
-                                        size={18}
-                                        color={theme.colors.primary}
-                                      />
-                                      <Text style={styles.actionBtnSecondaryText} numberOfLines={1}>
-                                        Receitas Públicas ({targetUser.recipes.length})
-                                      </Text>
-                                    </TouchableOpacity>
-                                  )}
-
-                                  {/* Action 3: Suspend User (ADMIN only) */}
-                                  {canSuspendUser && (
-                                    <TouchableOpacity
-                                      style={styles.actionBtnDanger}
-                                      onPress={() => handlePromptSuspend(targetUser)}
-                                      activeOpacity={0.8}
-                                      accessibilityRole="button"
-                                      accessibilityLabel={`Suspender conta de ${targetUser.name}`}
-                                      disabled={isSuspendingUser}
-                                    >
-                                      {isSuspendingUser ? (
-                                        <ActivityIndicator
-                                          size="small"
-                                          color={theme.colors.onError}
-                                        />
-                                      ) : (
-                                        <MaterialCommunityIcons
-                                          name="account-cancel-outline"
-                                          size={18}
-                                          color={theme.colors.onError}
-                                        />
-                                      )}
-                                      <Text style={styles.actionBtnDangerText} numberOfLines={1}>
-                                        Suspender Usuário
-                                      </Text>
-                                    </TouchableOpacity>
-                                  )}
-                                </View>
-                              ) : (
-                                <View style={styles.noActionBox}>
+                              {hasPublicRecipes ? (
+                                <View style={styles.recipesCountBadge}>
                                   <MaterialCommunityIcons
-                                    name="information-outline"
-                                    size={16}
+                                    name="book-open-outline"
+                                    size={12}
                                     color={theme.colors.onSurfaceVariant}
                                   />
-                                  <Text style={styles.noActionText}>
-                                    Nenhuma ação disponível para esta conta.
+                                  <Text style={styles.recipesCountBadgeText}>
+                                    {targetUser.recipes.length}{' '}
+                                    {targetUser.recipes.length === 1 ? 'receita' : 'receitas'}
                                   </Text>
                                 </View>
-                              )}
+                              ) : null}
                             </View>
-                          )}
-                        </View>
-                      );
-                    })}
-                  </View>
-                )}
-              </View>
-            ) : (
-              <View style={styles.moderatorNoticeBox}>
-                <MaterialCommunityIcons
-                  name="shield-lock-outline"
-                  size={20}
-                  color={theme.colors.onSurfaceVariant}
-                />
-                <Text style={styles.moderatorNoticeText}>
-                  A busca direta de usuários e suspensão de contas exige privilégio administrativo
-                  (ADMIN). Como moderador, utilize as ferramentas de análise de denúncias.
-                </Text>
-              </View>
-            )}
+                          </View>
+
+                          <MaterialCommunityIcons
+                            name={isExpanded ? 'chevron-up' : 'chevron-down'}
+                            size={24}
+                            color={theme.colors.onSurfaceVariant}
+                          />
+                        </TouchableOpacity>
+
+                        {/* Expanded Action Menu */}
+                        {isExpanded && (
+                          <View style={styles.userExpandedContent}>
+                            {/* Metadata Info */}
+                            <View style={styles.userExpandedMeta}>
+                              <View style={styles.metaInfoRow}>
+                                <Text style={styles.metaLabel}>ID:</Text>
+                                <Text style={styles.metaValue} selectable numberOfLines={1}>
+                                  {targetUser.id}
+                                </Text>
+                              </View>
+
+                              {targetUser.publicName ? (
+                                <View style={styles.metaInfoRow}>
+                                  <Text style={styles.metaLabel}>Nome Comercial:</Text>
+                                  <Text style={styles.metaValue} numberOfLines={1}>
+                                    {targetUser.publicName}
+                                  </Text>
+                                </View>
+                              ) : null}
+
+                              <View style={styles.metaInfoRow}>
+                                <Text style={styles.metaLabel}>Receitas Públicas:</Text>
+                                <Text style={styles.metaValue}>
+                                  {targetUser.recipes?.length ?? 0}
+                                </Text>
+                              </View>
+                            </View>
+
+                            {/* Action Buttons Row / Column */}
+                            {hasAnyAction ? (
+                              <View style={styles.actionsContainer}>
+                                {/* Action 1: Public Profile (Baker) */}
+                                {hasBakerProfile && (
+                                  <TouchableOpacity
+                                    style={styles.actionBtnSecondary}
+                                    onPress={() =>
+                                      router.push({
+                                        pathname: '/public-profile',
+                                        params: { id: targetUser.id },
+                                      })
+                                    }
+                                    activeOpacity={0.8}
+                                    accessibilityRole="button"
+                                    accessibilityLabel={`Ver perfil público de ${targetUser.name}`}
+                                  >
+                                    <MaterialCommunityIcons
+                                      name="storefront-outline"
+                                      size={18}
+                                      color={theme.colors.primary}
+                                    />
+                                    <Text style={styles.actionBtnSecondaryText} numberOfLines={1}>
+                                      Perfil Comercial
+                                    </Text>
+                                  </TouchableOpacity>
+                                )}
+
+                                {/* Action 2: Public Recipes */}
+                                {hasPublicRecipes && (
+                                  <TouchableOpacity
+                                    style={styles.actionBtnSecondary}
+                                    onPress={() =>
+                                      router.push({
+                                        pathname: '/public-recipes',
+                                        params: {
+                                          userId: targetUser.id,
+                                          userName: targetUser.publicName || targetUser.name,
+                                        },
+                                      })
+                                    }
+                                    activeOpacity={0.8}
+                                    accessibilityRole="button"
+                                    accessibilityLabel={`Ver receitas públicas de ${targetUser.name}`}
+                                  >
+                                    <MaterialCommunityIcons
+                                      name="book-open-page-variant"
+                                      size={18}
+                                      color={theme.colors.primary}
+                                    />
+                                    <Text style={styles.actionBtnSecondaryText} numberOfLines={1}>
+                                      Receitas Públicas ({targetUser.recipes.length})
+                                    </Text>
+                                  </TouchableOpacity>
+                                )}
+
+                                {/* Action 3: Ban User (ADMIN or MODERATOR on non-staff) */}
+                                {canBanUser && (
+                                  <TouchableOpacity
+                                    style={styles.actionBtnDanger}
+                                    onPress={() => handlePromptBan(targetUser)}
+                                    activeOpacity={0.8}
+                                    accessibilityRole="button"
+                                    accessibilityLabel={`Banir conta de ${targetUser.name}`}
+                                    disabled={isBanningUser}
+                                  >
+                                    {isBanningUser ? (
+                                      <ActivityIndicator
+                                        size="small"
+                                        color={theme.colors.onError}
+                                      />
+                                    ) : (
+                                      <MaterialCommunityIcons
+                                        name="account-cancel-outline"
+                                        size={18}
+                                        color={theme.colors.onError}
+                                      />
+                                    )}
+                                    <Text style={styles.actionBtnDangerText} numberOfLines={1}>
+                                      Banir Usuário
+                                    </Text>
+                                  </TouchableOpacity>
+                                )}
+                              </View>
+                            ) : (
+                              <View style={styles.noActionBox}>
+                                <MaterialCommunityIcons
+                                  name="information-outline"
+                                  size={16}
+                                  color={theme.colors.onSurfaceVariant}
+                                />
+                                <Text style={styles.noActionText}>
+                                  Nenhuma ação disponível para esta conta.
+                                </Text>
+                              </View>
+                            )}
+                          </View>
+                        )}
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
           </View>
 
           {/* Section: Ferramentas de Moderação (Em Breve) */}
@@ -685,20 +675,6 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       fontSize: 13,
       color: theme.colors.onSurfaceVariant,
       lineHeight: 18,
-    },
-    restrictedBadge: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-      paddingHorizontal: 8,
-      paddingVertical: 3,
-      borderRadius: theme.rounded.full,
-      backgroundColor: theme.colors.surfaceContainerHigh,
-    },
-    restrictedBadgeText: {
-      fontFamily: theme.typography.labelSm.fontFamily,
-      fontSize: 11,
-      color: theme.colors.onSurfaceVariant,
     },
     searchSectionWrapper: {
       gap: 16,
@@ -956,23 +932,6 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       fontSize: 13,
       color: theme.colors.onSurfaceVariant,
       fontStyle: 'italic',
-    },
-    moderatorNoticeBox: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-      backgroundColor: theme.colors.surfaceContainerLow,
-      padding: 12,
-      borderRadius: theme.rounded.md,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-    },
-    moderatorNoticeText: {
-      fontFamily: theme.typography.bodySm.fontFamily,
-      fontSize: 13,
-      color: theme.colors.onSurfaceVariant,
-      flex: 1,
-      lineHeight: 18,
     },
     upcomingBadge: {
       paddingHorizontal: 8,

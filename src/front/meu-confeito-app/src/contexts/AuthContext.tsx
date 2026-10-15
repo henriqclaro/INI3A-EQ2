@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (reason === 'USER_ACCOUNT_GONE') {
         Alert.alert(
           'Acesso Revogado',
-          'Sua conta foi suspensa ou desativada. Sua sessão foi encerrada.',
+          'Sua conta foi banida ou desativada. Sua sessão foi encerrada.',
         );
       }
     });

@@ -68,7 +68,7 @@ export class UserService {
     context: RequestContext,
     query?: UserDTO.QueryRequest,
   ): Promise<UserDTO.SearchResponse> {
-    if (context.userRole !== 'ADMIN') {
+    if (context.userRole !== 'ADMIN' && context.userRole !== 'MODERATOR') {
       throw new ForbiddenError('Action denied for lack of privileges');
     }
 
@@ -197,18 +197,40 @@ export class UserService {
   }
 
   async delete(context: RequestContext, id: string, data: UserDTO.DeleteRequest) {
-    this.checkPermission(context, id);
+    const isSuspended = data.state === 'SUSPENDED';
+
+    if (isSuspended) {
+      // SUSPENDED is an administrative ban action reserved for moderators and administrators
+      if (context.userRole !== 'ADMIN' && context.userRole !== 'MODERATOR') {
+        throw new ForbiddenError(
+          'Only moderators and administrators can suspend a user',
+          'AUTH_INSUFFICIENT_PERMISSIONS',
+        );
+      }
+    } else {
+      // DELETED is voluntary account deletion (owner) or administrative removal (admin)
+      this.checkPermission(context, id);
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: id },
       select: {
         isActive: true,
+        role: true,
       },
     });
 
     this.checkUser(user);
 
-    const isSuspended = data.state === 'SUSPENDED';
+    if (isSuspended && context.userRole === 'MODERATOR') {
+      if (user.role === 'ADMIN' || user.role === 'MODERATOR') {
+        throw new ForbiddenError(
+          'Moderators cannot suspend other staff members',
+          'AUTH_INSUFFICIENT_PERMISSIONS',
+        );
+      }
+    }
+
     const stateString = data.state.toLocaleLowerCase();
 
     // Clean up physical avatar image on disk safely
@@ -235,7 +257,7 @@ export class UserService {
       });
 
       if (isSuspended) {
-        // SUSPENDED: Mark all active user recipes as SUSPENDED and remove from showcases
+        // SUSPENDED (Ban): Mark all active user recipes as SUSPENDED and remove from showcases
         await tx.recipe.updateMany({
           where: {
             userId: id,
@@ -294,73 +316,75 @@ export class UserService {
             }
           }
         }
+      }
 
-        // 3. Clean up recipes saved by this user and decrement totalSaves counters
-        const userSaves = await tx.userSavedRecipe.findMany({
-          where: { userId: id },
-          select: { recipeId: true },
+      // 3. Clean up recipes saved by this user and decrement totalSaves counters (both DELETED and SUSPENDED ban)
+      const userSaves = await tx.userSavedRecipe.findMany({
+        where: { userId: id },
+        select: { recipeId: true },
+      });
+
+      for (const save of userSaves) {
+        await tx.recipe
+          .update({
+            where: { id: save.recipeId },
+            data: {
+              totalSaves: { decrement: 1 },
+            },
+          })
+          .catch(() => {});
+      }
+
+      await tx.userSavedRecipe.deleteMany({
+        where: { userId: id },
+      });
+
+      // 4. Clean up reviews written by this user on other recipes & recalculate ratings (both DELETED and SUSPENDED ban)
+      const userReviews = await tx.recipeReview.findMany({
+        where: { userId: id },
+        select: { recipeId: true },
+      });
+
+      await tx.recipeReview.deleteMany({
+        where: { userId: id },
+      });
+
+      for (const r of userReviews) {
+        const aggregate = await tx.recipeReview.aggregate({
+          where: { recipeId: r.recipeId },
+          _avg: { rating: true },
+          _count: { rating: true },
         });
 
-        for (const save of userSaves) {
-          await tx.recipe
-            .update({
-              where: { id: save.recipeId },
-              data: {
-                totalSaves: { decrement: 1 },
-              },
-            })
-            .catch(() => {});
-        }
+        const totalReviews = aggregate._count.rating;
+        const averageRating =
+          aggregate._avg.rating !== null
+            ? new Prisma.Decimal(aggregate._avg.rating).toDecimalPlaces(2)
+            : new Prisma.Decimal(0);
 
-        await tx.userSavedRecipe.deleteMany({
-          where: { userId: id },
-        });
+        await tx.recipe
+          .update({
+            where: { id: r.recipeId },
+            data: {
+              totalReviews,
+              averageRating,
+            },
+          })
+          .catch(() => {});
+      }
 
-        // 4. Clean up reviews written by this user on other recipes & recalculate ratings
-        const userReviews = await tx.recipeReview.findMany({
-          where: { userId: id },
-          select: { recipeId: true },
-        });
-
-        await tx.recipeReview.deleteMany({
-          where: { userId: id },
-        });
-
-        for (const r of userReviews) {
-          const aggregate = await tx.recipeReview.aggregate({
-            where: { recipeId: r.recipeId },
-            _avg: { rating: true },
-            _count: { rating: true },
-          });
-
-          const totalReviews = aggregate._count.rating;
-          const averageRating =
-            aggregate._avg.rating !== null
-              ? new Prisma.Decimal(aggregate._avg.rating).toDecimalPlaces(2)
-              : new Prisma.Decimal(0);
-
-          await tx.recipe
-            .update({
-              where: { id: r.recipeId },
-              data: {
-                totalReviews,
-                averageRating,
-              },
-            })
-            .catch(() => {});
-        }
-
+      if (!isSuspended) {
         // 5. Delete BakerProfile on DELETED (cascades UserTag and ShowcaseRecipe)
         await tx.bakerProfile.deleteMany({
           where: { userId: id },
         });
 
-        // 6. Clean up user inventory
+        // 6. Clean up user inventory on DELETED
         await tx.userInventory.deleteMany({
           where: { userId: id },
         });
 
-        // 7. Clean up unused custom ingredients created by this user
+        // 7. Clean up unused custom ingredients created by this user on DELETED
         const customIngredients = await tx.ingredient.findMany({
           where: { creatorId: id },
           select: { id: true },
@@ -379,14 +403,16 @@ export class UserService {
           }
         }
 
-        // 8. Detach user from created tags
+        // 8. Detach user from created tags on DELETED
         await tx.tag.updateMany({
           where: { creatorId: id },
           data: { creatorId: null },
         });
       }
 
-      // 9. Anonymize user credentials and mark inactive
+      // 9. Mark user inactive.
+      // NOTE: On SUSPENDED (Ban), email and phone are RETAINED to block re-registration via unique constraints.
+      // On DELETED (Voluntary removal), email and phone are anonymized.
       await tx.user.update({
         where: { id: id },
         data: {

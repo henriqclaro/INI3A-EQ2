@@ -85,8 +85,8 @@ export default function LogInScreen() {
         const apiErr = error as { response?: { data?: { message?: string } } };
         const message =
           apiErr.response?.data?.message ||
-          'Esta conta foi suspensa ou desativada e não possui mais acesso à plataforma.';
-        Alert.alert('Conta Suspensa ou Desativada', message);
+          'Esta conta foi banida pela moderação ou desativada e não possui mais acesso à plataforma.';
+        Alert.alert('Conta Banida ou Desativada', message);
       } else {
         Alert.alert('Falha no login', 'Verifique suas credenciais e tente novamente.');
       }

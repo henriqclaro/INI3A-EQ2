@@ -22,7 +22,7 @@ paths:
         '409':
           description: E-mail já em uso
     get:
-      summary: Pesquisa usuários por e-mail
+      summary: Pesquisa usuários por e-mail (exclusivo para administradores e moderadores)
       tags:
         - Usuários
       parameters:
@@ -209,7 +209,8 @@ paths:
         '410':
           description: Usuário suspenso ou excluído
     delete:
-      summary: Exclui um usuário
+      summary: Exclui ou suspende um usuário
+      description: Permite que um usuário exclua sua própria conta (state DELETED) ou que administradores e moderadores apliquem uma suspensão/banimento administrativo (state SUSPENDED). A suspensão mantém e-mail e telefone para impedir novo cadastro do usuário punido. Moderadores não podem suspender outros membros da equipe.
       tags:
         - Usuários
       parameters:
@@ -226,13 +227,13 @@ paths:
               $ref: '#/components/schemas/UserDeleteSchema'
       responses:
         '204':
-          description: Usuário excluído com sucesso
+          description: Usuário excluído ou suspenso com sucesso
         '403':
-          description: Ação negada por falta de privilégios
+          description: Ação negada por falta de privilégios (apenas moderadores e administradores podem suspender usuários)
         '404':
           description: Usuário não encontrado
         '410':
-          description: Usuário suspenso ou excluído
+          description: Usuário já suspenso ou excluído
   /users/{id}/recipes:
     get:
       summary: Seleciona as receitas próprias de um usuário

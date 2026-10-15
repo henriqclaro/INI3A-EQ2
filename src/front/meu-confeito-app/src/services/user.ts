@@ -131,11 +131,22 @@ export const UserService = {
     const response = await api.delete('/users/me/avatar');
     return response.data;
   },
+  /**
+   * Voluntary self-deletion (CUSTOMER/BAKER) or administrative deletion (ADMIN).
+   */
   delete: async (userId: string) => {
     const response = await api.delete(`/users/${userId}`, { data: { state: 'DELETED' } });
     return response.data;
   },
+  /**
+   * Punitive moderation ban / suspension executed by MODERATOR or ADMIN.
+   * Users cannot ban themselves (403 Forbidden).
+   */
   suspend: async (userId: string) => {
+    const response = await api.delete(`/users/${userId}`, { data: { state: 'SUSPENDED' } });
+    return response.data;
+  },
+  ban: async (userId: string) => {
     const response = await api.delete(`/users/${userId}`, { data: { state: 'SUSPENDED' } });
     return response.data;
   },
