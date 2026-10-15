@@ -14,6 +14,7 @@ export interface StoredDraftPayload<T> {
 
 export interface UseFormDraftResult<T> {
   hasDraft: boolean;
+  hasSavedDraftOnMount: boolean;
   draftTimestamp: Date | null;
   draftData: T | null;
   saveDraft: (data: T) => void;
@@ -55,6 +56,7 @@ export function useFormDraft<T>(
 
   const [initialDraftState] = useState(() => loadInitialDraft<T>(draftKey));
 
+  const [hasSavedDraftOnMount, setHasSavedDraftOnMount] = useState(initialDraftState.hasDraft);
   const [hasDraft, setHasDraft] = useState(initialDraftState.hasDraft);
   const [draftTimestamp, setDraftTimestamp] = useState<Date | null>(
     initialDraftState.draftTimestamp,
@@ -103,6 +105,7 @@ export function useFormDraft<T>(
       clearTimeout(debounceTimerRef.current);
     }
     kvStorage.removeItem(draftKey);
+    setHasSavedDraftOnMount(false);
     setHasDraft(false);
     setDraftData(null);
     setDraftTimestamp(null);
@@ -125,6 +128,7 @@ export function useFormDraft<T>(
 
   return {
     hasDraft,
+    hasSavedDraftOnMount,
     draftTimestamp,
     draftData,
     saveDraft,

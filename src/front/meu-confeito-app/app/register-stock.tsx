@@ -21,6 +21,7 @@ import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useIngredients } from '@/src/hooks/useIngredients';
 import { useInventory } from '@/src/hooks/useInventory';
+import { useUnsavedChangesWarning } from '@/src/hooks/useUnsavedChangesWarning';
 import { AppTheme } from '@/src/theme/themes';
 import { InventoryItem } from '@/src/types/inventory';
 import { formatCurrency, formatDateForApi, formatQuantity } from '@/src/utils/formatters';
@@ -68,6 +69,36 @@ export default function RegisterStockScreen() {
   const [packageSize, setPackageSize] = useState('');
 
   const [hasTouchedIngredient, setHasTouchedIngredient] = useState(false);
+  const [isSubmitSuccessful, setIsSubmitSuccessful] = useState(false);
+
+  const hasUnsavedChanges = useMemo(() => {
+    if (isSubmitting || isSubmitSuccessful) return false;
+    return Boolean(
+      selectedIngredientId ||
+      quantityInput.trim() ||
+      totalCostInput.trim() ||
+      expirationDate !== null ||
+      notesInput.trim() ||
+      packageSize.trim(),
+    );
+  }, [
+    isSubmitting,
+    isSubmitSuccessful,
+    selectedIngredientId,
+    quantityInput,
+    totalCostInput,
+    expirationDate,
+    notesInput,
+    packageSize,
+  ]);
+
+  const { allowNextNavigation } = useUnsavedChangesWarning(hasUnsavedChanges, {
+    title: 'Descartar entrada de estoque?',
+    message:
+      'Você já preencheu informações sobre esta movimentação de estoque. Deseja realmente sair e descartar os dados inseridos?',
+    confirmText: 'Descartar e sair',
+    cancelText: 'Continuar preenchendo',
+  });
 
   // Find the selected ingredient object
   const selectedIngredient = useMemo(() => {
@@ -197,6 +228,9 @@ export default function RegisterStockScreen() {
           expirationDate: formattedExpDate,
         });
 
+        setIsSubmitSuccessful(true);
+        allowNextNavigation();
+
         Alert.alert('Sucesso!', 'Entrada de compra registrada com sucesso!', [
           {
             text: 'Ver Estoque',
@@ -216,6 +250,9 @@ export default function RegisterStockScreen() {
           realQuantity: parsedQuantity,
           notes: notesInput.trim() || undefined,
         });
+
+        setIsSubmitSuccessful(true);
+        allowNextNavigation();
 
         Alert.alert('Sucesso!', 'Saldo de estoque ajustado com sucesso!', [
           {

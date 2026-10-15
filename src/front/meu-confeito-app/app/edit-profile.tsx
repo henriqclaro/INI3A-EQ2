@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Animated,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 
 import * as Location from 'expo-location';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
@@ -10,6 +19,7 @@ import {
   KeyboardAwareScrollViewRef,
 } from 'react-native-keyboard-controller';
 import { ActivityIndicator } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   BakerTagSelector,
@@ -22,6 +32,7 @@ import { UserAvatar } from '@/src/components/common/UserAvatar';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useDeleteBakerProfile, useSaveBakerProfile } from '@/src/hooks/useBakerProfile';
+import { useUnsavedChangesWarning } from '@/src/hooks/useUnsavedChangesWarning';
 import { useUserEdit } from '@/src/hooks/useUsers';
 import { BakerProfileService } from '@/src/services/baker-profile';
 import { UserEditData, UserService } from '@/src/services/user';
@@ -47,10 +58,44 @@ import {
   toE164,
 } from '@/src/utils/validation';
 
+interface InitialBakerData {
+  isPublicProfile: boolean;
+  publicName: string;
+  whatsapp: string;
+  bio: string;
+  instagram: string;
+  city: string;
+  neighborhood: string;
+  locationCoords: BakerProfileLocation | null;
+  selectedTags: BakerTag[];
+}
+
+interface InitialUserData {
+  name: string;
+  email: string;
+  phone: string;
+}
+
 export default function EditProfileScreen() {
   const { theme } = useThemeMode();
   const { user, updateUser } = useAuth();
   const isBakerRole = user?.role?.trim().toUpperCase() === 'BAKER';
+
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const isDesktop = Platform.OS === 'web' && width >= theme.breakpoints.md;
+  const isMobile = !isDesktop;
+  const bottomBarPadding = isMobile
+    ? Math.max(insets.bottom, 16) + 16
+    : Math.max(insets.bottom, 12);
+
+  const [initialUserData, setInitialUserData] = useState<InitialUserData>({
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: formatPhoneInput(user?.phone || ''),
+  });
+  const [initialBakerData, setInitialBakerData] = useState<InitialBakerData | null>(null);
+  const [isSubmitSuccessful, setIsSubmitSuccessful] = useState(false);
 
   const { focusCommercial } = useLocalSearchParams<{ focusCommercial?: string }>();
   const isFocusCommercial = focusCommercial === 'true';
@@ -107,26 +152,48 @@ export default function EditProfileScreen() {
         const response = await BakerProfileService.getMyProfile();
         if (isMounted && response?.data?.bakerProfile) {
           const profile = response.data.bakerProfile;
+          const initialData: InitialBakerData = {
+            isPublicProfile: true,
+            publicName: profile.publicName || '',
+            whatsapp: profile.whatsapp ? formatPhoneInput(profile.whatsapp) : '',
+            bio: profile.bio || '',
+            instagram: profile.instagram || '',
+            city: profile.city || '',
+            neighborhood: profile.neighborhood || '',
+            locationCoords: profile.location
+              ? {
+                  latitude: profile.location.latitude,
+                  longitude: profile.location.longitude,
+                }
+              : null,
+            selectedTags: Array.isArray(profile.tags) ? profile.tags : [],
+          };
+          setInitialBakerData(initialData);
+
           setIsPublicProfile(true);
           setHasInitialBakerProfile(true);
-          setPublicName(profile.publicName || '');
-          setWhatsapp(profile.whatsapp ? formatPhoneInput(profile.whatsapp) : '');
-          setBio(profile.bio || '');
-          setInstagram(profile.instagram || '');
-          setCity(profile.city || '');
-          setNeighborhood(profile.neighborhood || '');
-          if (profile.location) {
-            setLocationCoords({
-              latitude: profile.location.latitude,
-              longitude: profile.location.longitude,
-            });
-          }
-          if (profile.tags && Array.isArray(profile.tags)) {
-            setSelectedTags(profile.tags);
-          }
+          setPublicName(initialData.publicName);
+          setWhatsapp(initialData.whatsapp);
+          setBio(initialData.bio);
+          setInstagram(initialData.instagram);
+          setCity(initialData.city);
+          setNeighborhood(initialData.neighborhood);
+          setLocationCoords(initialData.locationCoords);
+          setSelectedTags(initialData.selectedTags);
         }
       } catch {
         if (isMounted) {
+          setInitialBakerData({
+            isPublicProfile: false,
+            publicName: '',
+            whatsapp: '',
+            bio: '',
+            instagram: '',
+            city: '',
+            neighborhood: '',
+            locationCoords: null,
+            selectedTags: [],
+          });
           setIsPublicProfile(false);
           setHasInitialBakerProfile(false);
           setPublicName('');
@@ -167,6 +234,82 @@ export default function EditProfileScreen() {
 
     return () => clearTimeout(timer);
   }, [blinkAnim, isFocusCommercial, isLoadingInitialBaker]);
+
+  const hasUnsavedChanges = useMemo(() => {
+    if (isLoadingInitialBaker || isSubmitSuccessful) {
+      return false;
+    }
+
+    // Check basic user fields
+    if (name.trim() !== initialUserData.name.trim()) return true;
+    if (email.trim().toLowerCase() !== initialUserData.email.trim().toLowerCase()) return true;
+    if (phone.trim() !== initialUserData.phone.trim()) return true;
+    if (selectedAvatarFile !== null) return true;
+    if (hasRemovedAvatar) return true;
+
+    // Check baker public profile fields if user is a baker
+    if (isBakerRole && initialBakerData) {
+      const initBaker = initialBakerData;
+      if (isPublicProfile !== initBaker.isPublicProfile) return true;
+
+      if (isPublicProfile) {
+        if (publicName.trim() !== initBaker.publicName.trim()) return true;
+        if (whatsapp.trim() !== initBaker.whatsapp.trim()) return true;
+        if (bio.trim() !== initBaker.bio.trim()) return true;
+        if (instagram.trim().replace(/^@/, '') !== initBaker.instagram.trim().replace(/^@/, '')) {
+          return true;
+        }
+        if (city.trim() !== initBaker.city.trim()) return true;
+        if (neighborhood.trim() !== initBaker.neighborhood.trim()) return true;
+
+        const initLat = initBaker.locationCoords?.latitude;
+        const initLng = initBaker.locationCoords?.longitude;
+        const currentLat = locationCoords?.latitude;
+        const currentLng = locationCoords?.longitude;
+        if (initLat !== currentLat || initLng !== currentLng) return true;
+
+        const initTagsStr = initBaker.selectedTags
+          .map((t) => String(t.id))
+          .sort()
+          .join(',');
+        const currentTagsStr = selectedTags
+          .map((t) => String(t.id))
+          .sort()
+          .join(',');
+        if (initTagsStr !== currentTagsStr) return true;
+      }
+    }
+
+    return false;
+  }, [
+    isLoadingInitialBaker,
+    isSubmitSuccessful,
+    initialUserData,
+    initialBakerData,
+    name,
+    email,
+    phone,
+    selectedAvatarFile,
+    hasRemovedAvatar,
+    isBakerRole,
+    isPublicProfile,
+    publicName,
+    whatsapp,
+    bio,
+    instagram,
+    city,
+    neighborhood,
+    locationCoords,
+    selectedTags,
+  ]);
+
+  const { allowNextNavigation } = useUnsavedChangesWarning(hasUnsavedChanges, {
+    title: 'Descartar alterações no perfil?',
+    message:
+      'Você possui alterações não salvas no seu perfil. Deseja realmente sair e descartar as modificações?',
+    confirmText: 'Descartar e sair',
+    cancelText: 'Continuar editando',
+  });
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -438,6 +581,17 @@ export default function EditProfileScreen() {
                 await saveBakerProfile(createData, false);
                 setIsPublicProfile(true);
                 setHasInitialBakerProfile(true);
+                setInitialBakerData({
+                  isPublicProfile: true,
+                  publicName: createData.publicName || '',
+                  whatsapp: createData.whatsapp ? formatPhoneInput(createData.whatsapp) : '',
+                  bio: createData.bio || '',
+                  instagram: createData.instagram || '',
+                  city: createData.city || '',
+                  neighborhood: createData.neighborhood || '',
+                  locationCoords: createData.location || null,
+                  selectedTags,
+                });
 
                 Alert.alert(
                   'Perfil Comercial Ativado!',
@@ -473,6 +627,17 @@ export default function EditProfileScreen() {
                   await deleteBakerProfile();
                   setIsPublicProfile(false);
                   setHasInitialBakerProfile(false);
+                  setInitialBakerData({
+                    isPublicProfile: false,
+                    publicName: '',
+                    whatsapp: '',
+                    bio: '',
+                    instagram: '',
+                    city: '',
+                    neighborhood: '',
+                    locationCoords: null,
+                    selectedTags: [],
+                  });
                   Alert.alert('Perfil Privado', 'Seu perfil foi desativado e agora está privado.');
                 } catch (err) {
                   console.error('Error deactivating baker profile immediately:', err);
@@ -618,6 +783,29 @@ export default function EditProfileScreen() {
         await saveBakerProfile(profileUpdate, true);
       }
 
+      setInitialUserData({
+        name: trimmedName,
+        email: trimmedEmail,
+        phone: formattedPhone ? formatPhoneInput(formattedPhone) : '',
+      });
+      if (isBakerRole && isPublicProfile) {
+        setInitialBakerData({
+          isPublicProfile,
+          publicName: publicName.trim(),
+          whatsapp: whatsapp.trim() ? formatPhoneInput(whatsapp) : '',
+          bio: bio.trim(),
+          instagram: instagram.trim().replace(/^@/, ''),
+          city: city.trim(),
+          neighborhood: neighborhood.trim(),
+          locationCoords,
+          selectedTags,
+        });
+      }
+      setSelectedAvatarFile(null);
+      setHasRemovedAvatar(false);
+      setIsSubmitSuccessful(true);
+      allowNextNavigation();
+
       Alert.alert('Perfil Atualizado', 'Suas alterações foram atualizadas com sucesso!', [
         {
           text: 'OK',
@@ -640,659 +828,697 @@ export default function EditProfileScreen() {
     <>
       <Stack.Screen options={{ title: 'Editar Perfil' }} />
 
-      <KeyboardAwareScrollView
-        ref={scrollViewRef}
-        style={styles.container}
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
-        bottomOffset={64}
-      >
-        <View style={styles.formWrapper}>
-          {/* Account Information Card */}
-          <View style={styles.card}>
-            <View style={styles.avatarContainer}>
-              <TouchableOpacity
-                onPress={handleAvatarPress}
-                disabled={isPickingAvatar || isGlobalLoading}
-                accessibilityRole="button"
-                accessibilityLabel="Alterar foto de perfil"
-                style={styles.avatarTouchable}
-              >
-                <UserAvatar
-                  url={avatarUrl}
-                  updatedAt={user?.updatedAt}
-                  name={name}
-                  size={110}
-                  fallbackType="icon"
-                  fallbackIcon="account"
-                  fallbackIconColor={theme.colors.onSurfaceVariant}
-                  fallbackBackgroundColor={theme.colors.surfaceContainerLow}
-                  borderColor={theme.colors.primary}
-                  borderWidth={3}
-                  style={styles.avatarSpacing}
-                />
+      <View style={styles.container}>
+        <KeyboardAwareScrollView
+          ref={scrollViewRef}
+          style={styles.container}
+          contentContainerStyle={[
+            styles.scrollContainer,
+            hasUnsavedChanges &&
+              (isMobile
+                ? styles.scrollContainerWithFixedBarMobile
+                : styles.scrollContainerWithFixedBar),
+          ]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          bottomOffset={hasUnsavedChanges ? (isMobile ? 140 : 96) : 32}
+        >
+          <View style={styles.formWrapper}>
+            {/* Account Information Card */}
+            <View style={styles.card}>
+              <View style={styles.avatarContainer}>
+                <TouchableOpacity
+                  onPress={handleAvatarPress}
+                  disabled={isPickingAvatar || isGlobalLoading}
+                  accessibilityRole="button"
+                  accessibilityLabel="Alterar foto de perfil"
+                  style={styles.avatarTouchable}
+                >
+                  <UserAvatar
+                    url={avatarUrl}
+                    updatedAt={user?.updatedAt}
+                    name={name}
+                    size={110}
+                    fallbackType="icon"
+                    fallbackIcon="account"
+                    fallbackIconColor={theme.colors.onSurfaceVariant}
+                    fallbackBackgroundColor={theme.colors.surfaceContainerLow}
+                    borderColor={theme.colors.primary}
+                    borderWidth={3}
+                    style={styles.avatarSpacing}
+                  />
 
-                <View style={styles.avatarBadge}>
-                  {isPickingAvatar ? (
-                    <ActivityIndicator size={16} color={theme.colors.onPrimary} />
-                  ) : (
+                  <View style={styles.avatarBadge}>
+                    {isPickingAvatar ? (
+                      <ActivityIndicator size={16} color={theme.colors.onPrimary} />
+                    ) : (
+                      <MaterialCommunityIcons
+                        name="camera"
+                        size={16}
+                        color={theme.colors.onPrimary}
+                      />
+                    )}
+                  </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={handleAvatarPress}
+                  disabled={isPickingAvatar || isGlobalLoading}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    avatarUrl ? 'Alterar foto de perfil' : 'Adicionar foto de perfil'
+                  }
+                  style={styles.avatarActionBtn}
+                >
+                  <Text style={styles.avatarActionBtnText}>
+                    {avatarUrl ? 'Alterar foto' : 'Adicionar foto'}
+                  </Text>
+                </TouchableOpacity>
+
+                <Text style={styles.avatarHelperText}>Máx. 5MB • 300 x 300 pixels</Text>
+
+                <Text style={styles.userName}>{name.trim() || user?.name}</Text>
+                <Text style={styles.userRole}>{isBakerRole ? 'Confeiteira(o)' : 'Cliente'}</Text>
+              </View>
+
+              <Text style={styles.cardSectionHeader}>Informações da Conta</Text>
+
+              {/* Name input */}
+              <View style={styles.fieldWrapper}>
+                <View style={styles.labelRow}>
+                  <View style={styles.labelGroup}>
+                    <Text style={styles.label}>Nome completo</Text>
+                    <View style={styles.badgeRequired}>
+                      <Text style={styles.badgeRequiredText}>obrigatório</Text>
+                    </View>
+                  </View>
+                  {isNameSuccess && (
                     <MaterialCommunityIcons
-                      name="camera"
+                      name="check-circle-outline"
                       size={16}
-                      color={theme.colors.onPrimary}
+                      color={theme.colors.success}
                     />
                   )}
                 </View>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={handleAvatarPress}
-                disabled={isPickingAvatar || isGlobalLoading}
-                accessibilityRole="button"
-                accessibilityLabel={
-                  avatarUrl ? 'Alterar foto de perfil' : 'Adicionar foto de perfil'
-                }
-                style={styles.avatarActionBtn}
-              >
-                <Text style={styles.avatarActionBtnText}>
-                  {avatarUrl ? 'Alterar foto' : 'Adicionar foto'}
-                </Text>
-              </TouchableOpacity>
-
-              <Text style={styles.avatarHelperText}>Máx. 5MB • 300 x 300 pixels</Text>
-
-              <Text style={styles.userName}>{name.trim() || user?.name}</Text>
-              <Text style={styles.userRole}>{isBakerRole ? 'Confeiteira(o)' : 'Cliente'}</Text>
-            </View>
-
-            <Text style={styles.cardSectionHeader}>Informações da Conta</Text>
-
-            {/* Name input */}
-            <View style={styles.fieldWrapper}>
-              <View style={styles.labelRow}>
-                <View style={styles.labelGroup}>
-                  <Text style={styles.label}>Nome completo</Text>
-                  <View style={styles.badgeRequired}>
-                    <Text style={styles.badgeRequiredText}>obrigatório</Text>
-                  </View>
-                </View>
-                {isNameSuccess && (
-                  <MaterialCommunityIcons
-                    name="check-circle-outline"
-                    size={16}
-                    color={theme.colors.success}
-                  />
-                )}
-              </View>
-              <Input
-                value={name}
-                placeholder="Nome completo (mín. 3 caracteres)"
-                autoCapitalize="words"
-                autoCorrect={false}
-                onChangeText={setName}
-                onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
-                containerStyle={[
-                  styles.inputContainer,
-                  !!nameError && styles.inputError,
-                  isNameSuccess && styles.inputSuccess,
-                ]}
-                style={styles.inputText}
-                placeholderTextColor={theme.colors.placeholder}
-              />
-              <View style={styles.helperRow}>
-                {nameError ? (
-                  <>
-                    <MaterialCommunityIcons
-                      name="alert-circle-outline"
-                      size={14}
-                      color={theme.colors.error}
-                      style={styles.helperIcon}
-                    />
-                    <Text style={styles.errorText}>{nameError}</Text>
-                  </>
-                ) : (
-                  <Text style={styles.helperText}>Mínimo de 3 caracteres</Text>
-                )}
-              </View>
-            </View>
-
-            {/* Email input (Private account data) */}
-            <View style={styles.fieldWrapper}>
-              <View style={styles.labelRow}>
-                <View style={styles.labelGroup}>
-                  <View style={styles.labelWithIcon}>
-                    <Text style={styles.label}>E-mail</Text>
-                    <MaterialCommunityIcons
-                      name="lock-outline"
-                      size={14}
-                      color={theme.colors.onSurfaceVariant}
-                    />
-                  </View>
-                  <View style={styles.badgeRequired}>
-                    <Text style={styles.badgeRequiredText}>obrigatório</Text>
-                  </View>
-                </View>
-                {isEmailSuccess && (
-                  <MaterialCommunityIcons
-                    name="check-circle-outline"
-                    size={16}
-                    color={theme.colors.success}
-                  />
-                )}
-              </View>
-              <Input
-                value={email}
-                placeholder="exemplo@email.com"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                onChangeText={setEmail}
-                onBlur={() => setTouched((prev) => ({ ...prev, email: true }))}
-                containerStyle={[
-                  styles.inputContainer,
-                  !!emailError && styles.inputError,
-                  isEmailSuccess && styles.inputSuccess,
-                ]}
-                style={styles.inputText}
-                placeholderTextColor={theme.colors.placeholder}
-              />
-              <View style={styles.helperRow}>
-                {emailError ? (
-                  <>
-                    <MaterialCommunityIcons
-                      name="alert-circle-outline"
-                      size={14}
-                      color={theme.colors.error}
-                      style={styles.helperIcon}
-                    />
-                    <Text style={styles.errorText}>{emailError}</Text>
-                  </>
-                ) : (
-                  <Text style={styles.helperText}>Confidencial: nunca exibido publicamente</Text>
-                )}
-              </View>
-            </View>
-
-            {/* Personal Phone input */}
-            <View style={styles.fieldWrapper}>
-              <View style={styles.labelRow}>
-                <View style={styles.labelGroup}>
-                  <View style={styles.labelWithIcon}>
-                    <Text style={styles.label}>Telefone Pessoal</Text>
-                    <MaterialCommunityIcons
-                      name="lock-outline"
-                      size={14}
-                      color={theme.colors.onSurfaceVariant}
-                    />
-                  </View>
-                  <View style={isPhoneRequired ? styles.badgeRequired : styles.badgeOptional}>
-                    <Text
-                      style={isPhoneRequired ? styles.badgeRequiredText : styles.badgeOptionalText}
-                    >
-                      {isPhoneRequired ? 'obrigatório' : 'opcional'}
-                    </Text>
-                  </View>
-                </View>
-                {isPhoneSuccess && (
-                  <MaterialCommunityIcons
-                    name="check-circle-outline"
-                    size={16}
-                    color={theme.colors.success}
-                  />
-                )}
-              </View>
-              <Input
-                value={phone}
-                placeholder="(11) 99999-9999"
-                keyboardType="phone-pad"
-                onChangeText={handlePhoneChange}
-                onBlur={() => setTouched((prev) => ({ ...prev, phone: true }))}
-                containerStyle={[
-                  styles.inputContainer,
-                  !!phoneError && styles.inputError,
-                  isPhoneSuccess && styles.inputSuccess,
-                ]}
-                style={styles.inputText}
-                placeholderTextColor={theme.colors.placeholder}
-              />
-              <View style={styles.helperRow}>
-                {phoneError ? (
-                  <>
-                    <MaterialCommunityIcons
-                      name="alert-circle-outline"
-                      size={14}
-                      color={theme.colors.error}
-                      style={styles.helperIcon}
-                    />
-                    <Text style={styles.errorText}>{phoneError}</Text>
-                  </>
-                ) : (
-                  <Text style={styles.helperText}>
-                    {isPhoneRequired
-                      ? 'Obrigatório para perfil comercial: utilizado apenas para validação e segurança (permanece privado).'
-                      : 'Confidencial: utilizado apenas para validação e segurança da conta.'}
-                  </Text>
-                )}
-              </View>
-            </View>
-          </View>
-
-          {/* Baker Profile / Public Profile Card */}
-          {isBakerRole ? (
-            <Animated.View
-              style={[
-                styles.card,
-                isFocusCommercial && {
-                  borderColor: blinkAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [theme.colors.outlineVariant, theme.colors.primary],
-                  }),
-                  borderWidth: blinkAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [1, 2.5],
-                  }),
-                },
-              ]}
-            >
-              <View style={styles.publicHeaderRow}>
-                <View style={styles.publicTitleWrapper}>
-                  <Text style={styles.cardSectionHeader}>Perfil Comercial de Confeiteiro</Text>
-                  <Text style={styles.publicSubtitle}>Tornar seu perfil público para clientes</Text>
-                </View>
-
-                <ThemeSwitch
-                  value={isPublicProfile}
-                  onValueChange={handleTogglePublicProfile}
-                  disabled={isTogglingPublic}
-                  activeThumbColor={theme.colors.primary}
-                  inactiveThumbColor={theme.colors.surfaceContainerHighest}
-                  activeTrackColor={theme.colors.primaryContainer}
-                  inactiveTrackColor={theme.colors.outlineVariant}
-                  accessibilityLabel="Tornar perfil comercial público"
+                <Input
+                  value={name}
+                  placeholder="Nome completo (mín. 3 caracteres)"
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                  onChangeText={setName}
+                  onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
+                  containerStyle={[
+                    styles.inputContainer,
+                    !!nameError && styles.inputError,
+                    isNameSuccess && styles.inputSuccess,
+                  ]}
+                  style={styles.inputText}
+                  placeholderTextColor={theme.colors.placeholder}
                 />
+                <View style={styles.helperRow}>
+                  {nameError ? (
+                    <>
+                      <MaterialCommunityIcons
+                        name="alert-circle-outline"
+                        size={14}
+                        color={theme.colors.error}
+                        style={styles.helperIcon}
+                      />
+                      <Text style={styles.errorText}>{nameError}</Text>
+                    </>
+                  ) : (
+                    <Text style={styles.helperText}>Mínimo de 3 caracteres</Text>
+                  )}
+                </View>
               </View>
 
-              {/* Status Alert Banner */}
-              {isPublicProfile ? (
-                <View style={styles.alertBannerPublic}>
-                  <MaterialCommunityIcons
-                    name="earth"
-                    size={20}
-                    color={theme.colors.primary}
-                    style={styles.alertBannerIcon}
-                  />
-                  <View style={styles.alertBannerTextContainer}>
-                    <Text style={styles.alertBannerTitle}>Seu perfil está público</Text>
-                    <Text style={styles.alertBannerText}>
-                      O nome da sua conta ({user?.name}) é público no perfil comercial. Você pode
-                      definir um Nome Comercial abaixo para destaque. Seu telefone pessoal e e-mail
-                      permanecem privados — apenas o WhatsApp comercial informado será
-                      compartilhado.
-                    </Text>
-                  </View>
-                </View>
-              ) : (
-                <View style={styles.alertBannerPrivate}>
-                  <MaterialCommunityIcons
-                    name="lock-outline"
-                    size={20}
-                    color={theme.colors.onSurfaceVariant}
-                    style={styles.alertBannerIcon}
-                  />
-                  <View style={styles.alertBannerTextContainer}>
-                    <Text style={styles.alertBannerTitlePrivate}>Perfil Privado</Text>
-                    <Text style={styles.alertBannerText}>
-                      Ao ativar, o nome da sua conta ({user?.name}) será público para clientes. Você
-                      poderá cadastrar um Nome Comercial opcional e WhatsApp para contato direto com
-                      clientes.
-                    </Text>
-                  </View>
-                </View>
-              )}
-
-              {/* Preview button */}
-              {isPublicProfile && (
-                <TouchableOpacity
-                  style={styles.previewBtn}
-                  onPress={() =>
-                    router.push({
-                      pathname: '/public-profile',
-                      params: { id: user?.id },
-                    })
-                  }
-                  activeOpacity={0.8}
-                  accessibilityRole="button"
-                  accessibilityLabel="Visualizar perfil público"
-                >
-                  <MaterialCommunityIcons
-                    name="eye-outline"
-                    size={18}
-                    color={theme.colors.primary}
-                  />
-                  <Text style={styles.previewBtnText}>Visualizar como os clientes veem</Text>
-                  <MaterialCommunityIcons
-                    name="chevron-right"
-                    size={18}
-                    color={theme.colors.primary}
-                  />
-                </TouchableOpacity>
-              )}
-
-              {/* Fields for public profile */}
-              {isPublicProfile && (
-                <>
-                  {/* Public Name / Store Name input */}
-                  <View style={styles.fieldWrapper}>
-                    <View style={styles.labelRow}>
-                      <View style={styles.labelGroup}>
-                        <Text style={styles.label}>Nome Comercial / Público</Text>
-                        <View style={styles.badgeOptional}>
-                          <Text style={styles.badgeOptionalText}>opcional</Text>
-                        </View>
-                      </View>
+              {/* Email input (Private account data) */}
+              <View style={styles.fieldWrapper}>
+                <View style={styles.labelRow}>
+                  <View style={styles.labelGroup}>
+                    <View style={styles.labelWithIcon}>
+                      <Text style={styles.label}>E-mail</Text>
+                      <MaterialCommunityIcons
+                        name="lock-outline"
+                        size={14}
+                        color={theme.colors.onSurfaceVariant}
+                      />
                     </View>
-                    <Input
-                      value={publicName}
-                      placeholder="Ex: Confeitaria Doce Sonho, Atelier Gourmet"
-                      autoCapitalize="words"
-                      maxLength={100}
-                      onChangeText={setPublicName}
-                      containerStyle={styles.inputContainer}
-                      style={styles.inputText}
-                      placeholderTextColor={theme.colors.placeholder}
-                      leftIcon={
-                        <MaterialCommunityIcons
-                          name="storefront-outline"
-                          size={20}
-                          color={theme.colors.onSurfaceVariant}
-                        />
-                      }
+                    <View style={styles.badgeRequired}>
+                      <Text style={styles.badgeRequiredText}>obrigatório</Text>
+                    </View>
+                  </View>
+                  {isEmailSuccess && (
+                    <MaterialCommunityIcons
+                      name="check-circle-outline"
+                      size={16}
+                      color={theme.colors.success}
                     />
+                  )}
+                </View>
+                <Input
+                  value={email}
+                  placeholder="exemplo@email.com"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  onChangeText={setEmail}
+                  onBlur={() => setTouched((prev) => ({ ...prev, email: true }))}
+                  containerStyle={[
+                    styles.inputContainer,
+                    !!emailError && styles.inputError,
+                    isEmailSuccess && styles.inputSuccess,
+                  ]}
+                  style={styles.inputText}
+                  placeholderTextColor={theme.colors.placeholder}
+                />
+                <View style={styles.helperRow}>
+                  {emailError ? (
+                    <>
+                      <MaterialCommunityIcons
+                        name="alert-circle-outline"
+                        size={14}
+                        color={theme.colors.error}
+                        style={styles.helperIcon}
+                      />
+                      <Text style={styles.errorText}>{emailError}</Text>
+                    </>
+                  ) : (
+                    <Text style={styles.helperText}>Confidencial: nunca exibido publicamente</Text>
+                  )}
+                </View>
+              </View>
+
+              {/* Personal Phone input */}
+              <View style={styles.fieldWrapper}>
+                <View style={styles.labelRow}>
+                  <View style={styles.labelGroup}>
+                    <View style={styles.labelWithIcon}>
+                      <Text style={styles.label}>Telefone Pessoal</Text>
+                      <MaterialCommunityIcons
+                        name="lock-outline"
+                        size={14}
+                        color={theme.colors.onSurfaceVariant}
+                      />
+                    </View>
+                    <View style={isPhoneRequired ? styles.badgeRequired : styles.badgeOptional}>
+                      <Text
+                        style={
+                          isPhoneRequired ? styles.badgeRequiredText : styles.badgeOptionalText
+                        }
+                      >
+                        {isPhoneRequired ? 'obrigatório' : 'opcional'}
+                      </Text>
+                    </View>
+                  </View>
+                  {isPhoneSuccess && (
+                    <MaterialCommunityIcons
+                      name="check-circle-outline"
+                      size={16}
+                      color={theme.colors.success}
+                    />
+                  )}
+                </View>
+                <Input
+                  value={phone}
+                  placeholder="(11) 99999-9999"
+                  keyboardType="phone-pad"
+                  onChangeText={handlePhoneChange}
+                  onBlur={() => setTouched((prev) => ({ ...prev, phone: true }))}
+                  containerStyle={[
+                    styles.inputContainer,
+                    !!phoneError && styles.inputError,
+                    isPhoneSuccess && styles.inputSuccess,
+                  ]}
+                  style={styles.inputText}
+                  placeholderTextColor={theme.colors.placeholder}
+                />
+                <View style={styles.helperRow}>
+                  {phoneError ? (
+                    <>
+                      <MaterialCommunityIcons
+                        name="alert-circle-outline"
+                        size={14}
+                        color={theme.colors.error}
+                        style={styles.helperIcon}
+                      />
+                      <Text style={styles.errorText}>{phoneError}</Text>
+                    </>
+                  ) : (
                     <Text style={styles.helperText}>
-                      Opcional. Exibido no lugar do nome da conta. Lembre-se: o nome da sua conta (
-                      {user?.name}) continuará público.
+                      {isPhoneRequired
+                        ? 'Obrigatório para perfil comercial: utilizado apenas para validação e segurança (permanece privado).'
+                        : 'Confidencial: utilizado apenas para validação e segurança da conta.'}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            </View>
+
+            {/* Baker Profile / Public Profile Card */}
+            {isBakerRole ? (
+              <Animated.View
+                style={[
+                  styles.card,
+                  isFocusCommercial && {
+                    borderColor: blinkAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [theme.colors.outlineVariant, theme.colors.primary],
+                    }),
+                    borderWidth: blinkAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [1, 2.5],
+                    }),
+                  },
+                ]}
+              >
+                <View style={styles.publicHeaderRow}>
+                  <View style={styles.publicTitleWrapper}>
+                    <Text style={styles.cardSectionHeader}>Perfil Comercial de Confeiteiro</Text>
+                    <Text style={styles.publicSubtitle}>
+                      Tornar seu perfil público para clientes
                     </Text>
                   </View>
 
-                  {/* Commercial WhatsApp input */}
-                  <View style={styles.fieldWrapper}>
-                    <View style={styles.labelRow}>
-                      <View style={styles.labelGroup}>
-                        <Text style={styles.label}>WhatsApp Comercial</Text>
-                        <View style={styles.badgeOptional}>
-                          <Text style={styles.badgeOptionalText}>opcional</Text>
-                        </View>
-                      </View>
-                      {isWhatsAppSuccess && (
-                        <MaterialCommunityIcons
-                          name="check-circle-outline"
-                          size={16}
-                          color={theme.colors.success}
-                        />
-                      )}
-                    </View>
-                    <Input
-                      value={whatsapp}
-                      placeholder="(11) 99999-9999"
-                      keyboardType="phone-pad"
-                      onChangeText={handleWhatsAppChange}
-                      onBlur={() => setTouched((prev) => ({ ...prev, whatsapp: true }))}
-                      containerStyle={[
-                        styles.inputContainer,
-                        !!whatsAppError && styles.inputError,
-                        isWhatsAppSuccess && styles.inputSuccess,
-                      ]}
-                      style={styles.inputText}
-                      placeholderTextColor={theme.colors.placeholder}
-                      leftIcon={
-                        <MaterialCommunityIcons
-                          name="whatsapp"
-                          size={20}
-                          color={theme.colors.onSurfaceVariant}
-                        />
-                      }
+                  <ThemeSwitch
+                    value={isPublicProfile}
+                    onValueChange={handleTogglePublicProfile}
+                    disabled={isTogglingPublic}
+                    activeThumbColor={theme.colors.primary}
+                    inactiveThumbColor={theme.colors.surfaceContainerHighest}
+                    activeTrackColor={theme.colors.primaryContainer}
+                    inactiveTrackColor={theme.colors.outlineVariant}
+                    accessibilityLabel="Tornar perfil comercial público"
+                  />
+                </View>
+
+                {/* Status Alert Banner */}
+                {isPublicProfile ? (
+                  <View style={styles.alertBannerPublic}>
+                    <MaterialCommunityIcons
+                      name="earth"
+                      size={20}
+                      color={theme.colors.primary}
+                      style={styles.alertBannerIcon}
                     />
-                    <View style={styles.helperRow}>
-                      {whatsAppError ? (
-                        <>
-                          <MaterialCommunityIcons
-                            name="alert-circle-outline"
-                            size={14}
-                            color={theme.colors.error}
-                            style={styles.helperIcon}
-                          />
-                          <Text style={styles.errorText}>{whatsAppError}</Text>
-                        </>
-                      ) : (
-                        <Text style={styles.helperText}>
-                          Opcional. Se não informar nada, o botão de WhatsApp será ocultado (seu
-                          telefone pessoal nunca é divulgado).
-                        </Text>
-                      )}
+                    <View style={styles.alertBannerTextContainer}>
+                      <Text style={styles.alertBannerTitle}>Seu perfil está público</Text>
+                      <Text style={styles.alertBannerText}>
+                        O nome da sua conta ({user?.name}) é público no perfil comercial. Você pode
+                        definir um Nome Comercial abaixo para destaque. Seu telefone pessoal e
+                        e-mail permanecem privados — apenas o WhatsApp comercial informado será
+                        compartilhado.
+                      </Text>
                     </View>
                   </View>
+                ) : (
+                  <View style={styles.alertBannerPrivate}>
+                    <MaterialCommunityIcons
+                      name="lock-outline"
+                      size={20}
+                      color={theme.colors.onSurfaceVariant}
+                      style={styles.alertBannerIcon}
+                    />
+                    <View style={styles.alertBannerTextContainer}>
+                      <Text style={styles.alertBannerTitlePrivate}>Perfil Privado</Text>
+                      <Text style={styles.alertBannerText}>
+                        Ao ativar, o nome da sua conta ({user?.name}) será público para clientes.
+                        Você poderá cadastrar um Nome Comercial opcional e WhatsApp para contato
+                        direto com clientes.
+                      </Text>
+                    </View>
+                  </View>
+                )}
 
-                  {/* Location Section handled by expo-location */}
-                  <View style={styles.locationSection}>
-                    <View style={styles.locationHeaderRow}>
-                      <View style={styles.labelGroup}>
-                        <View style={styles.labelWithIcon}>
+                {/* Preview button */}
+                {isPublicProfile && (
+                  <TouchableOpacity
+                    style={styles.previewBtn}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/public-profile',
+                        params: { id: user?.id },
+                      })
+                    }
+                    activeOpacity={0.8}
+                    accessibilityRole="button"
+                    accessibilityLabel="Visualizar perfil público"
+                  >
+                    <MaterialCommunityIcons
+                      name="eye-outline"
+                      size={18}
+                      color={theme.colors.primary}
+                    />
+                    <Text style={styles.previewBtnText}>Visualizar como os clientes veem</Text>
+                    <MaterialCommunityIcons
+                      name="chevron-right"
+                      size={18}
+                      color={theme.colors.primary}
+                    />
+                  </TouchableOpacity>
+                )}
+
+                {/* Fields for public profile */}
+                {isPublicProfile && (
+                  <>
+                    {/* Public Name / Store Name input */}
+                    <View style={styles.fieldWrapper}>
+                      <View style={styles.labelRow}>
+                        <View style={styles.labelGroup}>
+                          <Text style={styles.label}>Nome Comercial / Público</Text>
+                          <View style={styles.badgeOptional}>
+                            <Text style={styles.badgeOptionalText}>opcional</Text>
+                          </View>
+                        </View>
+                      </View>
+                      <Input
+                        value={publicName}
+                        placeholder="Ex: Confeitaria Doce Sonho, Atelier Gourmet"
+                        autoCapitalize="words"
+                        maxLength={100}
+                        onChangeText={setPublicName}
+                        containerStyle={styles.inputContainer}
+                        style={styles.inputText}
+                        placeholderTextColor={theme.colors.placeholder}
+                        leftIcon={
                           <MaterialCommunityIcons
-                            name="crosshairs-gps"
+                            name="storefront-outline"
+                            size={20}
+                            color={theme.colors.onSurfaceVariant}
+                          />
+                        }
+                      />
+                      <Text style={styles.helperText}>
+                        Opcional. Exibido no lugar do nome da conta. Lembre-se: o nome da sua conta
+                        ({user?.name}) continuará público.
+                      </Text>
+                    </View>
+
+                    {/* Commercial WhatsApp input */}
+                    <View style={styles.fieldWrapper}>
+                      <View style={styles.labelRow}>
+                        <View style={styles.labelGroup}>
+                          <Text style={styles.label}>WhatsApp Comercial</Text>
+                          <View style={styles.badgeOptional}>
+                            <Text style={styles.badgeOptionalText}>opcional</Text>
+                          </View>
+                        </View>
+                        {isWhatsAppSuccess && (
+                          <MaterialCommunityIcons
+                            name="check-circle-outline"
                             size={16}
+                            color={theme.colors.success}
+                          />
+                        )}
+                      </View>
+                      <Input
+                        value={whatsapp}
+                        placeholder="(11) 99999-9999"
+                        keyboardType="phone-pad"
+                        onChangeText={handleWhatsAppChange}
+                        onBlur={() => setTouched((prev) => ({ ...prev, whatsapp: true }))}
+                        containerStyle={[
+                          styles.inputContainer,
+                          !!whatsAppError && styles.inputError,
+                          isWhatsAppSuccess && styles.inputSuccess,
+                        ]}
+                        style={styles.inputText}
+                        placeholderTextColor={theme.colors.placeholder}
+                        leftIcon={
+                          <MaterialCommunityIcons
+                            name="whatsapp"
+                            size={20}
+                            color={theme.colors.onSurfaceVariant}
+                          />
+                        }
+                      />
+                      <View style={styles.helperRow}>
+                        {whatsAppError ? (
+                          <>
+                            <MaterialCommunityIcons
+                              name="alert-circle-outline"
+                              size={14}
+                              color={theme.colors.error}
+                              style={styles.helperIcon}
+                            />
+                            <Text style={styles.errorText}>{whatsAppError}</Text>
+                          </>
+                        ) : (
+                          <Text style={styles.helperText}>
+                            Opcional. Se não informar nada, o botão de WhatsApp será ocultado (seu
+                            telefone pessoal nunca é divulgado).
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+
+                    {/* Location Section handled by expo-location */}
+                    <View style={styles.locationSection}>
+                      <View style={styles.locationHeaderRow}>
+                        <View style={styles.labelGroup}>
+                          <View style={styles.labelWithIcon}>
+                            <MaterialCommunityIcons
+                              name="crosshairs-gps"
+                              size={16}
+                              color={theme.colors.primary}
+                            />
+                            <Text style={styles.label}>Localização Geográfica (GPS)</Text>
+                          </View>
+                          <View style={styles.badgeOptional}>
+                            <Text style={styles.badgeOptionalText}>opcional</Text>
+                          </View>
+                        </View>
+                        {hasLocationCoords ? (
+                          <TouchableOpacity
+                            onPress={handleClearLocation}
+                            style={styles.clearLocationBtn}
+                            accessibilityRole="button"
+                            accessibilityLabel="Remover coordenadas GPS"
+                          >
+                            <Text style={styles.clearLocationText}>Remover GPS</Text>
+                          </TouchableOpacity>
+                        ) : null}
+                      </View>
+
+                      <TouchableOpacity
+                        style={styles.fetchLocationBtn}
+                        onPress={handleFetchLocation}
+                        disabled={isFetchingLocation}
+                        activeOpacity={0.8}
+                        accessibilityRole="button"
+                        accessibilityLabel="Obter localização atual via GPS"
+                      >
+                        {isFetchingLocation ? (
+                          <ActivityIndicator size="small" color={theme.colors.primary} />
+                        ) : (
+                          <MaterialCommunityIcons
+                            name="map-marker-radius-outline"
+                            size={20}
                             color={theme.colors.primary}
                           />
-                          <Text style={styles.label}>Localização Geográfica (GPS)</Text>
-                        </View>
-                        <View style={styles.badgeOptional}>
-                          <Text style={styles.badgeOptionalText}>opcional</Text>
-                        </View>
-                      </View>
-                      {hasLocationCoords ? (
-                        <TouchableOpacity
-                          onPress={handleClearLocation}
-                          style={styles.clearLocationBtn}
-                          accessibilityRole="button"
-                          accessibilityLabel="Remover coordenadas GPS"
-                        >
-                          <Text style={styles.clearLocationText}>Remover GPS</Text>
-                        </TouchableOpacity>
-                      ) : null}
-                    </View>
-
-                    <TouchableOpacity
-                      style={styles.fetchLocationBtn}
-                      onPress={handleFetchLocation}
-                      disabled={isFetchingLocation}
-                      activeOpacity={0.8}
-                      accessibilityRole="button"
-                      accessibilityLabel="Obter localização atual via GPS"
-                    >
-                      {isFetchingLocation ? (
-                        <ActivityIndicator size="small" color={theme.colors.primary} />
-                      ) : (
-                        <MaterialCommunityIcons
-                          name="map-marker-radius-outline"
-                          size={20}
-                          color={theme.colors.primary}
-                        />
-                      )}
-                      <Text style={styles.fetchLocationBtnText}>
-                        {isFetchingLocation
-                          ? 'Detectando localização...'
-                          : hasLocationCoords
-                            ? 'Atualizar Localização via GPS'
-                            : 'Obter Localização Atual via GPS'}
-                      </Text>
-                    </TouchableOpacity>
-
-                    {locationCoords ? (
-                      <View style={styles.gpsCoordsBadge}>
-                        <MaterialCommunityIcons
-                          name="check-circle"
-                          size={14}
-                          color={theme.colors.chips.success.text}
-                        />
-                        <Text style={styles.gpsCoordsText}>
-                          GPS ativo: {locationCoords.latitude.toFixed(4)},{' '}
-                          {locationCoords.longitude.toFixed(4)}
+                        )}
+                        <Text style={styles.fetchLocationBtnText}>
+                          {isFetchingLocation
+                            ? 'Detectando localização...'
+                            : hasLocationCoords
+                              ? 'Atualizar Localização via GPS'
+                              : 'Obter Localização Atual via GPS'}
                         </Text>
+                      </TouchableOpacity>
+
+                      {locationCoords ? (
+                        <View style={styles.gpsCoordsBadge}>
+                          <MaterialCommunityIcons
+                            name="check-circle"
+                            size={14}
+                            color={theme.colors.chips.success.text}
+                          />
+                          <Text style={styles.gpsCoordsText}>
+                            GPS ativo: {locationCoords.latitude.toFixed(4)},{' '}
+                            {locationCoords.longitude.toFixed(4)}
+                          </Text>
+                        </View>
+                      ) : (
+                        <Text style={styles.helperText}>
+                          O GPS preenche Cidade e Bairro e permite que clientes encontrem sua
+                          confeitaria por proximidade.
+                        </Text>
+                      )}
+                    </View>
+
+                    {/* City input */}
+                    <View style={styles.fieldWrapper}>
+                      <View style={styles.labelRow}>
+                        <View style={styles.labelGroup}>
+                          <Text style={styles.label}>Cidade</Text>
+                          <View style={styles.badgeOptional}>
+                            <Text style={styles.badgeOptionalText}>opcional</Text>
+                          </View>
+                        </View>
                       </View>
-                    ) : (
+                      <Input
+                        value={city}
+                        placeholder="Ex: São Paulo"
+                        autoCapitalize="words"
+                        maxLength={100}
+                        onChangeText={setCity}
+                        containerStyle={styles.inputContainer}
+                        style={styles.inputText}
+                        placeholderTextColor={theme.colors.placeholder}
+                        leftIcon={
+                          <MaterialCommunityIcons
+                            name="city-variant-outline"
+                            size={20}
+                            color={theme.colors.onSurfaceVariant}
+                          />
+                        }
+                      />
+                    </View>
+
+                    {/* Neighborhood input */}
+                    <View style={styles.fieldWrapper}>
+                      <View style={styles.labelRow}>
+                        <View style={styles.labelGroup}>
+                          <Text style={styles.label}>Bairro</Text>
+                          <View style={styles.badgeOptional}>
+                            <Text style={styles.badgeOptionalText}>opcional</Text>
+                          </View>
+                        </View>
+                      </View>
+                      <Input
+                        value={neighborhood}
+                        placeholder="Ex: Pinheiros"
+                        autoCapitalize="words"
+                        maxLength={100}
+                        onChangeText={setNeighborhood}
+                        containerStyle={styles.inputContainer}
+                        style={styles.inputText}
+                        placeholderTextColor={theme.colors.placeholder}
+                        leftIcon={
+                          <MaterialCommunityIcons
+                            name="map-marker-outline"
+                            size={20}
+                            color={theme.colors.onSurfaceVariant}
+                          />
+                        }
+                      />
+                    </View>
+
+                    {/* Bio input */}
+                    <View style={styles.fieldWrapper}>
+                      <View style={styles.labelRow}>
+                        <View style={styles.labelGroup}>
+                          <Text style={styles.label}>Sobre a Confeitaria / Bio</Text>
+                          <View style={styles.badgeOptional}>
+                            <Text style={styles.badgeOptionalText}>opcional</Text>
+                          </View>
+                        </View>
+                        <Text style={styles.charCounter}>{bio.length}/500</Text>
+                      </View>
+                      <Input
+                        value={bio}
+                        placeholder="Conte aos clientes sobre sua história, receitas especiais, criações e paixão pela confeitaria..."
+                        multiline
+                        numberOfLines={4}
+                        maxLength={500}
+                        onChangeText={setBio}
+                        containerStyle={styles.textAreaContainer}
+                        style={styles.textArea}
+                        placeholderTextColor={theme.colors.placeholder}
+                      />
+                      <Text style={styles.helperText}>Máximo de 500 caracteres</Text>
+                    </View>
+
+                    {/* Instagram handle */}
+                    <View style={styles.fieldWrapper}>
+                      <View style={styles.labelRow}>
+                        <View style={styles.labelGroup}>
+                          <Text style={styles.label}>Instagram Comercial</Text>
+                          <View style={styles.badgeOptional}>
+                            <Text style={styles.badgeOptionalText}>opcional</Text>
+                          </View>
+                        </View>
+                      </View>
+                      <Input
+                        value={instagram}
+                        placeholder="@suaconfeitaria"
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        maxLength={100}
+                        onChangeText={setInstagram}
+                        containerStyle={styles.inputContainer}
+                        style={styles.inputText}
+                        placeholderTextColor={theme.colors.placeholder}
+                        leftIcon={
+                          <MaterialCommunityIcons
+                            name="instagram"
+                            size={20}
+                            color={theme.colors.onSurfaceVariant}
+                          />
+                        }
+                      />
                       <Text style={styles.helperText}>
-                        O GPS preenche Cidade e Bairro e permite que clientes encontrem sua
-                        confeitaria por proximidade.
+                        Ex: @atelierdedoces (link direto para seu perfil)
                       </Text>
-                    )}
-                  </View>
-
-                  {/* City input */}
-                  <View style={styles.fieldWrapper}>
-                    <View style={styles.labelRow}>
-                      <View style={styles.labelGroup}>
-                        <Text style={styles.label}>Cidade</Text>
-                        <View style={styles.badgeOptional}>
-                          <Text style={styles.badgeOptionalText}>opcional</Text>
-                        </View>
-                      </View>
                     </View>
-                    <Input
-                      value={city}
-                      placeholder="Ex: São Paulo"
-                      autoCapitalize="words"
-                      maxLength={100}
-                      onChangeText={setCity}
-                      containerStyle={styles.inputContainer}
-                      style={styles.inputText}
-                      placeholderTextColor={theme.colors.placeholder}
-                      leftIcon={
-                        <MaterialCommunityIcons
-                          name="city-variant-outline"
-                          size={20}
-                          color={theme.colors.onSurfaceVariant}
-                        />
-                      }
+
+                    {/* Baker Tags & Specialties */}
+                    <BakerTagSelector
+                      selectedTags={selectedTags}
+                      onTagsChange={setSelectedTags}
+                      userId={user?.id}
                     />
-                  </View>
 
-                  {/* Neighborhood input */}
-                  <View style={styles.fieldWrapper}>
-                    <View style={styles.labelRow}>
-                      <View style={styles.labelGroup}>
-                        <Text style={styles.label}>Bairro</Text>
-                        <View style={styles.badgeOptional}>
-                          <Text style={styles.badgeOptionalText}>opcional</Text>
-                        </View>
-                      </View>
-                    </View>
-                    <Input
-                      value={neighborhood}
-                      placeholder="Ex: Pinheiros"
-                      autoCapitalize="words"
-                      maxLength={100}
-                      onChangeText={setNeighborhood}
-                      containerStyle={styles.inputContainer}
-                      style={styles.inputText}
-                      placeholderTextColor={theme.colors.placeholder}
-                      leftIcon={
-                        <MaterialCommunityIcons
-                          name="map-marker-outline"
-                          size={20}
-                          color={theme.colors.onSurfaceVariant}
-                        />
-                      }
-                    />
-                  </View>
+                    {/* Showcase Manager Section */}
+                    {hasInitialBakerProfile && <ShowcaseManager userId={user?.id} />}
+                  </>
+                )}
+              </Animated.View>
+            ) : null}
 
-                  {/* Bio input */}
-                  <View style={styles.fieldWrapper}>
-                    <View style={styles.labelRow}>
-                      <View style={styles.labelGroup}>
-                        <Text style={styles.label}>Sobre a Confeitaria / Bio</Text>
-                        <View style={styles.badgeOptional}>
-                          <Text style={styles.badgeOptionalText}>opcional</Text>
-                        </View>
-                      </View>
-                      <Text style={styles.charCounter}>{bio.length}/500</Text>
-                    </View>
-                    <Input
-                      value={bio}
-                      placeholder="Conte aos clientes sobre sua história, receitas especiais, criações e paixão pela confeitaria..."
-                      multiline
-                      numberOfLines={4}
-                      maxLength={500}
-                      onChangeText={setBio}
-                      containerStyle={styles.textAreaContainer}
-                      style={styles.textArea}
-                      placeholderTextColor={theme.colors.placeholder}
-                    />
-                    <Text style={styles.helperText}>Máximo de 500 caracteres</Text>
-                  </View>
-
-                  {/* Instagram handle */}
-                  <View style={styles.fieldWrapper}>
-                    <View style={styles.labelRow}>
-                      <View style={styles.labelGroup}>
-                        <Text style={styles.label}>Instagram Comercial</Text>
-                        <View style={styles.badgeOptional}>
-                          <Text style={styles.badgeOptionalText}>opcional</Text>
-                        </View>
-                      </View>
-                    </View>
-                    <Input
-                      value={instagram}
-                      placeholder="@suaconfeitaria"
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      maxLength={100}
-                      onChangeText={setInstagram}
-                      containerStyle={styles.inputContainer}
-                      style={styles.inputText}
-                      placeholderTextColor={theme.colors.placeholder}
-                      leftIcon={
-                        <MaterialCommunityIcons
-                          name="instagram"
-                          size={20}
-                          color={theme.colors.onSurfaceVariant}
-                        />
-                      }
-                    />
-                    <Text style={styles.helperText}>
-                      Ex: @atelierdedoces (link direto para seu perfil)
-                    </Text>
-                  </View>
-
-                  {/* Baker Tags & Specialties */}
-                  <BakerTagSelector
-                    selectedTags={selectedTags}
-                    onTagsChange={setSelectedTags}
-                    userId={user?.id}
-                  />
-
-                  {/* Showcase Manager Section */}
-                  {hasInitialBakerProfile && <ShowcaseManager userId={user?.id} />}
-                </>
-              )}
-            </Animated.View>
-          ) : null}
-
-          {/* Save Button - Only serves to update information */}
-          <View style={styles.btnActionContainer}>
-            {isGlobalLoading ? (
-              <ActivityIndicator size="large" color={theme.colors.primary} />
-            ) : (
-              <CustomButton
-                title="Salvar alterações"
-                variant="primary"
-                style={styles.button}
-                onPress={handleEdit}
-              />
+            {/* Bottom spacing & Status info */}
+            {!hasUnsavedChanges && (
+              <View style={styles.savedStatusContainer}>
+                <MaterialCommunityIcons
+                  name="check-circle-outline"
+                  size={16}
+                  color={theme.colors.outline}
+                />
+                <Text style={styles.savedStatusText}>Todas as alterações estão salvas</Text>
+              </View>
             )}
+            {hasUnsavedChanges && <View style={styles.bottomSpacer} />}
           </View>
-        </View>
-      </KeyboardAwareScrollView>
+        </KeyboardAwareScrollView>
+
+        {/* Floating Sticky Save Button Bar */}
+        {hasUnsavedChanges && (
+          <View style={[styles.fixedBottomBar, { paddingBottom: bottomBarPadding }]}>
+            <View style={[styles.fixedBottomContent, isMobile && styles.fixedBottomContentMobile]}>
+              <View style={[styles.unsavedIndicator, isMobile && styles.unsavedIndicatorMobile]}>
+                <View style={styles.unsavedDot} />
+                <Text style={styles.unsavedText}>Alterações não salvas</Text>
+              </View>
+
+              <View
+                style={[styles.fixedButtonWrapper, isMobile && styles.fixedButtonWrapperMobile]}
+              >
+                {isGlobalLoading ? (
+                  <ActivityIndicator size="small" color={theme.colors.primary} />
+                ) : (
+                  <CustomButton
+                    title="Salvar alterações"
+                    variant="primary"
+                    style={styles.fixedSaveButton}
+                    onPress={handleEdit}
+                  />
+                )}
+              </View>
+            </View>
+          </View>
+        )}
+      </View>
     </>
   );
 }
@@ -1309,7 +1535,13 @@ const createStyles = (theme: AppTheme) =>
       justifyContent: 'flex-start',
       paddingHorizontal: 16,
       paddingTop: 16,
-      paddingBottom: 80,
+      paddingBottom: 40,
+    },
+    scrollContainerWithFixedBar: {
+      paddingBottom: 110,
+    },
+    scrollContainerWithFixedBarMobile: {
+      paddingBottom: 160,
     },
     formWrapper: {
       width: '100%',
@@ -1679,5 +1911,82 @@ const createStyles = (theme: AppTheme) =>
       borderRadius: theme.rounded.default,
       minHeight: 48,
       height: 52,
+    },
+    savedStatusContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      paddingVertical: 16,
+    },
+    savedStatusText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 13,
+      color: theme.colors.outline,
+    },
+    bottomSpacer: {
+      height: 24,
+    },
+    fixedBottomBar: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.outlineVariant,
+      paddingHorizontal: 16,
+      paddingTop: 12,
+      alignItems: 'center',
+      ...theme.shadows.modal,
+      zIndex: 100,
+      elevation: 8,
+    },
+    fixedBottomContent: {
+      width: '100%',
+      maxWidth: 480,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 12,
+    },
+    fixedBottomContentMobile: {
+      flexDirection: 'column',
+      alignItems: 'stretch',
+      gap: 10,
+    },
+    unsavedIndicator: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    unsavedIndicatorMobile: {
+      justifyContent: 'center',
+      marginBottom: 2,
+    },
+    unsavedDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: theme.colors.primary,
+    },
+    unsavedText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 12,
+      fontWeight: '600',
+      color: theme.colors.onSurfaceVariant,
+    },
+    fixedButtonWrapper: {
+      flex: 1,
+      maxWidth: 240,
+    },
+    fixedButtonWrapperMobile: {
+      maxWidth: '100%',
+      width: '100%',
+    },
+    fixedSaveButton: {
+      minHeight: 48,
+      marginVertical: 0,
+      width: '100%',
     },
   });

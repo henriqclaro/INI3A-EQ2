@@ -15,6 +15,7 @@ import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { clearAppCache } from '@/src/utils/cache';
+import { clearAllFormDrafts } from '@/src/utils/drafts';
 
 export function StorageSettingsCard() {
   const { theme } = useThemeMode();
@@ -22,17 +23,19 @@ export function StorageSettingsCard() {
   const { width } = useWindowDimensions();
   const isSmallScreen = width < theme.breakpoints.sm;
 
-  const [isClearing, setIsClearing] = useState(false);
-  const [hasCleared, setHasCleared] = useState(false);
+  const [isClearingCache, setIsClearingCache] = useState(false);
+  const [hasClearedCache, setHasClearedCache] = useState(false);
+  const [isClearingDrafts, setIsClearingDrafts] = useState(false);
+  const [hasClearedDrafts, setHasClearedDrafts] = useState(false);
 
   const styles = useMemo(() => createStyles(theme, isSmallScreen), [theme, isSmallScreen]);
 
   const executeClearCache = async () => {
-    setIsClearing(true);
+    setIsClearingCache(true);
     try {
       const result = await clearAppCache();
       if (result.isSuccess) {
-        setHasCleared(true);
+        setHasClearedCache(true);
         triggerHaptic('success');
         Alert.alert(
           'Cache Liberado',
@@ -52,7 +55,7 @@ export function StorageSettingsCard() {
         'Ocorreu um erro inesperado ao limpar o cache. Tente novamente.',
       );
     } finally {
-      setIsClearing(false);
+      setIsClearingCache(false);
     }
   };
 
@@ -75,9 +78,59 @@ export function StorageSettingsCard() {
     );
   };
 
+  const executeClearDrafts = () => {
+    setIsClearingDrafts(true);
+    try {
+      const result = clearAllFormDrafts();
+      if (result.isSuccess) {
+        setHasClearedDrafts(true);
+        triggerHaptic('success');
+        Alert.alert(
+          'Rascunhos Removidos',
+          result.clearedCount > 0
+            ? `${result.clearedCount} rascunho(s) não salvo(s) foram excluídos com sucesso.`
+            : 'Todos os rascunhos salvos da aplicação foram removidos com sucesso.',
+        );
+      } else {
+        triggerHaptic('error');
+        Alert.alert(
+          'Falha ao Remover',
+          'Não foi possível remover os rascunhos. Tente novamente mais tarde.',
+        );
+      }
+    } catch {
+      triggerHaptic('error');
+      Alert.alert(
+        'Falha ao Remover',
+        'Ocorreu um erro inesperado ao remover os rascunhos. Tente novamente.',
+      );
+    } finally {
+      setIsClearingDrafts(false);
+    }
+  };
+
+  const handlePromptClearDrafts = () => {
+    triggerHaptic('medium');
+    Alert.alert(
+      'Remover Rascunhos Salvos',
+      'Esta ação apagará todos os rascunhos de receitas e formulários em andamento salvos no dispositivo. Suas receitas cadastradas não serão afetadas.',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Remover Rascunhos',
+          style: 'destructive',
+          onPress: executeClearDrafts,
+        },
+      ],
+    );
+  };
+
   return (
     <View style={styles.card}>
-      {/* Option Row: Clear App Cache */}
+      {/* Option Row 1: Clear App Cache */}
       <View style={styles.actionRow}>
         <View style={styles.infoWrapper}>
           <View style={styles.iconCircle}>
@@ -86,7 +139,7 @@ export function StorageSettingsCard() {
           <View style={styles.textColumn}>
             <View style={styles.titleRow}>
               <Text style={styles.title}>Limpar Cache da Aplicação</Text>
-              {hasCleared && (
+              {hasClearedCache && (
                 <View style={styles.successBadge}>
                   <MaterialCommunityIcons name="check" size={12} color={theme.colors.onTertiary} />
                   <Text style={styles.successBadgeText}>Limpo</Text>
@@ -101,21 +154,77 @@ export function StorageSettingsCard() {
         </View>
 
         <TouchableOpacity
-          style={[styles.clearButton, isClearing && styles.clearButtonDisabled]}
+          style={[styles.clearButton, isClearingCache && styles.clearButtonDisabled]}
           onPress={handlePromptClearCache}
-          disabled={isClearing}
+          disabled={isClearingCache}
           activeOpacity={0.8}
           accessibilityRole="button"
           accessibilityLabel="Limpar cache da aplicação"
         >
-          {isClearing ? (
+          {isClearingCache ? (
             <ActivityIndicator size="small" color={theme.colors.primary} />
           ) : (
             <MaterialCommunityIcons name="broom" size={18} color={theme.colors.primary} />
           )}
-          <Text style={styles.clearButtonText}>{isClearing ? 'Limpando...' : 'Limpar'}</Text>
+          <Text style={styles.clearButtonText}>{isClearingCache ? 'Limpando...' : 'Limpar'}</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Divider */}
+      <View style={styles.divider} />
+
+      {/* Option Row 2: Clear Form Drafts */}
+      <View style={styles.actionRow}>
+        <View style={styles.infoWrapper}>
+          <View style={styles.iconCircle}>
+            <MaterialCommunityIcons
+              name="file-document-remove-outline"
+              size={22}
+              color={theme.colors.primary}
+            />
+          </View>
+          <View style={styles.textColumn}>
+            <View style={styles.titleRow}>
+              <Text style={styles.title}>Remover Rascunhos Salvos</Text>
+              {hasClearedDrafts && (
+                <View style={styles.successBadge}>
+                  <MaterialCommunityIcons name="check" size={12} color={theme.colors.onTertiary} />
+                  <Text style={styles.successBadgeText}>Removidos</Text>
+                </View>
+              )}
+            </View>
+            <Text style={styles.subtitle}>
+              Exclui dados automáticos de receitas e formulários em andamento que ainda não foram
+              salvos.
+            </Text>
+          </View>
+        </View>
+
+        <TouchableOpacity
+          style={[styles.clearButton, isClearingDrafts && styles.clearButtonDisabled]}
+          onPress={handlePromptClearDrafts}
+          disabled={isClearingDrafts}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="Remover todos os rascunhos salvos da aplicação"
+        >
+          {isClearingDrafts ? (
+            <ActivityIndicator size="small" color={theme.colors.primary} />
+          ) : (
+            <MaterialCommunityIcons
+              name="delete-sweep-outline"
+              size={18}
+              color={theme.colors.primary}
+            />
+          )}
+          <Text style={styles.clearButtonText}>
+            {isClearingDrafts ? 'Removendo...' : 'Remover'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Divider */}
+      <View style={styles.divider} />
 
       {/* Info Callout */}
       <View style={styles.calloutContainer}>
@@ -126,8 +235,8 @@ export function StorageSettingsCard() {
           style={styles.calloutIcon}
         />
         <Text style={styles.calloutText}>
-          O cache armazena imagens localmente para acelerar o carregamento e poupar dados móveis. A
-          limpeza é recomendada caso queira liberar espaço ou atualizar fotos recém-alteradas.
+          O armazenamento local guarda cópias de segurança em segundo plano para prevenir perda de
+          dados ao fechar janelas acidentalmente.
         </Text>
       </View>
     </View>
@@ -151,6 +260,11 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       alignItems: isSmallScreen ? 'stretch' : 'center',
       justifyContent: 'space-between',
       gap: theme.spacing.space3,
+    },
+    divider: {
+      height: 1,
+      backgroundColor: theme.colors.outlineVariant,
+      width: '100%',
     },
     infoWrapper: {
       flex: 1,

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
@@ -25,7 +25,15 @@ export function DraftRecoveryBanner({
   subtitle,
 }: DraftRecoveryBannerProps) {
   const { theme } = useThemeMode();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 768;
+  const isSmallMobile = width < 380;
+  const isMobile = !isDesktop;
+
+  const styles = useMemo(
+    () => createStyles(theme, isMobile, isSmallMobile),
+    [theme, isMobile, isSmallMobile],
+  );
 
   if (!isVisible) {
     return null;
@@ -42,54 +50,60 @@ export function DraftRecoveryBanner({
       : 'Deseja restaurar as informações não salvas da última sessão?');
 
   return (
-    <View style={styles.container}>
-      <View style={styles.iconWrapper}>
-        <MaterialCommunityIcons name="history" size={24} color={theme.colors.primary} />
+    <View style={[styles.container, isMobile && styles.containerMobile]}>
+      <View style={styles.headerRow}>
+        <View style={styles.iconWrapper}>
+          <MaterialCommunityIcons name="history" size={24} color={theme.colors.primary} />
+        </View>
+
+        <View style={styles.textColumn}>
+          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.subtitle}>{resolvedSubtitle}</Text>
+        </View>
       </View>
 
-      <View style={styles.textColumn}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.subtitle}>{resolvedSubtitle}</Text>
+      <View style={[styles.actionsRow, isMobile && styles.actionsRowMobile]}>
+        <TouchableOpacity
+          style={[styles.restoreButton, isMobile && styles.actionButtonMobile]}
+          onPress={onRestore}
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel="Restaurar rascunho salvo"
+        >
+          <MaterialCommunityIcons
+            name="restore"
+            size={18}
+            color={theme.colors.onPrimary}
+            style={styles.btnIcon}
+          />
+          <Text style={styles.restoreButtonText} numberOfLines={1}>
+            Restaurar Rascunho
+          </Text>
+        </TouchableOpacity>
 
-        <View style={styles.actionsRow}>
-          <TouchableOpacity
-            style={styles.restoreButton}
-            onPress={onRestore}
-            activeOpacity={0.85}
-            accessibilityRole="button"
-            accessibilityLabel="Restaurar rascunho salvo"
-          >
-            <MaterialCommunityIcons
-              name="restore"
-              size={16}
-              color={theme.colors.onPrimary}
-              style={styles.btnIcon}
-            />
-            <Text style={styles.restoreButtonText}>Restaurar Rascunho</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.discardButton}
-            onPress={onDiscard}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel="Descartar rascunho salvo"
-          >
-            <MaterialCommunityIcons
-              name="trash-can-outline"
-              size={16}
-              color={theme.colors.onSurfaceVariant}
-              style={styles.btnIcon}
-            />
-            <Text style={styles.discardButtonText}>Descartar</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={[styles.discardButton, isMobile && styles.actionButtonMobile]}
+          onPress={onDiscard}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="Descartar rascunho salvo"
+        >
+          <MaterialCommunityIcons
+            name="trash-can-outline"
+            size={18}
+            color={theme.colors.onSurfaceVariant}
+            style={styles.btnIcon}
+          />
+          <Text style={styles.discardButtonText} numberOfLines={1}>
+            Descartar
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
 }
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = (theme: AppTheme, isMobile: boolean, isSmallMobile: boolean) =>
   StyleSheet.create({
     container: {
       flexDirection: 'row',
@@ -101,8 +115,19 @@ const createStyles = (theme: AppTheme) =>
       padding: 16,
       marginHorizontal: 16,
       marginBottom: 16,
-      gap: 12,
+      gap: 14,
       ...theme.shadows.soft,
+    },
+    containerMobile: {
+      flexDirection: 'column',
+      alignItems: 'stretch',
+      gap: 12,
+    },
+    headerRow: {
+      flex: isMobile ? 0 : 1,
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 12,
     },
     iconWrapper: {
       width: 40,
@@ -130,7 +155,6 @@ const createStyles = (theme: AppTheme) =>
       fontSize: 12,
       lineHeight: 18,
       color: theme.colors.onSurfaceVariant,
-      marginBottom: 6,
     },
     actionsRow: {
       flexDirection: 'row',
@@ -139,12 +163,26 @@ const createStyles = (theme: AppTheme) =>
       alignItems: 'center',
       marginTop: 4,
     },
+    actionsRowMobile: {
+      flexDirection: isSmallMobile ? 'column' : 'row',
+      width: '100%',
+      gap: 10,
+      alignItems: 'stretch',
+      marginTop: 2,
+    },
+    actionButtonMobile: {
+      flex: isSmallMobile ? 0 : 1,
+      width: isSmallMobile ? '100%' : 'auto',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 12,
+    },
     restoreButton: {
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: theme.colors.primary,
-      paddingVertical: 8,
-      paddingHorizontal: 14,
+      paddingVertical: 10,
+      paddingHorizontal: 16,
       borderRadius: theme.rounded.default,
       minHeight: 48,
     },
@@ -158,10 +196,12 @@ const createStyles = (theme: AppTheme) =>
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: theme.colors.surfaceContainerHighest,
-      paddingVertical: 8,
-      paddingHorizontal: 14,
+      paddingVertical: 10,
+      paddingHorizontal: 16,
       borderRadius: theme.rounded.default,
       minHeight: 48,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
     },
     discardButtonText: {
       color: theme.colors.onSurfaceVariant,

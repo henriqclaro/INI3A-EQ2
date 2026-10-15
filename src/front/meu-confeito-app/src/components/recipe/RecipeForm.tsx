@@ -30,6 +30,7 @@ import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useFormDraft } from '@/src/hooks/useFormDraft';
 import { useIngredients } from '@/src/hooks/useIngredients';
 import { useUserRecipes } from '@/src/hooks/useRecipes';
+import { useUnsavedChangesWarning } from '@/src/hooks/useUnsavedChangesWarning';
 import { AppTheme } from '@/src/theme/themes';
 import {
   FullRecipe,
@@ -257,11 +258,18 @@ export function RecipeForm({
       : 'draft_recipe_create';
   }, [isEditMode, initialRecipe?.id]);
 
-  const { hasDraft, draftTimestamp, saveDraft, clearDraft, discardDraft, restoreDraft } =
-    useFormDraft<RecipeDraftData>(draftKey);
+  const {
+    hasDraft,
+    hasSavedDraftOnMount,
+    draftTimestamp,
+    saveDraft,
+    clearDraft,
+    discardDraft,
+    restoreDraft,
+  } = useFormDraft<RecipeDraftData>(draftKey);
 
   const [isDraftDismissed, setIsDraftDismissed] = useState(false);
-  const isDraftBannerVisible = hasDraft && !isDraftDismissed;
+  const isDraftBannerVisible = hasSavedDraftOnMount && hasDraft && !isDraftDismissed;
   const isInitialMount = useRef(true);
 
   useEffect(() => {
@@ -332,6 +340,153 @@ export function RecipeForm({
     discardDraft();
     setIsDraftDismissed(true);
   };
+
+  const [isSubmitSuccessful, setIsSubmitSuccessful] = useState(false);
+
+  // Detect whether the user has entered or modified any information
+  const hasUnsavedChanges = useMemo(() => {
+    if (isSubmitting || isSubmitSuccessful) return false;
+
+    if (isEditMode && initialRecipe) {
+      if (title.trim() !== (initialRecipe.title || '').trim()) return true;
+      if (coverImageFile !== null || hasRemovedCover) return true;
+      if (baseYield.trim() !== String(initialRecipe.baseYield ?? '').trim()) return true;
+      if (yieldUnit !== ((initialRecipe.yieldUnit as StandardUnit) || 'UN')) return true;
+      if (prepTimeMinutes.trim() !== String(initialRecipe.prepTimeMinutes ?? '').trim())
+        return true;
+      if (profitMargin.trim() !== String(initialRecipe.profitMargin ?? '').trim()) return true;
+      if (overhead.trim() !== String(initialRecipe.overhead ?? '').trim()) return true;
+      if (hourlyLabor.trim() !== String(initialRecipe.hourlyLabor ?? '').trim()) return true;
+      if (packagingCost.trim() !== String(initialRecipe.packagingCost ?? '').trim()) return true;
+
+      // Compare items
+      const initItems = initialRecipe.items || [];
+      if (items.length !== initItems.length) return true;
+      const hasItemChanges = items.some((it, idx) => {
+        const init = initItems[idx];
+        if (!init) return true;
+        const initIngId = init.ingredientId ? String(init.ingredientId) : '';
+        const initSubId = init.subRecipeId ? String(init.subRecipeId) : '';
+        const initQty =
+          init.quantity !== undefined && init.quantity !== null ? String(init.quantity) : '';
+        const initUnit = (init.unit as StandardUnit) || 'G';
+        return (
+          it.ingredientId !== initIngId ||
+          it.subRecipeId !== initSubId ||
+          it.quantity.trim() !== initQty.trim() ||
+          it.unit !== initUnit
+        );
+      });
+      if (hasItemChanges) return true;
+
+      // Compare steps
+      const parsedInitialSteps = parseRecipeInstructions(initialRecipe.instructions);
+      if (steps.length !== parsedInitialSteps.length) return true;
+      const hasStepChanges = steps.some((st, idx) => {
+        const initSt = parsedInitialSteps[idx];
+        if (!initSt) return true;
+        return (
+          st.title.trim() !== (initSt.title || '').trim() ||
+          st.description.trim() !== (initSt.description || '').trim()
+        );
+      });
+      if (hasStepChanges) return true;
+
+      // Compare tags
+      const initTags = (initialRecipe.tags || [])
+        .map((t) => String(t.tag.id))
+        .sort()
+        .join(',');
+      const currTags = selectedTags
+        .map((t) => String(t.id))
+        .sort()
+        .join(',');
+      if (initTags !== currTags) return true;
+
+      return false;
+    }
+
+    // Create / Fork mode: has any information been entered in any field?
+    const hasEnteredTitle = title.trim().length > 0;
+    const hasEnteredCover = coverImageFile !== null;
+    const hasEnteredYield = baseYield.trim().length > 0;
+    const hasEnteredPrepTime = prepTimeMinutes.trim().length > 0;
+    const hasEnteredProfit = isDefaultProfitMarginEnabled
+      ? profitMargin !== defaultProfitMargin
+      : profitMargin.trim().length > 0;
+    const hasEnteredOverhead = isDefaultOverheadEnabled
+      ? overhead !== defaultOverhead
+      : overhead.trim().length > 0;
+    const hasEnteredLabor = isDefaultHourlyLaborEnabled
+      ? hourlyLabor !== defaultHourlyLabor
+      : hourlyLabor.trim().length > 0;
+    const hasEnteredPackaging = isDefaultPackagingCostEnabled
+      ? packagingCost !== defaultPackagingCost
+      : packagingCost.trim().length > 0;
+
+    const hasEnteredItems = items.some(
+      (it) =>
+        it.ingredientId.trim().length > 0 ||
+        it.subRecipeId.trim().length > 0 ||
+        it.quantity.trim().length > 0 ||
+        it.notes.trim().length > 0,
+    );
+
+    const hasEnteredSteps = steps.some(
+      (st) => st.title.trim().length > 0 || st.description.trim().length > 0,
+    );
+
+    const hasEnteredTags = selectedTags.length > 0;
+
+    return (
+      hasEnteredTitle ||
+      hasEnteredCover ||
+      hasEnteredYield ||
+      hasEnteredPrepTime ||
+      hasEnteredProfit ||
+      hasEnteredOverhead ||
+      hasEnteredLabor ||
+      hasEnteredPackaging ||
+      hasEnteredItems ||
+      hasEnteredSteps ||
+      hasEnteredTags
+    );
+  }, [
+    isSubmitting,
+    isSubmitSuccessful,
+    isEditMode,
+    initialRecipe,
+    title,
+    coverImageFile,
+    hasRemovedCover,
+    baseYield,
+    yieldUnit,
+    prepTimeMinutes,
+    profitMargin,
+    overhead,
+    hourlyLabor,
+    packagingCost,
+    items,
+    steps,
+    selectedTags,
+    isDefaultProfitMarginEnabled,
+    defaultProfitMargin,
+    isDefaultOverheadEnabled,
+    defaultOverhead,
+    isDefaultHourlyLaborEnabled,
+    defaultHourlyLabor,
+    isDefaultPackagingCostEnabled,
+    defaultPackagingCost,
+  ]);
+
+  const { allowNextNavigation } = useUnsavedChangesWarning(hasUnsavedChanges, {
+    title: isEditMode ? 'Descartar alterações na receita?' : 'Descartar receita?',
+    message: isEditMode
+      ? 'Você tem alterações não salvas nesta receita. Deseja realmente sair e descartar as modificações?'
+      : 'Você já começou a preencher os dados desta receita. Deseja realmente sair e descartar as informações inseridas?',
+    confirmText: 'Descartar e sair',
+    cancelText: 'Continuar editando',
+  });
 
   // Add & Remove Items
   const handleAddItem = () => {
@@ -534,6 +689,8 @@ export function RecipeForm({
 
     await onSubmit(payload);
     clearDraft();
+    setIsSubmitSuccessful(true);
+    allowNextNavigation();
   };
 
   const defaultButtonLabel = isEditMode ? 'Salvar Alterações' : 'Cadastrar Receita';
