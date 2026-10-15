@@ -30,6 +30,7 @@ import { useUserRecipes } from '@/src/hooks/useRecipes';
 import { useSavedRecipes } from '@/src/hooks/useSavedRecipes';
 import { AppTheme } from '@/src/theme/themes';
 import { isExpired, isExpiringSoon } from '@/src/utils/formatters';
+import { isBaker, isCustomer } from '@/src/utils/roles';
 
 function CustomerHomeScreen() {
   const { theme } = useThemeMode();
@@ -79,7 +80,7 @@ function BakerHomeScreen() {
     [theme, isSmallScreen, isDesktop, isLargeDesktop],
   );
 
-  const isBakerRole = user?.role?.trim().toUpperCase() === 'BAKER';
+  const isBakerRole = isBaker(user?.role);
   const { recipes, refetch: refetchRecipes } = useUserRecipes(user?.id);
   const { inventory, refetch: refetchInventory } = useInventory(isBakerRole);
   const {
@@ -456,7 +457,7 @@ export default function HomeScreen() {
     return null;
   }
 
-  const isCustomerRole = user?.role?.trim().toUpperCase() === 'CUSTOMER';
+  const isCustomerRole = isCustomer(user?.role);
 
   if (isCustomerRole) {
     return <CustomerHomeScreen />;

@@ -11,6 +11,7 @@ import { CustomHeader, DesktopSidebar } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
+import { isCustomer } from '@/src/utils/roles';
 
 export default function TabsWebLayout() {
   const { theme } = useThemeMode();
@@ -19,7 +20,7 @@ export default function TabsWebLayout() {
   const isDesktop = width >= theme.breakpoints.lg;
   const styles = useMemo(() => createStyles(theme), [theme]);
 
-  const isCustomerRole = user?.role?.trim().toUpperCase() === 'CUSTOMER';
+  const isCustomerRole = isCustomer(user?.role);
 
   if (!user) {
     return null;

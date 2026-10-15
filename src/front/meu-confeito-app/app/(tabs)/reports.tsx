@@ -22,13 +22,14 @@ import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useProfitSummary, usePurchaseProjection } from '@/src/hooks/useAnalytics';
 import { AppTheme } from '@/src/theme/themes';
+import { isBaker, isCustomer } from '@/src/utils/roles';
 
 type AnalyticsTab = 'profit' | 'projection';
 
 export default function ReportsScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
-  const isBakerRole = user?.role?.trim().toUpperCase() === 'BAKER';
+  const isBakerRole = isBaker(user?.role);
   const { width } = useWindowDimensions();
   const [activeTab, setActiveTab] = useState<AnalyticsTab>('profit');
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -36,7 +37,7 @@ export default function ReportsScreen() {
   const isDesktop = width >= 768;
 
   useEffect(() => {
-    if (user?.role?.trim().toUpperCase() === 'CUSTOMER') {
+    if (isCustomer(user?.role)) {
       router.replace('/(tabs)/home');
     }
   }, [user]);

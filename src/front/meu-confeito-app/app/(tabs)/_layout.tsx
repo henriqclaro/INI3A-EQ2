@@ -13,6 +13,7 @@ import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useTabSwipe } from '@/src/hooks/useTabSwipe';
 import { AppTheme } from '@/src/theme/themes';
+import { isCustomer } from '@/src/utils/roles';
 
 export default function TabsLayout() {
   const { theme } = useThemeMode();
@@ -21,7 +22,7 @@ export default function TabsLayout() {
   const segments = useSegments();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
-  const isCustomerRole = user?.role?.trim().toUpperCase() === 'CUSTOMER';
+  const isCustomerRole = isCustomer(user?.role);
   const currentTab = (segments[1] as string) || 'home';
 
   const swipeHandlers = useTabSwipe({

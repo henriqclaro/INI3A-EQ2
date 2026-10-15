@@ -19,12 +19,16 @@ import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useMyBakerProfile } from '@/src/hooks/useBakerProfile';
 import { AppTheme } from '@/src/theme/themes';
+import { getRoleLabel, isAdmin, isBaker, isStaff } from '@/src/utils/roles';
 
 export default function ProfileScreen() {
   const { theme } = useThemeMode();
   const { user, signOut } = useAuth();
   const { width } = useWindowDimensions();
-  const isBakerRole = user?.role?.trim().toUpperCase() === 'BAKER';
+  const isBakerRole = isBaker(user?.role);
+  const isStaffRole = isStaff(user?.role);
+  const isAdminRole = isAdmin(user?.role);
+  const canSearchBakers = !isBakerRole || isStaffRole;
   const isDesktop = width >= 768;
   const { bakerProfile, hasBakerProfile, isLoading, refetch } = useMyBakerProfile(isBakerRole);
 
@@ -144,7 +148,7 @@ export default function ProfileScreen() {
           ) : null}
 
           <View style={styles.roleBadge}>
-            <Text style={styles.userRole}>{isBakerRole ? 'Confeiteira(o)' : 'Cliente'}</Text>
+            <Text style={styles.userRole}>{getRoleLabel(user?.role)}</Text>
           </View>
 
           {user?.email ? (
@@ -212,8 +216,8 @@ export default function ProfileScreen() {
         <View style={styles.menuSection}>
           <Text style={styles.menuSectionTitle}>Atalhos & Preferências</Text>
 
-          {/* Shortcut to search bakers nearby (Customers only) */}
-          {!isBakerRole && (
+          {/* Shortcut to search bakers nearby (Customers, Moderators and Admins) */}
+          {canSearchBakers && (
             <MenuOptionButton
               title="Buscar Confeitarias"
               subtitle="Encontre confeitarias e artesãos de doces próximos a você"
@@ -266,6 +270,20 @@ export default function ProfileScreen() {
               }
             />
           ) : null}
+
+          {/* Staff Management Screen Option (ADMIN and MODERATOR only) */}
+          {isStaffRole && (
+            <MenuOptionButton
+              title="Painel de Gestão"
+              subtitle={
+                isAdminRole
+                  ? 'Recursos exclusivos de administração e controle da plataforma'
+                  : 'Recursos exclusivos de moderação da plataforma'
+              }
+              icon="shield-crown-outline"
+              onPress={() => router.push('/management')}
+            />
+          )}
 
           {/* Settings Screen Option */}
           <MenuOptionButton

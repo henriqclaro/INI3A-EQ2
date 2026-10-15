@@ -84,6 +84,27 @@ export interface RegisterUserInventoryResponse {
   };
 }
 
+export interface SearchUserItem {
+  id: string;
+  name: string;
+  role: 'ADMIN' | 'BAKER' | 'CUSTOMER' | 'MODERATOR';
+  pfpUrl: string | null;
+  publicName: string | null;
+  recipes: string[];
+}
+
+export interface SearchUsersResponse {
+  data: {
+    users: SearchUserItem[];
+  };
+}
+
+export interface SearchUsersParams {
+  email?: string;
+  search?: string;
+  page?: number;
+}
+
 export const UserService = {
   register: async (data: UserRegisterData) => {
     const response = await api.post<UserRegisterResponse>('/users', data);
@@ -111,6 +132,26 @@ export const UserService = {
   },
   delete: async (userId: string) => {
     const response = await api.delete(`/users/${userId}`, { data: { state: 'DELETED' } });
+    return response.data;
+  },
+  suspend: async (userId: string) => {
+    const response = await api.delete(`/users/${userId}`, { data: { state: 'SUSPENDED' } });
+    return response.data;
+  },
+  searchUsers: async (params?: SearchUsersParams) => {
+    const searchParams = new URLSearchParams();
+    if (params?.email) {
+      searchParams.append('email', params.email);
+    }
+    if (params?.search) {
+      searchParams.append('search', params.search);
+    }
+    if (params?.page !== undefined) {
+      searchParams.append('page', params.page.toString());
+    }
+    const queryString = searchParams.toString();
+    const url = queryString ? `/users?${queryString}` : '/users';
+    const response = await api.get<SearchUsersResponse>(url);
     return response.data;
   },
   getRecipes: async (

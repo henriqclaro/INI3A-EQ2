@@ -23,11 +23,12 @@ import { useUserRecipes } from '@/src/hooks/useRecipes';
 import { useSavedRecipes } from '@/src/hooks/useSavedRecipes';
 import { AppTheme } from '@/src/theme/themes';
 import { PartialRecipe } from '@/src/types';
+import { isBaker, isCustomer } from '@/src/utils/roles';
 
 export default function RecipesScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
-  const isBakerRole = user?.role?.trim().toUpperCase() === 'BAKER';
+  const isBakerRole = isBaker(user?.role);
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'PUBLISHED' | 'DRAFT' | 'SAVED'>('ALL');
 
   const statusParam = useMemo(() => {
@@ -54,7 +55,7 @@ export default function RecipesScreen() {
   const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
 
   useEffect(() => {
-    if (user?.role?.trim().toUpperCase() === 'CUSTOMER') {
+    if (isCustomer(user?.role)) {
       router.replace('/(tabs)/home');
     }
   }, [user]);

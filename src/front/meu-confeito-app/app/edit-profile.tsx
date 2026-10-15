@@ -50,6 +50,7 @@ import {
   getStorageUrl,
   pickAvatarImage,
 } from '@/src/utils/image';
+import { isBaker } from '@/src/utils/roles';
 import {
   E164_REGEX,
   formatPhoneInput,
@@ -79,7 +80,7 @@ interface InitialUserData {
 export default function EditProfileScreen() {
   const { theme } = useThemeMode();
   const { user, updateUser } = useAuth();
-  const isBakerRole = user?.role?.trim().toUpperCase() === 'BAKER';
+  const isBakerRole = isBaker(user?.role);
 
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();

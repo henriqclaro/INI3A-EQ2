@@ -3,11 +3,14 @@ import { useCallback, useEffect, useState } from 'react';
 import { AuthService, ResetPasswordData } from '../services/auth';
 import {
   RegisterUserInventoryData,
+  SearchUserItem,
   UserEditData,
   UserInventoryItem,
   UserRegisterData,
   UserService,
 } from '../services/user';
+
+export type { SearchUserItem };
 
 export function useUserRegister() {
   const [isLoading, setIsLoading] = useState(false);
@@ -197,4 +200,65 @@ export function useResetPassword() {
   };
 
   return { resetPassword, isLoading, error };
+}
+
+export function useUserSuspend() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const suspendUser = async (userId: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await UserService.suspend(userId);
+      return response;
+    } catch (err: unknown) {
+      console.error('Error suspending user:', err);
+      const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
+      const apiMessage =
+        apiErr?.response?.data?.message || apiErr?.message || 'Erro ao suspender usuário.';
+      setError(apiMessage);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { suspendUser, isLoading, error };
+}
+
+export function useUserSearch() {
+  const [users, setUsers] = useState<SearchUserItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const searchUsers = useCallback(async (emailOrSearch?: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const trimmed = emailOrSearch?.trim();
+      const response = await UserService.searchUsers({
+        email: trimmed || undefined,
+        search: trimmed || undefined,
+      });
+      const list = response?.data?.users ?? [];
+      setUsers(list);
+      return list;
+    } catch (err: unknown) {
+      console.error('Error searching users:', err);
+      const apiErr = err as {
+        response?: { data?: { message?: string }; status?: number };
+        message?: string;
+      };
+      const apiMessage =
+        apiErr?.response?.data?.message || apiErr?.message || 'Erro ao buscar usuários.';
+      setError(apiMessage);
+      setUsers([]);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  return { users, setUsers, searchUsers, isLoading, error };
 }

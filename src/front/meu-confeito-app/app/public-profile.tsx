@@ -22,6 +22,7 @@ import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { usePublicBakerProfile, usePublicShowcase } from '@/src/hooks/useBakerProfile';
 import { AppTheme } from '@/src/theme/themes';
 import { clearImageCache } from '@/src/utils/image';
+import { isBaker } from '@/src/utils/roles';
 import { formatPhoneInput } from '@/src/utils/validation';
 
 export default function PublicProfileScreen() {
@@ -31,7 +32,7 @@ export default function PublicProfileScreen() {
   const { width } = useWindowDimensions();
 
   const isDesktop = width >= 768;
-  const isBakerRole = user?.role?.trim().toUpperCase() === 'BAKER';
+  const isBakerRole = isBaker(user?.role);
 
   const targetUserId = id || user?.id;
   const isOwnProfile = Boolean(user?.id && targetUserId === user.id);

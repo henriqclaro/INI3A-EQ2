@@ -16,6 +16,7 @@ export interface UseManyRecipesOptions {
   page?: number;
   sort?: string;
   dateLimit?: number;
+  enabled?: boolean;
 }
 
 export function useManyRecipes(
@@ -24,6 +25,7 @@ export function useManyRecipes(
   sortParam?: string,
   dateLimitParam?: number,
 ) {
+  const isEnabled = typeof searchOrOptions === 'object' ? (searchOrOptions.enabled ?? true) : true;
   const search = typeof searchOrOptions === 'object' ? searchOrOptions.search : searchOrOptions;
   const initialPage = (typeof searchOrOptions === 'object' ? searchOrOptions.page : pageParam) ?? 0;
   const sort = typeof searchOrOptions === 'object' ? searchOrOptions.sort : sortParam;
@@ -31,7 +33,7 @@ export function useManyRecipes(
     typeof searchOrOptions === 'object' ? searchOrOptions.dateLimit : dateLimitParam;
 
   const [recipes, setRecipes] = useState<PartialRecipe[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(isEnabled);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [currentPage, setCurrentPage] = useState(initialPage);
@@ -39,6 +41,10 @@ export function useManyRecipes(
 
   const fetchRecipes = useCallback(
     async (pageToFetch: number = 0, isAppend: boolean = false) => {
+      if (!isEnabled) {
+        setIsLoading(false);
+        return;
+      }
       try {
         if (isAppend) {
           setIsLoadingMore(true);
@@ -68,13 +74,17 @@ export function useManyRecipes(
         setIsLoadingMore(false);
       }
     },
-    [search, sort, dateLimit],
+    [isEnabled, search, sort, dateLimit],
   );
 
   useEffect(() => {
     let isMounted = true;
 
     async function load() {
+      if (!isEnabled) {
+        setIsLoading(false);
+        return;
+      }
       try {
         setIsLoading(true);
         setError(null);
@@ -107,7 +117,7 @@ export function useManyRecipes(
     return () => {
       isMounted = false;
     };
-  }, [search, sort, dateLimit, initialPage]);
+  }, [isEnabled, search, sort, dateLimit, initialPage]);
 
   const loadMore = useCallback(async () => {
     if (!hasMore || isLoading || isLoadingMore) {

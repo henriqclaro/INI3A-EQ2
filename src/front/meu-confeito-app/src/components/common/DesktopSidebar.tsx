@@ -11,6 +11,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
+import { getRoleLabel, isStaff } from '@/src/utils/roles';
 
 import { UserAvatar } from './UserAvatar';
 
@@ -31,10 +32,11 @@ export function DesktopSidebar({
   const { user, signOut } = useAuth();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
+  const isStaffRole = isStaff(user?.role);
   const hiddenTabNames = isCustomerRole ? ['recipes', 'reports'] : [];
   const visibleRoutes = state.routes.filter((route) => !hiddenTabNames.includes(route.name));
 
-  const roleLabel = isCustomerRole ? 'CLIENTE' : 'CONFEITEIRA';
+  const roleLabel = getRoleLabel(user?.role).toUpperCase();
 
   const quickLinks = useMemo(
     () => [
@@ -62,8 +64,28 @@ export function DesktopSidebar({
         icon: 'book-search-outline' as const,
         path: '/public-recipes' as const,
       },
+      ...(isCustomerRole || isStaffRole
+        ? [
+            {
+              id: 'search-bakers',
+              label: 'Buscar Confeitarias',
+              icon: 'store-search-outline' as const,
+              path: '/search-bakers' as const,
+            },
+          ]
+        : []),
+      ...(isStaffRole
+        ? [
+            {
+              id: 'management',
+              label: 'Painel de Gestão',
+              icon: 'shield-crown-outline' as const,
+              path: '/management' as const,
+            },
+          ]
+        : []),
     ],
-    [],
+    [isCustomerRole, isStaffRole],
   );
 
   const handleQuickLogOut = () => {

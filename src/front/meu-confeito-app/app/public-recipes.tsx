@@ -11,18 +11,21 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
-import { Stack, router } from 'expo-router';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { Input, RecipeDateFilterModal, RecipeFilterChip, RecipeView } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useDebounce } from '@/src/hooks/useDebounce';
-import { useManyRecipes } from '@/src/hooks/useRecipes';
+import { useManyRecipes, useUserRecipes } from '@/src/hooks/useRecipes';
 import { AppTheme } from '@/src/theme/themes';
 import { PartialRecipe } from '@/src/types';
 
 export default function PublicRecipesScreen() {
+  const { userId, userName } = useLocalSearchParams<{ userId?: string; userName?: string }>();
+  const isUserSpecific = Boolean(userId);
+
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 300);
   const [activeSort, setActiveSort] = useState<'saves' | 'reviews' | 'rating' | null>(null);
@@ -30,11 +33,36 @@ export default function PublicRecipesScreen() {
   const [isDateModalVisible, setIsDateModalVisible] = useState(false);
 
   const { theme } = useThemeMode();
-  const { recipes, isLoading, isLoadingMore, hasMore, loadMore, refetch } = useManyRecipes({
+
+  const globalRecipesState = useManyRecipes({
     search: debouncedSearch,
     sort: activeSort ?? undefined,
     dateLimit,
+    enabled: !isUserSpecific,
   });
+
+  const userRecipesState = useUserRecipes(userId, 'PUBLISHED');
+
+  const {
+    recipes: rawRecipes,
+    isLoading,
+    isLoadingMore,
+    hasMore,
+    loadMore,
+    refetch,
+  } = isUserSpecific ? userRecipesState : globalRecipesState;
+
+  const recipes = useMemo(() => {
+    if (!isUserSpecific || !debouncedSearch.trim()) {
+      return rawRecipes;
+    }
+    const term = debouncedSearch.toLowerCase().trim();
+    return rawRecipes.filter(
+      (r) =>
+        r.title.toLowerCase().includes(term) ||
+        r.tags?.some((t) => t.tag.name.toLowerCase().includes(term)),
+    );
+  }, [isUserSpecific, debouncedSearch, rawRecipes]);
   const { width } = useWindowDimensions();
 
   const isDesktop = width >= 768;
@@ -102,12 +130,18 @@ export default function PublicRecipesScreen() {
             />
           </View>
           <Text style={styles.emptyTitle}>
-            {hasActiveFilters ? 'Nenhuma receita encontrada' : 'Nenhuma receita pública no momento'}
+            {hasActiveFilters
+              ? 'Nenhuma receita encontrada'
+              : isUserSpecific
+                ? 'Nenhuma receita pública no momento'
+                : 'Nenhuma receita pública no momento'}
           </Text>
           <Text style={styles.emptySubtitle}>
             {hasActiveFilters
               ? `Não encontramos resultados com os filtros aplicados. Tente buscar por outros termos, alterar a ordenação ou o período selecionado.`
-              : 'Explore novamente mais tarde para descobrir novas receitas compartilhadas.'}
+              : isUserSpecific
+                ? 'Este confeiteiro ainda não publicou receitas abertas para a comunidade.'
+                : 'Explore novamente mais tarde para descobrir novas receitas compartilhadas.'}
           </Text>
 
           {hasActiveFilters && (
@@ -136,6 +170,7 @@ export default function PublicRecipesScreen() {
   }, [
     hasActiveFilters,
     isLoading,
+    isUserSpecific,
     styles.clearSearchBtn,
     styles.clearSearchBtnText,
     styles.emptyIconWrapper,
@@ -202,34 +237,49 @@ export default function PublicRecipesScreen() {
   const listHeader = useMemo(
     () => (
       <View style={styles.listHeaderWrapper}>
-        <View style={styles.filtersRow}>
-          <RecipeFilterChip
-            label="Mais Salvas"
-            icon="bookmark-multiple-outline"
-            isSelected={activeSort === 'saves'}
-            onPress={() => setActiveSort((prev) => (prev === 'saves' ? null : 'saves'))}
-          />
-          <RecipeFilterChip
-            label="Mais Avaliadas"
-            icon="comment-text-multiple-outline"
-            isSelected={activeSort === 'reviews'}
-            onPress={() => setActiveSort((prev) => (prev === 'reviews' ? null : 'reviews'))}
-          />
-          <RecipeFilterChip
-            label="Melhores Avaliações"
-            icon="star"
-            isSelected={activeSort === 'rating'}
-            onPress={() => setActiveSort((prev) => (prev === 'rating' ? null : 'rating'))}
-          />
-          <RecipeFilterChip
-            label={dateFilterLabel}
-            icon="calendar-clock-outline"
-            trailingIcon="chevron-down"
-            isSelected={hasDateFilter}
-            onPress={() => setIsDateModalVisible(true)}
-            accessibilityLabel={`Filtrar por período. Seleção atual: ${dateFilterLabel}`}
-          />
-        </View>
+        {isUserSpecific ? (
+          <View style={styles.userBanner}>
+            <MaterialCommunityIcons
+              name="account-circle-outline"
+              size={20}
+              color={theme.colors.primary}
+            />
+            <Text style={styles.userBannerText}>
+              {userName
+                ? `Receitas públicas compartilhadas por ${userName}`
+                : 'Receitas públicas compartilhadas pelo confeiteiro'}
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.filtersRow}>
+            <RecipeFilterChip
+              label="Mais Salvas"
+              icon="bookmark-multiple-outline"
+              isSelected={activeSort === 'saves'}
+              onPress={() => setActiveSort((prev) => (prev === 'saves' ? null : 'saves'))}
+            />
+            <RecipeFilterChip
+              label="Mais Avaliadas"
+              icon="comment-text-multiple-outline"
+              isSelected={activeSort === 'reviews'}
+              onPress={() => setActiveSort((prev) => (prev === 'reviews' ? null : 'reviews'))}
+            />
+            <RecipeFilterChip
+              label="Melhores Avaliações"
+              icon="star"
+              isSelected={activeSort === 'rating'}
+              onPress={() => setActiveSort((prev) => (prev === 'rating' ? null : 'rating'))}
+            />
+            <RecipeFilterChip
+              label={dateFilterLabel}
+              icon="calendar-clock-outline"
+              trailingIcon="chevron-down"
+              isSelected={hasDateFilter}
+              onPress={() => setIsDateModalVisible(true)}
+              accessibilityLabel={`Filtrar por período. Seleção atual: ${dateFilterLabel}`}
+            />
+          </View>
+        )}
 
         {!isLoading && (
           <View style={styles.metaRow}>
@@ -249,19 +299,29 @@ export default function PublicRecipesScreen() {
       hasDateFilter,
       hasMore,
       isLoading,
+      isUserSpecific,
       recipes.length,
       styles.filtersRow,
       styles.listHeaderWrapper,
       styles.metaRow,
       styles.resultCountText,
+      styles.userBanner,
+      styles.userBannerText,
+      theme.colors.primary,
+      userName,
     ],
   );
 
   const keyExtractor = useCallback((item: PartialRecipe) => item.id, []);
 
+  const screenTitle = useMemo(() => {
+    if (!isUserSpecific) return 'Receitas Públicas';
+    return userName ? `Receitas - ${userName}` : 'Receitas Públicas';
+  }, [isUserSpecific, userName]);
+
   return (
     <>
-      <Stack.Screen options={{ title: 'Receitas Públicas' }} />
+      <Stack.Screen options={{ title: screenTitle }} />
 
       <RecipeDateFilterModal
         isVisible={isDateModalVisible}
@@ -357,7 +417,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number, i
     },
     listHeaderWrapper: {
       width: '100%',
-      maxWidth: isDesktop ? 1200 : '100%',
+      maxWidth: isDesktop ? 1200 : cardWidth,
       alignSelf: 'center',
       alignItems: isWeb ? 'center' : 'stretch',
       paddingBottom: 8,
@@ -376,7 +436,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number, i
     },
     metaRow: {
       width: '100%',
-      maxWidth: isDesktop ? 860 : '100%',
+      maxWidth: isDesktop ? 860 : cardWidth,
       alignSelf: isDesktop ? 'center' : 'flex-start',
       flexDirection: 'row',
       justifyContent: isWeb ? 'center' : 'flex-start',
@@ -523,5 +583,29 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number, i
       fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 13,
       color: theme.colors.onSurfaceVariant,
+    },
+    userBanner: {
+      width: isDesktop ? 860 : cardWidth,
+      maxWidth: '100%',
+      alignSelf: 'center',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      borderRadius: theme.rounded.md,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      marginBottom: 10,
+      ...theme.shadows.soft,
+    },
+    userBannerText: {
+      fontFamily: theme.typography.bodyMd.fontFamily,
+      fontSize: 15,
+      color: theme.colors.espressoDark,
+      flex: 1,
+      fontWeight: '600',
+      lineHeight: 22,
     },
   });

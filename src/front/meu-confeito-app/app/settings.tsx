@@ -28,6 +28,7 @@ import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useUserDelete } from '@/src/hooks/useUsers';
 import { AppTheme } from '@/src/theme/themes';
+import { getRoleLabel, isCustomer } from '@/src/utils/roles';
 
 export default function SettingsScreen() {
   const { theme, isDarkMode } = useThemeMode();
@@ -38,7 +39,7 @@ export default function SettingsScreen() {
   const { user, signOut } = useAuth();
   const { deleteUser, isLoading: isDeletingUser } = useUserDelete();
 
-  const isCustomerRole = user?.role?.trim().toUpperCase() === 'CUSTOMER';
+  const isCustomerRole = isCustomer(user?.role);
 
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
 
@@ -128,9 +129,7 @@ export default function SettingsScreen() {
                       {user.email}
                     </Text>
                     <View style={styles.roleBadge}>
-                      <Text style={styles.roleBadgeText}>
-                        {user.role === 'BAKER' ? 'Confeiteiro(a)' : 'Cliente'}
-                      </Text>
+                      <Text style={styles.roleBadgeText}>{getRoleLabel(user.role)}</Text>
                     </View>
                   </View>
                 </View>
