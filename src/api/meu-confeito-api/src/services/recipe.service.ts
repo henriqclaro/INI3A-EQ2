@@ -10,7 +10,7 @@ import {
 } from '../responses/http.error';
 import type { RequestContext } from '../types/context.interface';
 import type { RecipeDTO } from '../types/dtos/recipe.dto';
-import { deleteRecipeCover, saveRecipeCover } from '../utils/storage.util';
+import { deleteRecipeCover, deleteRecipeCoverSafely, saveRecipeCover } from '../utils/storage.util';
 
 export class RecipeService {
   private checkPermission(context: RequestContext, id: string | null) {
@@ -189,6 +189,11 @@ export class RecipeService {
             title: true,
           },
         },
+        user: {
+          select: {
+            isActive: true,
+          },
+        },
         items: {
           orderBy: { sortOrder: 'asc' },
           include: {
@@ -227,6 +232,15 @@ export class RecipeService {
     });
 
     if (!recipe || recipe.status === 'SUSPENDED') {
+      throw new NotFoundError('Recipe not found', 'RESOURCE_NOT_FOUND');
+    }
+
+    if (
+      recipe.user &&
+      !recipe.user.isActive &&
+      context.userId !== recipe.userId &&
+      context.userRole !== 'ADMIN'
+    ) {
       throw new NotFoundError('Recipe not found', 'RESOURCE_NOT_FOUND');
     }
 
@@ -277,9 +291,11 @@ export class RecipeService {
       }
     }
 
+    const { user: _author, ...recipeData } = recipe;
+
     return {
       recipe: {
-        ...recipe,
+        ...recipeData,
         userReview,
         ratingCounts,
       },
@@ -416,40 +432,51 @@ export class RecipeService {
       normalizedQuery.days;
     const rawSort = normalizedQuery.sort ?? normalizedQuery.orderBy ?? normalizedQuery.order;
 
-    const baseFilter: Prisma.RecipeWhereInput = {
-      status: 'PUBLISHED',
-    };
+    const conditions: Prisma.RecipeWhereInput[] = [
+      {
+        OR: [{ userId: null }, { user: { isActive: true } }],
+      },
+    ];
 
     if (search) {
-      baseFilter.OR = [
-        {
-          title: {
-            contains: search,
-            mode: 'insensitive',
+      conditions.push({
+        OR: [
+          {
+            title: {
+              contains: search,
+              mode: 'insensitive',
+            },
           },
-        },
-        {
-          tags: {
-            some: {
-              tag: {
-                name: {
-                  contains: search,
-                  mode: 'insensitive',
+          {
+            tags: {
+              some: {
+                tag: {
+                  name: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
                 },
               },
             },
           },
-        },
-      ];
+        ],
+      });
     }
 
     if (dateLimit !== undefined && dateLimit > 0) {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - dateLimit);
-      baseFilter.createdAt = {
-        gte: cutoffDate,
-      };
+      conditions.push({
+        createdAt: {
+          gte: cutoffDate,
+        },
+      });
     }
+
+    const baseFilter: Prisma.RecipeWhereInput = {
+      status: 'PUBLISHED',
+      AND: conditions,
+    };
 
     const safePage = Number(page);
     const skipValue = !isNaN(safePage) && safePage > 0 ? safePage * 10 : 0;
@@ -597,19 +624,26 @@ export class RecipeService {
       );
     }
 
-    const updatedRecipe = await prisma.recipe.update({
-      where: { id },
-      data: {
-        status: data.status,
-      },
+    const updatedRecipe = await prisma.$transaction(async (tx) => {
+      if (data.status !== 'PUBLISHED') {
+        await tx.showcaseRecipe.deleteMany({
+          where: { recipeId: id },
+        });
+      }
 
-      select: {
-        id: true,
-        userId: true,
-        title: true,
-        status: true,
-        updatedAt: true,
-      },
+      return tx.recipe.update({
+        where: { id },
+        data: {
+          status: data.status,
+        },
+        select: {
+          id: true,
+          userId: true,
+          title: true,
+          status: true,
+          updatedAt: true,
+        },
+      });
     });
 
     return { recipe: updatedRecipe };
@@ -838,6 +872,8 @@ export class RecipeService {
     await prisma.recipe.delete({
       where: { id },
     });
+
+    await deleteRecipeCoverSafely(id);
   }
 
   private validateRating(rating: number): void {

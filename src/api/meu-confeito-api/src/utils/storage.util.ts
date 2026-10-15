@@ -30,6 +30,23 @@ export async function deleteUserAvatar(userId: string): Promise<void> {
   await fs.promises.unlink(targetFile);
 }
 
+export async function deleteUserAvatarSafely(userId: string): Promise<void> {
+  const targetDir = path.join(STORAGE_ROOT, 'users', userId);
+  const targetFile = path.join(targetDir, 'avatar.webp');
+
+  if (fs.existsSync(targetFile)) {
+    await fs.promises.unlink(targetFile);
+  }
+
+  if (fs.existsSync(targetDir)) {
+    try {
+      await fs.promises.rmdir(targetDir);
+    } catch {
+      // directory not empty or busy, safely ignore
+    }
+  }
+}
+
 export async function saveRecipeCover(recipeId: string, buffer: Buffer): Promise<string> {
   const targetDir = path.join(STORAGE_ROOT, 'recipes', recipeId);
   const targetFile = path.join(targetDir, 'cover.webp');
@@ -53,4 +70,21 @@ export async function deleteRecipeCover(recipeId: string): Promise<void> {
   }
 
   await fs.promises.unlink(targetFile);
+}
+
+export async function deleteRecipeCoverSafely(recipeId: string): Promise<void> {
+  const targetDir = path.join(STORAGE_ROOT, 'recipes', recipeId);
+  const targetFile = path.join(targetDir, 'cover.webp');
+
+  if (fs.existsSync(targetFile)) {
+    await fs.promises.unlink(targetFile);
+  }
+
+  if (fs.existsSync(targetDir)) {
+    try {
+      await fs.promises.rmdir(targetDir);
+    } catch {
+      // directory not empty or busy, safely ignore
+    }
+  }
 }

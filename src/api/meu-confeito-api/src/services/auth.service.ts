@@ -58,6 +58,7 @@ export class AuthService {
         "user".password_hash as "passwordHash",
         "user".role as role,
         "user".updated_at as "updatedAt",
+        "user".is_active as "isActive",
         ST_AsGeoJSON(bp.location)::json as location
       FROM "user"
       LEFT JOIN "baker_profile" bp ON bp.user_id = "user".id
@@ -69,6 +70,10 @@ export class AuthService {
 
     if (!foundUser) {
       throw new AuthError('Invalid credentials', 'AUTH_UNAUTHORIZED');
+    }
+
+    if (!foundUser.isActive) {
+      throw new GoneError('User suspended or deleted', 'USER_ACCOUNT_GONE');
     }
 
     if (!foundUser.passwordHash) {
@@ -171,6 +176,12 @@ export class AuthService {
 
     if (!storedToken) {
       throw new AuthError('Error validating token', 'AUTH_TOKEN_INVALID');
+    }
+
+    if (!storedToken.user.isActive) {
+      await this.purgeExpiredTokens();
+
+      throw new GoneError('User suspended or deleted', 'USER_ACCOUNT_GONE');
     }
 
     if (new Date() > storedToken.expiresAt) {

@@ -2,12 +2,17 @@ import bcrypt from 'bcrypt';
 
 import prisma from '../config/database';
 import { env } from '../config/env.config';
-import type { Prisma } from '../generated/prisma/client';
+import { Prisma } from '../generated/prisma/client';
 import type { UserModel } from '../generated/prisma/models';
 import { ConflictError, ForbiddenError, GoneError, NotFoundError } from '../responses/http.error';
 import type { RequestContext } from '../types/context.interface';
 import type { UserDTO } from '../types/dtos/user.dto';
-import { deleteUserAvatar, saveUserAvatar } from '../utils/storage.util';
+import {
+  deleteRecipeCoverSafely,
+  deleteUserAvatar,
+  deleteUserAvatarSafely,
+  saveUserAvatar,
+} from '../utils/storage.util';
 
 export class UserService {
   private checkPermission(context: RequestContext, id: string) {
@@ -206,11 +211,182 @@ export class UserService {
     const isSuspended = data.state === 'SUSPENDED';
     const stateString = data.state.toLocaleLowerCase();
 
+    // Clean up physical avatar image on disk safely
+    await deleteUserAvatarSafely(id);
+
     await prisma.$transaction(async (tx) => {
+      // 1. Revoke active auth tokens & password reset requests
       await tx.refreshToken.deleteMany({
         where: { userId: id },
       });
 
+      await tx.passwordReset.deleteMany({
+        where: { userId: id },
+      });
+
+      // 2. Fetch all user recipes
+      const userRecipes = await tx.recipe.findMany({
+        where: { userId: id },
+        select: {
+          id: true,
+          coverUrl: true,
+          status: true,
+        },
+      });
+
+      if (isSuspended) {
+        // SUSPENDED: Mark all active user recipes as SUSPENDED and remove from showcases
+        await tx.recipe.updateMany({
+          where: {
+            userId: id,
+            status: { not: 'SUSPENDED' },
+          },
+          data: {
+            status: 'SUSPENDED',
+          },
+        });
+
+        await tx.showcaseRecipe.deleteMany({
+          where: { userId: id },
+        });
+      } else {
+        // DELETED: Identify recipes that can be hard-deleted vs recipes that must be archived
+        for (const recipe of userRecipes) {
+          const [usedAsSubRecipe, usedInProduction] = await Promise.all([
+            tx.recipeItem.findFirst({
+              where: {
+                subRecipeId: recipe.id,
+                recipe: { userId: { not: id } },
+              },
+              select: { id: true },
+            }),
+            tx.production.findFirst({
+              where: { recipeId: recipe.id },
+              select: { id: true },
+            }),
+          ]);
+
+          if (usedAsSubRecipe || usedInProduction) {
+            // Cannot hard delete due to Restrict foreign keys: Archive and remove from showcases
+            await tx.recipe.update({
+              where: { id: recipe.id },
+              data: {
+                status: 'ARCHIVED',
+                coverUrl: null,
+              },
+            });
+
+            await tx.showcaseRecipe.deleteMany({
+              where: { recipeId: recipe.id },
+            });
+
+            if (recipe.coverUrl) {
+              await deleteRecipeCoverSafely(recipe.id);
+            }
+          } else {
+            // Can safely hard-delete: DB cascades items, tags, saves, reviews, showcases
+            await tx.recipe.delete({
+              where: { id: recipe.id },
+            });
+
+            if (recipe.coverUrl) {
+              await deleteRecipeCoverSafely(recipe.id);
+            }
+          }
+        }
+
+        // 3. Clean up recipes saved by this user and decrement totalSaves counters
+        const userSaves = await tx.userSavedRecipe.findMany({
+          where: { userId: id },
+          select: { recipeId: true },
+        });
+
+        for (const save of userSaves) {
+          await tx.recipe
+            .update({
+              where: { id: save.recipeId },
+              data: {
+                totalSaves: { decrement: 1 },
+              },
+            })
+            .catch(() => {});
+        }
+
+        await tx.userSavedRecipe.deleteMany({
+          where: { userId: id },
+        });
+
+        // 4. Clean up reviews written by this user on other recipes & recalculate ratings
+        const userReviews = await tx.recipeReview.findMany({
+          where: { userId: id },
+          select: { recipeId: true },
+        });
+
+        await tx.recipeReview.deleteMany({
+          where: { userId: id },
+        });
+
+        for (const r of userReviews) {
+          const aggregate = await tx.recipeReview.aggregate({
+            where: { recipeId: r.recipeId },
+            _avg: { rating: true },
+            _count: { rating: true },
+          });
+
+          const totalReviews = aggregate._count.rating;
+          const averageRating =
+            aggregate._avg.rating !== null
+              ? new Prisma.Decimal(aggregate._avg.rating).toDecimalPlaces(2)
+              : new Prisma.Decimal(0);
+
+          await tx.recipe
+            .update({
+              where: { id: r.recipeId },
+              data: {
+                totalReviews,
+                averageRating,
+              },
+            })
+            .catch(() => {});
+        }
+
+        // 5. Delete BakerProfile on DELETED (cascades UserTag and ShowcaseRecipe)
+        await tx.bakerProfile.deleteMany({
+          where: { userId: id },
+        });
+
+        // 6. Clean up user inventory
+        await tx.userInventory.deleteMany({
+          where: { userId: id },
+        });
+
+        // 7. Clean up unused custom ingredients created by this user
+        const customIngredients = await tx.ingredient.findMany({
+          where: { creatorId: id },
+          select: { id: true },
+        });
+
+        for (const ing of customIngredients) {
+          const [inRecipe, inInv, inTx] = await Promise.all([
+            tx.recipeItem.findFirst({ where: { ingredientId: ing.id } }),
+            tx.userInventory.findFirst({ where: { ingredientId: ing.id } }),
+            tx.inventoryTransaction.findFirst({ where: { ingredientId: ing.id } }),
+          ]);
+
+          if (!inRecipe && !inInv && !inTx) {
+            await tx.ingredientConversion.deleteMany({ where: { ingredientId: ing.id } });
+            await tx.ingredient.delete({ where: { id: ing.id } });
+          }
+        }
+
+        // 8. Detach user from created tags
+        await tx.tag.updateMany({
+          where: { creatorId: id },
+          data: { creatorId: null },
+        });
+      }
+
+      // 9. Anonymize user credentials and mark inactive
       await tx.user.update({
         where: { id: id },
         data: {
@@ -223,10 +399,6 @@ export class UserService {
           providerId: null,
           passwordHash: 'DELETED',
         },
-      });
-
-      await tx.bakerProfile.deleteMany({
-        where: { userId: id },
       });
     });
   }
@@ -303,6 +475,13 @@ export class UserService {
 
   async selectUserSaves(context: RequestContext, id: string) {
     this.checkPermission(context, id);
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { isActive: true },
+    });
+
+    this.checkUser(user);
 
     const userSaves = await prisma.userSavedRecipe.findMany({
       where: { userId: id },
