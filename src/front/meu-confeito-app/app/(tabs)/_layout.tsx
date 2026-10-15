@@ -9,6 +9,7 @@ import { BottomNavigation } from 'react-native-paper';
 
 import { CustomHeader } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
+import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useTabSwipe } from '@/src/hooks/useTabSwipe';
 import { AppTheme } from '@/src/theme/themes';
@@ -16,6 +17,7 @@ import { AppTheme } from '@/src/theme/themes';
 export default function TabsLayout() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
+  const { triggerHaptic } = useSettings();
   const segments = useSegments();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -59,6 +61,7 @@ export default function TabsLayout() {
               navigationState={filteredNavigationState}
               safeAreaInsets={insets}
               onTabPress={({ route, preventDefault }) => {
+                triggerHaptic('selection');
                 const event = navigation.emit({
                   type: 'tabPress',
                   target: route.key,

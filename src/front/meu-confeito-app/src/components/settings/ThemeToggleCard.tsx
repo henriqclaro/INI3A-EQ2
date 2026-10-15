@@ -13,10 +13,12 @@ export function ThemeToggleCard() {
     theme,
     currentMode,
     isDarkMode,
+    isFollowSystem,
     isHighContrast,
     isPureBlack,
     isPureBlackAvailable,
     setMode,
+    toggleFollowSystem,
     toggleHighContrast,
     togglePureBlack,
   } = useThemeMode();
@@ -31,6 +33,11 @@ export function ThemeToggleCard() {
 
   const isLightSelected = currentMode === 'light';
   const isDarkSelected = currentMode === 'dark';
+
+  const handleToggleFollowSystem = () => {
+    triggerHaptic('selection');
+    toggleFollowSystem();
+  };
 
   const handleSetMode = (mode: 'light' | 'dark') => {
     triggerHaptic('selection');
@@ -49,8 +56,44 @@ export function ThemeToggleCard() {
 
   return (
     <View style={styles.card}>
+      {/* Option 1: Seguir o sistema (First option in Appearance section) */}
+      <View style={styles.toggleRow}>
+        <View style={styles.toggleInfo}>
+          <View style={styles.iconCircle}>
+            <MaterialCommunityIcons
+              name="theme-light-dark"
+              size={22}
+              color={theme.colors.primary}
+            />
+          </View>
+          <View style={styles.textColumn}>
+            <View style={styles.titleWithBadge}>
+              <Text style={styles.title}>Seguir o Sistema</Text>
+              <View style={isFollowSystem ? styles.activeBadge : styles.inactiveBadge}>
+                <Text style={isFollowSystem ? styles.activeBadgeText : styles.inactiveBadgeText}>
+                  {isFollowSystem ? 'Ativado' : 'Desativado'}
+                </Text>
+              </View>
+            </View>
+            <Text style={styles.subtitle}>
+              Sincroniza automaticamente a aparência clara ou escura com o tema do seu dispositivo
+            </Text>
+          </View>
+        </View>
+
+        <ThemeSwitch
+          value={isFollowSystem}
+          onValueChange={handleToggleFollowSystem}
+          accessibilityLabel="Alternar opção de seguir o sistema operacional"
+        />
+      </View>
+
+      <View style={styles.divider} />
+
       {/* Visual Theme Selector Tiles */}
-      <Text style={styles.selectorLabel}>Escolha visual preferida:</Text>
+      <Text style={styles.selectorLabel}>
+        {isFollowSystem ? 'Aparência ativa no sistema:' : 'Escolha visual preferida:'}
+      </Text>
 
       <View style={styles.tilesContainer}>
         {/* Light Mode Tile */}

@@ -7,6 +7,7 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { useColorScheme } from 'react-native';
 
 import {
   AppTheme,
@@ -24,11 +25,14 @@ export interface ThemeContextType {
   theme: AppTheme;
   currentMode: ThemeMode;
   isDarkMode: boolean;
+  isFollowSystem: boolean;
   isHighContrast: boolean;
   isPureBlack: boolean;
   isPureBlackAvailable: boolean;
   setMode: (mode: ThemeMode) => void;
   toggleTheme: () => void;
+  setIsFollowSystem: (isEnabled: boolean) => void;
+  toggleFollowSystem: () => void;
   setIsHighContrast: (isEnabled: boolean) => void;
   toggleHighContrast: () => void;
   setIsPureBlack: (isEnabled: boolean) => void;
@@ -38,22 +42,28 @@ export interface ThemeContextType {
 const THEME_STORAGE_KEY = 'theme_mode';
 const HIGH_CONTRAST_STORAGE_KEY = 'theme_high_contrast';
 const PURE_BLACK_STORAGE_KEY = 'theme_pure_black';
+const FOLLOW_SYSTEM_STORAGE_KEY = 'theme_follow_system';
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
+  const systemColorScheme = useColorScheme();
+
   const [themeMode, setThemeMode] = useState<ThemeMode>('light');
+  const [isFollowSystem, setIsFollowSystemState] = useState<boolean>(true);
   const [isHighContrast, setIsHighContrastState] = useState<boolean>(false);
   const [isPureBlack, setIsPureBlackState] = useState<boolean>(false);
 
   useEffect(() => {
     async function loadStoredTheme() {
       try {
-        const [storedTheme, storedHighContrast, storedPureBlack] = await Promise.all([
-          Storage.getItem(THEME_STORAGE_KEY),
-          Storage.getItem(HIGH_CONTRAST_STORAGE_KEY),
-          Storage.getItem(PURE_BLACK_STORAGE_KEY),
-        ]);
+        const [storedTheme, storedHighContrast, storedPureBlack, storedFollowSystem] =
+          await Promise.all([
+            Storage.getItem(THEME_STORAGE_KEY),
+            Storage.getItem(HIGH_CONTRAST_STORAGE_KEY),
+            Storage.getItem(PURE_BLACK_STORAGE_KEY),
+            Storage.getItem(FOLLOW_SYSTEM_STORAGE_KEY),
+          ]);
 
         if (storedTheme === 'dark' || storedTheme === 'light') {
           setThemeMode(storedTheme);
@@ -64,6 +74,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         if (storedPureBlack !== null) {
           setIsPureBlackState(storedPureBlack === 'true');
         }
+        if (storedFollowSystem !== null) {
+          setIsFollowSystemState(storedFollowSystem === 'true');
+        } else {
+          // Default is true when no preference is saved yet
+          setIsFollowSystemState(true);
+        }
       } catch (error) {
         console.error('Error loading stored theme mode:', error);
       }
@@ -73,6 +89,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const handleSetMode = useCallback((mode: ThemeMode) => {
+    // Automatically disable follow system when user explicitly selects a theme
+    setIsFollowSystemState(false);
+    Storage.setItem(FOLLOW_SYSTEM_STORAGE_KEY, 'false').catch((error) => {
+      console.error('Error saving follow system mode to storage:', error);
+    });
+
     setThemeMode(mode);
     Storage.setItem(THEME_STORAGE_KEY, mode).catch((error) => {
       console.error('Error saving theme mode to storage:', error);
@@ -80,12 +102,40 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const toggleTheme = useCallback(() => {
+    // Automatically disable follow system when user explicitly toggles theme
+    setIsFollowSystemState(false);
+    Storage.setItem(FOLLOW_SYSTEM_STORAGE_KEY, 'false').catch((error) => {
+      console.error('Error saving follow system mode to storage:', error);
+    });
+
     setThemeMode((prev) => {
-      const nextMode: ThemeMode = prev === 'dark' ? 'light' : 'dark';
+      const activeMode: ThemeMode = isFollowSystem
+        ? systemColorScheme === 'dark'
+          ? 'dark'
+          : 'light'
+        : prev;
+      const nextMode: ThemeMode = activeMode === 'dark' ? 'light' : 'dark';
       Storage.setItem(THEME_STORAGE_KEY, nextMode).catch((error) => {
         console.error('Error saving theme mode to storage:', error);
       });
       return nextMode;
+    });
+  }, [isFollowSystem, systemColorScheme]);
+
+  const handleSetFollowSystem = useCallback((isEnabled: boolean) => {
+    setIsFollowSystemState(isEnabled);
+    Storage.setItem(FOLLOW_SYSTEM_STORAGE_KEY, String(isEnabled)).catch((error) => {
+      console.error('Error saving follow system mode to storage:', error);
+    });
+  }, []);
+
+  const toggleFollowSystem = useCallback(() => {
+    setIsFollowSystemState((prev) => {
+      const isNextValue = !prev;
+      Storage.setItem(FOLLOW_SYSTEM_STORAGE_KEY, String(isNextValue)).catch((error) => {
+        console.error('Error saving follow system mode to storage:', error);
+      });
+      return isNextValue;
     });
   }, []);
 
@@ -123,7 +173,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const isDarkMode = themeMode === 'dark';
+  const effectiveMode: ThemeMode = isFollowSystem
+    ? systemColorScheme === 'dark'
+      ? 'dark'
+      : 'light'
+    : themeMode;
+
+  const isDarkMode = effectiveMode === 'dark';
   const isPureBlackAvailable = isDarkMode && !isHighContrast;
 
   const theme = useMemo(() => {
@@ -139,13 +195,16 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const contextValue = useMemo(
     () => ({
       theme,
-      currentMode: themeMode,
+      currentMode: effectiveMode,
       isDarkMode,
+      isFollowSystem,
       isHighContrast,
       isPureBlack,
       isPureBlackAvailable,
       setMode: handleSetMode,
       toggleTheme,
+      setIsFollowSystem: handleSetFollowSystem,
+      toggleFollowSystem,
       setIsHighContrast: handleSetHighContrast,
       toggleHighContrast,
       setIsPureBlack: handleSetPureBlack,
@@ -153,13 +212,16 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }),
     [
       theme,
-      themeMode,
+      effectiveMode,
       isDarkMode,
+      isFollowSystem,
       isHighContrast,
       isPureBlack,
       isPureBlackAvailable,
       handleSetMode,
       toggleTheme,
+      handleSetFollowSystem,
+      toggleFollowSystem,
       handleSetHighContrast,
       toggleHighContrast,
       handleSetPureBlack,
