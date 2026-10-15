@@ -73,16 +73,8 @@ export const DeleteAccountModal = memo(function DeleteAccountModal({
                 color={theme.colors.error}
               />
               <Text style={styles.consequenceText}>
-                Todas as receitas e fichas técnicas criadas
+                Receitas e fichas técnicas não vinculadas excluídas definitivamente
               </Text>
-            </View>
-            <View style={styles.consequenceItem}>
-              <MaterialCommunityIcons
-                name="close-circle-outline"
-                size={16}
-                color={theme.colors.error}
-              />
-              <Text style={styles.consequenceText}>Histórico de estoque, compras e insumos</Text>
             </View>
             <View style={styles.consequenceItem}>
               <MaterialCommunityIcons
@@ -91,7 +83,7 @@ export const DeleteAccountModal = memo(function DeleteAccountModal({
                 color={theme.colors.error}
               />
               <Text style={styles.consequenceText}>
-                Perfil público de confeitaria e receitas em destaque
+                Foto de perfil apagada do armazenamento e dados pessoais anonimizados
               </Text>
             </View>
             <View style={styles.consequenceItem}>
@@ -100,7 +92,19 @@ export const DeleteAccountModal = memo(function DeleteAccountModal({
                 size={16}
                 color={theme.colors.error}
               />
-              <Text style={styles.consequenceText}>Credenciais de acesso e sessão atual</Text>
+              <Text style={styles.consequenceText}>
+                Perfil público de confeitaria e vitrine de destaques excluídos
+              </Text>
+            </View>
+            <View style={styles.consequenceItem}>
+              <MaterialCommunityIcons
+                name="close-circle-outline"
+                size={16}
+                color={theme.colors.error}
+              />
+              <Text style={styles.consequenceText}>
+                Todas as sessões ativas e tokens revogados imediatamente
+              </Text>
             </View>
           </View>
 

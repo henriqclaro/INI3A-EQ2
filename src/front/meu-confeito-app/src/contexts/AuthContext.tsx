@@ -7,8 +7,14 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { Alert } from 'react-native';
 
-import { isRateLimitError, requestTokenRefresh, setAuthFailureListener } from '../services/api';
+import {
+  isRateLimitError,
+  isUserAccountGoneError,
+  requestTokenRefresh,
+  setAuthFailureListener,
+} from '../services/api';
 import { AuthService, LogInData, LogInResponse } from '../services/auth';
 import { UserService } from '../services/user';
 import { Storage } from '../utils/storage';
@@ -39,8 +45,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoadingStorage, setIsLoadingStorage] = useState(true);
 
   useEffect(() => {
-    setAuthFailureListener(() => {
+    setAuthFailureListener((reason) => {
       setUser(null);
+      if (reason === 'USER_ACCOUNT_GONE') {
+        Alert.alert(
+          'Acesso Revogado',
+          'Sua conta foi suspensa ou desativada. Sua sessão foi encerrada.',
+        );
+      }
     });
 
     return () => {
@@ -144,7 +156,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 await Storage.removeItem('access_token');
                 await Storage.removeItem('refresh_token');
                 await Storage.removeItem('user_profile');
+                await Storage.removeItem('session_id');
                 setUser(null);
+
+                if (isUserAccountGoneError(refreshErr)) {
+                  Alert.alert(
+                    'Acesso Revogado',
+                    'Sua conta foi suspensa ou desativada. Sua sessão foi encerrada.',
+                  );
+                }
               }
             }
           }

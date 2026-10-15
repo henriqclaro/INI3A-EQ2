@@ -3,7 +3,8 @@ import { Platform } from 'react-native';
 import axios from 'axios';
 
 import { API_BASE_URL } from '../config/env';
-import { api, requestTokenRefresh } from './api';
+import { Storage } from '../utils/storage';
+import { api, isUserAccountGoneError, requestTokenRefresh } from './api';
 
 export interface LogInData {
   email: string;
@@ -66,18 +67,28 @@ export const AuthService = {
     return response.data;
   },
   refreshToken: async (refreshToken: string): Promise<RefreshTokenResponse> => {
-    const response = await axios.post<RefreshTokenResponse>(
-      `${API_BASE_URL}/auth/tokens`,
-      { refreshToken },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'x-client-type': Platform.OS,
+    try {
+      const response = await axios.post<RefreshTokenResponse>(
+        `${API_BASE_URL}/auth/tokens`,
+        { refreshToken },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'x-client-type': Platform.OS,
+          },
+          timeout: 7500,
         },
-        timeout: 7500,
-      },
-    );
-    return response.data;
+      );
+      return response.data;
+    } catch (error) {
+      if (isUserAccountGoneError(error)) {
+        await Storage.removeItem('access_token');
+        await Storage.removeItem('refresh_token');
+        await Storage.removeItem('user_profile');
+        await Storage.removeItem('session_id');
+      }
+      throw error;
+    }
   },
   renewTokens: async (refreshToken: string): Promise<string> => {
     return requestTokenRefresh(refreshToken);

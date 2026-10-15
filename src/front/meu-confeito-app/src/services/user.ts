@@ -1,5 +1,6 @@
 import {
   PartialRecipe,
+  RecipeStatus,
   SaveRecipeResponse,
   SelectUserReviewsResponse,
   SelectUserSavesResponse,
@@ -154,11 +155,7 @@ export const UserService = {
     const response = await api.get<SearchUsersResponse>(url);
     return response.data;
   },
-  getRecipes: async (
-    userId: string,
-    status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED',
-    page?: number,
-  ) => {
+  getRecipes: async (userId: string, status?: RecipeStatus, page?: number) => {
     const params = new URLSearchParams();
     if (status) {
       params.append('status', status);

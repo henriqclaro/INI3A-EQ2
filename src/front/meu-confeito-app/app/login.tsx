@@ -12,6 +12,7 @@ import { ActivityIndicator } from 'react-native-paper';
 import { CustomButton, Input, RateLimitLabel } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { isUserAccountGoneError } from '@/src/services/api';
 import { AppTheme } from '@/src/theme/themes';
 import { getRateLimitInfo, isRateLimitError } from '@/src/utils/rateLimit';
 import { isEmailValid } from '@/src/utils/validation';
@@ -80,6 +81,12 @@ export default function LogInScreen() {
           retryAfterSeconds: info.retryAfterSeconds,
         });
         Alert.alert('Limite de Tentativas', info.message);
+      } else if (isUserAccountGoneError(error)) {
+        const apiErr = error as { response?: { data?: { message?: string } } };
+        const message =
+          apiErr.response?.data?.message ||
+          'Esta conta foi suspensa ou desativada e não possui mais acesso à plataforma.';
+        Alert.alert('Conta Suspensa ou Desativada', message);
       } else {
         Alert.alert('Falha no login', 'Verifique suas credenciais e tente novamente.');
       }

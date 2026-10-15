@@ -37,14 +37,15 @@ export function ShowcaseRecipePickerModal({
   const { theme } = useThemeMode();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
-  const { recipes, isLoading } = useUserRecipes(userId);
+  const { recipes, isLoading } = useUserRecipes(userId, 'PUBLISHED');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const filteredRecipes = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-    if (!query) return recipes;
-    return recipes.filter((r) => r.title.toLowerCase().includes(query));
+    const publishedRecipes = recipes.filter((r) => r.status === 'PUBLISHED');
+    if (!query) return publishedRecipes;
+    return publishedRecipes.filter((r) => r.title.toLowerCase().includes(query));
   }, [recipes, searchQuery]);
 
   const handleSelect = async (recipe: PartialRecipe) => {

@@ -26,7 +26,7 @@ import {
 } from '@/src/components/recipe';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
-import { useSingleRecipe } from '@/src/hooks/useRecipes';
+import { useRecipeDelete, useSingleRecipe } from '@/src/hooks/useRecipes';
 import { useSavedRecipes } from '@/src/hooks/useSavedRecipes';
 import { AppTheme } from '@/src/theme/themes';
 import { PartialTag, RecipeInstructionStep, RecipeItem, RecipeStatus } from '@/src/types';
@@ -46,6 +46,7 @@ export default function RecipeScreen() {
     recipeId,
     user?.id,
   );
+  const { deleteRecipe, isLoading: isDeletingRecipe } = useRecipeDelete();
   const { isRecipeSaved, toggleSave, isTogglingSave } = useSavedRecipes(user?.id);
   const hasSavedRecipe = isRecipeSaved(recipeId);
 
@@ -275,6 +276,41 @@ export default function RecipeScreen() {
     );
   };
 
+  const handleDeleteRecipe = () => {
+    Alert.alert(
+      'Excluir Receita',
+      'Tem certeza de que deseja excluir permanentemente esta receita? Se ela não estiver vinculada a produções anteriores ou fichas técnicas de outros confeiteiros, todos os dados e a imagem de capa serão removidos definitivamente.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteRecipe(recipeId);
+              Alert.alert('Receita Excluída', 'A receita foi excluída com sucesso.', [
+                {
+                  text: 'OK',
+                  onPress: () => router.replace('/(tabs)/recipes'),
+                },
+              ]);
+            } catch (err: unknown) {
+              const apiErr = err as {
+                response?: { data?: { message?: string } };
+                message?: string;
+              };
+              const msg =
+                apiErr?.response?.data?.message ||
+                apiErr?.message ||
+                'Não foi possível excluir a receita.';
+              Alert.alert('Falha na Exclusão', msg);
+            }
+          },
+        },
+      ],
+    );
+  };
+
   const getStatusBadge = (status?: string) => {
     switch (status) {
       case 'PUBLISHED':
@@ -290,6 +326,13 @@ export default function RecipeScreen() {
           icon: 'archive-outline' as const,
           color: theme.colors.onSurfaceVariant,
           bgColor: theme.colors.surfaceContainerHigh,
+        };
+      case 'SUSPENDED':
+        return {
+          label: 'Suspensa',
+          icon: 'alert-octagon-outline' as const,
+          color: theme.colors.error,
+          bgColor: theme.colors.errorContainer,
         };
       case 'DRAFT':
       default:
@@ -657,6 +700,20 @@ export default function RecipeScreen() {
                       <Text style={styles.btnActionTextProduce}>Produzir Receita</Text>
                     </TouchableOpacity>
 
+                    {recipe.status === 'SUSPENDED' && (
+                      <View style={styles.suspendedBanner}>
+                        <MaterialCommunityIcons
+                          name="alert-circle-outline"
+                          size={18}
+                          color={theme.colors.error}
+                        />
+                        <Text style={styles.suspendedBannerText}>
+                          Esta receita está suspensa porque a conta do criador foi desativada ou
+                          suspensa.
+                        </Text>
+                      </View>
+                    )}
+
                     <View style={styles.ownerActionButtons}>
                       {/* Botão Compartilhar */}
                       <TouchableOpacity
@@ -695,75 +752,100 @@ export default function RecipeScreen() {
                         <Text style={styles.btnActionTextEdit}>Editar</Text>
                       </TouchableOpacity>
 
-                      {/* Botão Publicar / Despublicar */}
-                      {recipe.status === 'PUBLISHED' ? (
-                        <TouchableOpacity
-                          style={styles.btnActionDraft}
-                          onPress={() => handleToggleVisibility('DRAFT')}
-                          disabled={isUpdatingVisibility}
-                          activeOpacity={0.8}
-                          accessibilityRole="button"
-                          accessibilityLabel="Mudar receita para rascunho"
-                        >
-                          <MaterialCommunityIcons
-                            name="lock-outline"
-                            size={18}
-                            color={theme.colors.onSurfaceVariant}
-                          />
-                          <Text style={styles.btnActionTextDraft}>Despublicar</Text>
-                        </TouchableOpacity>
-                      ) : (
-                        <TouchableOpacity
-                          style={styles.btnActionPublish}
-                          onPress={() => handleToggleVisibility('PUBLISHED')}
-                          disabled={isUpdatingVisibility}
-                          activeOpacity={0.8}
-                          accessibilityRole="button"
-                          accessibilityLabel="Publicar receita na comunidade"
-                        >
-                          <MaterialCommunityIcons
-                            name="earth"
-                            size={18}
-                            color={theme.colors.onTertiary}
-                          />
-                          <Text style={styles.btnActionTextPublish}>Publicar</Text>
-                        </TouchableOpacity>
-                      )}
+                      {/* Botão Publicar / Despublicar (indisponível quando suspensa) */}
+                      {recipe.status !== 'SUSPENDED' &&
+                        (recipe.status === 'PUBLISHED' ? (
+                          <TouchableOpacity
+                            style={styles.btnActionDraft}
+                            onPress={() => handleToggleVisibility('DRAFT')}
+                            disabled={isUpdatingVisibility}
+                            activeOpacity={0.8}
+                            accessibilityRole="button"
+                            accessibilityLabel="Mudar receita para rascunho"
+                          >
+                            <MaterialCommunityIcons
+                              name="lock-outline"
+                              size={18}
+                              color={theme.colors.onSurfaceVariant}
+                            />
+                            <Text style={styles.btnActionTextDraft}>Despublicar</Text>
+                          </TouchableOpacity>
+                        ) : (
+                          <TouchableOpacity
+                            style={styles.btnActionPublish}
+                            onPress={() => handleToggleVisibility('PUBLISHED')}
+                            disabled={isUpdatingVisibility}
+                            activeOpacity={0.8}
+                            accessibilityRole="button"
+                            accessibilityLabel="Publicar receita na comunidade"
+                          >
+                            <MaterialCommunityIcons
+                              name="earth"
+                              size={18}
+                              color={theme.colors.onTertiary}
+                            />
+                            <Text style={styles.btnActionTextPublish}>Publicar</Text>
+                          </TouchableOpacity>
+                        ))}
 
-                      {/* Botão Arquivar / Restaurar */}
-                      {recipe.status === 'ARCHIVED' ? (
-                        <TouchableOpacity
-                          style={styles.btnActionUnarchive}
-                          onPress={handleUnarchiveRecipe}
-                          disabled={isUpdatingVisibility}
-                          activeOpacity={0.8}
-                          accessibilityRole="button"
-                          accessibilityLabel="Restaurar receita arquivada"
-                        >
-                          <MaterialCommunityIcons
-                            name="archive-arrow-up-outline"
-                            size={18}
-                            color={theme.colors.onPrimaryContainer}
-                          />
-                          <Text style={styles.btnActionTextUnarchive}>Restaurar</Text>
-                        </TouchableOpacity>
-                      ) : (
-                        <TouchableOpacity
-                          style={styles.btnActionArchive}
-                          onPress={handleArchiveRecipe}
-                          disabled={isUpdatingVisibility}
-                          activeOpacity={0.8}
-                          accessibilityRole="button"
-                          accessibilityLabel="Arquivar receita"
-                        >
-                          <MaterialCommunityIcons
-                            name="archive-arrow-down-outline"
-                            size={18}
-                            color={theme.colors.onSurfaceVariant}
-                          />
-                          <Text style={styles.btnActionTextArchive}>Arquivar</Text>
-                        </TouchableOpacity>
-                      )}
+                      {/* Botão Arquivar / Restaurar (indisponível quando suspensa) */}
+                      {recipe.status !== 'SUSPENDED' &&
+                        (recipe.status === 'ARCHIVED' ? (
+                          <TouchableOpacity
+                            style={styles.btnActionUnarchive}
+                            onPress={handleUnarchiveRecipe}
+                            disabled={isUpdatingVisibility}
+                            activeOpacity={0.8}
+                            accessibilityRole="button"
+                            accessibilityLabel="Restaurar receita arquivada"
+                          >
+                            <MaterialCommunityIcons
+                              name="archive-arrow-up-outline"
+                              size={18}
+                              color={theme.colors.onPrimaryContainer}
+                            />
+                            <Text style={styles.btnActionTextUnarchive}>Restaurar</Text>
+                          </TouchableOpacity>
+                        ) : (
+                          <TouchableOpacity
+                            style={styles.btnActionArchive}
+                            onPress={handleArchiveRecipe}
+                            disabled={isUpdatingVisibility}
+                            activeOpacity={0.8}
+                            accessibilityRole="button"
+                            accessibilityLabel="Arquivar receita"
+                          >
+                            <MaterialCommunityIcons
+                              name="archive-arrow-down-outline"
+                              size={18}
+                              color={theme.colors.onSurfaceVariant}
+                            />
+                            <Text style={styles.btnActionTextArchive}>Arquivar</Text>
+                          </TouchableOpacity>
+                        ))}
+
+                      {/* Botão Excluir */}
+                      <TouchableOpacity
+                        style={styles.btnActionDelete}
+                        onPress={handleDeleteRecipe}
+                        disabled={isDeletingRecipe}
+                        activeOpacity={0.8}
+                        accessibilityRole="button"
+                        accessibilityLabel="Excluir receita definitivamente"
+                      >
+                        {isDeletingRecipe ? (
+                          <ActivityIndicator size="small" color={theme.colors.error} />
+                        ) : (
+                          <>
+                            <MaterialCommunityIcons
+                              name="trash-can-outline"
+                              size={18}
+                              color={theme.colors.error}
+                            />
+                            <Text style={styles.btnActionTextDelete}>Excluir</Text>
+                          </>
+                        )}
+                      </TouchableOpacity>
                     </View>
 
                     {/* Link para histórico de produções */}
@@ -1656,6 +1738,45 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       fontSize: 13,
       fontWeight: '600',
       color: theme.colors.onPrimaryContainer,
+    },
+    btnActionDelete: {
+      flex: 1,
+      minWidth: isSmallScreen ? '100%' : '45%',
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.error,
+      borderRadius: theme.rounded.default,
+      paddingHorizontal: 12,
+      gap: 6,
+    },
+    btnActionTextDelete: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.error,
+    },
+    suspendedBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: theme.colors.errorContainer,
+      borderWidth: 1,
+      borderColor: theme.colors.error,
+      borderRadius: theme.rounded.sm,
+      padding: 10,
+      marginBottom: 10,
+      width: '100%',
+    },
+    suspendedBannerText: {
+      flex: 1,
+      fontSize: 12,
+      fontFamily: theme.typography.bodySm.fontFamily,
+      color: theme.colors.onErrorContainer,
+      lineHeight: 16,
     },
     historyLinkBtn: {
       minHeight: 48,

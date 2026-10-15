@@ -8,7 +8,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { RecipeForm, RecipeFormSubmitData } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
-import { useRecipeUpdate, useSingleRecipe } from '@/src/hooks/useRecipes';
+import { useRecipeDelete, useRecipeUpdate, useSingleRecipe } from '@/src/hooks/useRecipes';
 import { RecipeService } from '@/src/services/recipe';
 import { AppTheme } from '@/src/theme/themes';
 import { clearImageCache, createImageFormData, getStorageUrl } from '@/src/utils/image';
@@ -24,10 +24,48 @@ export default function EditRecipeScreen() {
     error: recipeError,
   } = useSingleRecipe(recipeId, user?.id);
   const { updateRecipe, isLoading: isSubmitting } = useRecipeUpdate();
+  const { deleteRecipe, isLoading: isDeletingRecipe } = useRecipeDelete();
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const isOwner = Boolean(user?.id && recipe?.userId && user.id === recipe.userId);
+
+  const handleDeleteRecipe = () => {
+    if (!recipeId) return;
+
+    Alert.alert(
+      'Excluir Receita',
+      'Tem certeza de que deseja excluir permanentemente esta receita? Se ela não estiver vinculada a fichas técnicas ou produções anteriores, todos os dados e a imagem de capa serão removidos definitivamente.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteRecipe(recipeId);
+              Alert.alert('Receita Excluída', 'A receita foi excluída com sucesso.', [
+                {
+                  text: 'OK',
+                  onPress: () => router.replace('/(tabs)/recipes'),
+                },
+              ]);
+            } catch (err: unknown) {
+              const apiErr = err as {
+                response?: { data?: { message?: string } };
+                message?: string;
+              };
+              const msg =
+                apiErr?.response?.data?.message ||
+                apiErr?.message ||
+                'Não foi possível excluir a receita.';
+              Alert.alert('Falha na Exclusão', msg);
+            }
+          },
+        },
+      ],
+    );
+  };
 
   const handleSubmit = async (formData: RecipeFormSubmitData) => {
     if (!recipeId) {
@@ -91,7 +129,32 @@ export default function EditRecipeScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Editar Receita' }} />
+      <Stack.Screen
+        options={{
+          title: 'Editar Receita',
+          headerRight: () =>
+            isOwner && recipeId ? (
+              <TouchableOpacity
+                onPress={handleDeleteRecipe}
+                disabled={isDeletingRecipe}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                style={styles.headerDeleteBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Excluir receita"
+              >
+                {isDeletingRecipe ? (
+                  <ActivityIndicator size="small" color={theme.colors.error} />
+                ) : (
+                  <MaterialCommunityIcons
+                    name="trash-can-outline"
+                    size={22}
+                    color={theme.colors.error}
+                  />
+                )}
+              </TouchableOpacity>
+            ) : null,
+        }}
+      />
 
       <View style={styles.container}>
         {isLoadingRecipe ? (
@@ -275,5 +338,12 @@ const createStyles = (theme: AppTheme) =>
       fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 15,
       fontWeight: '600',
+    },
+    headerDeleteBtn: {
+      minWidth: 48,
+      minHeight: 48,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 8,
     },
   });

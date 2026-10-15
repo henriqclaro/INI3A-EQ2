@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 
-import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, InternalAxiosRequestConfig, isAxiosError } from 'axios';
 
 import { API_BASE_URL, API_HOST_URL } from '../config/env';
 import { getRateLimitInfo, isRateLimitError, rateLimitManager } from '../utils/rateLimit';
@@ -38,16 +38,26 @@ export interface RefreshTokenApiResponse {
   refreshToken?: string;
 }
 
-type AuthFailureListener = () => void;
+export type AuthFailureReason = 'UNAUTHORIZED' | 'USER_ACCOUNT_GONE';
+type AuthFailureListener = (reason?: AuthFailureReason) => void;
 let authFailureListener: AuthFailureListener | null = null;
+
+export function isUserAccountGoneError(error: unknown): boolean {
+  if (!isAxiosError(error) || !error.response) {
+    return false;
+  }
+  const status = error.response.status;
+  const data = error.response.data as { code?: string } | undefined;
+  return status === 410 || data?.code === 'USER_ACCOUNT_GONE';
+}
 
 export const setAuthFailureListener = (listener: AuthFailureListener | null): void => {
   authFailureListener = listener;
 };
 
-const notifyAuthFailure = (): void => {
+const notifyAuthFailure = (reason: AuthFailureReason = 'UNAUTHORIZED'): void => {
   if (authFailureListener) {
-    authFailureListener();
+    authFailureListener(reason);
   }
 };
 
@@ -104,6 +114,13 @@ export async function requestTokenRefresh(refreshToken: string): Promise<string>
     if (isRateLimitError(error)) {
       const rateLimitInfo = getRateLimitInfo(error, `${API_BASE_URL}/auth/tokens`);
       rateLimitManager.notify(rateLimitInfo, { isAlertShown: true });
+    }
+    if (isUserAccountGoneError(error)) {
+      await Storage.removeItem('access_token');
+      await Storage.removeItem('refresh_token');
+      await Storage.removeItem('user_profile');
+      await Storage.removeItem('session_id');
+      notifyAuthFailure('USER_ACCOUNT_GONE');
     }
     throw error;
   }
@@ -191,6 +208,24 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    const requestUrl = originalRequest?.url ?? '';
+    const isTokensEndpoint = requestUrl.includes('/tokens');
+    const isSessionsEndpoint = requestUrl.includes('/sessions');
+
+    if (isUserAccountGoneError(error)) {
+      if (!isSessionsEndpoint) {
+        await Storage.removeItem('access_token');
+        await Storage.removeItem('refresh_token');
+        await Storage.removeItem('user_profile');
+        await Storage.removeItem('session_id');
+
+        processQueue(error, null);
+        notifyAuthFailure('USER_ACCOUNT_GONE');
+      }
+
+      return Promise.reject(error);
+    }
+
     if (
       !originalRequest ||
       !error.response ||
@@ -200,16 +235,13 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    const requestUrl = originalRequest.url ?? '';
-    const isTokensEndpoint = requestUrl.includes('/tokens');
-    const isSessionsEndpoint = requestUrl.includes('/sessions');
-
     if (isTokensEndpoint || isSessionsEndpoint) {
       if (isTokensEndpoint) {
         await Storage.removeItem('access_token');
         await Storage.removeItem('refresh_token');
         await Storage.removeItem('user_profile');
-        notifyAuthFailure();
+        await Storage.removeItem('session_id');
+        notifyAuthFailure('UNAUTHORIZED');
       }
 
       return Promise.reject(error);
@@ -257,8 +289,10 @@ api.interceptors.response.use(
       await Storage.removeItem('access_token');
       await Storage.removeItem('refresh_token');
       await Storage.removeItem('user_profile');
+      await Storage.removeItem('session_id');
 
-      notifyAuthFailure();
+      const isGone = isUserAccountGoneError(refreshError);
+      notifyAuthFailure(isGone ? 'USER_ACCOUNT_GONE' : 'UNAUTHORIZED');
 
       return Promise.reject(refreshError);
     } finally {

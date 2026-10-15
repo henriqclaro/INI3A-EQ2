@@ -119,6 +119,16 @@ export const SavedRecipeCard = memo(function SavedRecipeCard({
           <Text style={styles.title} numberOfLines={2}>
             {item.recipe.title}
           </Text>
+          {item.recipe.status === 'SUSPENDED' && (
+            <View style={styles.suspendedBadge}>
+              <MaterialCommunityIcons
+                name="alert-octagon-outline"
+                size={12}
+                color={theme.colors.error}
+              />
+              <Text style={styles.suspendedBadgeText}>Suspensa</Text>
+            </View>
+          )}
         </View>
 
         {styledTags.length > 0 && (
@@ -247,6 +257,25 @@ const createStyles = (theme: AppTheme) =>
       fontWeight: '600',
       color: theme.colors.espressoDark,
       flex: 1,
+    },
+    suspendedBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      backgroundColor: theme.colors.errorContainer,
+      borderColor: theme.colors.error,
+      borderWidth: 1,
+      borderRadius: theme.rounded.full,
+      paddingVertical: 2,
+      paddingHorizontal: 8,
+      gap: 4,
+      marginLeft: 6,
+    },
+    suspendedBadgeText: {
+      fontSize: 10,
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontWeight: '700',
+      color: theme.colors.error,
     },
     tagsContainer: {
       flexDirection: 'row',

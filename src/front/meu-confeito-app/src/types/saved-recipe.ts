@@ -1,3 +1,4 @@
+import { RecipeStatus } from './recipe';
 import { PartialTag } from './tag';
 
 export interface SavedRecipeDetail {
@@ -9,6 +10,7 @@ export interface SavedRecipeDetail {
   hourlyLabor?: number | string;
   packagingCost?: number | string;
   prepTimeMinutes: number;
+  status?: RecipeStatus | string;
   updatedAt?: string | Date;
   tags?: {
     tag: PartialTag;

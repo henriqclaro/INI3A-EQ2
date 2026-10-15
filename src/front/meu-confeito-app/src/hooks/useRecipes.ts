@@ -231,7 +231,7 @@ export function useSingleRecipe(recipeId: string, userId?: string) {
 
 export function useUserRecipes(
   userId: string | undefined,
-  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED',
+  status?: RecipeStatus,
   initialPage: number = 0,
 ) {
   const [recipes, setRecipes] = useState<PartialRecipe[]>([]);
@@ -401,4 +401,28 @@ export function useRecipeUpdate() {
   };
 
   return { updateRecipe, isLoading, error };
+}
+
+export function useRecipeDelete() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const deleteRecipe = async (recipeId: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await RecipeService.delete(recipeId);
+    } catch (err: unknown) {
+      console.error('Error deleting recipe:', err);
+      const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
+      const apiMessage =
+        apiErr?.response?.data?.message || apiErr?.message || 'Erro ao excluir receita.';
+      setError(apiMessage);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { deleteRecipe, isLoading, error };
 }

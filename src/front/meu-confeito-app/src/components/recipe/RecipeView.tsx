@@ -82,7 +82,12 @@ export const RecipeView = memo(function RecipeView({
   const maxTags = maxTagRows === 2 ? 4 : 2;
   const visibleTags = styledTags.slice(0, maxTags);
   const remainingTagsCount = styledTags.length - maxTags;
-  const hasTopBadges = isCustomized || hasParent || status === 'DRAFT' || status === 'ARCHIVED';
+  const hasTopBadges =
+    isCustomized ||
+    hasParent ||
+    status === 'DRAFT' ||
+    status === 'ARCHIVED' ||
+    status === 'SUSPENDED';
 
   return (
     <TouchableOpacity
@@ -146,6 +151,16 @@ export const RecipeView = memo(function RecipeView({
                   color={theme.colors.onSurfaceVariant}
                 />
                 <Text style={styles.archivedBadgeText}>Arquivada</Text>
+              </View>
+            )}
+            {status === 'SUSPENDED' && (
+              <View style={styles.suspendedBadge}>
+                <MaterialCommunityIcons
+                  name="alert-octagon-outline"
+                  size={12}
+                  color={theme.colors.error}
+                />
+                <Text style={styles.suspendedBadgeText}>Suspensa</Text>
               </View>
             )}
           </View>
@@ -323,6 +338,24 @@ const createStyles = (theme: AppTheme, maxTagRows: 1 | 2) =>
       fontFamily: theme.typography.labelSm.fontFamily,
       fontWeight: '600',
       color: theme.colors.onSurfaceVariant,
+    },
+    suspendedBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      backgroundColor: theme.colors.errorContainer,
+      borderColor: theme.colors.error,
+      borderWidth: 1,
+      borderRadius: theme.rounded.full,
+      paddingVertical: 2,
+      paddingHorizontal: 8,
+      gap: 4,
+    },
+    suspendedBadgeText: {
+      fontSize: 11,
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontWeight: '700',
+      color: theme.colors.error,
     },
     title: {
       fontSize: 18,

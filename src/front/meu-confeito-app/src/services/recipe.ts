@@ -109,6 +109,9 @@ export const RecipeService = {
     const response = await api.patch<RecipeResponse>(`/recipes/${recipeId}`, data);
     return response.data;
   },
+  delete: async (recipeId: string): Promise<void> => {
+    await api.delete(`/recipes/${recipeId}`);
+  },
   uploadCover: async (recipeId: string, formData: FormData) => {
     const response = await api.patch<RecipeCoverUploadResponse>(
       `/recipes/${recipeId}/cover`,
