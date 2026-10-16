@@ -1,5 +1,13 @@
 import { memo, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 
 import { router } from 'expo-router';
 
@@ -38,7 +46,9 @@ export const RecipeReviewsSection = memo(function RecipeReviewsSection({
 }: RecipeReviewsSectionProps) {
   const { theme } = useThemeMode();
   const { user } = useAuth();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 768;
+  const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
   const {
     reviews,
@@ -137,281 +147,292 @@ export const RecipeReviewsSection = memo(function RecipeReviewsSection({
         </Text>
       </View>
 
-      {/* Main Rating Summary Card */}
-      <View style={styles.summaryCard}>
-        <View style={styles.summaryScoreColumn}>
-          <Text style={styles.bigScoreText}>{formattedAverage}</Text>
-          <View style={styles.averageStarsRow}>
-            {[1, 2, 3, 4, 5].map((star) => {
-              const numAvg = Number(averageRating) || 0;
-              const isFilled = star <= Math.round(numAvg);
-              return (
-                <MaterialCommunityIcons
-                  key={star}
-                  name={isFilled ? 'star' : 'star-outline'}
-                  size={18}
-                  color={isFilled ? theme.colors.primary : theme.colors.outlineVariant}
-                />
-              );
-            })}
-          </View>
-          <Text style={styles.totalReviewsCount}>
-            {totalReviews === 0
-              ? 'Nenhuma avaliação'
-              : `${totalReviews} ${totalReviews === 1 ? 'avaliação' : 'avaliações'}`}
-          </Text>
-        </View>
-
-        {/* Rating Breakdown Bars */}
-        <View style={styles.barsColumn}>
-          {[5, 4, 3, 2, 1].map((star) => {
-            const count = ratingCounts?.[star as 1 | 2 | 3 | 4 | 5] ?? 0;
-            const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
-
-            return (
-              <View key={star} style={styles.barRow}>
-                <Text style={styles.barStarLabel}>{star} ★</Text>
-                <View style={styles.barTrack}>
-                  <View style={[styles.barFill, { width: `${percentage}%` }]} />
-                </View>
-                <Text style={styles.barCountLabel}>{count}</Text>
+      <View style={isDesktop ? styles.desktopColumnsRow : styles.mobileFlowContainer}>
+        {/* Left Column (Desktop) / Top Section (Mobile): Rating Summary + User's Own Review */}
+        <View style={isDesktop ? styles.desktopLeftCol : styles.mobileGroupCol}>
+          {/* Main Rating Summary Card */}
+          <View style={styles.summaryCard}>
+            <View style={styles.summaryScoreColumn}>
+              <Text style={styles.bigScoreText}>{formattedAverage}</Text>
+              <View style={styles.averageStarsRow}>
+                {[1, 2, 3, 4, 5].map((star) => {
+                  const numAvg = Number(averageRating) || 0;
+                  const isFilled = star <= Math.round(numAvg);
+                  return (
+                    <MaterialCommunityIcons
+                      key={star}
+                      name={isFilled ? 'star' : 'star-outline'}
+                      size={18}
+                      color={isFilled ? theme.colors.primary : theme.colors.outlineVariant}
+                    />
+                  );
+                })}
               </View>
-            );
-          })}
-        </View>
-      </View>
+              <Text style={styles.totalReviewsCount}>
+                {totalReviews === 0
+                  ? 'Nenhuma avaliação'
+                  : `${totalReviews} ${totalReviews === 1 ? 'avaliação' : 'avaliações'}`}
+              </Text>
+            </View>
 
-      {/* Interactive Review Interface (When applicable) */}
-      <View style={styles.interactionContainer}>
-        {!isPublished ? (
-          <View style={styles.noticeCard}>
-            <MaterialCommunityIcons
-              name="lock-outline"
-              size={20}
-              color={theme.colors.onSurfaceVariant}
-            />
-            <Text style={styles.noticeText}>
-              Esta receita está como rascunho. Apenas receitas publicadas podem receber avaliações.
-            </Text>
+            {/* Rating Breakdown Bars */}
+            <View style={styles.barsColumn}>
+              {[5, 4, 3, 2, 1].map((star) => {
+                const count = ratingCounts?.[star as 1 | 2 | 3 | 4 | 5] ?? 0;
+                const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
+
+                return (
+                  <View key={star} style={styles.barRow}>
+                    <Text style={styles.barStarLabel}>{star} ★</Text>
+                    <View style={styles.barTrack}>
+                      <View style={[styles.barFill, { width: `${percentage}%` }]} />
+                    </View>
+                    <Text style={styles.barCountLabel}>{count}</Text>
+                  </View>
+                );
+              })}
+            </View>
           </View>
-        ) : isOwner ? (
-          <View style={styles.noticeCard}>
-            <MaterialCommunityIcons
-              name="account-check-outline"
-              size={20}
-              color={theme.colors.onSurfaceVariant}
-            />
-            <Text style={styles.noticeText}>
-              Você é o autor desta receita. Criadores não podem avaliar suas próprias receitas.
-            </Text>
-          </View>
-        ) : !user ? (
-          <View style={styles.loginPromptCard}>
-            <MaterialCommunityIcons
-              name="star-circle-outline"
-              size={32}
-              color={theme.colors.primary}
-            />
-            <Text style={styles.loginPromptTitle}>Gostou desta receita?</Text>
-            <Text style={styles.loginPromptSubtitle}>
-              Faça login para deixar sua nota de 1 a 5 estrelas e ajudar outros confeiteiros.
-            </Text>
-            <TouchableOpacity
-              style={styles.loginPromptBtn}
-              onPress={() => router.push('/login')}
-              activeOpacity={0.85}
-              accessibilityRole="button"
-              accessibilityLabel="Fazer login para avaliar"
-            >
-              <Text style={styles.loginPromptBtnText}>Entrar para Avaliar</Text>
-            </TouchableOpacity>
-          </View>
-        ) : isLoadingReviews && userReview === undefined ? (
-          <View style={styles.loadingWrapper}>
-            <ActivityIndicator size="small" color={theme.colors.primary} />
-          </View>
-        ) : (
-          /* User is logged in, recipe is published, user is not owner */
-          <View style={styles.userReviewBox}>
-            <View style={styles.userReviewHeader}>
-              <View style={styles.userReviewTitleGroup}>
+
+          {/* Interactive Review Interface (When applicable) */}
+          <View style={styles.interactionContainer}>
+            {!isPublished ? (
+              <View style={styles.noticeCard}>
                 <MaterialCommunityIcons
-                  name={hasUserReviewed ? 'star-check' : 'star-plus-outline'}
+                  name="lock-outline"
                   size={20}
-                  color={theme.colors.primary}
+                  color={theme.colors.onSurfaceVariant}
                 />
-                <Text style={styles.userReviewTitle}>
-                  {hasUserReviewed ? 'Sua Avaliação' : 'Deixe sua Avaliação'}
+                <Text style={styles.noticeText}>
+                  Esta receita está como rascunho. Apenas receitas publicadas podem receber
+                  avaliações.
                 </Text>
               </View>
-
-              {hasUserReviewed && (
-                <View style={styles.evaluatedBadge}>
-                  <Text style={styles.evaluatedBadgeText}>Avaliada</Text>
-                </View>
-              )}
-            </View>
-
-            <Text style={styles.userReviewHint}>
-              {hasUserReviewed
-                ? 'Toque nas estrelas caso queira alterar a sua nota para esta receita:'
-                : 'Selecione uma nota de 1 a 5 estrelas para avaliar esta receita:'}
-            </Text>
-
-            <View style={styles.starInputWrapper}>
-              <StarRatingInput
-                rating={currentRating}
-                onRatingChange={setSelectedRating}
-                size={36}
-                showLabel={true}
-              />
-            </View>
-
-            <View style={styles.actionButtonsRow}>
-              {/* Submit or Update Button */}
-              {(!hasUserReviewed || hasRatingChanged) && (
+            ) : isOwner ? (
+              <View style={styles.noticeCard}>
+                <MaterialCommunityIcons
+                  name="account-check-outline"
+                  size={20}
+                  color={theme.colors.onSurfaceVariant}
+                />
+                <Text style={styles.noticeText}>
+                  Você é o autor desta receita. Criadores não podem avaliar suas próprias receitas.
+                </Text>
+              </View>
+            ) : !user ? (
+              <View style={styles.loginPromptCard}>
+                <MaterialCommunityIcons
+                  name="star-circle-outline"
+                  size={32}
+                  color={theme.colors.primary}
+                />
+                <Text style={styles.loginPromptTitle}>Gostou desta receita?</Text>
+                <Text style={styles.loginPromptSubtitle}>
+                  Faça login para deixar sua nota de 1 a 5 estrelas e ajudar outros confeiteiros.
+                </Text>
                 <TouchableOpacity
-                  style={[
-                    styles.submitReviewBtn,
-                    (!currentRating || isSubmittingReview) && styles.submitReviewBtnDisabled,
-                  ]}
-                  onPress={handleSubmit}
-                  disabled={!currentRating || isSubmittingReview}
+                  style={styles.loginPromptBtn}
+                  onPress={() => router.push('/login')}
                   activeOpacity={0.85}
                   accessibilityRole="button"
-                  accessibilityLabel={hasUserReviewed ? 'Atualizar avaliação' : 'Salvar avaliação'}
+                  accessibilityLabel="Fazer login para avaliar"
                 >
-                  {isSubmittingReview ? (
-                    <ActivityIndicator size="small" color={theme.colors.onPrimary} />
-                  ) : (
-                    <>
-                      <MaterialCommunityIcons
-                        name={hasUserReviewed ? 'check' : 'star'}
-                        size={18}
-                        color={theme.colors.onPrimary}
-                      />
-                      <Text style={styles.submitReviewBtnText}>
-                        {hasUserReviewed ? 'Atualizar Nota' : 'Salvar Avaliação'}
-                      </Text>
-                    </>
-                  )}
+                  <Text style={styles.loginPromptBtnText}>Entrar para Avaliar</Text>
                 </TouchableOpacity>
-              )}
+              </View>
+            ) : isLoadingReviews && userReview === undefined ? (
+              <View style={styles.loadingWrapper}>
+                <ActivityIndicator size="small" color={theme.colors.primary} />
+              </View>
+            ) : (
+              /* User is logged in, recipe is published, user is not owner */
+              <View style={styles.userReviewBox}>
+                <View style={styles.userReviewHeader}>
+                  <View style={styles.userReviewTitleGroup}>
+                    <MaterialCommunityIcons
+                      name={hasUserReviewed ? 'star-check' : 'star-plus-outline'}
+                      size={20}
+                      color={theme.colors.primary}
+                    />
+                    <Text style={styles.userReviewTitle}>
+                      {hasUserReviewed ? 'Sua Avaliação' : 'Deixe sua Avaliação'}
+                    </Text>
+                  </View>
 
-              {/* Delete Button (If already evaluated) */}
-              {hasUserReviewed && (
-                <TouchableOpacity
-                  style={styles.deleteReviewBtn}
-                  onPress={handleDelete}
-                  disabled={isDeletingReview}
-                  activeOpacity={0.8}
-                  accessibilityRole="button"
-                  accessibilityLabel="Remover avaliação"
-                >
-                  {isDeletingReview ? (
-                    <ActivityIndicator size="small" color={theme.colors.error} />
-                  ) : (
-                    <>
-                      <MaterialCommunityIcons
-                        name="trash-can-outline"
-                        size={18}
-                        color={theme.colors.error}
-                      />
-                      <Text style={styles.deleteReviewBtnText}>Remover Avaliação</Text>
-                    </>
+                  {hasUserReviewed && (
+                    <View style={styles.evaluatedBadge}>
+                      <Text style={styles.evaluatedBadgeText}>Avaliada</Text>
+                    </View>
                   )}
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        )}
-      </View>
+                </View>
 
-      {/* Community Reviews List */}
-      <View style={styles.reviewsListContainer}>
-        <Text style={styles.reviewsListTitle}>Avaliações Recentes</Text>
+                <Text style={styles.userReviewHint}>
+                  {hasUserReviewed
+                    ? 'Toque nas estrelas caso queira alterar a sua nota para esta receita:'
+                    : 'Selecione uma nota de 1 a 5 estrelas para avaliar esta receita:'}
+                </Text>
 
-        {isLoadingReviews ? (
-          <View style={styles.loadingWrapper}>
-            <ActivityIndicator size="small" color={theme.colors.primary} />
-          </View>
-        ) : reviews.length === 0 ? (
-          <View style={styles.emptyReviewsCard}>
-            <MaterialCommunityIcons
-              name="message-draw"
-              size={32}
-              color={theme.colors.placeholder}
-            />
-            <Text style={styles.emptyReviewsText}>
-              Nenhuma avaliação registrada ainda. Seja a primeira pessoa a avaliar!
-            </Text>
-          </View>
-        ) : (
-          <View style={styles.reviewsCardsList}>
-            {reviews.map((rev) => {
-              let formattedDate = '';
-              try {
-                const date = new Date(rev.createdAt);
-                formattedDate = isNaN(date.getTime())
-                  ? ''
-                  : date.toLocaleDateString('pt-BR', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                    });
-              } catch {
-                formattedDate = '';
-              }
+                <View style={styles.starInputWrapper}>
+                  <StarRatingInput
+                    rating={currentRating}
+                    onRatingChange={setSelectedRating}
+                    size={36}
+                    showLabel={true}
+                  />
+                </View>
 
-              return (
-                <View key={rev.id} style={styles.reviewItemCard}>
-                  <View style={styles.reviewItemHeader}>
-                    <View style={styles.reviewItemUser}>
-                      <UserAvatar
-                        url={rev.user?.pfpUrl}
-                        updatedAt={rev.user?.updatedAt || rev.updatedAt}
-                        name={rev.user?.name}
-                        size={32}
-                        fallbackType="initial"
-                        fallbackBackgroundColor={theme.colors.primaryContainer}
-                        initialTextStyle={{ color: theme.colors.onPrimaryContainer }}
-                        borderColor={theme.colors.outlineVariant}
-                        borderWidth={1}
-                      />
-                      <View>
-                        <Text style={styles.reviewerName}>
-                          {rev.user?.name || 'Confeiteira(o)'}
-                        </Text>
-                        {Boolean(formattedDate) && (
-                          <Text style={styles.reviewDateText}>{formattedDate}</Text>
-                        )}
+                <View style={styles.actionButtonsRow}>
+                  {/* Submit or Update Button */}
+                  {(!hasUserReviewed || hasRatingChanged) && (
+                    <TouchableOpacity
+                      style={[
+                        styles.submitReviewBtn,
+                        (!currentRating || isSubmittingReview) && styles.submitReviewBtnDisabled,
+                      ]}
+                      onPress={handleSubmit}
+                      disabled={!currentRating || isSubmittingReview}
+                      activeOpacity={0.85}
+                      accessibilityRole="button"
+                      accessibilityLabel={
+                        hasUserReviewed ? 'Atualizar avaliação' : 'Salvar avaliação'
+                      }
+                    >
+                      {isSubmittingReview ? (
+                        <ActivityIndicator size="small" color={theme.colors.onPrimary} />
+                      ) : (
+                        <>
+                          <MaterialCommunityIcons
+                            name={hasUserReviewed ? 'check' : 'star'}
+                            size={18}
+                            color={theme.colors.onPrimary}
+                          />
+                          <Text style={styles.submitReviewBtnText}>
+                            {hasUserReviewed ? 'Atualizar Nota' : 'Salvar Avaliação'}
+                          </Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  )}
+
+                  {/* Delete Button (If already evaluated) */}
+                  {hasUserReviewed && (
+                    <TouchableOpacity
+                      style={styles.deleteReviewBtn}
+                      onPress={handleDelete}
+                      disabled={isDeletingReview}
+                      activeOpacity={0.8}
+                      accessibilityRole="button"
+                      accessibilityLabel="Remover avaliação"
+                    >
+                      {isDeletingReview ? (
+                        <ActivityIndicator size="small" color={theme.colors.error} />
+                      ) : (
+                        <>
+                          <MaterialCommunityIcons
+                            name="trash-can-outline"
+                            size={18}
+                            color={theme.colors.error}
+                          />
+                          <Text style={styles.deleteReviewBtnText}>Remover Avaliação</Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* Right Column (Desktop) / Bottom Section (Mobile): Recent Reviews */}
+        <View style={isDesktop ? styles.desktopRightCol : undefined}>
+          {/* Community Reviews List */}
+          <View style={styles.reviewsListContainer}>
+            {!isDesktop && <Text style={styles.reviewsListTitle}>Avaliações Recentes</Text>}
+
+            {isLoadingReviews ? (
+              <View style={styles.loadingWrapper}>
+                <ActivityIndicator size="small" color={theme.colors.primary} />
+              </View>
+            ) : reviews.length === 0 ? (
+              <View style={styles.emptyReviewsCard}>
+                <MaterialCommunityIcons
+                  name="message-draw"
+                  size={32}
+                  color={theme.colors.placeholder}
+                />
+                <Text style={styles.emptyReviewsText}>
+                  Nenhuma avaliação registrada ainda. Seja a primeira pessoa a avaliar!
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.reviewsCardsList}>
+                {reviews.map((rev) => {
+                  let formattedDate = '';
+                  try {
+                    const date = new Date(rev.createdAt);
+                    formattedDate = isNaN(date.getTime())
+                      ? ''
+                      : date.toLocaleDateString('pt-BR', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                        });
+                  } catch {
+                    formattedDate = '';
+                  }
+
+                  return (
+                    <View key={rev.id} style={styles.reviewItemCard}>
+                      <View style={styles.reviewItemHeader}>
+                        <View style={styles.reviewItemUser}>
+                          <UserAvatar
+                            url={rev.user?.pfpUrl}
+                            updatedAt={rev.user?.updatedAt || rev.updatedAt}
+                            name={rev.user?.name}
+                            size={32}
+                            fallbackType="initial"
+                            fallbackBackgroundColor={theme.colors.primaryContainer}
+                            initialTextStyle={{ color: theme.colors.onPrimaryContainer }}
+                            borderColor={theme.colors.outlineVariant}
+                            borderWidth={1}
+                          />
+                          <View>
+                            <Text style={styles.reviewerName}>
+                              {rev.user?.name || 'Confeiteira(o)'}
+                            </Text>
+                            {Boolean(formattedDate) && (
+                              <Text style={styles.reviewDateText}>{formattedDate}</Text>
+                            )}
+                          </View>
+                        </View>
+
+                        <View style={styles.reviewItemStars}>
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <MaterialCommunityIcons
+                              key={s}
+                              name={s <= rev.rating ? 'star' : 'star-outline'}
+                              size={14}
+                              color={
+                                s <= rev.rating ? theme.colors.primary : theme.colors.outlineVariant
+                              }
+                            />
+                          ))}
+                        </View>
                       </View>
                     </View>
-
-                    <View style={styles.reviewItemStars}>
-                      {[1, 2, 3, 4, 5].map((s) => (
-                        <MaterialCommunityIcons
-                          key={s}
-                          name={s <= rev.rating ? 'star' : 'star-outline'}
-                          size={14}
-                          color={
-                            s <= rev.rating ? theme.colors.primary : theme.colors.outlineVariant
-                          }
-                        />
-                      ))}
-                    </View>
-                  </View>
-                </View>
-              );
-            })}
+                  );
+                })}
+              </View>
+            )}
           </View>
-        )}
+        </View>
       </View>
     </View>
   );
 });
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = (theme: AppTheme, isDesktop: boolean) =>
   StyleSheet.create({
     sectionContainer: {
       width: '100%',
@@ -419,6 +440,27 @@ const createStyles = (theme: AppTheme) =>
       borderTopWidth: 1,
       borderTopColor: theme.colors.outlineVariant,
       paddingTop: theme.spacing.space6,
+      gap: theme.spacing.space4,
+    },
+    desktopColumnsRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: theme.spacing.space6,
+    },
+    desktopLeftCol: {
+      flex: 1,
+      gap: theme.spacing.space4,
+    },
+    desktopRightCol: {
+      flex: 1.15,
+      gap: theme.spacing.space4,
+    },
+    mobileFlowContainer: {
+      flexDirection: 'column',
+      gap: theme.spacing.space4,
+    },
+    mobileGroupCol: {
+      flexDirection: 'column',
       gap: theme.spacing.space4,
     },
     sectionHeader: {
@@ -667,7 +709,7 @@ const createStyles = (theme: AppTheme) =>
     },
     reviewsListContainer: {
       gap: theme.spacing.space3,
-      marginTop: theme.spacing.space2,
+      marginTop: isDesktop ? 0 : theme.spacing.space2,
     },
     reviewsListTitle: {
       fontFamily: theme.typography.headlineMd.fontFamily,

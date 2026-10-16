@@ -48,7 +48,7 @@ export function RecipeScalerBar({
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <View style={styles.titleGroup}>
-          <MaterialCommunityIcons name="scale-bathroom" size={18} color={theme.colors.primary} />
+          <MaterialCommunityIcons name="scale" size={18} color={theme.colors.primary} />
           <Text style={styles.title}>Multiplicador de Receita</Text>
         </View>
 

@@ -39,6 +39,15 @@ import { getTagColors } from '@/src/utils/tag';
 
 export type FormattedInstructionStep = RecipeInstructionStep;
 
+export interface NormalizedRecipeTag {
+  id: string | number;
+  name: string;
+  type?: string;
+  backgroundColor: string;
+  textColor: string;
+  borderColor: string;
+}
+
 export default function RecipeScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
@@ -65,6 +74,7 @@ export default function RecipeScreen() {
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
   const [scaleFactor, setScaleFactor] = useState(1);
   const [isKitchenModeOpen, setIsKitchenModeOpen] = useState(false);
+  const [isOwnerActionsExpanded, setIsOwnerActionsExpanded] = useState(true);
 
   const handleToggleSave = async () => {
     if (!user) {
@@ -204,18 +214,49 @@ export default function RecipeScreen() {
     });
   }, [recipe, scaleFactor, scaledRecipeItems]);
 
-  const recipeTags = useMemo(() => {
-    const rawTags = (recipe as { tags?: { tag: PartialTag }[] })?.tags;
+  const recipeTags = useMemo<NormalizedRecipeTag[]>(() => {
+    let rawTags =
+      (recipe as { tags?: unknown; recipeTags?: unknown })?.tags ??
+      (recipe as { tags?: unknown; recipeTags?: unknown })?.recipeTags;
+
+    if (!Array.isArray(rawTags) || rawTags.length === 0) {
+      const parentTags = (recipe as { parent?: { tags?: unknown } })?.parent?.tags;
+      if (Array.isArray(parentTags) && parentTags.length > 0) {
+        rawTags = parentTags;
+      }
+    }
+
     if (!Array.isArray(rawTags)) return [];
-    return rawTags.map((item: { tag: PartialTag }) => {
-      const tagColors = getTagColors(item?.tag?.type, theme);
-      return {
-        ...item,
-        backgroundColor: tagColors.backgroundColor,
-        textColor: tagColors.textColor,
-        borderColor: tagColors.borderColor,
-      };
-    });
+
+    const result: NormalizedRecipeTag[] = [];
+    for (let index = 0; index < rawTags.length; index++) {
+      const item = rawTags[index];
+      if (!item) continue;
+      if (typeof item === 'string') {
+        const colors = getTagColors(undefined, theme);
+        result.push({
+          id: `str-${index}-${item}`,
+          name: item,
+          type: undefined,
+          ...colors,
+        });
+        continue;
+      }
+      const tagObj = (item as { tag?: PartialTag }).tag ?? (item as PartialTag);
+      if (!tagObj || typeof tagObj !== 'object') continue;
+      const name = tagObj.name || (tagObj as unknown as { title?: string }).title;
+      if (!name) continue;
+
+      const colors = getTagColors(tagObj.type, theme);
+      result.push({
+        id: tagObj.id || `tag-${index}-${name}`,
+        name,
+        type: tagObj.type,
+        ...colors,
+      });
+    }
+
+    return result;
   }, [recipe, theme]);
 
   const parsedInstructions: FormattedInstructionStep[] = useMemo(() => {
@@ -564,113 +605,59 @@ export default function RecipeScreen() {
                 />
 
                 {/* Title, Meta, Status and Tags Header */}
+                {/* Title, Meta, Status and Tags Header */}
                 <View style={styles.headerSection}>
-                  <View style={styles.titleRow}>
-                    {!isDesktop && (
-                      <View style={styles.titleBadgesRow}>
-                        {isDownloaded && (
-                          <View
-                            style={[
-                              styles.downloadedBadge,
-                              hasDownloadedUpdate && styles.downloadedBadgeUpdate,
-                            ]}
-                          >
-                            <MaterialCommunityIcons
-                              name={
-                                hasDownloadedUpdate ? 'cloud-sync-outline' : 'cloud-check-outline'
-                              }
-                              size={13}
-                              color={
-                                hasDownloadedUpdate ? theme.colors.onTertiary : theme.colors.primary
-                              }
-                            />
-                            <Text
-                              style={[
-                                styles.downloadedBadgeText,
-                                hasDownloadedUpdate && styles.downloadedBadgeTextUpdate,
-                              ]}
-                            >
-                              {hasDownloadedUpdate ? 'Atualização' : 'Baixada'}
-                            </Text>
-                          </View>
-                        )}
-                        {Boolean(recipe.parent) && (
-                          <View style={styles.forkBadge}>
-                            <MaterialCommunityIcons
-                              name="source-fork"
-                              size={13}
-                              color={theme.colors.secondary}
-                            />
-                            <Text style={styles.forkBadgeText}>Versão Adaptada</Text>
-                          </View>
-                        )}
+                  <View style={styles.titleSection}>
+                    <View style={styles.titleBadgesRow}>
+                      {isDownloaded && (
                         <View
-                          style={[styles.statusBadge, { backgroundColor: statusBadge.bgColor }]}
+                          style={[
+                            styles.downloadedBadge,
+                            hasDownloadedUpdate && styles.downloadedBadgeUpdate,
+                          ]}
                         >
                           <MaterialCommunityIcons
-                            name={statusBadge.icon}
-                            size={14}
-                            color={statusBadge.color}
+                            name={
+                              hasDownloadedUpdate ? 'cloud-sync-outline' : 'cloud-check-outline'
+                            }
+                            size={13}
+                            color={
+                              hasDownloadedUpdate ? theme.colors.onTertiary : theme.colors.primary
+                            }
                           />
-                          <Text style={[styles.statusBadgeText, { color: statusBadge.color }]}>
-                            {statusBadge.label}
+                          <Text
+                            style={[
+                              styles.downloadedBadgeText,
+                              hasDownloadedUpdate && styles.downloadedBadgeTextUpdate,
+                            ]}
+                          >
+                            {hasDownloadedUpdate ? 'Atualização' : 'Baixada'}
                           </Text>
                         </View>
+                      )}
+                      {Boolean(recipe.parent) && (
+                        <View style={styles.forkBadge}>
+                          <MaterialCommunityIcons
+                            name="source-fork"
+                            size={13}
+                            color={theme.colors.secondary}
+                          />
+                          <Text style={styles.forkBadgeText}>Versão Adaptada</Text>
+                        </View>
+                      )}
+                      <View style={[styles.statusBadge, { backgroundColor: statusBadge.bgColor }]}>
+                        <MaterialCommunityIcons
+                          name={statusBadge.icon}
+                          size={14}
+                          color={statusBadge.color}
+                        />
+                        <Text style={[styles.statusBadgeText, { color: statusBadge.color }]}>
+                          {statusBadge.label}
+                        </Text>
                       </View>
-                    )}
+                    </View>
+
                     <Text style={styles.primaryTitle}>{recipe.title}</Text>
-                    {isDesktop && (
-                      <View style={styles.titleBadgesRow}>
-                        {isDownloaded && (
-                          <View
-                            style={[
-                              styles.downloadedBadge,
-                              hasDownloadedUpdate && styles.downloadedBadgeUpdate,
-                            ]}
-                          >
-                            <MaterialCommunityIcons
-                              name={
-                                hasDownloadedUpdate ? 'cloud-sync-outline' : 'cloud-check-outline'
-                              }
-                              size={13}
-                              color={
-                                hasDownloadedUpdate ? theme.colors.onTertiary : theme.colors.primary
-                              }
-                            />
-                            <Text
-                              style={[
-                                styles.downloadedBadgeText,
-                                hasDownloadedUpdate && styles.downloadedBadgeTextUpdate,
-                              ]}
-                            >
-                              {hasDownloadedUpdate ? 'Atualização' : 'Baixada'}
-                            </Text>
-                          </View>
-                        )}
-                        {Boolean(recipe.parent) && (
-                          <View style={styles.forkBadge}>
-                            <MaterialCommunityIcons
-                              name="source-fork"
-                              size={13}
-                              color={theme.colors.secondary}
-                            />
-                            <Text style={styles.forkBadgeText}>Versão Adaptada</Text>
-                          </View>
-                        )}
-                        <View
-                          style={[styles.statusBadge, { backgroundColor: statusBadge.bgColor }]}
-                        >
-                          <MaterialCommunityIcons
-                            name={statusBadge.icon}
-                            size={14}
-                            color={statusBadge.color}
-                          />
-                          <Text style={[styles.statusBadgeText, { color: statusBadge.color }]}>
-                            {statusBadge.label}
-                          </Text>
-                        </View>
-                      </View>
-                    )}
                   </View>
 
                   {/* Parent Recipe Link Banner */}
@@ -713,13 +700,52 @@ export default function RecipeScreen() {
                     </TouchableOpacity>
                   )}
 
+                  {/* Line 3: Recipe Tags */}
+                  {recipeTags.length > 0 && (
+                    <View style={styles.tagsRow}>
+                      {recipeTags.map((tag) => (
+                        <View
+                          key={tag.id}
+                          style={[
+                            styles.tagPill,
+                            {
+                              backgroundColor: tag.backgroundColor,
+                              borderColor: tag.borderColor,
+                            },
+                          ]}
+                        >
+                          <Text style={[styles.tagPillText, { color: tag.textColor }]}>
+                            {tag.name}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+
+                  {/* Line 4: Statistics Badges (Saves), aligned right */}
+                  {typeof recipe.totalSaves === 'number' && recipe.totalSaves > 0 && (
+                    <View style={styles.savesBadgeRow}>
+                      <View style={styles.savesBadge}>
+                        <MaterialCommunityIcons
+                          name="bookmark-outline"
+                          size={14}
+                          color={theme.colors.primary}
+                        />
+                        <Text style={styles.savesBadgeText}>
+                          {recipe.totalSaves} {recipe.totalSaves === 1 ? 'salvo' : 'salvos'}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+
+                  {/* Line 5: Yield and Prep Time - Rectangular, centered, and 50/50 horizontal split */}
                   <View style={styles.metaRow}>
                     {Boolean(recipe.baseYield) && (
                       <View style={styles.metaBadge}>
                         <MaterialCommunityIcons
-                          name="silverware-fork-knife"
-                          size={15}
-                          color={theme.colors.text}
+                          name="scale"
+                          size={18}
+                          color={theme.colors.espressoDark}
                         />
                         <Text style={styles.metaBadgeText}>
                           Rende {recipe.baseYield} {recipe.yieldUnit || 'UN'}
@@ -731,54 +757,13 @@ export default function RecipeScreen() {
                       <View style={styles.metaBadge}>
                         <MaterialCommunityIcons
                           name="timer-outline"
-                          size={15}
-                          color={theme.colors.text}
+                          size={18}
+                          color={theme.colors.espressoDark}
                         />
                         <Text style={styles.metaBadgeText}>{recipe.prepTimeMinutes} min</Text>
                       </View>
                     )}
-
-                    {typeof recipe.totalSaves === 'number' && recipe.totalSaves > 0 && (
-                      <View style={styles.metaBadge}>
-                        <MaterialCommunityIcons
-                          name="bookmark-outline"
-                          size={15}
-                          color={theme.colors.primary}
-                        />
-                        <Text style={styles.metaBadgeText}>
-                          {recipe.totalSaves} {recipe.totalSaves === 1 ? 'salvo' : 'salvos'}
-                        </Text>
-                      </View>
-                    )}
                   </View>
-
-                  {recipeTags.length > 0 && (
-                    <View style={styles.tagsRow}>
-                      {recipeTags.map(
-                        (item: {
-                          tag: PartialTag;
-                          backgroundColor: string;
-                          textColor: string;
-                          borderColor: string;
-                        }) => (
-                          <View
-                            key={item?.tag?.id || item?.tag?.name}
-                            style={[
-                              styles.tagPill,
-                              {
-                                backgroundColor: item.backgroundColor,
-                                borderColor: item.borderColor,
-                              },
-                            ]}
-                          >
-                            <Text style={[styles.tagPillText, { color: item.textColor }]}>
-                              {item?.tag?.name}
-                            </Text>
-                          </View>
-                        ),
-                      )}
-                    </View>
-                  )}
                 </View>
 
                 {/* Owner Action Panel */}
@@ -814,247 +799,270 @@ export default function RecipeScreen() {
                       <Text style={styles.btnActionTextProduce}>Produzir Receita</Text>
                     </TouchableOpacity>
 
-                    {recipe.status === 'SUSPENDED' && (
-                      <View style={styles.suspendedBanner}>
-                        <MaterialCommunityIcons
-                          name="alert-circle-outline"
-                          size={18}
-                          color={theme.colors.error}
-                        />
-                        <Text style={styles.suspendedBannerText}>
-                          Esta receita está suspensa porque a conta do criador foi desativada ou
-                          suspensa.
-                        </Text>
-                      </View>
-                    )}
-
-                    <View style={styles.ownerActionButtons}>
-                      {/* 1. Publicar / Despublicar (indisponível quando suspensa) */}
-                      {recipe.status !== 'SUSPENDED' &&
-                        (recipe.status === 'PUBLISHED' ? (
-                          <TouchableOpacity
-                            style={styles.btnActionDraft}
-                            onPress={() => handleToggleVisibility('DRAFT')}
-                            disabled={isUpdatingVisibility}
-                            activeOpacity={0.8}
-                            accessibilityRole="button"
-                            accessibilityLabel="Mudar receita para rascunho"
-                          >
+                    {isOwnerActionsExpanded && (
+                      <>
+                        {recipe.status === 'SUSPENDED' && (
+                          <View style={styles.suspendedBanner}>
                             <MaterialCommunityIcons
-                              name="lock-outline"
-                              size={18}
-                              color={theme.colors.onSurfaceVariant}
-                            />
-                            <Text style={styles.btnActionTextDraft}>Despublicar</Text>
-                          </TouchableOpacity>
-                        ) : (
-                          <TouchableOpacity
-                            style={styles.btnActionPublish}
-                            onPress={() => handleToggleVisibility('PUBLISHED')}
-                            disabled={isUpdatingVisibility}
-                            activeOpacity={0.8}
-                            accessibilityRole="button"
-                            accessibilityLabel="Publicar receita na comunidade"
-                          >
-                            <MaterialCommunityIcons
-                              name="earth"
-                              size={18}
-                              color={theme.colors.onTertiary}
-                            />
-                            <Text style={styles.btnActionTextPublish}>Publicar</Text>
-                          </TouchableOpacity>
-                        ))}
-
-                      {/* 2. Compartilhar */}
-                      <TouchableOpacity
-                        style={styles.btnActionShare}
-                        onPress={handleShareRecipe}
-                        activeOpacity={0.8}
-                        accessibilityRole="button"
-                        accessibilityLabel="Compartilhar resumo da receita"
-                      >
-                        <MaterialCommunityIcons
-                          name="share-variant-outline"
-                          size={18}
-                          color={theme.colors.primary}
-                        />
-                        <Text style={styles.btnActionTextShare}>Compartilhar</Text>
-                      </TouchableOpacity>
-
-                      {/* 3. Baixar / Atualizar / Remover */}
-                      {!isDownloaded ? (
-                        <TouchableOpacity
-                          style={styles.btnActionDownload}
-                          onPress={handleDownloadRecipe}
-                          disabled={isDownloadingOrUpdating}
-                          activeOpacity={0.8}
-                          accessibilityRole="button"
-                          accessibilityLabel="Baixar receita para acesso offline"
-                        >
-                          {isDownloadingOrUpdating ? (
-                            <ActivityIndicator size="small" color={theme.colors.primary} />
-                          ) : (
-                            <>
-                              <MaterialCommunityIcons
-                                name="cloud-download-outline"
-                                size={18}
-                                color={theme.colors.primary}
-                              />
-                              <Text style={styles.btnActionTextDownload}>Baixar</Text>
-                            </>
-                          )}
-                        </TouchableOpacity>
-                      ) : hasDownloadedUpdate ? (
-                        <TouchableOpacity
-                          style={styles.btnActionUpdate}
-                          onPress={handleUpdateDownloadedRecipe}
-                          disabled={isDownloadingOrUpdating}
-                          activeOpacity={0.8}
-                          accessibilityRole="button"
-                          accessibilityLabel="Atualizar versão baixada da receita"
-                        >
-                          {isDownloadingOrUpdating ? (
-                            <ActivityIndicator
-                              size="small"
-                              color={theme.colors.onTertiaryContainer}
-                            />
-                          ) : (
-                            <>
-                              <MaterialCommunityIcons
-                                name="cloud-sync-outline"
-                                size={18}
-                                color={theme.colors.onTertiaryContainer}
-                              />
-                              <Text style={styles.btnActionTextUpdate}>Atualizar</Text>
-                            </>
-                          )}
-                        </TouchableOpacity>
-                      ) : (
-                        <TouchableOpacity
-                          style={styles.btnActionRemoveDownload}
-                          onPress={handleRemoveDownloadedRecipe}
-                          disabled={isDownloadingOrUpdating}
-                          activeOpacity={0.8}
-                          accessibilityRole="button"
-                          accessibilityLabel="Remover receita baixada do armazenamento"
-                        >
-                          {isDownloadingOrUpdating ? (
-                            <ActivityIndicator size="small" color={theme.colors.error} />
-                          ) : (
-                            <>
-                              <MaterialCommunityIcons
-                                name="cloud-remove-outline"
-                                size={18}
-                                color={theme.colors.error}
-                              />
-                              <Text style={styles.btnActionTextRemoveDownload}>Remover</Text>
-                            </>
-                          )}
-                        </TouchableOpacity>
-                      )}
-
-                      {/* 4. Editar */}
-                      <TouchableOpacity
-                        style={styles.btnActionEdit}
-                        onPress={() =>
-                          router.push({
-                            pathname: '/edit-recipe',
-                            params: { recipeId: recipe.id },
-                          })
-                        }
-                        activeOpacity={0.8}
-                        accessibilityRole="button"
-                        accessibilityLabel="Editar informações da receita"
-                      >
-                        <MaterialCommunityIcons
-                          name="pencil-outline"
-                          size={18}
-                          color={theme.colors.primary}
-                        />
-                        <Text style={styles.btnActionTextEdit}>Editar</Text>
-                      </TouchableOpacity>
-
-                      {/* 5. Arquivar / Restaurar (indisponível quando suspensa) */}
-                      {recipe.status !== 'SUSPENDED' &&
-                        (recipe.status === 'ARCHIVED' ? (
-                          <TouchableOpacity
-                            style={styles.btnActionUnarchive}
-                            onPress={handleUnarchiveRecipe}
-                            disabled={isUpdatingVisibility}
-                            activeOpacity={0.8}
-                            accessibilityRole="button"
-                            accessibilityLabel="Restaurar receita arquivada"
-                          >
-                            <MaterialCommunityIcons
-                              name="archive-arrow-up-outline"
-                              size={18}
-                              color={theme.colors.onPrimaryContainer}
-                            />
-                            <Text style={styles.btnActionTextUnarchive}>Restaurar</Text>
-                          </TouchableOpacity>
-                        ) : (
-                          <TouchableOpacity
-                            style={styles.btnActionArchive}
-                            onPress={handleArchiveRecipe}
-                            disabled={isUpdatingVisibility}
-                            activeOpacity={0.8}
-                            accessibilityRole="button"
-                            accessibilityLabel="Arquivar receita"
-                          >
-                            <MaterialCommunityIcons
-                              name="archive-arrow-down-outline"
-                              size={18}
-                              color={theme.colors.onSurfaceVariant}
-                            />
-                            <Text style={styles.btnActionTextArchive}>Arquivar</Text>
-                          </TouchableOpacity>
-                        ))}
-
-                      {/* 6. Excluir */}
-                      <TouchableOpacity
-                        style={styles.btnActionDelete}
-                        onPress={handleDeleteRecipe}
-                        disabled={isDeletingRecipe}
-                        activeOpacity={0.8}
-                        accessibilityRole="button"
-                        accessibilityLabel="Excluir receita definitivamente"
-                      >
-                        {isDeletingRecipe ? (
-                          <ActivityIndicator size="small" color={theme.colors.error} />
-                        ) : (
-                          <>
-                            <MaterialCommunityIcons
-                              name="trash-can-outline"
+                              name="alert-circle-outline"
                               size={18}
                               color={theme.colors.error}
                             />
-                            <Text style={styles.btnActionTextDelete}>Excluir</Text>
-                          </>
+                            <Text style={styles.suspendedBannerText}>
+                              Esta receita está suspensa porque a conta do criador foi desativada ou
+                              suspensa.
+                            </Text>
+                          </View>
                         )}
-                      </TouchableOpacity>
-                    </View>
 
-                    {/* Link para histórico de produções */}
+                        <View style={styles.ownerActionButtons}>
+                          {/* 1. Publicar / Despublicar (indisponível quando suspensa) */}
+                          {recipe.status !== 'SUSPENDED' &&
+                            (recipe.status === 'PUBLISHED' ? (
+                              <TouchableOpacity
+                                style={styles.btnActionDraft}
+                                onPress={() => handleToggleVisibility('DRAFT')}
+                                disabled={isUpdatingVisibility}
+                                activeOpacity={0.8}
+                                accessibilityRole="button"
+                                accessibilityLabel="Mudar receita para rascunho"
+                              >
+                                <MaterialCommunityIcons
+                                  name="lock-outline"
+                                  size={18}
+                                  color={theme.colors.onSurfaceVariant}
+                                />
+                                <Text style={styles.btnActionTextDraft}>Despublicar</Text>
+                              </TouchableOpacity>
+                            ) : (
+                              <TouchableOpacity
+                                style={styles.btnActionPublish}
+                                onPress={() => handleToggleVisibility('PUBLISHED')}
+                                disabled={isUpdatingVisibility}
+                                activeOpacity={0.8}
+                                accessibilityRole="button"
+                                accessibilityLabel="Publicar receita na comunidade"
+                              >
+                                <MaterialCommunityIcons
+                                  name="earth"
+                                  size={18}
+                                  color={theme.colors.onTertiary}
+                                />
+                                <Text style={styles.btnActionTextPublish}>Publicar</Text>
+                              </TouchableOpacity>
+                            ))}
+
+                          {/* 2. Compartilhar */}
+                          <TouchableOpacity
+                            style={styles.btnActionShare}
+                            onPress={handleShareRecipe}
+                            activeOpacity={0.8}
+                            accessibilityRole="button"
+                            accessibilityLabel="Compartilhar resumo da receita"
+                          >
+                            <MaterialCommunityIcons
+                              name="share-variant-outline"
+                              size={18}
+                              color={theme.colors.primary}
+                            />
+                            <Text style={styles.btnActionTextShare}>Compartilhar</Text>
+                          </TouchableOpacity>
+
+                          {/* 3. Baixar / Atualizar / Remover */}
+                          {!isDownloaded ? (
+                            <TouchableOpacity
+                              style={styles.btnActionDownload}
+                              onPress={handleDownloadRecipe}
+                              disabled={isDownloadingOrUpdating}
+                              activeOpacity={0.8}
+                              accessibilityRole="button"
+                              accessibilityLabel="Baixar receita para acesso offline"
+                            >
+                              {isDownloadingOrUpdating ? (
+                                <ActivityIndicator size="small" color={theme.colors.primary} />
+                              ) : (
+                                <>
+                                  <MaterialCommunityIcons
+                                    name="cloud-download-outline"
+                                    size={18}
+                                    color={theme.colors.primary}
+                                  />
+                                  <Text style={styles.btnActionTextDownload}>Baixar</Text>
+                                </>
+                              )}
+                            </TouchableOpacity>
+                          ) : hasDownloadedUpdate ? (
+                            <TouchableOpacity
+                              style={styles.btnActionUpdate}
+                              onPress={handleUpdateDownloadedRecipe}
+                              disabled={isDownloadingOrUpdating}
+                              activeOpacity={0.8}
+                              accessibilityRole="button"
+                              accessibilityLabel="Atualizar versão baixada da receita"
+                            >
+                              {isDownloadingOrUpdating ? (
+                                <ActivityIndicator
+                                  size="small"
+                                  color={theme.colors.onTertiaryContainer}
+                                />
+                              ) : (
+                                <>
+                                  <MaterialCommunityIcons
+                                    name="cloud-sync-outline"
+                                    size={18}
+                                    color={theme.colors.onTertiaryContainer}
+                                  />
+                                  <Text style={styles.btnActionTextUpdate}>Atualizar</Text>
+                                </>
+                              )}
+                            </TouchableOpacity>
+                          ) : (
+                            <TouchableOpacity
+                              style={styles.btnActionRemoveDownload}
+                              onPress={handleRemoveDownloadedRecipe}
+                              disabled={isDownloadingOrUpdating}
+                              activeOpacity={0.8}
+                              accessibilityRole="button"
+                              accessibilityLabel="Remover receita baixada do armazenamento"
+                            >
+                              {isDownloadingOrUpdating ? (
+                                <ActivityIndicator size="small" color={theme.colors.error} />
+                              ) : (
+                                <>
+                                  <MaterialCommunityIcons
+                                    name="cloud-remove-outline"
+                                    size={18}
+                                    color={theme.colors.error}
+                                  />
+                                  <Text style={styles.btnActionTextRemoveDownload}>Remover</Text>
+                                </>
+                              )}
+                            </TouchableOpacity>
+                          )}
+
+                          {/* 4. Editar */}
+                          <TouchableOpacity
+                            style={styles.btnActionEdit}
+                            onPress={() =>
+                              router.push({
+                                pathname: '/edit-recipe',
+                                params: { recipeId: recipe.id },
+                              })
+                            }
+                            activeOpacity={0.8}
+                            accessibilityRole="button"
+                            accessibilityLabel="Editar informações da receita"
+                          >
+                            <MaterialCommunityIcons
+                              name="pencil-outline"
+                              size={18}
+                              color={theme.colors.primary}
+                            />
+                            <Text style={styles.btnActionTextEdit}>Editar</Text>
+                          </TouchableOpacity>
+
+                          {/* 5. Arquivar / Restaurar (indisponível quando suspensa) */}
+                          {recipe.status !== 'SUSPENDED' &&
+                            (recipe.status === 'ARCHIVED' ? (
+                              <TouchableOpacity
+                                style={styles.btnActionUnarchive}
+                                onPress={handleUnarchiveRecipe}
+                                disabled={isUpdatingVisibility}
+                                activeOpacity={0.8}
+                                accessibilityRole="button"
+                                accessibilityLabel="Restaurar receita arquivada"
+                              >
+                                <MaterialCommunityIcons
+                                  name="archive-arrow-up-outline"
+                                  size={18}
+                                  color={theme.colors.onPrimaryContainer}
+                                />
+                                <Text style={styles.btnActionTextUnarchive}>Restaurar</Text>
+                              </TouchableOpacity>
+                            ) : (
+                              <TouchableOpacity
+                                style={styles.btnActionArchive}
+                                onPress={handleArchiveRecipe}
+                                disabled={isUpdatingVisibility}
+                                activeOpacity={0.8}
+                                accessibilityRole="button"
+                                accessibilityLabel="Arquivar receita"
+                              >
+                                <MaterialCommunityIcons
+                                  name="archive-arrow-down-outline"
+                                  size={18}
+                                  color={theme.colors.onSurfaceVariant}
+                                />
+                                <Text style={styles.btnActionTextArchive}>Arquivar</Text>
+                              </TouchableOpacity>
+                            ))}
+
+                          {/* 6. Excluir */}
+                          <TouchableOpacity
+                            style={styles.btnActionDelete}
+                            onPress={handleDeleteRecipe}
+                            disabled={isDeletingRecipe}
+                            activeOpacity={0.8}
+                            accessibilityRole="button"
+                            accessibilityLabel="Excluir receita definitivamente"
+                          >
+                            {isDeletingRecipe ? (
+                              <ActivityIndicator size="small" color={theme.colors.error} />
+                            ) : (
+                              <>
+                                <MaterialCommunityIcons
+                                  name="trash-can-outline"
+                                  size={18}
+                                  color={theme.colors.error}
+                                />
+                                <Text style={styles.btnActionTextDelete}>Excluir</Text>
+                              </>
+                            )}
+                          </TouchableOpacity>
+                        </View>
+
+                        {/* Link para histórico de produções */}
+                        <TouchableOpacity
+                          style={styles.historyLinkBtn}
+                          onPress={() =>
+                            router.push({
+                              pathname: '/productions',
+                              params: { recipeId: recipe.id },
+                            })
+                          }
+                          activeOpacity={0.7}
+                          accessibilityRole="button"
+                          accessibilityLabel="Ver produções anteriores desta receita"
+                        >
+                          <MaterialCommunityIcons
+                            name="history"
+                            size={18}
+                            color={theme.colors.primary}
+                          />
+                          <Text style={styles.historyLinkText}>
+                            Ver histórico de produções desta receita
+                          </Text>
+                        </TouchableOpacity>
+                      </>
+                    )}
+
+                    {/* Expand/Collapse Toggle Button */}
                     <TouchableOpacity
-                      style={styles.historyLinkBtn}
-                      onPress={() =>
-                        router.push({
-                          pathname: '/productions',
-                          params: { recipeId: recipe.id },
-                        })
-                      }
+                      style={styles.ownerPanelToggleBtn}
+                      onPress={() => setIsOwnerActionsExpanded((prev) => !prev)}
                       activeOpacity={0.7}
                       accessibilityRole="button"
-                      accessibilityLabel="Ver produções anteriores desta receita"
+                      accessibilityLabel={
+                        isOwnerActionsExpanded
+                          ? 'Recolher opções do painel da receita'
+                          : 'Expandir opções do painel da receita'
+                      }
                     >
                       <MaterialCommunityIcons
-                        name="history"
-                        size={18}
-                        color={theme.colors.primary}
+                        name={isOwnerActionsExpanded ? 'chevron-up' : 'chevron-down'}
+                        size={22}
+                        color={theme.colors.onSurfaceVariant}
                       />
-                      <Text style={styles.historyLinkText}>
-                        Ver histórico de produções desta receita
-                      </Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -1328,6 +1336,37 @@ export default function RecipeScreen() {
                       scaleFactor={scaleFactor}
                       onScaleChange={setScaleFactor}
                     />
+
+                    {/* Shortcut to Screen Keep-Awake / Kitchen Mode */}
+                    <TouchableOpacity
+                      style={styles.keepAwakeShortcut}
+                      onPress={() => setIsKitchenModeOpen(true)}
+                      activeOpacity={0.8}
+                      accessibilityRole="button"
+                      accessibilityLabel="Atalho para abrir o modo tela sempre ativa"
+                    >
+                      <View style={styles.keepAwakeShortcutLeft}>
+                        <View style={styles.keepAwakeIconWrap}>
+                          <MaterialCommunityIcons
+                            name="white-balance-sunny"
+                            size={18}
+                            color={theme.colors.primary}
+                          />
+                        </View>
+                        <View style={styles.keepAwakeTextCol}>
+                          <Text style={styles.keepAwakeTitle}>Modo Tela Sempre Ativa</Text>
+                          <Text style={styles.keepAwakeSubtitle}>
+                            Acompanhe o preparo passo a passo sem bloqueio do visor
+                          </Text>
+                        </View>
+                      </View>
+                      <MaterialCommunityIcons
+                        name="chevron-right"
+                        size={20}
+                        color={theme.colors.onSurfaceVariant}
+                      />
+                    </TouchableOpacity>
+
                     <RecipeIngredientsSection recipeItems={scaledRecipeItems} />
                     <RecipeInstructionsSection instructions={parsedInstructions} />
                   </View>
@@ -1691,15 +1730,20 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       marginBottom: 20,
       gap: 10,
     },
-    titleRow: {
-      flexDirection: isDesktop ? 'row' : 'column',
-      justifyContent: isDesktop ? 'space-between' : 'flex-start',
+    titleSection: {
+      width: '100%',
+      flexDirection: 'column',
       alignItems: 'flex-start',
-      gap: isDesktop ? 12 : 8,
+      gap: 8,
+    },
+    titleRow: {
+      width: '100%',
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      gap: 8,
     },
     primaryTitle: {
-      flex: isDesktop ? 1 : undefined,
-      width: isDesktop ? undefined : '100%',
+      width: '100%',
       color: theme.colors.espressoDark,
       fontFamily: theme.typography.headlineLg.fontFamily,
       fontSize: 26,
@@ -1707,7 +1751,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       fontWeight: 'bold',
     },
     titleBadgesRow: {
-      width: isDesktop ? undefined : '100%',
+      width: '100%',
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'flex-end',
@@ -2157,6 +2201,16 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       fontWeight: '600',
       color: theme.colors.primary,
     },
+    ownerPanelToggleBtn: {
+      width: '100%',
+      minHeight: 48,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.outlineVariant,
+      paddingTop: 4,
+      marginTop: 2,
+    },
     guestProduceCard: {
       backgroundColor: theme.colors.surfaceContainerLowest,
       borderRadius: theme.rounded.lg,
@@ -2358,24 +2412,101 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     },
     metaRow: {
       flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 12,
+      width: '100%',
     },
     metaBadge: {
+      flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'center',
       backgroundColor: theme.colors.surfaceContainerLow,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      paddingVertical: 5,
+      paddingVertical: 12,
       paddingHorizontal: 12,
-      borderRadius: theme.rounded.full,
-      gap: 6,
+      borderRadius: theme.rounded.md,
+      minHeight: 48,
+      gap: 8,
+      ...theme.shadows.soft,
     },
     metaBadgeText: {
-      fontFamily: theme.typography.labelSm.fontFamily,
-      fontSize: 13,
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 14,
       fontWeight: '600',
+      color: theme.colors.espressoDark,
+      textAlign: 'center',
+    },
+    savesBadgeRow: {
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+      marginTop: 2,
+    },
+    savesBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingVertical: 4,
+      paddingHorizontal: 10,
+      borderRadius: theme.rounded.full,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+    },
+    savesBadgeText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 12,
+      fontWeight: '600',
+      color: theme.colors.primary,
+    },
+    keepAwakeShortcut: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.md,
+      paddingVertical: theme.spacing.space3,
+      paddingHorizontal: theme.spacing.space4,
+      marginBottom: 16,
+      minHeight: 48,
+      gap: theme.spacing.space3,
+      ...theme.shadows.soft,
+    },
+    keepAwakeShortcutLeft: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.space3,
+    },
+    keepAwakeIconWrap: {
+      width: 36,
+      height: 36,
+      borderRadius: theme.rounded.sm,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    keepAwakeTextCol: {
+      flex: 1,
+      gap: 2,
+    },
+    keepAwakeTitle: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
+    },
+    keepAwakeSubtitle: {
+      fontFamily: theme.typography.bodySm.fontFamily,
+      fontSize: 12,
       color: theme.colors.onSurfaceVariant,
     },
     tagsRow: {

@@ -203,13 +203,34 @@ export function useSingleRecipe(recipeId: string, userId?: string) {
         ? await RecipeService.getRecipeWithUserInventory(recipeId, userId)
         : await RecipeService.getRecipe(recipeId);
 
-      setRecipe(res.data.recipe);
+      let recipeData = res.data.recipe;
+
+      if (
+        userId &&
+        (!recipeData.tags || !Array.isArray(recipeData.tags) || recipeData.tags.length === 0)
+      ) {
+        try {
+          const publicRes = await RecipeService.getRecipe(recipeId);
+          if (
+            publicRes?.data?.recipe?.tags &&
+            Array.isArray(publicRes.data.recipe.tags) &&
+            publicRes.data.recipe.tags.length > 0
+          ) {
+            recipeData = {
+              ...recipeData,
+              tags: publicRes.data.recipe.tags,
+            };
+          }
+        } catch {
+          // Fallback gracefully if public recipe fetch fails
+        }
+      }
+
+      setRecipe(recipeData);
       setIsOffline(false);
 
-      if (res.data.recipe.userId && userId && res.data.recipe.userId === userId) {
-        DownloadedRecipeService.updateDownloadedRecipeIfSaved(res.data.recipe, true).catch(
-          () => {},
-        );
+      if (recipeData.userId && userId && recipeData.userId === userId) {
+        DownloadedRecipeService.updateDownloadedRecipeIfSaved(recipeData, true).catch(() => {});
       }
     } catch (err) {
       const downloaded = await DownloadedRecipeService.getDownloadedRecipe(recipeId);
@@ -241,14 +262,35 @@ export function useSingleRecipe(recipeId: string, userId?: string) {
           ? await RecipeService.getRecipeWithUserInventory(recipeId, userId)
           : await RecipeService.getRecipe(recipeId);
 
+        let recipeData = res.data.recipe;
+
+        if (
+          userId &&
+          (!recipeData.tags || !Array.isArray(recipeData.tags) || recipeData.tags.length === 0)
+        ) {
+          try {
+            const publicRes = await RecipeService.getRecipe(recipeId);
+            if (
+              publicRes?.data?.recipe?.tags &&
+              Array.isArray(publicRes.data.recipe.tags) &&
+              publicRes.data.recipe.tags.length > 0
+            ) {
+              recipeData = {
+                ...recipeData,
+                tags: publicRes.data.recipe.tags,
+              };
+            }
+          } catch {
+            // Fallback gracefully if public recipe fetch fails
+          }
+        }
+
         if (isMounted) {
-          setRecipe(res.data.recipe);
+          setRecipe(recipeData);
           setIsOffline(false);
 
-          if (res.data.recipe.userId && userId && res.data.recipe.userId === userId) {
-            DownloadedRecipeService.updateDownloadedRecipeIfSaved(res.data.recipe, true).catch(
-              () => {},
-            );
+          if (recipeData.userId && userId && recipeData.userId === userId) {
+            DownloadedRecipeService.updateDownloadedRecipeIfSaved(recipeData, true).catch(() => {});
           }
         }
       } catch (err) {

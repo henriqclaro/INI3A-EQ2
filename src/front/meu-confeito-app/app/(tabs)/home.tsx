@@ -245,6 +245,10 @@ function BakerHomeScreen() {
             stockCount={stockCount}
             productionsCount={productionCount}
             savedCount={savedCount}
+            onRecipesPress={() => router.push('/recipes')}
+            onStockPress={() => router.push('/stock')}
+            onProductionsPress={() => router.push('/productions')}
+            onSavedPress={() => router.push('/saved-recipes')}
           />
 
           {hasTwoColumns ? (

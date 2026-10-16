@@ -26,7 +26,13 @@ export function BakerRecentProductionsCard({
   const hasProductions = recentProductions.length > 0;
 
   return (
-    <View style={styles.card}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={onViewAllPress}
+      activeOpacity={0.85}
+      accessibilityRole="button"
+      accessibilityLabel="Últimas produções, ver todas"
+    >
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTitleGroup}>
@@ -35,14 +41,9 @@ export function BakerRecentProductionsCard({
         </View>
 
         {hasProductions ? (
-          <TouchableOpacity
-            onPress={onViewAllPress}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            accessibilityRole="button"
-            accessibilityLabel="Ver todas as produções"
-          >
+          <View style={styles.viewAllBtn}>
             <Text style={styles.viewAllText}>Ver todas</Text>
-          </TouchableOpacity>
+          </View>
         ) : null}
       </View>
 
@@ -96,18 +97,12 @@ export function BakerRecentProductionsCard({
               ? 'Carregando histórico...'
               : 'Nenhum lote de produção registrado recentemente.'}
           </Text>
-          <TouchableOpacity
-            style={styles.emptyButton}
-            onPress={onViewAllPress}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel="Ir para produções"
-          >
+          <View style={styles.emptyButton}>
             <Text style={styles.emptyButtonText}>Abrir Produções</Text>
-          </TouchableOpacity>
+          </View>
         </View>
       )}
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -139,6 +134,11 @@ const createStyles = (theme: AppTheme) =>
       fontWeight: '600',
       color: theme.colors.espressoDark,
       letterSpacing: 0.2,
+    },
+    viewAllBtn: {
+      paddingVertical: 4,
+      paddingHorizontal: 8,
+      justifyContent: 'center',
     },
     viewAllText: {
       fontFamily: theme.typography.labelMd.fontFamily,
