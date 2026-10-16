@@ -1,7 +1,7 @@
 import type { Decimal } from '@prisma/client/runtime/client';
 import type { z } from 'zod';
 
-import type { RecipeStatus, Role, TagType } from '../../generated/prisma/client';
+import type { RecipeStatus, Role, StandardUnit, TagType } from '../../generated/prisma/client';
 import type * as user from '../../validation/user.schema';
 
 export namespace UserDTO {
@@ -62,6 +62,8 @@ export namespace UserDTO {
       title: string;
       coverUrl: string | null;
       status: RecipeStatus;
+      baseYield: Decimal;
+      yieldUnit: StandardUnit;
       /*
       profitMargin: Decimal;
       overhead: Decimal;
@@ -87,6 +89,8 @@ export namespace UserDTO {
         id: string;
         title: string;
         coverUrl: string | null;
+        baseYield: Decimal;
+        yieldUnit: StandardUnit;
         profitMargin: Decimal;
         overhead: Decimal;
         hourlyLabor: Decimal;

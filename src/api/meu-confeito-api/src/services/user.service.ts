@@ -469,6 +469,8 @@ export class UserService {
         title: true,
         coverUrl: true,
         status: true,
+        baseYield: true,
+        yieldUnit: true,
 
         /*
         profitMargin: true,
@@ -511,7 +513,7 @@ export class UserService {
 
     const userSaves = await prisma.userSavedRecipe.findMany({
       where: { userId: id },
-      take: 10,
+      orderBy: { savedAt: 'desc' },
       select: {
         savedAt: true,
 
@@ -520,6 +522,8 @@ export class UserService {
             id: true,
             title: true,
             coverUrl: true,
+            baseYield: true,
+            yieldUnit: true,
 
             profitMargin: true,
             overhead: true,

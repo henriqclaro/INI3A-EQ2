@@ -85,7 +85,18 @@ export async function explodeBOM(
       recipe.userId !== context.userId &&
       context.userRole !== 'ADMIN'
     ) {
-      throw new NotFoundError(`Recipe not found: ${recipeId}`, 'RESOURCE_NOT_FOUND');
+      const isSaved = await client.userSavedRecipe.findUnique({
+        where: {
+          userId_recipeId: {
+            userId: context.userId,
+            recipeId,
+          },
+        },
+      });
+
+      if (!isSaved) {
+        throw new NotFoundError(`Recipe not found: ${recipeId}`, 'RESOURCE_NOT_FOUND');
+      }
     }
 
     for (const item of recipe.items) {
@@ -119,10 +130,21 @@ export async function explodeBOM(
           item.subRecipe.userId !== context.userId &&
           context.userRole !== 'ADMIN'
         ) {
-          throw new NotFoundError(
-            `Sub-recipe ${item.subRecipe.title} not found`,
-            'RESOURCE_NOT_FOUND',
-          );
+          const isSubSaved = await client.userSavedRecipe.findUnique({
+            where: {
+              userId_recipeId: {
+                userId: context.userId,
+                recipeId: item.subRecipeId,
+              },
+            },
+          });
+
+          if (!isSubSaved) {
+            throw new NotFoundError(
+              `Sub-recipe ${item.subRecipe.title} not found`,
+              'RESOURCE_NOT_FOUND',
+            );
+          }
         }
 
         const itemUnitMultiplier = UNIT_TO_DIMENSION_MAP[item.unit]?.multiplierToBase ?? 1;

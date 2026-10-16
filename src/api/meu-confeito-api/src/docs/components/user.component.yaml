@@ -88,6 +88,16 @@ components:
                   - PUBLISHED
                   - ARCHIVED
                   - SUSPENDED
+              baseYield:
+                type: number
+              yieldUnit:
+                type: string
+                enum:
+                  - G
+                  - KG
+                  - ML
+                  - L
+                  - UN
               prepTimeMinutes:
                 type: number
               createdAt:
@@ -130,6 +140,16 @@ components:
                     type: string
                     format: url
                     nullable: true
+                  baseYield:
+                    type: number
+                  yieldUnit:
+                    type: string
+                    enum:
+                      - G
+                      - KG
+                      - ML
+                      - L
+                      - UN
                   profitMargin:
                     type: number
                   overhead:
