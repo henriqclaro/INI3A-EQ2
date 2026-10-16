@@ -16,3 +16,16 @@ export interface SettingsTopicItem {
   isDestructive?: boolean;
   isVisible?: boolean;
 }
+
+export interface SettingShortcutItem {
+  id: string;
+  topicId: SettingsTopicId;
+  topicTitle: string;
+  title: string;
+  description: string;
+  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  synonyms: string[];
+  isDesktopOnly?: boolean;
+  isMobileOnly?: boolean;
+  isCustomerAllowed?: boolean;
+}

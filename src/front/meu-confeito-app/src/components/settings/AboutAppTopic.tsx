@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, Platform, StyleSheet, Text, View } from 'react-native';
 
 import { Image } from 'expo-image';
@@ -6,13 +6,33 @@ import { Image } from 'expo-image';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { MenuOptionButton } from '@/src/components/common';
+import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useNetwork } from '@/src/hooks/useNetwork';
 import { AppTheme } from '@/src/theme/themes';
+import { Storage } from '@/src/utils/storage';
 
 export function AboutAppTopic() {
   const { theme, isDarkMode } = useThemeMode();
   const { isOffline } = useNetwork();
+  const { user } = useAuth();
+  const [sessionId, setSessionId] = useState<string | null>(() =>
+    Storage.getFastItem('session_id'),
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+    Storage.getItem('session_id').then((storedSessionId) => {
+      if (isMounted && storedSessionId) {
+        setSessionId(storedSessionId);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const handleSupportPress = () => {
@@ -106,13 +126,31 @@ export function AboutAppTopic() {
         <View style={styles.detailRow}>
           <View style={styles.detailLabelGroup}>
             <MaterialCommunityIcons
-              name="shield-check-outline"
+              name="account-outline"
               size={18}
               color={theme.colors.onSurfaceVariant}
             />
-            <Text style={styles.detailLabel}>Ambiente</Text>
+            <Text style={styles.detailLabel}>ID do Usuário</Text>
           </View>
-          <Text style={styles.detailValue}>Produção</Text>
+          <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="middle" selectable>
+            {user?.id ? String(user.id) : '—'}
+          </Text>
+        </View>
+
+        <View style={styles.detailDivider} />
+
+        <View style={styles.detailRow}>
+          <View style={styles.detailLabelGroup}>
+            <MaterialCommunityIcons
+              name="shield-key-outline"
+              size={18}
+              color={theme.colors.onSurfaceVariant}
+            />
+            <Text style={styles.detailLabel}>ID da Sessão</Text>
+          </View>
+          <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="middle" selectable>
+            {sessionId || '—'}
+          </Text>
         </View>
       </View>
 
@@ -216,6 +254,7 @@ const createStyles = (theme: AppTheme) =>
       alignItems: 'center',
       justifyContent: 'space-between',
       minHeight: 32,
+      gap: theme.spacing.space3,
     },
     detailLabelGroup: {
       flexDirection: 'row',
@@ -232,6 +271,8 @@ const createStyles = (theme: AppTheme) =>
       fontSize: 13,
       fontWeight: '600',
       color: theme.colors.espressoDark,
+      flexShrink: 1,
+      textAlign: 'right',
     },
     detailDivider: {
       height: 1,

@@ -9,3 +9,5 @@ export { SettingsSidebar, type SettingsSidebarProps } from './SettingsSidebar';
 export { SettingsTopicHeader, type SettingsTopicHeaderProps } from './SettingsTopicHeader';
 export { AccountSecurityTopic, type AccountSecurityTopicProps } from './AccountSecurityTopic';
 export { AboutAppTopic } from './AboutAppTopic';
+export { SettingsSearchBar, type SettingsSearchBarProps } from './SettingsSearchBar';
+export { SettingsSearchResults, type SettingsSearchResultsProps } from './SettingsSearchResults';

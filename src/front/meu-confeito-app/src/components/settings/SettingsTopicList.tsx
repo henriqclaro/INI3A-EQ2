@@ -22,6 +22,7 @@ export function SettingsTopicList({ topics, onSelectTopic }: SettingsTopicListPr
       {topics.map((topic, index) => {
         const isFirst = index === 0;
         const isLast = index === topics.length - 1;
+        const isAboutTopic = topic.id === 'about';
         const hasDivider = !isLast;
 
         return (
@@ -32,6 +33,7 @@ export function SettingsTopicList({ topics, onSelectTopic }: SettingsTopicListPr
                 isFirst && styles.firstItem,
                 isLast && styles.lastItem,
                 topic.isDestructive && styles.destructiveItem,
+                isAboutTopic && styles.aboutItemButton,
               ]}
               onPress={() => onSelectTopic(topic.id)}
               activeOpacity={0.72}
@@ -59,7 +61,10 @@ export function SettingsTopicList({ topics, onSelectTopic }: SettingsTopicListPr
                 >
                   {topic.title}
                 </Text>
-                <Text style={styles.description} numberOfLines={2}>
+                <Text
+                  style={[styles.description, isAboutTopic && styles.aboutDescription]}
+                  numberOfLines={2}
+                >
                   {topic.description}
                 </Text>
               </View>
@@ -152,6 +157,12 @@ const createStyles = (theme: AppTheme) =>
     },
     chevronIcon: {
       marginLeft: theme.spacing.space1,
+    },
+    aboutItemButton: {
+      minHeight: 80,
+    },
+    aboutDescription: {
+      minHeight: 34,
     },
     divider: {
       height: 1,

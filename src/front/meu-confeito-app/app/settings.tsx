@@ -5,7 +5,6 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
   View,
   useWindowDimensions,
 } from 'react-native';
@@ -19,12 +18,15 @@ import {
   InteractionSettingsCard,
   OfflineBanner,
   OperationalPreferencesCard,
+  SettingsSearchBar,
+  SettingsSearchResults,
   SettingsSidebar,
   SettingsTopicHeader,
   SettingsTopicList,
   StorageSettingsCard,
   ThemeToggleCard,
 } from '@/src/components';
+import { filterSettingShortcuts } from '@/src/constants/settingsShortcuts';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useNetwork } from '@/src/hooks/useNetwork';
@@ -49,6 +51,17 @@ export default function SettingsScreen() {
   const isCustomerRole = isCustomer(user?.role);
 
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [mobileSearchQuery, setMobileSearchQuery] = useState('');
+
+  const mobileSearchResults = useMemo(() => {
+    return filterSettingShortcuts({
+      query: mobileSearchQuery,
+      isDesktop: false,
+      isCustomerRole,
+    });
+  }, [mobileSearchQuery, isCustomerRole]);
+
+  const hasMobileSearch = mobileSearchQuery.trim().length > 0;
 
   // Available topics list based on user role and platform
   const topics: SettingsTopicItem[] = useMemo(() => {
@@ -272,6 +285,7 @@ export default function SettingsScreen() {
             topics={topics}
             selectedTopicId={activeTopicId}
             onSelectTopic={handleSelectTopic}
+            isCustomerRole={isCustomerRole}
           />
 
           <ScrollView
@@ -303,15 +317,17 @@ export default function SettingsScreen() {
           style={styles.mobileContainer}
           contentContainerStyle={styles.mobileScrollContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           <View style={styles.mobileContentWrapper}>
             {effectiveTopicId === null && (
-              <View style={styles.headerBlock}>
-                <Text style={styles.headerTitle}>Configurações</Text>
-                <Text style={styles.headerSubtitle}>
-                  Personalize a aparência do Meu Confeito e configure sua experiência na cozinha
-                  digital.
-                </Text>
+              <View style={styles.mobileSearchWrapper}>
+                <SettingsSearchBar
+                  value={mobileSearchQuery}
+                  onChangeText={setMobileSearchQuery}
+                  onClear={() => setMobileSearchQuery('')}
+                  placeholder="Buscar configurações..."
+                />
               </View>
             )}
 
@@ -321,7 +337,19 @@ export default function SettingsScreen() {
             />
 
             {effectiveTopicId === null ? (
-              <SettingsTopicList topics={topics} onSelectTopic={handleSelectTopic} />
+              hasMobileSearch ? (
+                <SettingsSearchResults
+                  results={mobileSearchResults}
+                  searchQuery={mobileSearchQuery}
+                  onSelectShortcut={(shortcut) => {
+                    handleSelectTopic(shortcut.topicId);
+                    setMobileSearchQuery('');
+                  }}
+                  onClearSearch={() => setMobileSearchQuery('')}
+                />
+              ) : (
+                <SettingsTopicList topics={topics} onSelectTopic={handleSelectTopic} />
+              )
             ) : (
               <View style={styles.mobileTopicContent}>
                 {activeTopic && (
@@ -387,23 +415,9 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean, _isDesktop: boole
       maxWidth: 680,
       gap: theme.spacing.space6,
     },
-    headerBlock: {
-      marginTop: theme.spacing.space2,
-      marginBottom: theme.spacing.space1,
-    },
-    headerTitle: {
-      fontFamily: theme.typography.headlineLg.fontFamily,
-      fontSize: 26,
-      fontWeight: '600',
-      color: theme.colors.espressoDark,
-      letterSpacing: 0.5,
-    },
-    headerSubtitle: {
-      fontFamily: theme.typography.bodyMd.fontFamily,
-      fontSize: 15,
-      color: theme.colors.onSurfaceVariant,
-      marginTop: 6,
-      lineHeight: 22,
+    mobileSearchWrapper: {
+      width: '100%',
+      marginTop: theme.spacing.space1,
     },
     mobileTopicContent: {
       width: '100%',
