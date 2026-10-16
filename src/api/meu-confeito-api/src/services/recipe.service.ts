@@ -187,6 +187,17 @@ export class RecipeService {
           select: {
             id: true,
             title: true,
+            tags: {
+              select: {
+                tag: {
+                  select: {
+                    id: true,
+                    name: true,
+                    type: true,
+                  },
+                },
+              },
+            },
           },
         },
         user: {
@@ -315,6 +326,17 @@ export class RecipeService {
           select: {
             id: true,
             title: true,
+            tags: {
+              select: {
+                tag: {
+                  select: {
+                    id: true,
+                    name: true,
+                    type: true,
+                  },
+                },
+              },
+            },
           },
         },
         items: {
@@ -347,6 +369,17 @@ export class RecipeService {
                 title: true,
                 baseYield: true,
                 yieldUnit: true,
+              },
+            },
+          },
+        },
+        tags: {
+          select: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+                type: true,
               },
             },
           },
