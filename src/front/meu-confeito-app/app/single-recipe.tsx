@@ -26,6 +26,7 @@ import {
 } from '@/src/components/recipe';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { useDownloadedRecipe } from '@/src/hooks/useDownloadedRecipes';
 import { useRecipeDelete, useSingleRecipe } from '@/src/hooks/useRecipes';
 import { useSavedRecipes } from '@/src/hooks/useSavedRecipes';
 import { AppTheme } from '@/src/theme/themes';
@@ -42,10 +43,8 @@ export default function RecipeScreen() {
   const { user } = useAuth();
   const { width } = useWindowDimensions();
   const { recipeId } = useLocalSearchParams() as { recipeId: string };
-  const { recipe, isLoading, updateVisibility, isUpdatingVisibility, refetch } = useSingleRecipe(
-    recipeId,
-    user?.id,
-  );
+  const { recipe, isLoading, isOffline, updateVisibility, isUpdatingVisibility, refetch } =
+    useSingleRecipe(recipeId, user?.id);
   const { deleteRecipe, isLoading: isDeletingRecipe } = useRecipeDelete();
   const { isRecipeSaved, toggleSave, isTogglingSave } = useSavedRecipes(user?.id);
   const hasSavedRecipe = isRecipeSaved(recipeId);
@@ -116,6 +115,61 @@ export default function RecipeScreen() {
   const hasValidCover = Boolean(resolvedCoverUrl && !hasImageError);
 
   const isOwner = Boolean(user?.id && recipe?.userId && user.id === recipe.userId);
+
+  const {
+    isDownloaded,
+    hasUpdate: hasDownloadedUpdate,
+    isLoading: isDownloadingOrUpdating,
+    downloadRecipe,
+    updateRecipe: updateDownloadedRecipe,
+    removeRecipe: removeDownloadedRecipe,
+  } = useDownloadedRecipe(recipe, isOwner);
+
+  const handleDownloadRecipe = async () => {
+    if (!recipe) return;
+    const isSuccess = await downloadRecipe();
+    if (isSuccess) {
+      Alert.alert(
+        'Receita Baixada',
+        'A receita foi salva localmente no seu dispositivo e poderá ser acessada mesmo sem conexão com a internet.',
+      );
+    } else {
+      Alert.alert('Falha ao Baixar', 'Não foi possível salvar a receita para acesso offline.');
+    }
+  };
+
+  const handleUpdateDownloadedRecipe = async () => {
+    if (!recipe) return;
+    const isSuccess = await updateDownloadedRecipe();
+    if (isSuccess) {
+      Alert.alert(
+        'Receita Atualizada',
+        'A versão salva localmente foi sincronizada com as alterações mais recentes da comunidade.',
+      );
+    } else {
+      Alert.alert('Falha ao Atualizar', 'Não foi possível atualizar a receita salva localmente.');
+    }
+  };
+
+  const handleRemoveDownloadedRecipe = () => {
+    Alert.alert(
+      'Remover do Armazenamento',
+      'Deseja remover esta receita do armazenamento local? Ela não estará mais acessível offline até ser baixada novamente.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Remover',
+          style: 'destructive',
+          onPress: async () => {
+            const isSuccess = await removeDownloadedRecipe();
+            if (isSuccess) {
+              Alert.alert('Download Removido', 'A receita foi removida do armazenamento local.');
+            }
+          },
+        },
+      ],
+    );
+  };
 
   const recipeItems: RecipeItem[] = useMemo(
     () => recipe?.items || (recipe as { ingredients?: RecipeItem[] })?.ingredients || [],
@@ -501,11 +555,51 @@ export default function RecipeScreen() {
                   </View>
                 )}
 
+                {/* Offline Mode Banner */}
+                {isOffline && (
+                  <View style={styles.offlineBanner}>
+                    <MaterialCommunityIcons
+                      name="cloud-off-outline"
+                      size={18}
+                      color={theme.colors.secondary}
+                    />
+                    <Text style={styles.offlineBannerText}>
+                      Modo Offline: Visualizando a versão salva localmente no seu dispositivo.
+                    </Text>
+                  </View>
+                )}
+
                 {/* Title, Meta, Status and Tags Header */}
                 <View style={styles.headerSection}>
                   <View style={styles.titleRow}>
                     {!isDesktop && (
                       <View style={styles.titleBadgesRow}>
+                        {isDownloaded && (
+                          <View
+                            style={[
+                              styles.downloadedBadge,
+                              hasDownloadedUpdate && styles.downloadedBadgeUpdate,
+                            ]}
+                          >
+                            <MaterialCommunityIcons
+                              name={
+                                hasDownloadedUpdate ? 'cloud-sync-outline' : 'cloud-check-outline'
+                              }
+                              size={13}
+                              color={
+                                hasDownloadedUpdate ? theme.colors.onTertiary : theme.colors.primary
+                              }
+                            />
+                            <Text
+                              style={[
+                                styles.downloadedBadgeText,
+                                hasDownloadedUpdate && styles.downloadedBadgeTextUpdate,
+                              ]}
+                            >
+                              {hasDownloadedUpdate ? 'Atualização' : 'Baixada'}
+                            </Text>
+                          </View>
+                        )}
                         {Boolean(recipe.parent) && (
                           <View style={styles.forkBadge}>
                             <MaterialCommunityIcons
@@ -533,6 +627,32 @@ export default function RecipeScreen() {
                     <Text style={styles.primaryTitle}>{recipe.title}</Text>
                     {isDesktop && (
                       <View style={styles.titleBadgesRow}>
+                        {isDownloaded && (
+                          <View
+                            style={[
+                              styles.downloadedBadge,
+                              hasDownloadedUpdate && styles.downloadedBadgeUpdate,
+                            ]}
+                          >
+                            <MaterialCommunityIcons
+                              name={
+                                hasDownloadedUpdate ? 'cloud-sync-outline' : 'cloud-check-outline'
+                              }
+                              size={13}
+                              color={
+                                hasDownloadedUpdate ? theme.colors.onTertiary : theme.colors.primary
+                              }
+                            />
+                            <Text
+                              style={[
+                                styles.downloadedBadgeText,
+                                hasDownloadedUpdate && styles.downloadedBadgeTextUpdate,
+                              ]}
+                            >
+                              {hasDownloadedUpdate ? 'Atualização' : 'Baixada'}
+                            </Text>
+                          </View>
+                        )}
                         {Boolean(recipe.parent) && (
                           <View style={styles.forkBadge}>
                             <MaterialCommunityIcons
@@ -715,44 +835,7 @@ export default function RecipeScreen() {
                     )}
 
                     <View style={styles.ownerActionButtons}>
-                      {/* Botão Compartilhar */}
-                      <TouchableOpacity
-                        style={styles.btnActionShare}
-                        onPress={handleShareRecipe}
-                        activeOpacity={0.8}
-                        accessibilityRole="button"
-                        accessibilityLabel="Compartilhar resumo da receita"
-                      >
-                        <MaterialCommunityIcons
-                          name="share-variant-outline"
-                          size={18}
-                          color={theme.colors.primary}
-                        />
-                        <Text style={styles.btnActionTextShare}>Compartilhar</Text>
-                      </TouchableOpacity>
-
-                      {/* Botão Editar */}
-                      <TouchableOpacity
-                        style={styles.btnActionEdit}
-                        onPress={() =>
-                          router.push({
-                            pathname: '/edit-recipe',
-                            params: { recipeId: recipe.id },
-                          })
-                        }
-                        activeOpacity={0.8}
-                        accessibilityRole="button"
-                        accessibilityLabel="Editar informações da receita"
-                      >
-                        <MaterialCommunityIcons
-                          name="pencil-outline"
-                          size={18}
-                          color={theme.colors.primary}
-                        />
-                        <Text style={styles.btnActionTextEdit}>Editar</Text>
-                      </TouchableOpacity>
-
-                      {/* Botão Publicar / Despublicar (indisponível quando suspensa) */}
+                      {/* 1. Publicar / Despublicar (indisponível quando suspensa) */}
                       {recipe.status !== 'SUSPENDED' &&
                         (recipe.status === 'PUBLISHED' ? (
                           <TouchableOpacity
@@ -788,7 +871,116 @@ export default function RecipeScreen() {
                           </TouchableOpacity>
                         ))}
 
-                      {/* Botão Arquivar / Restaurar (indisponível quando suspensa) */}
+                      {/* 2. Compartilhar */}
+                      <TouchableOpacity
+                        style={styles.btnActionShare}
+                        onPress={handleShareRecipe}
+                        activeOpacity={0.8}
+                        accessibilityRole="button"
+                        accessibilityLabel="Compartilhar resumo da receita"
+                      >
+                        <MaterialCommunityIcons
+                          name="share-variant-outline"
+                          size={18}
+                          color={theme.colors.primary}
+                        />
+                        <Text style={styles.btnActionTextShare}>Compartilhar</Text>
+                      </TouchableOpacity>
+
+                      {/* 3. Baixar / Atualizar / Remover */}
+                      {!isDownloaded ? (
+                        <TouchableOpacity
+                          style={styles.btnActionDownload}
+                          onPress={handleDownloadRecipe}
+                          disabled={isDownloadingOrUpdating}
+                          activeOpacity={0.8}
+                          accessibilityRole="button"
+                          accessibilityLabel="Baixar receita para acesso offline"
+                        >
+                          {isDownloadingOrUpdating ? (
+                            <ActivityIndicator size="small" color={theme.colors.primary} />
+                          ) : (
+                            <>
+                              <MaterialCommunityIcons
+                                name="cloud-download-outline"
+                                size={18}
+                                color={theme.colors.primary}
+                              />
+                              <Text style={styles.btnActionTextDownload}>Baixar</Text>
+                            </>
+                          )}
+                        </TouchableOpacity>
+                      ) : hasDownloadedUpdate ? (
+                        <TouchableOpacity
+                          style={styles.btnActionUpdate}
+                          onPress={handleUpdateDownloadedRecipe}
+                          disabled={isDownloadingOrUpdating}
+                          activeOpacity={0.8}
+                          accessibilityRole="button"
+                          accessibilityLabel="Atualizar versão baixada da receita"
+                        >
+                          {isDownloadingOrUpdating ? (
+                            <ActivityIndicator
+                              size="small"
+                              color={theme.colors.onTertiaryContainer}
+                            />
+                          ) : (
+                            <>
+                              <MaterialCommunityIcons
+                                name="cloud-sync-outline"
+                                size={18}
+                                color={theme.colors.onTertiaryContainer}
+                              />
+                              <Text style={styles.btnActionTextUpdate}>Atualizar</Text>
+                            </>
+                          )}
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity
+                          style={styles.btnActionRemoveDownload}
+                          onPress={handleRemoveDownloadedRecipe}
+                          disabled={isDownloadingOrUpdating}
+                          activeOpacity={0.8}
+                          accessibilityRole="button"
+                          accessibilityLabel="Remover receita baixada do armazenamento"
+                        >
+                          {isDownloadingOrUpdating ? (
+                            <ActivityIndicator size="small" color={theme.colors.error} />
+                          ) : (
+                            <>
+                              <MaterialCommunityIcons
+                                name="cloud-remove-outline"
+                                size={18}
+                                color={theme.colors.error}
+                              />
+                              <Text style={styles.btnActionTextRemoveDownload}>Remover</Text>
+                            </>
+                          )}
+                        </TouchableOpacity>
+                      )}
+
+                      {/* 4. Editar */}
+                      <TouchableOpacity
+                        style={styles.btnActionEdit}
+                        onPress={() =>
+                          router.push({
+                            pathname: '/edit-recipe',
+                            params: { recipeId: recipe.id },
+                          })
+                        }
+                        activeOpacity={0.8}
+                        accessibilityRole="button"
+                        accessibilityLabel="Editar informações da receita"
+                      >
+                        <MaterialCommunityIcons
+                          name="pencil-outline"
+                          size={18}
+                          color={theme.colors.primary}
+                        />
+                        <Text style={styles.btnActionTextEdit}>Editar</Text>
+                      </TouchableOpacity>
+
+                      {/* 5. Arquivar / Restaurar (indisponível quando suspensa) */}
                       {recipe.status !== 'SUSPENDED' &&
                         (recipe.status === 'ARCHIVED' ? (
                           <TouchableOpacity
@@ -824,7 +1016,7 @@ export default function RecipeScreen() {
                           </TouchableOpacity>
                         ))}
 
-                      {/* Botão Excluir */}
+                      {/* 6. Excluir */}
                       <TouchableOpacity
                         style={styles.btnActionDelete}
                         onPress={handleDeleteRecipe}
@@ -911,23 +1103,9 @@ export default function RecipeScreen() {
                       <Text style={styles.btnActionTextProduceGuest}>Produzir Receita</Text>
                     </TouchableOpacity>
 
-                    {/* Secondary Actions: Personalizar & Salvar */}
+                    {/* Secondary Actions: Salvar, Compartilhar, Baixar/Atualizar, Personalizar */}
                     <View style={styles.guestSecondaryActions}>
-                      <TouchableOpacity
-                        style={styles.btnActionCustomizeGuest}
-                        onPress={handleOpenCustomize}
-                        activeOpacity={0.85}
-                        accessibilityRole="button"
-                        accessibilityLabel="Personalizar e criar sua versão desta receita"
-                      >
-                        <MaterialCommunityIcons
-                          name="source-fork"
-                          size={18}
-                          color={theme.colors.primary}
-                        />
-                        <Text style={styles.btnActionTextCustomizeGuest}>Personalizar</Text>
-                      </TouchableOpacity>
-
+                      {/* Row 1, Col 1: Salvar */}
                       {user && (
                         <TouchableOpacity
                           style={[
@@ -977,7 +1155,7 @@ export default function RecipeScreen() {
                         </TouchableOpacity>
                       )}
 
-                      {/* Botão Compartilhar */}
+                      {/* Row 1, Col 2: Compartilhar */}
                       <TouchableOpacity
                         style={styles.btnActionShareGuest}
                         onPress={handleShareRecipe}
@@ -991,6 +1169,94 @@ export default function RecipeScreen() {
                           color={theme.colors.primary}
                         />
                         <Text style={styles.btnActionTextShareGuest}>Compartilhar</Text>
+                      </TouchableOpacity>
+
+                      {/* Row 2, Col 1: Baixar / Atualizar / Remover */}
+                      {!isDownloaded ? (
+                        <TouchableOpacity
+                          style={styles.btnActionDownloadGuest}
+                          onPress={handleDownloadRecipe}
+                          disabled={isDownloadingOrUpdating}
+                          activeOpacity={0.85}
+                          accessibilityRole="button"
+                          accessibilityLabel="Baixar receita para acesso offline"
+                        >
+                          {isDownloadingOrUpdating ? (
+                            <ActivityIndicator size="small" color={theme.colors.primary} />
+                          ) : (
+                            <>
+                              <MaterialCommunityIcons
+                                name="cloud-download-outline"
+                                size={18}
+                                color={theme.colors.primary}
+                              />
+                              <Text style={styles.btnActionTextDownloadGuest}>Baixar</Text>
+                            </>
+                          )}
+                        </TouchableOpacity>
+                      ) : hasDownloadedUpdate ? (
+                        <TouchableOpacity
+                          style={styles.btnActionUpdateGuest}
+                          onPress={handleUpdateDownloadedRecipe}
+                          disabled={isDownloadingOrUpdating}
+                          activeOpacity={0.85}
+                          accessibilityRole="button"
+                          accessibilityLabel="Atualizar receita salva com as novas modificações"
+                        >
+                          {isDownloadingOrUpdating ? (
+                            <ActivityIndicator
+                              size="small"
+                              color={theme.colors.onTertiaryContainer}
+                            />
+                          ) : (
+                            <>
+                              <MaterialCommunityIcons
+                                name="cloud-sync-outline"
+                                size={18}
+                                color={theme.colors.onTertiaryContainer}
+                              />
+                              <Text style={styles.btnActionTextUpdateGuest}>Atualizar</Text>
+                            </>
+                          )}
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity
+                          style={styles.btnActionRemoveGuest}
+                          onPress={handleRemoveDownloadedRecipe}
+                          disabled={isDownloadingOrUpdating}
+                          activeOpacity={0.85}
+                          accessibilityRole="button"
+                          accessibilityLabel="Remover receita baixada do armazenamento"
+                        >
+                          {isDownloadingOrUpdating ? (
+                            <ActivityIndicator size="small" color={theme.colors.error} />
+                          ) : (
+                            <>
+                              <MaterialCommunityIcons
+                                name="cloud-remove-outline"
+                                size={18}
+                                color={theme.colors.error}
+                              />
+                              <Text style={styles.btnActionTextRemoveGuest}>Remover</Text>
+                            </>
+                          )}
+                        </TouchableOpacity>
+                      )}
+
+                      {/* Row 2, Col 2: Personalizar */}
+                      <TouchableOpacity
+                        style={styles.btnActionCustomizeGuest}
+                        onPress={handleOpenCustomize}
+                        activeOpacity={0.85}
+                        accessibilityRole="button"
+                        accessibilityLabel="Personalizar e criar sua versão desta receita"
+                      >
+                        <MaterialCommunityIcons
+                          name="source-fork"
+                          size={18}
+                          color={theme.colors.primary}
+                        />
+                        <Text style={styles.btnActionTextCustomizeGuest}>Personalizar</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -1533,6 +1799,50 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       fontSize: 12,
       fontWeight: '700',
     },
+    downloadedBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.full,
+      paddingVertical: 5,
+      paddingHorizontal: 10,
+      gap: 5,
+    },
+    downloadedBadgeText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 12,
+      fontWeight: '600',
+      color: theme.colors.primary,
+    },
+    downloadedBadgeUpdate: {
+      backgroundColor: theme.colors.tertiary,
+      borderColor: theme.colors.tertiary,
+    },
+    downloadedBadgeTextUpdate: {
+      color: theme.colors.onTertiary,
+      fontWeight: '700',
+    },
+    offlineBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.sm,
+      padding: 10,
+      marginBottom: 16,
+      width: '100%',
+    },
+    offlineBannerText: {
+      flex: 1,
+      fontSize: 12,
+      fontFamily: theme.typography.bodySm.fontFamily,
+      color: theme.colors.onSurfaceVariant,
+      lineHeight: 16,
+    },
     headerRightRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -1660,6 +1970,65 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       fontSize: 13,
       fontWeight: '600',
       color: theme.colors.primary,
+    },
+    btnActionDownload: {
+      flex: 1,
+      minWidth: isSmallScreen ? '100%' : '45%',
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.default,
+      paddingHorizontal: 12,
+      gap: 6,
+    },
+    btnActionTextDownload: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.primary,
+    },
+    btnActionUpdate: {
+      flex: 1,
+      minWidth: isSmallScreen ? '100%' : '45%',
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.tertiary,
+      borderRadius: theme.rounded.default,
+      paddingHorizontal: 12,
+      gap: 6,
+      ...theme.shadows.soft,
+    },
+    btnActionTextUpdate: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 13,
+      fontWeight: '700',
+      color: theme.colors.onTertiary,
+    },
+    btnActionRemoveDownload: {
+      flex: 1,
+      minWidth: isSmallScreen ? '100%' : '45%',
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.default,
+      paddingHorizontal: 12,
+      gap: 6,
+    },
+    btnActionTextRemoveDownload: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.error,
     },
     btnActionPublish: {
       flex: 1,
@@ -1867,7 +2236,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     },
     btnActionCustomizeGuest: {
       flex: 1,
-      minWidth: isSmallScreen ? '100%' : 120,
+      minWidth: isSmallScreen ? '100%' : '45%',
       minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',
@@ -1876,7 +2245,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       borderWidth: 1.5,
       borderColor: theme.colors.primary,
       borderRadius: theme.rounded.default,
-      paddingHorizontal: 14,
+      paddingHorizontal: 12,
       gap: 6,
       ...theme.shadows.soft,
     },
@@ -1888,7 +2257,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     },
     btnActionSaveGuest: {
       flex: 1,
-      minWidth: isSmallScreen ? '100%' : 120,
+      minWidth: isSmallScreen ? '100%' : '45%',
       minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',
@@ -1897,7 +2266,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       borderWidth: 1.5,
       borderColor: theme.colors.primary,
       borderRadius: theme.rounded.default,
-      paddingHorizontal: 14,
+      paddingHorizontal: 12,
       gap: 6,
     },
     btnActionSaveGuestActive: {
@@ -1915,24 +2284,83 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     },
     btnActionShareGuest: {
       flex: 1,
-      minWidth: isSmallScreen ? '100%' : 120,
+      minWidth: isSmallScreen ? '100%' : '45%',
       minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: theme.colors.surfaceContainerLowest,
-      borderWidth: 1.5,
+      borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
       borderRadius: theme.rounded.default,
-      paddingHorizontal: 14,
+      paddingHorizontal: 12,
       gap: 6,
       ...theme.shadows.soft,
     },
     btnActionTextShareGuest: {
       fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
-      fontWeight: '700',
+      fontWeight: '600',
       color: theme.colors.primary,
+    },
+    btnActionDownloadGuest: {
+      flex: 1,
+      minWidth: isSmallScreen ? '100%' : '45%',
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.default,
+      paddingHorizontal: 12,
+      gap: 6,
+    },
+    btnActionTextDownloadGuest: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.primary,
+    },
+    btnActionUpdateGuest: {
+      flex: 1,
+      minWidth: isSmallScreen ? '100%' : '45%',
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.tertiary,
+      borderRadius: theme.rounded.default,
+      paddingHorizontal: 12,
+      gap: 6,
+      ...theme.shadows.soft,
+    },
+    btnActionTextUpdateGuest: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 13,
+      fontWeight: '700',
+      color: theme.colors.onTertiary,
+    },
+    btnActionRemoveGuest: {
+      flex: 1,
+      minWidth: isSmallScreen ? '100%' : '45%',
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.default,
+      paddingHorizontal: 12,
+      gap: 6,
+    },
+    btnActionTextRemoveGuest: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.error,
     },
     metaRow: {
       flexDirection: 'row',

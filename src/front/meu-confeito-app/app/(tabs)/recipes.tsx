@@ -19,17 +19,20 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { FloatingActionItem, FloatingButton, RecipeFilterChip, RecipeView } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { useAllDownloadedRecipes } from '@/src/hooks/useDownloadedRecipes';
 import { useUserRecipes } from '@/src/hooks/useRecipes';
 import { useSavedRecipes } from '@/src/hooks/useSavedRecipes';
 import { AppTheme } from '@/src/theme/themes';
-import { PartialRecipe } from '@/src/types';
+import { PartialRecipe, PartialTag } from '@/src/types';
 import { isBaker, isCustomer } from '@/src/utils/roles';
 
 export default function RecipesScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
   const isBakerRole = isBaker(user?.role);
-  const [activeFilter, setActiveFilter] = useState<'ALL' | 'PUBLISHED' | 'DRAFT' | 'SAVED'>('ALL');
+  const [activeFilter, setActiveFilter] = useState<
+    'ALL' | 'PUBLISHED' | 'DRAFT' | 'SAVED' | 'DOWNLOADED'
+  >('ALL');
 
   const statusParam = useMemo(() => {
     if (activeFilter === 'PUBLISHED') return 'PUBLISHED' as const;
@@ -42,6 +45,7 @@ export default function RecipesScreen() {
     isLoading: isLoadingUserRecipes,
     isLoadingMore: isLoadingMoreUserRecipes,
     hasMore: hasMoreUserRecipes,
+    error: userRecipesError,
     loadMore: loadMoreUserRecipes,
     refetch: refetchUserRecipes,
   } = useUserRecipes(user?.id, statusParam);
@@ -50,6 +54,16 @@ export default function RecipesScreen() {
     isLoading: isLoadingSavedRecipes,
     refetch: refetchSavedRecipes,
   } = useSavedRecipes(user?.id);
+  const {
+    downloadedRecipes,
+    isLoading: isLoadingDownloadedRecipes,
+    refetch: refetchDownloadedRecipes,
+  } = useAllDownloadedRecipes();
+
+  const downloadedRecipeIds = useMemo(
+    () => new Set(downloadedRecipes.map((d) => d.id)),
+    [downloadedRecipes],
+  );
 
   const { width } = useWindowDimensions();
   const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
@@ -60,7 +74,32 @@ export default function RecipesScreen() {
     }
   }, [user]);
 
+  const hasOfflineFallback = Boolean(
+    userRecipesError && userRecipes.length === 0 && downloadedRecipes.length > 0,
+  );
+
   const displayedRecipes: PartialRecipe[] = useMemo(() => {
+    if (activeFilter === 'DOWNLOADED' || hasOfflineFallback) {
+      return downloadedRecipes.map((d) => ({
+        id: d.recipe.id,
+        title: d.recipe.title,
+        coverUrl: d.recipe.coverUrl,
+        prepTimeMinutes: d.recipe.prepTimeMinutes,
+        tags: ((d.recipe as { tags?: { tag: PartialTag }[] }).tags ?? []) as {
+          tag: PartialTag;
+        }[],
+        parent: d.recipe.parent ?? null,
+        status: d.recipe.status,
+        createdAt: d.recipe.createdAt,
+        updatedAt: d.recipe.updatedAt,
+        profitMargin: d.recipe.profitMargin,
+        overhead: d.recipe.overhead,
+        hourlyLabor: d.recipe.hourlyLabor,
+        packagingCost: d.recipe.packagingCost,
+        averageRating: d.recipe.averageRating,
+        totalReviews: d.recipe.totalReviews,
+      }));
+    }
     if (activeFilter === 'SAVED') {
       return savedRecipes.map((s) => ({
         id: s.recipe.id,
@@ -78,14 +117,24 @@ export default function RecipesScreen() {
       }));
     }
     return userRecipes.filter((r) => r.status !== 'ARCHIVED');
-  }, [activeFilter, savedRecipes, userRecipes]);
+  }, [activeFilter, hasOfflineFallback, downloadedRecipes, savedRecipes, userRecipes]);
 
-  const isLoading = isLoadingUserRecipes || (activeFilter === 'SAVED' && isLoadingSavedRecipes);
-  const hasMore = activeFilter !== 'SAVED' && hasMoreUserRecipes;
-  const isLoadingMore = activeFilter !== 'SAVED' && isLoadingMoreUserRecipes;
+  const isLoading =
+    (activeFilter === 'DOWNLOADED' && isLoadingDownloadedRecipes) ||
+    isLoadingUserRecipes ||
+    (activeFilter === 'SAVED' && isLoadingSavedRecipes);
+  const hasMore = activeFilter !== 'SAVED' && activeFilter !== 'DOWNLOADED' && hasMoreUserRecipes;
+  const isLoadingMore =
+    activeFilter !== 'SAVED' && activeFilter !== 'DOWNLOADED' && isLoadingMoreUserRecipes;
 
   const handleEndReached = useCallback(() => {
-    if (activeFilter !== 'SAVED' && hasMoreUserRecipes && !isLoading && !isLoadingMoreUserRecipes) {
+    if (
+      activeFilter !== 'SAVED' &&
+      activeFilter !== 'DOWNLOADED' &&
+      hasMoreUserRecipes &&
+      !isLoading &&
+      !isLoadingMoreUserRecipes
+    ) {
       loadMoreUserRecipes();
     }
   }, [activeFilter, hasMoreUserRecipes, isLoading, isLoadingMoreUserRecipes, loadMoreUserRecipes]);
@@ -93,10 +142,12 @@ export default function RecipesScreen() {
   const handleRefresh = useCallback(async () => {
     if (activeFilter === 'SAVED') {
       await refetchSavedRecipes();
+    } else if (activeFilter === 'DOWNLOADED') {
+      await refetchDownloadedRecipes();
     } else {
-      await Promise.all([refetchUserRecipes(), refetchSavedRecipes()]);
+      await Promise.all([refetchUserRecipes(), refetchSavedRecipes(), refetchDownloadedRecipes()]);
     }
-  }, [activeFilter, refetchSavedRecipes, refetchUserRecipes]);
+  }, [activeFilter, refetchSavedRecipes, refetchDownloadedRecipes, refetchUserRecipes]);
 
   const isWebSidebarPresent = Platform.OS === 'web' && width >= theme.breakpoints.lg;
   const effectiveWidth = isWebSidebarPresent ? width - 260 : width;
@@ -160,9 +211,12 @@ export default function RecipesScreen() {
           prepTimeMinutes={item.prepTimeMinutes}
           rating={item.averageRating}
           totalReviews={item.totalReviews}
-          status={activeFilter !== 'SAVED' ? item.status : undefined}
+          status={
+            activeFilter !== 'SAVED' && activeFilter !== 'DOWNLOADED' ? item.status : undefined
+          }
           isCustomized={Boolean(item.parent)}
           hasParent={Boolean(item.parent)}
+          isDownloaded={downloadedRecipeIds.has(item.id)}
           style={numCols > 1 ? styles.desktopCard : undefined}
           onPress={() => {
             router.push({ pathname: '/single-recipe', params: { recipeId: item.id } });
@@ -170,12 +224,25 @@ export default function RecipesScreen() {
         />
       </View>
     ),
-    [activeFilter, numCols, styles.cardWrapper, styles.desktopCard],
+    [activeFilter, downloadedRecipeIds, numCols, styles.cardWrapper, styles.desktopCard],
   );
 
   const listHeader = useMemo(() => {
     return (
       <View style={styles.headerWrapper}>
+        {hasOfflineFallback && (
+          <View style={styles.offlineListBanner}>
+            <MaterialCommunityIcons
+              name="cloud-off-outline"
+              size={18}
+              color={theme.colors.secondary}
+            />
+            <Text style={styles.offlineListBannerText}>
+              Você está offline. Exibindo receitas salvas localmente no dispositivo.
+            </Text>
+          </View>
+        )}
+
         {hasHeaderActions && (
           <View style={styles.desktopHeader}>
             <View style={styles.desktopHeaderTitleCol}>
@@ -244,6 +311,12 @@ export default function RecipesScreen() {
             isSelected={activeFilter === 'SAVED'}
             onPress={() => setActiveFilter('SAVED')}
           />
+          <RecipeFilterChip
+            label="Baixadas"
+            icon="cloud-check-outline"
+            isSelected={activeFilter === 'DOWNLOADED'}
+            onPress={() => setActiveFilter('DOWNLOADED')}
+          />
         </View>
       </View>
     );
@@ -252,9 +325,11 @@ export default function RecipesScreen() {
     displayedRecipes.length,
     hasHeaderActions,
     hasMore,
+    hasOfflineFallback,
     styles,
     theme.colors.onPrimary,
     theme.colors.onSurface,
+    theme.colors.secondary,
   ]);
 
   const listFooter = useMemo(() => {
@@ -368,6 +443,10 @@ export default function RecipesScreen() {
       emptyTitle = 'Nenhuma receita salva';
       emptySubtitle =
         'Você ainda não salvou receitas da comunidade. Navegue pelas receitas públicas e salve suas favoritas para acessá-las aqui.';
+    } else if (activeFilter === 'DOWNLOADED') {
+      emptyTitle = 'Nenhuma receita baixada';
+      emptySubtitle =
+        'Você ainda não possui receitas salvas no dispositivo para acesso offline. Abra uma receita e clique no botão Baixar no Painel para tê-la sempre disponível.';
     }
 
     return (
@@ -375,7 +454,13 @@ export default function RecipesScreen() {
         <View style={styles.emptyContainer}>
           <View style={styles.emptyIconCircle}>
             <MaterialCommunityIcons
-              name={activeFilter === 'SAVED' ? 'bookmark-multiple-outline' : 'cake-variant-outline'}
+              name={
+                activeFilter === 'DOWNLOADED'
+                  ? 'cloud-download-outline'
+                  : activeFilter === 'SAVED'
+                    ? 'bookmark-multiple-outline'
+                    : 'cake-variant-outline'
+              }
               size={44}
               color={theme.colors.primary}
             />
@@ -383,7 +468,7 @@ export default function RecipesScreen() {
           <Text style={styles.emptyTitle}>{emptyTitle}</Text>
           <Text style={styles.emptySubtitle}>{emptySubtitle}</Text>
           <View style={styles.emptyActionsRow}>
-            {activeFilter !== 'SAVED' ? (
+            {activeFilter !== 'SAVED' && activeFilter !== 'DOWNLOADED' ? (
               <TouchableOpacity
                 style={styles.emptyPrimaryBtn}
                 onPress={() => router.push('/create-recipe')}
@@ -398,18 +483,26 @@ export default function RecipesScreen() {
               </TouchableOpacity>
             ) : null}
             <TouchableOpacity
-              style={activeFilter === 'SAVED' ? styles.emptyPrimaryBtn : styles.emptySecondaryBtn}
+              style={
+                activeFilter === 'SAVED' || activeFilter === 'DOWNLOADED'
+                  ? styles.emptyPrimaryBtn
+                  : styles.emptySecondaryBtn
+              }
               onPress={() => router.push('/public-recipes')}
               activeOpacity={0.85}
             >
               <MaterialCommunityIcons
                 name="book-search-outline"
                 size={18}
-                color={activeFilter === 'SAVED' ? theme.colors.onPrimary : theme.colors.onSurface}
+                color={
+                  activeFilter === 'SAVED' || activeFilter === 'DOWNLOADED'
+                    ? theme.colors.onPrimary
+                    : theme.colors.onSurface
+                }
               />
               <Text
                 style={
-                  activeFilter === 'SAVED'
+                  activeFilter === 'SAVED' || activeFilter === 'DOWNLOADED'
                     ? styles.emptyPrimaryBtnText
                     : styles.emptySecondaryBtnText
                 }
@@ -607,6 +700,24 @@ const createStyles = (
       alignSelf: 'center',
       marginBottom: 20,
       gap: 16,
+    },
+    offlineListBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.md,
+      padding: 12,
+      width: '100%',
+    },
+    offlineListBannerText: {
+      flex: 1,
+      fontSize: 13,
+      fontFamily: theme.typography.bodySm.fontFamily,
+      color: theme.colors.onSurfaceVariant,
+      lineHeight: 18,
     },
     filterChipsRow: {
       flexDirection: 'row',

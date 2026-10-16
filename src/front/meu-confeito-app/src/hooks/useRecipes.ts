@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { DownloadedRecipeService } from '../services/downloadedRecipes';
 import { RecipeService } from '../services/recipe';
 import { UserService } from '../services/user';
 import { PartialRecipe } from '../types';
@@ -147,6 +148,7 @@ export function useManyRecipes(
 export function useSingleRecipe(recipeId: string, userId?: string) {
   const [recipe, setRecipe] = useState<FullRecipe>();
   const [isLoading, setIsLoading] = useState(Boolean(recipeId));
+  const [isOffline, setIsOffline] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isUpdatingVisibility, setIsUpdatingVisibility] = useState(false);
 
@@ -164,9 +166,23 @@ export function useSingleRecipe(recipeId: string, userId?: string) {
         : await RecipeService.getRecipe(recipeId);
 
       setRecipe(res.data.recipe);
+      setIsOffline(false);
+
+      if (res.data.recipe.userId && userId && res.data.recipe.userId === userId) {
+        DownloadedRecipeService.updateDownloadedRecipeIfSaved(res.data.recipe, true).catch(
+          () => {},
+        );
+      }
     } catch (err) {
-      console.error('Error fetching recipe: ', err);
-      setError('Error fetching recipe.');
+      const downloaded = await DownloadedRecipeService.getDownloadedRecipe(recipeId);
+      if (downloaded) {
+        setRecipe(downloaded.recipe);
+        setIsOffline(true);
+        setError(null);
+      } else {
+        console.error('Error fetching recipe: ', err);
+        setError('Error fetching recipe.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -189,11 +205,25 @@ export function useSingleRecipe(recipeId: string, userId?: string) {
 
         if (isMounted) {
           setRecipe(res.data.recipe);
+          setIsOffline(false);
+
+          if (res.data.recipe.userId && userId && res.data.recipe.userId === userId) {
+            DownloadedRecipeService.updateDownloadedRecipeIfSaved(res.data.recipe, true).catch(
+              () => {},
+            );
+          }
         }
       } catch (err) {
+        const downloaded = await DownloadedRecipeService.getDownloadedRecipe(recipeId);
         if (isMounted) {
-          console.error('Error fetching recipe: ', err);
-          setError('Error fetching recipe.');
+          if (downloaded) {
+            setRecipe(downloaded.recipe);
+            setIsOffline(true);
+            setError(null);
+          } else {
+            console.error('Error fetching recipe: ', err);
+            setError('Error fetching recipe.');
+          }
         }
       } finally {
         if (isMounted) {
@@ -219,14 +249,27 @@ export function useSingleRecipe(recipeId: string, userId?: string) {
         userId,
         status: status as 'DRAFT' | 'PUBLISHED' | 'ARCHIVED',
       });
-      setRecipe((prev) => (prev ? { ...prev, status: res.data.recipe.status } : prev));
+      setRecipe((prev) => {
+        if (!prev) return prev;
+        const updated = { ...prev, status: res.data.recipe.status };
+        DownloadedRecipeService.updateDownloadedRecipeIfSaved(updated, true).catch(() => {});
+        return updated;
+      });
       return res;
     } finally {
       setIsUpdatingVisibility(false);
     }
   };
 
-  return { recipe, isLoading, error, refetch: fetchRecipe, updateVisibility, isUpdatingVisibility };
+  return {
+    recipe,
+    isLoading,
+    isOffline,
+    error,
+    refetch: fetchRecipe,
+    updateVisibility,
+    isUpdatingVisibility,
+  };
 }
 
 export function useUserRecipes(
@@ -390,6 +433,12 @@ export function useRecipeUpdate() {
     setError(null);
     try {
       const response = await RecipeService.update(recipeId, data);
+      if (response.data?.recipe) {
+        await DownloadedRecipeService.updateDownloadedRecipeIfSaved(
+          response.data.recipe as unknown as FullRecipe,
+          true,
+        );
+      }
       return response;
     } catch (err) {
       console.error('Error during recipe update: ', err);
@@ -412,6 +461,7 @@ export function useRecipeDelete() {
     setError(null);
     try {
       await RecipeService.delete(recipeId);
+      await DownloadedRecipeService.removeDownloadedRecipe(recipeId);
     } catch (err: unknown) {
       console.error('Error deleting recipe:', err);
       const apiErr = err as { response?: { data?: { message?: string } }; message?: string };

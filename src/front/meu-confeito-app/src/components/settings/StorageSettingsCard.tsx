@@ -13,6 +13,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { useAllDownloadedRecipes } from '@/src/hooks/useDownloadedRecipes';
 import { AppTheme } from '@/src/theme/themes';
 import { clearAppCache } from '@/src/utils/cache';
 import { clearAllFormDrafts } from '@/src/utils/drafts';
@@ -22,11 +23,14 @@ export function StorageSettingsCard() {
   const { triggerHaptic } = useSettings();
   const { width } = useWindowDimensions();
   const isSmallScreen = width < theme.breakpoints.sm;
+  const { count: downloadedCount, clearAll: clearAllDownloads } = useAllDownloadedRecipes();
 
   const [isClearingCache, setIsClearingCache] = useState(false);
   const [hasClearedCache, setHasClearedCache] = useState(false);
   const [isClearingDrafts, setIsClearingDrafts] = useState(false);
   const [hasClearedDrafts, setHasClearedDrafts] = useState(false);
+  const [isClearingDownloads, setIsClearingDownloads] = useState(false);
+  const [hasClearedDownloads, setHasClearedDownloads] = useState(false);
 
   const styles = useMemo(() => createStyles(theme, isSmallScreen), [theme, isSmallScreen]);
 
@@ -128,6 +132,64 @@ export function StorageSettingsCard() {
     );
   };
 
+  const executeClearDownloads = async () => {
+    setIsClearingDownloads(true);
+    try {
+      const result = await clearAllDownloads();
+      if (result.isSuccess) {
+        setHasClearedDownloads(true);
+        triggerHaptic('success');
+        Alert.alert(
+          'Armazenamento Liberado',
+          result.clearedCount > 0
+            ? `${result.clearedCount} receita(s) baixada(s) foram removida(s) com sucesso.`
+            : 'Todas as receitas baixadas foram removidas com sucesso.',
+        );
+      } else {
+        triggerHaptic('error');
+        Alert.alert(
+          'Falha ao Remover',
+          'Não foi possível remover as receitas baixadas. Tente novamente mais tarde.',
+        );
+      }
+    } catch {
+      triggerHaptic('error');
+      Alert.alert(
+        'Falha ao Remover',
+        'Ocorreu um erro inesperado ao remover as receitas baixadas. Tente novamente.',
+      );
+    } finally {
+      setIsClearingDownloads(false);
+    }
+  };
+
+  const handlePromptClearDownloads = () => {
+    triggerHaptic('medium');
+    if (downloadedCount === 0) {
+      Alert.alert(
+        'Nenhuma Receita Baixada',
+        'Você não possui receitas salvas localmente no dispositivo para acesso offline.',
+      );
+      return;
+    }
+
+    Alert.alert(
+      'Remover Receitas Baixadas',
+      `Esta ação removerá todas as ${downloadedCount} receita(s) salva(s) localmente no dispositivo. O acesso offline a elas será desativado até serem baixadas novamente. Suas receitas no servidor não serão afetadas.`,
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Remover Todas',
+          style: 'destructive',
+          onPress: executeClearDownloads,
+        },
+      ],
+    );
+  };
+
   return (
     <View style={styles.card}>
       {/* Option Row 1: Clear App Cache */}
@@ -219,6 +281,60 @@ export function StorageSettingsCard() {
           )}
           <Text style={styles.clearButtonText}>
             {isClearingDrafts ? 'Removendo...' : 'Remover'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Divider */}
+      <View style={styles.divider} />
+
+      {/* Option Row 3: Clear Downloaded Recipes */}
+      <View style={styles.actionRow}>
+        <View style={styles.infoWrapper}>
+          <View style={styles.iconCircle}>
+            <MaterialCommunityIcons
+              name="cloud-remove-outline"
+              size={22}
+              color={theme.colors.primary}
+            />
+          </View>
+          <View style={styles.textColumn}>
+            <View style={styles.titleRow}>
+              <Text style={styles.title}>Remover Receitas Baixadas</Text>
+              {hasClearedDownloads && (
+                <View style={styles.successBadge}>
+                  <MaterialCommunityIcons name="check" size={12} color={theme.colors.onTertiary} />
+                  <Text style={styles.successBadgeText}>Removidas</Text>
+                </View>
+              )}
+            </View>
+            <Text style={styles.subtitle}>
+              {downloadedCount > 0
+                ? `${downloadedCount} receita(s) salva(s) para acesso offline. Exclui as cópias locais para liberar espaço de armazenamento.`
+                : 'Exclui todas as cópias de receitas salvas localmente para uso sem internet, liberando armazenamento.'}
+            </Text>
+          </View>
+        </View>
+
+        <TouchableOpacity
+          style={[styles.clearButton, isClearingDownloads && styles.clearButtonDisabled]}
+          onPress={handlePromptClearDownloads}
+          disabled={isClearingDownloads}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="Remover todas as receitas baixadas do dispositivo"
+        >
+          {isClearingDownloads ? (
+            <ActivityIndicator size="small" color={theme.colors.primary} />
+          ) : (
+            <MaterialCommunityIcons
+              name="delete-sweep-outline"
+              size={18}
+              color={theme.colors.primary}
+            />
+          )}
+          <Text style={styles.clearButtonText}>
+            {isClearingDownloads ? 'Removendo...' : 'Remover'}
           </Text>
         </TouchableOpacity>
       </View>

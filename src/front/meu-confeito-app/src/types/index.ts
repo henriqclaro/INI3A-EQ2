@@ -94,3 +94,4 @@ export {
   UserReviewItem,
   UserReviewSummaryRecipe,
 } from './review';
+export { DownloadedRecipe, ClearDownloadedRecipesResult } from './downloaded-recipe';

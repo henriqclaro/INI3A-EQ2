@@ -29,6 +29,7 @@ interface RecipeViewProps {
   rating?: number | string | null;
   totalReviews?: number;
   status?: RecipeStatus | string;
+  isDownloaded?: boolean;
 }
 
 export const RecipeView = memo(function RecipeView({
@@ -45,6 +46,7 @@ export const RecipeView = memo(function RecipeView({
   rating,
   totalReviews,
   status,
+  isDownloaded = false,
 }: RecipeViewProps) {
   const { theme } = useThemeMode();
   const [hasImageError, setHasImageError] = useState(false);
@@ -87,7 +89,8 @@ export const RecipeView = memo(function RecipeView({
     hasParent ||
     status === 'DRAFT' ||
     status === 'ARCHIVED' ||
-    status === 'SUSPENDED';
+    status === 'SUSPENDED' ||
+    isDownloaded;
 
   return (
     <TouchableOpacity
@@ -123,6 +126,16 @@ export const RecipeView = memo(function RecipeView({
       <View style={styles.infoContainer}>
         {hasTopBadges && (
           <View style={styles.topBadgesRow}>
+            {isDownloaded && (
+              <View style={styles.downloadedBadge}>
+                <MaterialCommunityIcons
+                  name="cloud-check-outline"
+                  size={12}
+                  color={theme.colors.primary}
+                />
+                <Text style={styles.downloadedBadgeText}>Baixada</Text>
+              </View>
+            )}
             {(isCustomized || hasParent) && (
               <View style={styles.customizedBadge}>
                 <MaterialCommunityIcons
@@ -284,6 +297,24 @@ const createStyles = (theme: AppTheme, maxTagRows: 1 | 2) =>
       flexWrap: 'wrap',
       gap: 6,
       marginBottom: 6,
+    },
+    downloadedBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderColor: theme.colors.outlineVariant,
+      borderWidth: 1,
+      borderRadius: theme.rounded.full,
+      paddingVertical: 2,
+      paddingHorizontal: 8,
+      gap: 4,
+    },
+    downloadedBadgeText: {
+      fontSize: 11,
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontWeight: '600',
+      color: theme.colors.primary,
     },
     customizedBadge: {
       flexDirection: 'row',
