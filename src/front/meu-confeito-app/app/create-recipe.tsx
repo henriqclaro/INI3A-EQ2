@@ -13,9 +13,10 @@ import { Stack, router, useLocalSearchParams } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { RecipeForm, RecipeFormSubmitData } from '@/src/components';
+import { OfflineBanner, RecipeForm, RecipeFormSubmitData } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { useNetwork } from '@/src/hooks/useNetwork';
 import { useRecipeRegister, useRecipeUpdate, useSingleRecipe } from '@/src/hooks/useRecipes';
 import { RecipeService } from '@/src/services/recipe';
 import { AppTheme } from '@/src/theme/themes';
@@ -34,6 +35,7 @@ export default function CreateRecipeScreen() {
     parentId?: string;
   }>();
 
+  const { isOffline } = useNetwork();
   const sourceRecipeId = forkFromId || parentId;
   const isCustomizing = Boolean(sourceRecipeId);
   const isEditMode = Boolean(recipeId) && !isCustomizing;
@@ -53,6 +55,14 @@ export default function CreateRecipeScreen() {
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
   const handleSubmit = async (formData: RecipeFormSubmitData) => {
+    if (isOffline) {
+      Alert.alert(
+        'Modo Offline',
+        'Você está sem conexão com a internet. Conecte-se para salvar ou atualizar receitas.',
+      );
+      return;
+    }
+
     if (!user?.id) {
       Alert.alert('Erro', 'Usuário não autenticado. Por favor, faça login novamente.');
       return;
@@ -255,6 +265,11 @@ export default function CreateRecipeScreen() {
           </View>
         ) : (
           <View style={styles.formWrapper}>
+            <OfflineBanner
+              isVisible={isOffline}
+              message="Você está offline. Salvar ou publicar receitas requer conexão com a internet."
+            />
+
             {isCustomizing && recipe && (
               <View style={styles.forkBannerWrapper}>
                 <View style={styles.forkBanner}>

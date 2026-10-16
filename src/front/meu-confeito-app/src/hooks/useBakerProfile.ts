@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { BakerProfileService } from '../services/baker-profile';
+import { NetworkService } from '../services/network';
+import { OfflineCacheService } from '../services/offlineCache';
 import {
   BakerProfile,
   BakerProfileRegisterInput,
@@ -26,6 +28,7 @@ export function useMyBakerProfile(isEnabled: boolean = true) {
   const [bakerProfile, setBakerProfile] = useState<BakerProfile | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(isEnabled);
   const [hasBakerProfile, setHasBakerProfile] = useState<boolean>(false);
+  const [isOffline, setIsOffline] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProfile = useCallback(async () => {
@@ -41,9 +44,13 @@ export function useMyBakerProfile(isEnabled: boolean = true) {
       if (response?.data?.bakerProfile) {
         setBakerProfile(response.data.bakerProfile);
         setHasBakerProfile(true);
+        setIsOffline(false);
+        OfflineCacheService.saveBakerProfile(response.data.bakerProfile).catch(() => {});
       } else {
         setBakerProfile(null);
         setHasBakerProfile(false);
+        setIsOffline(false);
+        OfflineCacheService.saveBakerProfile(null).catch(() => {});
       }
     } catch (err: unknown) {
       const apiErr = err as ApiError;
@@ -52,10 +59,18 @@ export function useMyBakerProfile(isEnabled: boolean = true) {
         setBakerProfile(null);
         setHasBakerProfile(false);
       } else {
-        console.error('Error fetching baker profile:', err);
-        setError('Não foi possível carregar o perfil de confeiteiro.');
-        setBakerProfile(null);
-        setHasBakerProfile(false);
+        const cached = await OfflineCacheService.getBakerProfile();
+        if (cached) {
+          setBakerProfile(cached);
+          setHasBakerProfile(true);
+          setIsOffline(true);
+          setError(null);
+        } else {
+          console.error('Error fetching baker profile:', err);
+          setError('Não foi possível carregar o perfil de confeiteiro.');
+          setBakerProfile(null);
+          setHasBakerProfile(false);
+        }
       }
     } finally {
       setIsLoading(false);
@@ -70,28 +85,47 @@ export function useMyBakerProfile(isEnabled: boolean = true) {
     }
 
     async function load() {
+      // Preload fast cache
+      const fastCached = OfflineCacheService.getBakerProfileFast();
+      if (fastCached && isMounted) {
+        setBakerProfile(fastCached);
+        setHasBakerProfile(true);
+      }
+
       try {
         const response = await BakerProfileService.getMyProfile();
         if (isMounted) {
           if (response?.data?.bakerProfile) {
             setBakerProfile(response.data.bakerProfile);
             setHasBakerProfile(true);
+            setIsOffline(false);
+            OfflineCacheService.saveBakerProfile(response.data.bakerProfile).catch(() => {});
           } else {
             setBakerProfile(null);
             setHasBakerProfile(false);
+            setIsOffline(false);
+            OfflineCacheService.saveBakerProfile(null).catch(() => {});
           }
         }
       } catch (err: unknown) {
+        const apiErr = err as ApiError;
         if (isMounted) {
-          const apiErr = err as ApiError;
           if (apiErr?.response?.status === 404) {
             setBakerProfile(null);
             setHasBakerProfile(false);
           } else {
-            console.error('Error loading baker profile:', err);
-            setError('Não foi possível carregar o perfil de confeiteiro.');
-            setBakerProfile(null);
-            setHasBakerProfile(false);
+            const cached = await OfflineCacheService.getBakerProfile();
+            if (cached) {
+              setBakerProfile(cached);
+              setHasBakerProfile(true);
+              setIsOffline(true);
+              setError(null);
+            } else {
+              console.error('Error loading baker profile:', err);
+              setError('Não foi possível carregar o perfil de confeiteiro.');
+              setBakerProfile(null);
+              setHasBakerProfile(false);
+            }
           }
         }
       } finally {
@@ -112,6 +146,7 @@ export function useMyBakerProfile(isEnabled: boolean = true) {
     bakerProfile,
     hasBakerProfile,
     isLoading,
+    isOffline,
     error,
     refetch: fetchProfile,
     setBakerProfile,
@@ -127,14 +162,22 @@ export function useSaveBakerProfile() {
     data: BakerProfileRegisterInput | BakerProfileUpdateInput,
     hasExistingProfile: boolean,
   ) => {
+    if (NetworkService.getIsOffline()) {
+      const msg = 'Operação indisponível offline. Conecte-se à internet para salvar o perfil.';
+      setError(msg);
+      throw new Error(msg);
+    }
+
     setIsSaving(true);
     setError(null);
     try {
       if (hasExistingProfile) {
         const response = await BakerProfileService.updateMyProfile(data);
+        OfflineCacheService.saveBakerProfile(response.data.bakerProfile).catch(() => {});
         return response.data.bakerProfile;
       } else {
         const response = await BakerProfileService.createMyProfile(data);
+        OfflineCacheService.saveBakerProfile(response.data.bakerProfile).catch(() => {});
         return response.data.bakerProfile;
       }
     } catch (err: unknown) {
@@ -159,10 +202,17 @@ export function useDeleteBakerProfile() {
   const [error, setError] = useState<string | null>(null);
 
   const deleteBakerProfile = async () => {
+    if (NetworkService.getIsOffline()) {
+      const msg = 'Operação indisponível offline. Conecte-se à internet para excluir o perfil.';
+      setError(msg);
+      throw new Error(msg);
+    }
+
     setIsDeleting(true);
     setError(null);
     try {
       await BakerProfileService.deleteMyProfile();
+      OfflineCacheService.saveBakerProfile(null).catch(() => {});
     } catch (err: unknown) {
       console.error('Error deleting baker profile:', err);
       const apiErr = err as ApiError;
@@ -182,6 +232,7 @@ export function usePublicBakerProfile(userId: string | undefined) {
   const [publicProfile, setPublicProfile] = useState<PublicBakerProfile | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(Boolean(userId));
   const [hasError, setHasError] = useState<boolean>(false);
+  const [isOffline, setIsOffline] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const fetchPublicProfile = useCallback(async () => {
@@ -196,16 +247,28 @@ export function usePublicBakerProfile(userId: string | undefined) {
     try {
       const response = await BakerProfileService.getPublicProfile(userId);
       setPublicProfile(response.data.bakerProfile);
+      setIsOffline(false);
     } catch (err: unknown) {
       console.error('Error fetching public baker profile:', err);
       const apiErr = err as ApiError;
-      setHasError(true);
-      setErrorMessage(
-        apiErr?.response?.status === 404
-          ? 'Perfil de confeiteiro não encontrado ou perfil privado.'
-          : 'Erro ao carregar o perfil público.',
-      );
-      setPublicProfile(null);
+      const cached = await OfflineCacheService.getBakerProfile();
+      if (cached && (!userId || cached.userId === userId)) {
+        setPublicProfile(cached as unknown as PublicBakerProfile);
+        setIsOffline(true);
+        setHasError(false);
+      } else {
+        const isOfflineNow = NetworkService.getIsOffline();
+        setHasError(true);
+        setIsOffline(isOfflineNow);
+        setErrorMessage(
+          apiErr?.response?.status === 404
+            ? 'Perfil de confeiteiro não encontrado ou perfil privado.'
+            : isOfflineNow
+              ? 'Você está offline. Conecte-se à internet para visualizar perfis de outros confeiteiros.'
+              : 'Erro ao carregar o perfil público.',
+        );
+        setPublicProfile(null);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -219,22 +282,40 @@ export function usePublicBakerProfile(userId: string | undefined) {
     }
 
     async function load() {
+      // Preload fast cache if own profile
+      const fastCached = OfflineCacheService.getBakerProfileFast();
+      if (fastCached && (!userId || fastCached.userId === userId) && isMounted) {
+        setPublicProfile(fastCached as unknown as PublicBakerProfile);
+      }
+
       try {
         const response = await BakerProfileService.getPublicProfile(userId!);
         if (isMounted) {
           setPublicProfile(response.data.bakerProfile);
+          setIsOffline(false);
         }
       } catch (err: unknown) {
         if (isMounted) {
           console.error('Error loading public baker profile:', err);
           const apiErr = err as ApiError;
-          setHasError(true);
-          setErrorMessage(
-            apiErr?.response?.status === 404
-              ? 'Perfil de confeiteiro não encontrado ou perfil privado.'
-              : 'Erro ao carregar o perfil público.',
-          );
-          setPublicProfile(null);
+          const cached = await OfflineCacheService.getBakerProfile();
+          if (cached && (!userId || cached.userId === userId)) {
+            setPublicProfile(cached as unknown as PublicBakerProfile);
+            setIsOffline(true);
+            setHasError(false);
+          } else {
+            const isOfflineNow = NetworkService.getIsOffline();
+            setHasError(true);
+            setIsOffline(isOfflineNow);
+            setErrorMessage(
+              apiErr?.response?.status === 404
+                ? 'Perfil de confeiteiro não encontrado ou perfil privado.'
+                : isOfflineNow
+                  ? 'Você está offline. Conecte-se à internet para visualizar perfis de outros confeiteiros.'
+                  : 'Erro ao carregar o perfil público.',
+            );
+            setPublicProfile(null);
+          }
         }
       } finally {
         if (isMounted) {
@@ -255,6 +336,7 @@ export function usePublicBakerProfile(userId: string | undefined) {
     isLoading,
     hasError,
     errorMessage,
+    isOffline,
     refetch: fetchPublicProfile,
   };
 }
@@ -267,6 +349,7 @@ export function useNearbyBakers() {
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [hasError, setHasError] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isOffline, setIsOffline] = useState<boolean>(NetworkService.getIsOffline());
 
   const lastSearchRef = useRef<
     | { type: 'nearby'; params: NearbyBakersQuery }
@@ -277,6 +360,15 @@ export function useNearbyBakers() {
   const searchBakers = useCallback(
     async (params: NearbyBakersQuery, isAppend: boolean = false) => {
       const pageToFetch = params.page ?? (isAppend ? currentPage + 1 : 0);
+
+      if (NetworkService.getIsOffline()) {
+        setIsOffline(true);
+        setHasError(true);
+        setErrorMessage('A busca de confeitarias requer uma conexão com a internet.');
+        setIsLoading(false);
+        setIsLoadingMore(false);
+        return [];
+      }
 
       if (isAppend) {
         setIsLoadingMore(true);
@@ -300,15 +392,20 @@ export function useNearbyBakers() {
         }
         setCurrentPage(pageToFetch);
         setHasMore(list.length >= 10);
+        setIsOffline(false);
         return list;
       } catch (err: unknown) {
         console.error('Error fetching nearby bakers:', err);
         const apiErr = err as ApiError;
+        const isOfflineNow = NetworkService.getIsOffline();
+        setIsOffline(isOfflineNow);
         setHasError(true);
         setErrorMessage(
-          apiErr?.response?.data?.message ||
-            apiErr?.message ||
-            'Não foi possível encontrar confeitarias na região.',
+          isOfflineNow
+            ? 'A busca de confeitarias requer uma conexão com a internet.'
+            : apiErr?.response?.data?.message ||
+                apiErr?.message ||
+                'Não foi possível encontrar confeitarias na região.',
         );
         if (!isAppend) {
           setBakers([]);
@@ -326,6 +423,15 @@ export function useNearbyBakers() {
   const searchBakersByNeighborhood = useCallback(
     async (params: NeighborhoodBakersQuery, isAppend: boolean = false) => {
       const pageToFetch = params.page ?? (isAppend ? currentPage + 1 : 0);
+
+      if (NetworkService.getIsOffline()) {
+        setIsOffline(true);
+        setHasError(true);
+        setErrorMessage('A busca de confeitarias requer uma conexão com a internet.');
+        setIsLoading(false);
+        setIsLoadingMore(false);
+        return [];
+      }
 
       if (isAppend) {
         setIsLoadingMore(true);
@@ -349,15 +455,20 @@ export function useNearbyBakers() {
         }
         setCurrentPage(pageToFetch);
         setHasMore(list.length >= 10);
+        setIsOffline(false);
         return list;
       } catch (err: unknown) {
         console.error('Error fetching bakers by neighborhood:', err);
         const apiErr = err as ApiError;
+        const isOfflineNow = NetworkService.getIsOffline();
+        setIsOffline(isOfflineNow);
         setHasError(true);
         setErrorMessage(
-          apiErr?.response?.data?.message ||
-            apiErr?.message ||
-            'Não foi possível encontrar confeitarias para essa localização.',
+          isOfflineNow
+            ? 'A busca de confeitarias requer uma conexão com a internet.'
+            : apiErr?.response?.data?.message ||
+                apiErr?.message ||
+                'Não foi possível encontrar confeitarias para essa localização.',
         );
         if (!isAppend) {
           setBakers([]);
@@ -392,6 +503,7 @@ export function useNearbyBakers() {
     currentPage,
     hasError,
     errorMessage,
+    isOffline,
     searchBakers,
     searchBakersByNeighborhood,
     loadMore,

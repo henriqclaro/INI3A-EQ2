@@ -14,9 +14,10 @@ import { Stack, router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { CustomButton, Input, UserAvatar } from '@/src/components';
+import { CustomButton, Input, OfflineBanner, UserAvatar } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { useNetwork } from '@/src/hooks/useNetwork';
 import { SearchUserItem, useUserBan, useUserSearch } from '@/src/hooks/useUsers';
 import { AppTheme } from '@/src/theme/themes';
 import { getRoleLabel, isAdmin, isModerator, isStaff } from '@/src/utils/roles';
@@ -25,6 +26,7 @@ export default function ManagementScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
   const { width } = useWindowDimensions();
+  const { isOffline } = useNetwork();
   const isDesktop = width >= 768;
 
   const isStaffUser = isStaff(user?.role);
@@ -79,6 +81,10 @@ export default function ManagementScreen() {
   }
 
   const handleSearch = () => {
+    if (isOffline) {
+      Alert.alert('Modo Offline', 'A busca de usuários requer uma conexão ativa com a internet.');
+      return;
+    }
     setExpandedUserId(null);
     searchUsers(searchEmail).catch((err) => console.error('Error searching users:', err));
   };
@@ -94,6 +100,11 @@ export default function ManagementScreen() {
   };
 
   const executeBan = async (targetUser: SearchUserItem) => {
+    if (isOffline) {
+      Alert.alert('Modo Offline', 'Operações de moderação requerem conexão com a internet.');
+      return;
+    }
+
     try {
       await banUser(targetUser.id);
       Alert.alert(
@@ -164,6 +175,11 @@ export default function ManagementScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.contentWrapper}>
+          <OfflineBanner
+            isVisible={isOffline}
+            message="Você está offline. Operações de moderação requerem conexão ativa com a internet."
+          />
+
           {/* Header Block */}
           <View style={styles.headerBlock}>
             <View style={styles.headerTitleRow}>

@@ -14,10 +14,11 @@ import { router, useFocusEffect } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { CustomButton, MenuOptionButton, UserAvatar } from '@/src/components';
+import { CustomButton, MenuOptionButton, OfflineBanner, UserAvatar } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useMyBakerProfile } from '@/src/hooks/useBakerProfile';
+import { useNetwork } from '@/src/hooks/useNetwork';
 import { AppTheme } from '@/src/theme/themes';
 import { getRoleLabel, isAdmin, isBaker, isStaff } from '@/src/utils/roles';
 
@@ -25,12 +26,20 @@ export default function ProfileScreen() {
   const { theme } = useThemeMode();
   const { user, signOut } = useAuth();
   const { width } = useWindowDimensions();
+  const { isOffline: isNetworkOffline } = useNetwork();
   const isBakerRole = isBaker(user?.role);
   const isStaffRole = isStaff(user?.role);
   const isAdminRole = isAdmin(user?.role);
   const canSearchBakers = !isBakerRole || isStaffRole;
   const isDesktop = width >= 768;
-  const { bakerProfile, hasBakerProfile, isLoading, refetch } = useMyBakerProfile(isBakerRole);
+  const {
+    bakerProfile,
+    hasBakerProfile,
+    isLoading,
+    isOffline: isBakerProfileOffline,
+    refetch,
+  } = useMyBakerProfile(isBakerRole);
+  const isAppOffline = isNetworkOffline || isBakerProfileOffline;
 
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
@@ -102,6 +111,12 @@ export default function ProfileScreen() {
       }
     >
       <View style={styles.contentWrapper}>
+        <OfflineBanner
+          isVisible={isAppOffline}
+          message="Você está offline. Exibindo dados do perfil salvos no dispositivo."
+          onRetry={isBakerRole ? refetch : undefined}
+        />
+
         {/* Main Profile Card Container */}
         <View style={styles.card}>
           <View style={styles.avatarWrapper}>

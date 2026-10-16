@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { OfflineOperationsService } from '../services/offlineOperations';
 import { ProductionService } from '../services/production';
 import {
   ProductionItem,
@@ -11,6 +12,7 @@ import { Storage } from '../utils/storage';
 export function useProductions(initialParams?: ProductionQueryParams, isEnabled: boolean = true) {
   const [productions, setProductions] = useState<ProductionItem[]>([]);
   const [isLoading, setIsLoading] = useState(isEnabled);
+  const [isOffline, setIsOffline] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProductions = useCallback(
@@ -26,15 +28,30 @@ export function useProductions(initialParams?: ProductionQueryParams, isEnabled:
         return;
       }
 
+      const resolvedParams = params ?? initialParams;
+
       try {
         setIsLoading(true);
         setError(null);
-        const resolvedParams = params ?? initialParams;
         const res = await ProductionService.list(resolvedParams);
-        setProductions(res.data.productions);
+        const fetchedProductions = res.data.productions ?? [];
+        setProductions(fetchedProductions);
+        setIsOffline(false);
+
+        // Auto-save to offline cache in background with intelligent pruning
+        OfflineOperationsService.saveProductions(fetchedProductions).catch((err) =>
+          console.warn('Failed to auto-save productions offline:', err),
+        );
       } catch (err) {
-        console.error('Error fetching productions: ', err);
-        setError('Erro ao carregar produções.');
+        const cached = await OfflineOperationsService.getProductions(resolvedParams);
+        if (cached.length > 0) {
+          setProductions(cached);
+          setIsOffline(true);
+          setError(null);
+        } else {
+          console.error('Error fetching productions: ', err);
+          setError('Erro ao carregar produções.');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -53,6 +70,12 @@ export function useProductions(initialParams?: ProductionQueryParams, isEnabled:
         return;
       }
 
+      // Preload from fast cache to avoid UI flickers
+      const fastCached = OfflineOperationsService.getProductionsFast(initialParams);
+      if (fastCached && fastCached.length > 0 && isMounted) {
+        setProductions(fastCached);
+      }
+
       const token = Storage.getFastItem('access_token') || (await Storage.getItem('access_token'));
       if (!token) {
         if (isMounted) {
@@ -65,13 +88,26 @@ export function useProductions(initialParams?: ProductionQueryParams, isEnabled:
         setIsLoading(true);
         setError(null);
         const res = await ProductionService.list(initialParams);
+        const fetchedProductions = res.data.productions ?? [];
         if (isMounted) {
-          setProductions(res.data.productions);
+          setProductions(fetchedProductions);
+          setIsOffline(false);
         }
+
+        OfflineOperationsService.saveProductions(fetchedProductions).catch((err) =>
+          console.warn('Failed to auto-save productions offline:', err),
+        );
       } catch (err) {
+        const cached = await OfflineOperationsService.getProductions(initialParams);
         if (isMounted) {
-          console.error('Error fetching productions: ', err);
-          setError('Erro ao carregar produções.');
+          if (cached.length > 0) {
+            setProductions(cached);
+            setIsOffline(true);
+            setError(null);
+          } else {
+            console.error('Error fetching productions: ', err);
+            setError('Erro ao carregar produções.');
+          }
         }
       } finally {
         if (isMounted) {
@@ -90,7 +126,11 @@ export function useProductions(initialParams?: ProductionQueryParams, isEnabled:
   const cancelProduction = async (id: string) => {
     try {
       const res = await ProductionService.cancel(id);
-      setProductions((prev) => prev.map((item) => (item.id === id ? res.data.production : item)));
+      const updatedList = productions.map((item) => (item.id === id ? res.data.production : item));
+      setProductions(updatedList);
+      OfflineOperationsService.saveProductions(updatedList).catch((err) =>
+        console.warn('Failed to update offline productions after cancel:', err),
+      );
       return res.data.production;
     } catch (err) {
       console.error('Error canceling production: ', err);
@@ -101,6 +141,7 @@ export function useProductions(initialParams?: ProductionQueryParams, isEnabled:
   return {
     productions,
     isLoading,
+    isOffline,
     error,
     refetch: fetchProductions,
     cancelProduction,
@@ -132,6 +173,7 @@ export function useRegisterProduction() {
 export function useSingleProduction(id: string) {
   const [production, setProduction] = useState<ProductionItem | null>(null);
   const [isLoading, setIsLoading] = useState(Boolean(id));
+  const [isOffline, setIsOffline] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProduction = useCallback(async () => {
@@ -145,9 +187,17 @@ export function useSingleProduction(id: string) {
       setError(null);
       const res = await ProductionService.getSingle(id);
       setProduction(res.data.production);
+      setIsOffline(false);
     } catch (err) {
-      console.error('Error fetching single production: ', err);
-      setError('Erro ao carregar detalhes da produção.');
+      const cached = await OfflineOperationsService.getSingleProduction(id);
+      if (cached) {
+        setProduction(cached);
+        setIsOffline(true);
+        setError(null);
+      } else {
+        console.error('Error fetching single production: ', err);
+        setError('Erro ao carregar detalhes da produção.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -159,17 +209,32 @@ export function useSingleProduction(id: string) {
     if (!id) return;
 
     async function load() {
+      // Preload from cached list if available
+      const fastCached = OfflineOperationsService.getProductionsFast({ includeCanceled: true });
+      const foundFast = fastCached?.find((p) => p.id === id);
+      if (foundFast && isMounted) {
+        setProduction(foundFast);
+      }
+
       try {
         setIsLoading(true);
         setError(null);
         const res = await ProductionService.getSingle(id);
         if (isMounted) {
           setProduction(res.data.production);
+          setIsOffline(false);
         }
       } catch (err) {
+        const cached = await OfflineOperationsService.getSingleProduction(id);
         if (isMounted) {
-          console.error('Error fetching single production: ', err);
-          setError('Erro ao carregar detalhes da produção.');
+          if (cached) {
+            setProduction(cached);
+            setIsOffline(true);
+            setError(null);
+          } else {
+            console.error('Error fetching single production: ', err);
+            setError('Erro ao carregar detalhes da produção.');
+          }
         }
       } finally {
         if (isMounted) {
@@ -185,5 +250,5 @@ export function useSingleProduction(id: string) {
     };
   }, [id]);
 
-  return { production, isLoading, error, refetch: fetchProduction };
+  return { production, isLoading, isOffline, error, refetch: fetchProduction };
 }

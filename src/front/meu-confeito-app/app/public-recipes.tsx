@@ -15,7 +15,13 @@ import { Stack, router, useLocalSearchParams } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { Input, RecipeDateFilterModal, RecipeFilterChip, RecipeView } from '@/src/components';
+import {
+  Input,
+  OfflineBanner,
+  RecipeDateFilterModal,
+  RecipeFilterChip,
+  RecipeView,
+} from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useDebounce } from '@/src/hooks/useDebounce';
 import { useManyRecipes, useUserRecipes } from '@/src/hooks/useRecipes';
@@ -50,6 +56,7 @@ export default function PublicRecipesScreen() {
     hasMore,
     loadMore,
     refetch,
+    isOffline,
   } = isUserSpecific ? userRecipesState : globalRecipesState;
 
   const recipes = useMemo(() => {
@@ -332,6 +339,11 @@ export default function PublicRecipesScreen() {
 
       <View style={styles.container}>
         <View style={styles.headerContent}>
+          <OfflineBanner
+            isVisible={isOffline}
+            message="Você está offline. Exibindo receitas salvas em cache."
+            onRetry={refetch}
+          />
           <View style={styles.searchFilterContainer}>
             <Input
               value={search}

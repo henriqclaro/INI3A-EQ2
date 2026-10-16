@@ -5,9 +5,10 @@ import { Stack, router, useLocalSearchParams } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { RecipeForm, RecipeFormSubmitData } from '@/src/components';
+import { OfflineBanner, RecipeForm, RecipeFormSubmitData } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { useNetwork } from '@/src/hooks/useNetwork';
 import { useRecipeDelete, useRecipeUpdate, useSingleRecipe } from '@/src/hooks/useRecipes';
 import { RecipeService } from '@/src/services/recipe';
 import { AppTheme } from '@/src/theme/themes';
@@ -17,6 +18,7 @@ export default function EditRecipeScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
   const { recipeId } = useLocalSearchParams<{ recipeId: string }>();
+  const { isOffline } = useNetwork();
 
   const {
     recipe,
@@ -32,6 +34,11 @@ export default function EditRecipeScreen() {
 
   const handleDeleteRecipe = () => {
     if (!recipeId) return;
+
+    if (isOffline) {
+      Alert.alert('Modo Offline', 'Excluir receitas requer conexão com a internet.');
+      return;
+    }
 
     Alert.alert(
       'Excluir Receita',
@@ -68,6 +75,14 @@ export default function EditRecipeScreen() {
   };
 
   const handleSubmit = async (formData: RecipeFormSubmitData) => {
+    if (isOffline) {
+      Alert.alert(
+        'Modo Offline',
+        'Você está sem conexão com a internet. Conecte-se para salvar alterações na receita.',
+      );
+      return;
+    }
+
     if (!recipeId) {
       Alert.alert('Erro', 'ID da receita não encontrado.');
       return;
@@ -236,13 +251,20 @@ export default function EditRecipeScreen() {
             </View>
           </View>
         ) : (
-          <RecipeForm
-            initialRecipe={recipe}
-            isEditMode={true}
-            isSubmitting={isSubmitting}
-            onSubmit={handleSubmit}
-            submitButtonText="Salvar Alterações"
-          />
+          <View style={styles.formWrapper}>
+            <OfflineBanner
+              isVisible={isOffline}
+              message="Você está offline. Salvar alterações ou excluir receitas requer conexão com a internet."
+              style={styles.offlineBanner}
+            />
+            <RecipeForm
+              initialRecipe={recipe}
+              isEditMode={true}
+              isSubmitting={isSubmitting}
+              onSubmit={handleSubmit}
+              submitButtonText="Salvar Alterações"
+            />
+          </View>
         )}
       </View>
     </>
@@ -254,6 +276,9 @@ const createStyles = (theme: AppTheme) =>
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
+    },
+    formWrapper: {
+      flex: 1,
     },
     centerContainer: {
       flex: 1,
@@ -345,5 +370,10 @@ const createStyles = (theme: AppTheme) =>
       alignItems: 'center',
       justifyContent: 'center',
       padding: 8,
+    },
+    offlineBanner: {
+      marginHorizontal: 16,
+      marginTop: 12,
+      marginBottom: 4,
     },
   });

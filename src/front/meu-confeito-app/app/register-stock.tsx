@@ -16,11 +16,18 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { ActivityIndicator } from 'react-native-paper';
 
-import { CustomButton, DateInput, IngredientSelector, StockCard } from '@/src/components';
+import {
+  CustomButton,
+  DateInput,
+  IngredientSelector,
+  OfflineBanner,
+  StockCard,
+} from '@/src/components';
 import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useIngredients } from '@/src/hooks/useIngredients';
 import { useInventory } from '@/src/hooks/useInventory';
+import { useNetwork } from '@/src/hooks/useNetwork';
 import { useUnsavedChangesWarning } from '@/src/hooks/useUnsavedChangesWarning';
 import { AppTheme } from '@/src/theme/themes';
 import { InventoryItem } from '@/src/types/inventory';
@@ -32,6 +39,7 @@ export default function RegisterStockScreen() {
   const { theme } = useThemeMode();
   const { priceDecimalPlaces } = useSettings();
   const { width } = useWindowDimensions();
+  const { isOffline } = useNetwork();
   const isMobile = width < 768;
 
   const { ingredients: availableIngredients, refetch: refetchIngredients } = useIngredients();
@@ -193,6 +201,14 @@ export default function RegisterStockScreen() {
   ]);
 
   const handleSubmit = async () => {
+    if (isOffline) {
+      Alert.alert(
+        'Modo Offline',
+        'Registrar compras e ajustes de estoque requer conexão com a internet.',
+      );
+      return;
+    }
+
     setHasTouchedIngredient(true);
 
     if (!selectedIngredientId) {
@@ -315,6 +331,11 @@ export default function RegisterStockScreen() {
               Cadastre a compra ou o saldo inicial dos insumos que você utiliza na cozinha.
             </Text>
           </View>
+
+          <OfflineBanner
+            isVisible={isOffline}
+            message="Você está offline. Operações de compra e ajuste de estoque requerem conexão com a internet."
+          />
 
           {/* Entry Mode Selector */}
           <View style={styles.modeTabs}>

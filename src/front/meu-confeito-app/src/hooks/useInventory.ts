@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { InventoryService } from '../services/inventory';
+import { OfflineOperationsService } from '../services/offlineOperations';
 import {
   AdjustmentRequest,
   AdjustmentResponse,
@@ -18,6 +19,7 @@ export function useInventory(isEnabled: boolean = true) {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(isEnabled);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchInventory = useCallback(async () => {
@@ -36,11 +38,23 @@ export function useInventory(isEnabled: boolean = true) {
       setIsLoading(true);
       setError(null);
       const res = await InventoryService.list();
-      setInventory(res.data?.inventory ?? []);
+      const remoteItems = res.data?.inventory ?? [];
+      setInventory(remoteItems);
+      setIsOffline(false);
+      OfflineOperationsService.saveInventory(remoteItems).catch((err) =>
+        console.warn('Failed to auto-save inventory offline:', err),
+      );
     } catch (err: unknown) {
-      console.error('Error fetching inventory:', err);
-      const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
-      setError(apiErr.response?.data?.message || apiErr.message || 'Erro ao carregar estoque.');
+      const cached = await OfflineOperationsService.getInventory();
+      if (cached.length > 0) {
+        setInventory(cached);
+        setIsOffline(true);
+        setError(null);
+      } else {
+        console.error('Error fetching inventory:', err);
+        const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
+        setError(apiErr.response?.data?.message || apiErr.message || 'Erro ao carregar estoque.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -57,6 +71,12 @@ export function useInventory(isEnabled: boolean = true) {
         return;
       }
 
+      // Preload from fast cache to avoid UI flickers
+      const fastCached = OfflineOperationsService.getInventoryFast();
+      if (fastCached && fastCached.length > 0 && isMounted) {
+        setInventory(fastCached);
+      }
+
       const token = Storage.getFastItem('access_token') || (await Storage.getItem('access_token'));
       if (!token) {
         if (isMounted) {
@@ -69,14 +89,28 @@ export function useInventory(isEnabled: boolean = true) {
         setIsLoading(true);
         setError(null);
         const res = await InventoryService.list();
+        const remoteItems = res.data?.inventory ?? [];
         if (isMounted) {
-          setInventory(res.data?.inventory ?? []);
+          setInventory(remoteItems);
+          setIsOffline(false);
         }
+        OfflineOperationsService.saveInventory(remoteItems).catch((err) =>
+          console.warn('Failed to auto-save inventory offline:', err),
+        );
       } catch (err: unknown) {
+        const cached = await OfflineOperationsService.getInventory();
         if (isMounted) {
-          console.error('Error fetching inventory:', err);
-          const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
-          setError(apiErr.response?.data?.message || apiErr.message || 'Erro ao carregar estoque.');
+          if (cached.length > 0) {
+            setInventory(cached);
+            setIsOffline(true);
+            setError(null);
+          } else {
+            console.error('Error fetching inventory:', err);
+            const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
+            setError(
+              apiErr.response?.data?.message || apiErr.message || 'Erro ao carregar estoque.',
+            );
+          }
         }
       } finally {
         if (isMounted) {
@@ -154,6 +188,7 @@ export function useInventory(isEnabled: boolean = true) {
     inventories: inventory,
     isLoading,
     isSubmitting,
+    isOffline,
     error,
     refetch: fetchInventory,
     registerPurchase,

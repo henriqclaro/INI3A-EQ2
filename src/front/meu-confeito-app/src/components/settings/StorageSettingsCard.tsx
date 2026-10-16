@@ -14,6 +14,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useAllDownloadedRecipes } from '@/src/hooks/useDownloadedRecipes';
+import { useOfflineOperations } from '@/src/hooks/useOfflineOperations';
 import { AppTheme } from '@/src/theme/themes';
 import { clearAppCache } from '@/src/utils/cache';
 import { clearAllFormDrafts } from '@/src/utils/drafts';
@@ -24,6 +25,7 @@ export function StorageSettingsCard() {
   const { width } = useWindowDimensions();
   const isSmallScreen = width < theme.breakpoints.sm;
   const { count: downloadedCount, clearAll: clearAllDownloads } = useAllDownloadedRecipes();
+  const { stats: operationsStats, clearAll: clearAllOperations } = useOfflineOperations();
 
   const [isClearingCache, setIsClearingCache] = useState(false);
   const [hasClearedCache, setHasClearedCache] = useState(false);
@@ -31,6 +33,8 @@ export function StorageSettingsCard() {
   const [hasClearedDrafts, setHasClearedDrafts] = useState(false);
   const [isClearingDownloads, setIsClearingDownloads] = useState(false);
   const [hasClearedDownloads, setHasClearedDownloads] = useState(false);
+  const [isClearingOperations, setIsClearingOperations] = useState(false);
+  const [hasClearedOperations, setHasClearedOperations] = useState(false);
 
   const styles = useMemo(() => createStyles(theme, isSmallScreen), [theme, isSmallScreen]);
 
@@ -190,6 +194,63 @@ export function StorageSettingsCard() {
     );
   };
 
+  const executeClearOperations = async () => {
+    setIsClearingOperations(true);
+    try {
+      const result = await clearAllOperations();
+      if (result.isSuccess) {
+        setHasClearedOperations(true);
+        triggerHaptic('success');
+        Alert.alert(
+          'Dados Offline Limpos',
+          'Os dados em cache de estoque, produções e demonstrativos foram removidos com sucesso. Novos dados serão sincronizados ao conectar à internet.',
+        );
+      } else {
+        triggerHaptic('error');
+        Alert.alert(
+          'Falha ao Limpar',
+          'Não foi possível limpar os dados offline. Tente novamente mais tarde.',
+        );
+      }
+    } catch {
+      triggerHaptic('error');
+      Alert.alert(
+        'Falha ao Limpar',
+        'Ocorreu um erro inesperado ao limpar os dados offline. Tente novamente.',
+      );
+    } finally {
+      setIsClearingOperations(false);
+    }
+  };
+
+  const handlePromptClearOperations = () => {
+    triggerHaptic('medium');
+    const totalItems = operationsStats.inventoryCount + operationsStats.productionsCount;
+    if (totalItems === 0) {
+      Alert.alert(
+        'Nenhum Dado Salvo',
+        'Não há dados locais de estoque ou produções armazenados no momento.',
+      );
+      return;
+    }
+
+    Alert.alert(
+      'Limpar Estoque e Produções Offline',
+      `Esta ação removerá ${operationsStats.inventoryCount} insumo(s) e ${operationsStats.productionsCount} registro(s) de produções salvos localmente para acesso offline. Seus dados no servidor não serão alterados.`,
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Limpar Dados',
+          style: 'destructive',
+          onPress: executeClearOperations,
+        },
+      ],
+    );
+  };
+
   return (
     <View style={styles.card}>
       {/* Option Row 1: Clear App Cache */}
@@ -335,6 +396,60 @@ export function StorageSettingsCard() {
           )}
           <Text style={styles.clearButtonText}>
             {isClearingDownloads ? 'Removendo...' : 'Remover'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Divider */}
+      <View style={styles.divider} />
+
+      {/* Option Row 4: Clear Offline Operations Data (Stock & Productions) */}
+      <View style={styles.actionRow}>
+        <View style={styles.infoWrapper}>
+          <View style={styles.iconCircle}>
+            <MaterialCommunityIcons
+              name="database-remove-outline"
+              size={22}
+              color={theme.colors.primary}
+            />
+          </View>
+          <View style={styles.textColumn}>
+            <View style={styles.titleRow}>
+              <Text style={styles.title}>Limpar Dados Offline de Operações</Text>
+              {hasClearedOperations && (
+                <View style={styles.successBadge}>
+                  <MaterialCommunityIcons name="check" size={12} color={theme.colors.onTertiary} />
+                  <Text style={styles.successBadgeText}>Limpo</Text>
+                </View>
+              )}
+            </View>
+            <Text style={styles.subtitle}>
+              {operationsStats.inventoryCount > 0 || operationsStats.productionsCount > 0
+                ? `${operationsStats.inventoryCount} insumo(s) e ${operationsStats.productionsCount} produção(ões) salvas para consulta offline. Libere espaço removendo este cache.`
+                : 'Remove as cópias locais de estoque e histórico de produções salvas para acesso sem internet.'}
+            </Text>
+          </View>
+        </View>
+
+        <TouchableOpacity
+          style={[styles.clearButton, isClearingOperations && styles.clearButtonDisabled]}
+          onPress={handlePromptClearOperations}
+          disabled={isClearingOperations}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="Limpar dados offline de estoque e produções"
+        >
+          {isClearingOperations ? (
+            <ActivityIndicator size="small" color={theme.colors.primary} />
+          ) : (
+            <MaterialCommunityIcons
+              name="delete-sweep-outline"
+              size={18}
+              color={theme.colors.primary}
+            />
+          )}
+          <Text style={styles.clearButtonText}>
+            {isClearingOperations ? 'Limpando...' : 'Limpar'}
           </Text>
         </TouchableOpacity>
       </View>

@@ -18,7 +18,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { BakerCard } from '@/src/components/baker/BakerCard';
-import { CustomButton } from '@/src/components/common';
+import { CustomButton, OfflineBanner } from '@/src/components/common';
 import { DEFAULT_POPULAR_TAGS } from '@/src/constants/bakerTags';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useNearbyBakers } from '@/src/hooks/useBakerProfile';
@@ -90,6 +90,7 @@ export function NearbyBakersExplorer({
     loadMore: loadMoreBakers,
     hasError,
     errorMessage,
+    isOffline,
     searchBakers,
     searchBakersByNeighborhood,
   } = useNearbyBakers();
@@ -113,6 +114,14 @@ export function NearbyBakersExplorer({
   // Query nearby bakers with current filters (Proximity)
   const performSearch = useCallback(
     async (coordsToUse = userCoords, radiusToUse = selectedRadius, tagsToUse = selectedTags) => {
+      if (isOffline) {
+        Alert.alert(
+          'Modo Offline',
+          'A busca por confeitarias requer uma conexão ativa com a internet.',
+        );
+        return;
+      }
+
       if (!coordsToUse) {
         Alert.alert(
           'Localização Necessária',
@@ -129,12 +138,20 @@ export function NearbyBakersExplorer({
         tags: tagsToUse.length > 0 ? tagsToUse : undefined,
       });
     },
-    [userCoords, selectedRadius, selectedTags, searchBakers],
+    [isOffline, userCoords, selectedRadius, selectedTags, searchBakers],
   );
 
   // Query bakers by neighborhood, city or state
   const performNeighborhoodSearch = useCallback(
     async (searchTerm = neighborhoodInput, tagsToUse = selectedTags) => {
+      if (isOffline) {
+        Alert.alert(
+          'Modo Offline',
+          'A busca por confeitarias requer uma conexão ativa com a internet.',
+        );
+        return;
+      }
+
       const query = searchTerm.trim();
       setHasSearched(true);
       setHasNeighborhoodSearched(true);
@@ -144,7 +161,7 @@ export function NearbyBakersExplorer({
         tags: tagsToUse.length > 0 ? tagsToUse : undefined,
       });
     },
-    [neighborhoodInput, selectedTags, searchBakersByNeighborhood],
+    [isOffline, neighborhoodInput, selectedTags, searchBakersByNeighborhood],
   );
 
   // Request GPS location and reverse geocode address label
@@ -798,6 +815,10 @@ export function NearbyBakersExplorer({
       }
     >
       <View style={styles.contentWrapper}>
+        <OfflineBanner
+          isVisible={isOffline}
+          message="Você está offline. A busca por confeitarias requer uma conexão ativa com a internet."
+        />
         {headerContent}
 
         {isDesktop && isTwoColumnDesktop ? (

@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
+  Alert,
   Platform,
   RefreshControl,
   ScrollView,
@@ -20,11 +21,13 @@ import {
   BakerRecentProductionsCard,
   BakerStockAlertCard,
   NearbyBakersExplorer,
+  OfflineBanner,
   RecipeSmallView,
 } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useInventory } from '@/src/hooks/useInventory';
+import { useNetwork } from '@/src/hooks/useNetwork';
 import { useProductions } from '@/src/hooks/useProductions';
 import { useUserRecipes } from '@/src/hooks/useRecipes';
 import { useSavedRecipes } from '@/src/hooks/useSavedRecipes';
@@ -80,15 +83,36 @@ function BakerHomeScreen() {
     [theme, isSmallScreen, isDesktop, isLargeDesktop],
   );
 
+  const { isOffline: isNetworkOffline } = useNetwork();
   const isBakerRole = isBaker(user?.role);
-  const { recipes, refetch: refetchRecipes } = useUserRecipes(user?.id);
-  const { inventory, refetch: refetchInventory } = useInventory(isBakerRole);
+  const {
+    recipes,
+    isOffline: isRecipesOffline,
+    refetch: refetchRecipes,
+  } = useUserRecipes(user?.id);
+  const {
+    inventory,
+    isOffline: isInventoryOffline,
+    refetch: refetchInventory,
+  } = useInventory(isBakerRole);
   const {
     productions,
     isLoading: isLoadingProductions,
+    isOffline: isProductionsOffline,
     refetch: refetchProductions,
   } = useProductions(undefined, isBakerRole);
-  const { savedRecipes, refetch: refetchSavedRecipes } = useSavedRecipes(user?.id);
+  const {
+    savedRecipes,
+    isOffline: isSavedOffline,
+    refetch: refetchSavedRecipes,
+  } = useSavedRecipes(user?.id);
+
+  const isHomeOffline =
+    isNetworkOffline ||
+    isRecipesOffline ||
+    isInventoryOffline ||
+    isProductionsOffline ||
+    isSavedOffline;
 
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -172,7 +196,16 @@ function BakerHomeScreen() {
               <View style={styles.headerActionsRow}>
                 <TouchableOpacity
                   style={styles.headerSecondaryBtn}
-                  onPress={() => router.push('/register-stock')}
+                  onPress={() => {
+                    if (isHomeOffline) {
+                      Alert.alert(
+                        'Modo Offline',
+                        'O cadastro de novos insumos requer conexão com a internet.',
+                      );
+                      return;
+                    }
+                    router.push('/register-stock');
+                  }}
                   activeOpacity={0.8}
                   accessibilityRole="button"
                   accessibilityLabel="Cadastrar novo insumo no estoque"
@@ -198,6 +231,13 @@ function BakerHomeScreen() {
               </View>
             )}
           </View>
+
+          {/* Offline Mode Banner */}
+          <OfflineBanner
+            isVisible={isHomeOffline}
+            message="Você está no modo offline. Exibindo dados salvos no seu dispositivo."
+            onRetry={handleRefresh}
+          />
 
           {/* Overview Stat Banner */}
           <BakerOverviewBanner

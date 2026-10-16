@@ -16,7 +16,7 @@ import { Stack, router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { Input, SavedRecipeCard } from '@/src/components';
+import { Input, OfflineBanner, SavedRecipeCard } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useDebounce } from '@/src/hooks/useDebounce';
@@ -34,7 +34,7 @@ export default function SavedRecipesScreen() {
   const [removingId, setRemovingId] = useState<string | null>(null);
 
   const isDesktop = width >= 768;
-  const { savedRecipes, isLoading, refetch, removeSave } = useSavedRecipes(user?.id);
+  const { savedRecipes, isLoading, isOffline, refetch, removeSave } = useSavedRecipes(user?.id);
 
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
@@ -54,6 +54,14 @@ export default function SavedRecipesScreen() {
 
   const handleRemove = useCallback(
     (recipeId: string, recipeTitle: string) => {
+      if (isOffline) {
+        Alert.alert(
+          'Modo Offline',
+          'Remover receitas dos favoritos requer conexão com a internet.',
+        );
+        return;
+      }
+
       Alert.alert(
         'Remover dos Salvos',
         `Deseja remover "${recipeTitle}" da sua lista de receitas salvas?`,
@@ -74,7 +82,7 @@ export default function SavedRecipesScreen() {
         ],
       );
     },
-    [removeSave],
+    [removeSave, isOffline],
   );
 
   const renderSavedItem = useCallback(
@@ -176,6 +184,13 @@ export default function SavedRecipesScreen() {
 
       <View style={styles.container}>
         <View style={styles.header}>
+          <OfflineBanner
+            isVisible={isOffline}
+            message="Você está no modo offline. Exibindo receitas salvas no seu dispositivo."
+            onRetry={refetch}
+            style={styles.offlineBanner}
+          />
+
           <Input
             value={search}
             placeholder="Buscar por título ou tag..."
@@ -253,6 +268,9 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       maxWidth: isDesktop ? 1040 : 960,
       width: '100%',
       alignSelf: 'center',
+    },
+    offlineBanner: {
+      marginBottom: 12,
     },
     searchInput: {
       width: '100%',

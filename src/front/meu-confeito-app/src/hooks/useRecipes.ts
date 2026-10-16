@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { DownloadedRecipeService } from '../services/downloadedRecipes';
+import { NetworkService } from '../services/network';
+import { OfflineCacheService } from '../services/offlineCache';
 import { RecipeService } from '../services/recipe';
 import { UserService } from '../services/user';
 import { PartialRecipe } from '../types';
@@ -36,6 +38,7 @@ export function useManyRecipes(
   const [recipes, setRecipes] = useState<PartialRecipe[]>([]);
   const [isLoading, setIsLoading] = useState(isEnabled);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [error, setError] = useState<string | null>(null);
@@ -64,10 +67,23 @@ export function useManyRecipes(
           setRecipes((prev) => [...prev, ...newRecipes]);
         } else {
           setRecipes(newRecipes);
+          if (!search && pageToFetch === 0) {
+            OfflineCacheService.savePublicRecipes(newRecipes).catch(() => {});
+          }
         }
+        setIsOffline(false);
         setCurrentPage(pageToFetch);
         setHasMore(newRecipes.length >= 10);
       } catch (err) {
+        if (!search && pageToFetch === 0) {
+          const cached = await OfflineCacheService.getPublicRecipes();
+          if (cached.length > 0) {
+            setRecipes(cached);
+            setIsOffline(true);
+            setError(null);
+            return;
+          }
+        }
         console.error('Error fetching Recipes: ', err);
         setError('Error searching recipes.');
       } finally {
@@ -86,6 +102,14 @@ export function useManyRecipes(
         setIsLoading(false);
         return;
       }
+
+      if (!search && initialPage === 0) {
+        const fastCached = OfflineCacheService.getPublicRecipesFast();
+        if (fastCached && fastCached.length > 0 && isMounted) {
+          setRecipes(fastCached);
+        }
+      }
+
       try {
         setIsLoading(true);
         setError(null);
@@ -98,10 +122,23 @@ export function useManyRecipes(
         const newRecipes = res.data?.recipes ?? [];
         if (isMounted) {
           setRecipes(newRecipes);
+          setIsOffline(false);
           setCurrentPage(initialPage);
           setHasMore(newRecipes.length >= 10);
         }
+        if (!search && initialPage === 0) {
+          OfflineCacheService.savePublicRecipes(newRecipes).catch(() => {});
+        }
       } catch (err) {
+        if (!search && initialPage === 0) {
+          const cached = await OfflineCacheService.getPublicRecipes();
+          if (isMounted && cached.length > 0) {
+            setRecipes(cached);
+            setIsOffline(true);
+            setError(null);
+            return;
+          }
+        }
         if (isMounted) {
           console.error('Error fetching Recipes: ', err);
           setError('Error searching recipes.');
@@ -137,6 +174,7 @@ export function useManyRecipes(
     recipes,
     isLoading,
     isLoadingMore,
+    isOffline,
     hasMore,
     error,
     refetch,
@@ -277,9 +315,11 @@ export function useUserRecipes(
   status?: RecipeStatus,
   initialPage: number = 0,
 ) {
+  const isArchived = status === 'ARCHIVED';
   const [recipes, setRecipes] = useState<PartialRecipe[]>([]);
   const [isLoading, setIsLoading] = useState(Boolean(userId));
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [error, setError] = useState<string | null>(null);
@@ -304,10 +344,29 @@ export function useUserRecipes(
           setRecipes((prev) => [...prev, ...newRecipes]);
         } else {
           setRecipes(newRecipes);
+          if (pageToFetch === 0) {
+            if (isArchived) {
+              OfflineCacheService.saveArchivedRecipes(newRecipes).catch(() => {});
+            } else {
+              OfflineCacheService.saveUserRecipes(newRecipes).catch(() => {});
+            }
+          }
         }
+        setIsOffline(false);
         setCurrentPage(pageToFetch);
         setHasMore(newRecipes.length >= 10);
       } catch (err) {
+        if (pageToFetch === 0) {
+          const cached = isArchived
+            ? await OfflineCacheService.getArchivedRecipes()
+            : await OfflineCacheService.getUserRecipes();
+          if (cached.length > 0) {
+            setRecipes(cached);
+            setIsOffline(true);
+            setError(null);
+            return;
+          }
+        }
         console.error('Error fetching User Recipes: ', err);
         setError('Error fetching recipes.');
       } finally {
@@ -315,7 +374,7 @@ export function useUserRecipes(
         setIsLoadingMore(false);
       }
     },
-    [userId, status],
+    [userId, status, isArchived],
   );
 
   useEffect(() => {
@@ -326,6 +385,15 @@ export function useUserRecipes(
     }
 
     async function load() {
+      if (initialPage === 0) {
+        const fastCached = isArchived
+          ? OfflineCacheService.getArchivedRecipesFast()
+          : OfflineCacheService.getUserRecipesFast();
+        if (fastCached && fastCached.length > 0 && isMounted) {
+          setRecipes(fastCached);
+        }
+      }
+
       try {
         setIsLoading(true);
         setError(null);
@@ -333,10 +401,29 @@ export function useUserRecipes(
         const newRecipes = res.data?.recipes ?? [];
         if (isMounted) {
           setRecipes(newRecipes);
+          setIsOffline(false);
           setCurrentPage(initialPage);
           setHasMore(newRecipes.length >= 10);
         }
+        if (initialPage === 0) {
+          if (isArchived) {
+            OfflineCacheService.saveArchivedRecipes(newRecipes).catch(() => {});
+          } else {
+            OfflineCacheService.saveUserRecipes(newRecipes).catch(() => {});
+          }
+        }
       } catch (err) {
+        if (initialPage === 0) {
+          const cached = isArchived
+            ? await OfflineCacheService.getArchivedRecipes()
+            : await OfflineCacheService.getUserRecipes();
+          if (isMounted && cached.length > 0) {
+            setRecipes(cached);
+            setIsOffline(true);
+            setError(null);
+            return;
+          }
+        }
         if (isMounted) {
           console.error('Error fetching User Recipes: ', err);
           setError('Error fetching recipes.');
@@ -353,7 +440,7 @@ export function useUserRecipes(
     return () => {
       isMounted = false;
     };
-  }, [userId, status, initialPage]);
+  }, [userId, status, initialPage, isArchived]);
 
   const loadMore = useCallback(async () => {
     if (!hasMore || isLoading || isLoadingMore || !userId) {
@@ -372,6 +459,7 @@ export function useUserRecipes(
     recipes,
     isLoading,
     isLoadingMore,
+    isOffline,
     hasMore,
     error,
     refetch,
@@ -385,6 +473,12 @@ export function useRecipeRegister() {
   const [error, setError] = useState<string | null>(null);
 
   const registerRecipe = async (data: RecipeRegisterInput) => {
+    if (NetworkService.getIsOffline()) {
+      const msg = 'Operação indisponível offline. Conecte-se à internet para cadastrar a receita.';
+      setError(msg);
+      throw new Error(msg);
+    }
+
     setIsLoading(true);
     setError(null);
     try {
@@ -407,6 +501,13 @@ export function useRecipeVisibility() {
   const [error, setError] = useState<string | null>(null);
 
   const updateVisibility = async (recipeId: string, data: UpdateRecipeVisibilityInput) => {
+    if (NetworkService.getIsOffline()) {
+      const msg =
+        'Operação indisponível offline. Conecte-se à internet para alterar a visibilidade da receita.';
+      setError(msg);
+      throw new Error(msg);
+    }
+
     setIsLoading(true);
     setError(null);
     try {
@@ -429,6 +530,12 @@ export function useRecipeUpdate() {
   const [error, setError] = useState<string | null>(null);
 
   const updateRecipe = async (recipeId: string, data: RecipeUpdateInput) => {
+    if (NetworkService.getIsOffline()) {
+      const msg = 'Operação indisponível offline. Conecte-se à internet para atualizar a receita.';
+      setError(msg);
+      throw new Error(msg);
+    }
+
     setIsLoading(true);
     setError(null);
     try {
@@ -457,6 +564,12 @@ export function useRecipeDelete() {
   const [error, setError] = useState<string | null>(null);
 
   const deleteRecipe = async (recipeId: string) => {
+    if (NetworkService.getIsOffline()) {
+      const msg = 'Operação indisponível offline. Conecte-se à internet para excluir a receita.';
+      setError(msg);
+      throw new Error(msg);
+    }
+
     setIsLoading(true);
     setError(null);
     try {

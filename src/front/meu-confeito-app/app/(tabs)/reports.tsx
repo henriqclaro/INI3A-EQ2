@@ -13,6 +13,7 @@ import { router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
+import { OfflineBanner } from '@/src/components';
 import {
   ProductionShortcutCard,
   ProfitSummarySection,
@@ -45,6 +46,7 @@ export default function ReportsScreen() {
   const {
     summary,
     isLoading: isProfitLoading,
+    isOffline: isProfitOffline,
     hasError: hasProfitError,
     errorMessage: profitErrorMessage,
     activePreset,
@@ -120,6 +122,13 @@ export default function ReportsScreen() {
 
           {/* Quick Production History Card (Kept per request) */}
           <ProductionShortcutCard isDesktop={isDesktop} />
+
+          {/* Offline Mode Banner */}
+          <OfflineBanner
+            isVisible={isProfitOffline}
+            message="Você está offline. Visualizando demonstrativo e métricas consolidadas localmente no seu dispositivo."
+            onRetry={handleRefresh}
+          />
 
           {/* Tab Selector Buttons */}
           <View style={styles.tabSelectorContainer}>
@@ -346,5 +355,23 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       fontSize: 13,
       lineHeight: 18,
       color: theme.colors.onSurfaceVariant,
+    },
+    offlineBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.md,
+      padding: 12,
+      width: '100%',
+    },
+    offlineBannerText: {
+      flex: 1,
+      fontSize: 12,
+      fontFamily: theme.typography.bodySm.fontFamily,
+      color: theme.colors.onSurfaceVariant,
+      lineHeight: 16,
     },
   });

@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Platform,
   RefreshControl,
@@ -19,6 +20,7 @@ import {
   AddStockCard,
   CustomButton,
   Input,
+  OfflineBanner,
   StockCard,
   StockOperationModal,
   StockOperationType,
@@ -42,6 +44,7 @@ export default function StockScreen() {
   const {
     inventory,
     isLoading,
+    isOffline,
     error,
     refetch,
     registerAdjustment,
@@ -150,23 +153,53 @@ export default function StockScreen() {
   }, [inventory, debouncedSearch, selectedFilter]);
 
   // Actions
-  const handleOpenAdjust = useCallback((item: InventoryItem) => {
-    setSelectedItem(item);
-    setModalMode('adjust');
-    setIsModalOpen(true);
-  }, []);
+  const handleOpenAdjust = useCallback(
+    (item: InventoryItem) => {
+      if (isOffline) {
+        Alert.alert(
+          'Ação Indisponível Offline',
+          'Ajustes manuais de estoque requerem conexão com a internet para sincronização com o servidor.',
+        );
+        return;
+      }
+      setSelectedItem(item);
+      setModalMode('adjust');
+      setIsModalOpen(true);
+    },
+    [isOffline],
+  );
 
-  const handleOpenPurchase = useCallback((item: InventoryItem) => {
-    setSelectedItem(item);
-    setModalMode('purchase');
-    setIsModalOpen(true);
-  }, []);
+  const handleOpenPurchase = useCallback(
+    (item: InventoryItem) => {
+      if (isOffline) {
+        Alert.alert(
+          'Ação Indisponível Offline',
+          'O registro de compras de insumos requer conexão com a internet para sincronização com o servidor.',
+        );
+        return;
+      }
+      setSelectedItem(item);
+      setModalMode('purchase');
+      setIsModalOpen(true);
+    },
+    [isOffline],
+  );
 
-  const handleOpenWaste = useCallback((item: InventoryItem) => {
-    setSelectedItem(item);
-    setModalMode('waste');
-    setIsModalOpen(true);
-  }, []);
+  const handleOpenWaste = useCallback(
+    (item: InventoryItem) => {
+      if (isOffline) {
+        Alert.alert(
+          'Ação Indisponível Offline',
+          'O registro de perdas de estoque requer conexão com a internet para sincronização com o servidor.',
+        );
+        return;
+      }
+      setSelectedItem(item);
+      setModalMode('waste');
+      setIsModalOpen(true);
+    },
+    [isOffline],
+  );
 
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
@@ -174,8 +207,15 @@ export default function StockScreen() {
   }, []);
 
   const handleNavigateToRegister = useCallback(() => {
+    if (isOffline) {
+      Alert.alert(
+        'Ação Indisponível Offline',
+        'O cadastro de novos insumos requer conexão com a internet.',
+      );
+      return;
+    }
     router.push('/register-stock');
-  }, []);
+  }, [isOffline]);
 
   const styles = useMemo(
     () => createStyles(theme, isMobile, containerWidth, cardWidth),
@@ -244,6 +284,13 @@ export default function StockScreen() {
             )}
           </View>
         </View>
+
+        <OfflineBanner
+          isVisible={isOffline}
+          message="Você está offline. Visualizando estoque salvo no dispositivo."
+          onRetry={refetch}
+          style={styles.offlineBanner}
+        />
 
         <StockSummaryBanner
           totalItems={summaryMetrics.totalItems}
@@ -396,6 +443,8 @@ export default function StockScreen() {
       handleShareMissingStock,
       inventory.length,
       isMobile,
+      isOffline,
+      refetch,
       search,
       selectedFilter,
       styles,
@@ -807,5 +856,8 @@ const createStyles = (
       justifyContent: 'center',
       zIndex: 40,
       ...theme.shadows.glow,
+    },
+    offlineBanner: {
+      marginBottom: 12,
     },
   });

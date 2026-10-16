@@ -5,6 +5,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig, isAxiosError } from 'axi
 import { API_BASE_URL, API_HOST_URL } from '../config/env';
 import { getRateLimitInfo, isRateLimitError, rateLimitManager } from '../utils/rateLimit';
 import { Storage } from '../utils/storage';
+import { NetworkService } from './network';
 
 interface RetryAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
@@ -194,8 +195,15 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    NetworkService.setIsOnline(true);
+    return response;
+  },
   async (error: AxiosError) => {
+    if (!error.response || error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+      NetworkService.setIsOnline(false);
+    }
+
     const originalRequest = error.config as RetryAxiosRequestConfig | undefined;
 
     if (isRateLimitError(error)) {

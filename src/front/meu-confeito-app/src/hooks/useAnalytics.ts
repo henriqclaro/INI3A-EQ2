@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { AnalyticsService } from '../services/analytics';
+import { OfflineOperationsService } from '../services/offlineOperations';
 import {
   PlannedProductionItem,
   ProfitSummaryData,
@@ -52,16 +53,21 @@ export function useProfitSummary(
   const [dateRange, setDateRange] = useState(getDatesForPreset(initialPreset));
   const [summary, setSummary] = useState<ProfitSummaryData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(isEnabled);
+  const [isOffline, setIsOffline] = useState<boolean>(false);
   const [hasError, setHasError] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const fetchSummary = useCallback(
-    async (range: { startDate: string; endDate: string }) => {
+    async (
+      range: { startDate: string; endDate: string },
+      presetOverride?: AnalyticsPeriodPreset,
+    ) => {
       if (!isEnabled) {
         setIsLoading(false);
         return;
       }
 
+      const targetPreset = presetOverride ?? activePreset;
       const token = Storage.getFastItem('access_token') || (await Storage.getItem('access_token'));
       if (!token) {
         setIsLoading(false);
@@ -77,23 +83,36 @@ export function useProfitSummary(
           startDate: range.startDate,
           endDate: range.endDate,
         });
-        setSummary(response.data.summary);
+        const remoteSummary = response.data.summary;
+        setSummary(remoteSummary);
+        setIsOffline(false);
+        OfflineOperationsService.saveProfitSummary(targetPreset, remoteSummary).catch((err) =>
+          console.warn('Failed to auto-save profit summary offline:', err),
+        );
       } catch (err: unknown) {
-        setHasError(true);
-        const apiErr = err as {
-          response?: { data?: { message?: string } };
-          message?: string;
-        };
-        const msg =
-          apiErr?.response?.data?.message ||
-          apiErr?.message ||
-          'Não foi possível carregar o demonstrativo de lucros.';
-        setErrorMessage(msg);
+        const cached = await OfflineOperationsService.getProfitSummary(targetPreset);
+        if (cached) {
+          setSummary(cached);
+          setIsOffline(true);
+          setHasError(false);
+          setErrorMessage(null);
+        } else {
+          setHasError(true);
+          const apiErr = err as {
+            response?: { data?: { message?: string } };
+            message?: string;
+          };
+          const msg =
+            apiErr?.response?.data?.message ||
+            apiErr?.message ||
+            'Não foi possível carregar o demonstrativo de lucros.';
+          setErrorMessage(msg);
+        }
       } finally {
         setIsLoading(false);
       }
     },
-    [isEnabled],
+    [isEnabled, activePreset],
   );
 
   const changePreset = useCallback(
@@ -101,7 +120,7 @@ export function useProfitSummary(
       setActivePreset(preset);
       const newRange = getDatesForPreset(preset);
       setDateRange(newRange);
-      fetchSummary(newRange);
+      fetchSummary(newRange, preset);
     },
     [fetchSummary],
   );
@@ -130,6 +149,12 @@ export function useProfitSummary(
         return;
       }
 
+      // Preload from fast cache to avoid blank flash
+      const fastCached = OfflineOperationsService.getProfitSummaryFast(activePreset);
+      if (fastCached && isMounted) {
+        setSummary(fastCached);
+      }
+
       const token = Storage.getFastItem('access_token') || (await Storage.getItem('access_token'));
       if (!token) {
         if (isMounted) {
@@ -147,21 +172,34 @@ export function useProfitSummary(
           startDate: dateRange.startDate,
           endDate: dateRange.endDate,
         });
+        const remoteSummary = response.data.summary;
         if (isMounted) {
-          setSummary(response.data.summary);
+          setSummary(remoteSummary);
+          setIsOffline(false);
         }
+        OfflineOperationsService.saveProfitSummary(activePreset, remoteSummary).catch((err) =>
+          console.warn('Failed to auto-save profit summary offline:', err),
+        );
       } catch (err: unknown) {
+        const cached = await OfflineOperationsService.getProfitSummary(activePreset);
         if (isMounted) {
-          setHasError(true);
-          const apiErr = err as {
-            response?: { data?: { message?: string } };
-            message?: string;
-          };
-          setErrorMessage(
-            apiErr?.response?.data?.message ||
-              apiErr?.message ||
-              'Não foi possível carregar o demonstrativo de lucros.',
-          );
+          if (cached) {
+            setSummary(cached);
+            setIsOffline(true);
+            setHasError(false);
+            setErrorMessage(null);
+          } else {
+            setHasError(true);
+            const apiErr = err as {
+              response?: { data?: { message?: string } };
+              message?: string;
+            };
+            setErrorMessage(
+              apiErr?.response?.data?.message ||
+                apiErr?.message ||
+                'Não foi possível carregar o demonstrativo de lucros.',
+            );
+          }
         }
       } finally {
         if (isMounted) {
@@ -175,11 +213,12 @@ export function useProfitSummary(
     return () => {
       isMounted = false;
     };
-  }, [dateRange.startDate, dateRange.endDate, isEnabled]);
+  }, [dateRange.startDate, dateRange.endDate, isEnabled, activePreset]);
 
   return {
     summary,
     isLoading,
+    isOffline,
     hasError,
     errorMessage,
     activePreset,

@@ -15,7 +15,7 @@ import { Stack, router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { Input, RecipeView } from '@/src/components';
+import { Input, OfflineBanner, RecipeView } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useUserRecipes } from '@/src/hooks/useRecipes';
@@ -30,7 +30,7 @@ export default function ArchivedRecipesScreen() {
 
   const isDesktop = width >= 768;
   const numCols = isDesktop ? 2 : 1;
-  const { recipes, isLoading, refetch } = useUserRecipes(user?.id, 'ARCHIVED');
+  const { recipes, isLoading, isOffline, refetch } = useUserRecipes(user?.id, 'ARCHIVED');
 
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
@@ -156,6 +156,13 @@ export default function ArchivedRecipesScreen() {
 
       <View style={styles.container}>
         <View style={styles.header}>
+          <OfflineBanner
+            isVisible={isOffline}
+            message="Você está offline. Exibindo receitas arquivadas salvas no dispositivo."
+            onRetry={refetch}
+            style={styles.offlineBanner}
+          />
+
           <Input
             value={search}
             placeholder="Buscar por título ou tag..."
@@ -235,6 +242,9 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       maxWidth: isDesktop ? 1040 : 960,
       width: '100%',
       alignSelf: 'center',
+    },
+    offlineBanner: {
+      marginBottom: 12,
     },
     searchInput: {
       width: '100%',

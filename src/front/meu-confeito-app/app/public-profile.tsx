@@ -16,7 +16,7 @@ import { Stack, router, useLocalSearchParams } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { RecipeSmallView, UserAvatar } from '@/src/components';
+import { OfflineBanner, RecipeSmallView, UserAvatar } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { usePublicBakerProfile, usePublicShowcase } from '@/src/hooks/useBakerProfile';
@@ -42,6 +42,7 @@ export default function PublicProfileScreen() {
     isLoading: isLoadingProfile,
     hasError,
     errorMessage,
+    isOffline,
     refetch: refetchProfile,
   } = usePublicBakerProfile(targetUserId);
 
@@ -123,6 +124,12 @@ export default function PublicProfileScreen() {
           />
         }
       >
+        <OfflineBanner
+          isVisible={isOffline}
+          message="Você está offline. Exibindo informações salvas no dispositivo."
+          onRetry={handleRefresh}
+        />
+
         {isOwnProfile && (
           <View style={styles.previewBanner}>
             <View style={styles.previewIconWrapper}>

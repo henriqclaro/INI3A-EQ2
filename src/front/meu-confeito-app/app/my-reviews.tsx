@@ -16,7 +16,7 @@ import { Stack, router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { Input } from '@/src/components';
+import { Input, OfflineBanner } from '@/src/components';
 import { ReviewedRecipeCard } from '@/src/components/recipe';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
@@ -32,7 +32,7 @@ export default function MyReviewsScreen() {
   const [removingId, setRemovingId] = useState<string | null>(null);
 
   const isDesktop = width >= 768;
-  const { userReviews, isLoading, refetch, deleteReview } = useUserReviews(user?.id);
+  const { userReviews, isLoading, isOffline, refetch, deleteReview } = useUserReviews(user?.id);
 
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
@@ -50,6 +50,11 @@ export default function MyReviewsScreen() {
 
   const handleRemove = useCallback(
     (recipeId: string, recipeTitle: string) => {
+      if (isOffline) {
+        Alert.alert('Modo Offline', 'Remover avaliações requer conexão com a internet.');
+        return;
+      }
+
       Alert.alert(
         'Remover Avaliação',
         `Deseja realmente remover sua avaliação da receita "${recipeTitle}"?`,
@@ -70,7 +75,7 @@ export default function MyReviewsScreen() {
         ],
       );
     },
-    [deleteReview],
+    [deleteReview, isOffline],
   );
 
   const renderReviewItem = useCallback(
@@ -161,6 +166,13 @@ export default function MyReviewsScreen() {
 
       <View style={styles.container}>
         <View style={styles.header}>
+          <OfflineBanner
+            isVisible={isOffline}
+            message="Você está offline. Exibindo avaliações salvas no dispositivo."
+            onRetry={refetch}
+            style={styles.offlineBanner}
+          />
+
           <Input
             value={search}
             placeholder="Buscar por título da receita..."
@@ -234,6 +246,9 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       maxWidth: isDesktop ? 1040 : 960,
       width: '100%',
       alignSelf: 'center',
+    },
+    offlineBanner: {
+      marginBottom: 12,
     },
     searchInput: {
       width: '100%',

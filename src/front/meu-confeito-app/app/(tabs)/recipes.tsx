@@ -16,10 +16,17 @@ import { router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { FloatingActionItem, FloatingButton, RecipeFilterChip, RecipeView } from '@/src/components';
+import {
+  FloatingActionItem,
+  FloatingButton,
+  OfflineBanner,
+  RecipeFilterChip,
+  RecipeView,
+} from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useAllDownloadedRecipes } from '@/src/hooks/useDownloadedRecipes';
+import { useNetwork } from '@/src/hooks/useNetwork';
 import { useUserRecipes } from '@/src/hooks/useRecipes';
 import { useSavedRecipes } from '@/src/hooks/useSavedRecipes';
 import { AppTheme } from '@/src/theme/themes';
@@ -29,6 +36,7 @@ import { isBaker, isCustomer } from '@/src/utils/roles';
 export default function RecipesScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
+  const { isOffline: isNetworkOffline } = useNetwork();
   const isBakerRole = isBaker(user?.role);
   const [activeFilter, setActiveFilter] = useState<
     'ALL' | 'PUBLISHED' | 'DRAFT' | 'SAVED' | 'DOWNLOADED'
@@ -46,14 +54,17 @@ export default function RecipesScreen() {
     isLoadingMore: isLoadingMoreUserRecipes,
     hasMore: hasMoreUserRecipes,
     error: userRecipesError,
+    isOffline: isUserRecipesOffline,
     loadMore: loadMoreUserRecipes,
     refetch: refetchUserRecipes,
   } = useUserRecipes(user?.id, statusParam);
   const {
     savedRecipes,
     isLoading: isLoadingSavedRecipes,
+    isOffline: isSavedRecipesOffline,
     refetch: refetchSavedRecipes,
   } = useSavedRecipes(user?.id);
+  const isAppOffline = isUserRecipesOffline || isSavedRecipesOffline || isNetworkOffline;
   const {
     downloadedRecipes,
     isLoading: isLoadingDownloadedRecipes,
@@ -230,18 +241,11 @@ export default function RecipesScreen() {
   const listHeader = useMemo(() => {
     return (
       <View style={styles.headerWrapper}>
-        {hasOfflineFallback && (
-          <View style={styles.offlineListBanner}>
-            <MaterialCommunityIcons
-              name="cloud-off-outline"
-              size={18}
-              color={theme.colors.secondary}
-            />
-            <Text style={styles.offlineListBannerText}>
-              Você está offline. Exibindo receitas salvas localmente no dispositivo.
-            </Text>
-          </View>
-        )}
+        <OfflineBanner
+          isVisible={isAppOffline}
+          message="Você está offline. Exibindo receitas salvas no seu dispositivo."
+          onRetry={handleRefresh}
+        />
 
         {hasHeaderActions && (
           <View style={styles.desktopHeader}>
@@ -323,13 +327,13 @@ export default function RecipesScreen() {
   }, [
     activeFilter,
     displayedRecipes.length,
+    handleRefresh,
     hasHeaderActions,
     hasMore,
-    hasOfflineFallback,
+    isAppOffline,
     styles,
     theme.colors.onPrimary,
     theme.colors.onSurface,
-    theme.colors.secondary,
   ]);
 
   const listFooter = useMemo(() => {

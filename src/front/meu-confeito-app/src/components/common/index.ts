@@ -16,3 +16,4 @@ export * from './ThemeSwitch';
 export * from './DraftRecoveryBanner';
 export * from './ToastContainer';
 export * from './UserAvatar';
+export * from './OfflineBanner';

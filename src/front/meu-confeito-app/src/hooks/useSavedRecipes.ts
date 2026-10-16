@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 
+import { NetworkService } from '../services/network';
+import { OfflineCacheService } from '../services/offlineCache';
 import { UserService } from '../services/user';
 import { UserSavedRecipeItem } from '../types/saved-recipe';
 
@@ -8,6 +10,7 @@ export function useSavedRecipes(userId: string | undefined) {
   const [savedRecipes, setSavedRecipes] = useState<UserSavedRecipeItem[]>([]);
   const [isLoading, setIsLoading] = useState(Boolean(userId));
   const [isTogglingSave, setIsTogglingSave] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchSavedRecipes = useCallback(async () => {
@@ -20,10 +23,20 @@ export function useSavedRecipes(userId: string | undefined) {
       setIsLoading(true);
       setError(null);
       const res = await UserService.getSavedRecipes(userId);
-      setSavedRecipes(res.data?.userSaves || []);
+      const saves = res.data?.userSaves || [];
+      setSavedRecipes(saves);
+      setIsOffline(false);
+      OfflineCacheService.saveSavedRecipes(saves).catch(() => {});
     } catch (err) {
-      console.error('Error fetching saved recipes: ', err);
-      setError('Erro ao carregar receitas salvas.');
+      const cached = await OfflineCacheService.getSavedRecipes();
+      if (cached.length > 0) {
+        setSavedRecipes(cached);
+        setIsOffline(true);
+        setError(null);
+      } else {
+        console.error('Error fetching saved recipes: ', err);
+        setError('Erro ao carregar receitas salvas.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -37,17 +50,33 @@ export function useSavedRecipes(userId: string | undefined) {
     }
 
     async function load() {
+      // Preload fast cache to render instantly
+      const fastCached = OfflineCacheService.getSavedRecipesFast();
+      if (fastCached && fastCached.length > 0 && isMounted) {
+        setSavedRecipes(fastCached);
+      }
+
       try {
         setIsLoading(true);
         setError(null);
         const res = await UserService.getSavedRecipes(userId!);
+        const saves = res.data?.userSaves || [];
         if (isMounted) {
-          setSavedRecipes(res.data?.userSaves || []);
+          setSavedRecipes(saves);
+          setIsOffline(false);
         }
+        OfflineCacheService.saveSavedRecipes(saves).catch(() => {});
       } catch (err) {
+        const cached = await OfflineCacheService.getSavedRecipes();
         if (isMounted) {
-          console.error('Error fetching saved recipes: ', err);
-          setError('Erro ao carregar receitas salvas.');
+          if (cached.length > 0) {
+            setSavedRecipes(cached);
+            setIsOffline(true);
+            setError(null);
+          } else {
+            console.error('Error fetching saved recipes: ', err);
+            setError('Erro ao carregar receitas salvas.');
+          }
         }
       } finally {
         if (isMounted) {
@@ -72,6 +101,11 @@ export function useSavedRecipes(userId: string | undefined) {
 
   const saveRecipe = useCallback(
     async (recipeId: string): Promise<boolean> => {
+      if (NetworkService.getIsOffline()) {
+        Alert.alert('Modo Offline', 'Salvar receitas nos favoritos requer conexão com a internet.');
+        return false;
+      }
+
       if (!userId) {
         Alert.alert('Login Necessário', 'Faça login para salvar esta receita.');
         return false;
@@ -111,12 +145,22 @@ export function useSavedRecipes(userId: string | undefined) {
 
   const removeSave = useCallback(
     async (recipeId: string): Promise<boolean> => {
+      if (NetworkService.getIsOffline()) {
+        Alert.alert(
+          'Modo Offline',
+          'Remover receitas dos favoritos requer conexão com a internet.',
+        );
+        return false;
+      }
+
       if (!userId) return false;
 
       setIsTogglingSave(true);
       try {
         await UserService.removeSavedRecipe(userId, recipeId);
-        setSavedRecipes((prev) => prev.filter((item) => item.recipe.id !== recipeId));
+        const updated = savedRecipes.filter((item) => item.recipe.id !== recipeId);
+        setSavedRecipes(updated);
+        OfflineCacheService.saveSavedRecipes(updated).catch(() => {});
         return true;
       } catch (err: unknown) {
         const apiErr = err as {
@@ -135,7 +179,7 @@ export function useSavedRecipes(userId: string | undefined) {
         setIsTogglingSave(false);
       }
     },
-    [userId],
+    [userId, savedRecipes],
   );
 
   const toggleSave = useCallback(
@@ -153,6 +197,7 @@ export function useSavedRecipes(userId: string | undefined) {
     savedRecipes,
     isLoading,
     isTogglingSave,
+    isOffline,
     error,
     isRecipeSaved,
     saveRecipe,

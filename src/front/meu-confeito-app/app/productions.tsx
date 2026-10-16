@@ -15,6 +15,7 @@ import { Stack, router, useFocusEffect, useLocalSearchParams } from 'expo-router
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
+import { OfflineBanner } from '@/src/components';
 import { ProductionCard, ProductionDetailsModal } from '@/src/components/production';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useProductions } from '@/src/hooks/useProductions';
@@ -41,7 +42,8 @@ export default function ProductionsScreen() {
     [recipeId, activeFilter],
   );
 
-  const { productions, isLoading, error, refetch, cancelProduction } = useProductions(queryParams);
+  const { productions, isLoading, isOffline, error, refetch, cancelProduction } =
+    useProductions(queryParams);
 
   useFocusEffect(
     useCallback(() => {
@@ -62,6 +64,14 @@ export default function ProductionsScreen() {
   };
 
   const handleCancelProduction = (productionId: string) => {
+    if (isOffline) {
+      Alert.alert(
+        'Ação Indisponível Offline',
+        'O cancelamento de lotes de produção e a recomposição de estoque requerem conexão com a internet.',
+      );
+      return;
+    }
+
     Alert.alert(
       'Cancelar Produção',
       'Tem certeza de que deseja cancelar esta produção? Todos os ingredientes consumidos retornarão ao seu estoque.',
@@ -115,6 +125,13 @@ export default function ProductionsScreen() {
 
       <View style={styles.container}>
         <View style={styles.innerContainer}>
+          <OfflineBanner
+            isVisible={isOffline}
+            message="Você está offline. Visualizando produções salvas no dispositivo."
+            onRetry={() => refetch(queryParams)}
+            style={styles.offlineBanner}
+          />
+
           {/* Filter Tabs */}
           <View style={styles.filterRow}>
             <TouchableOpacity
@@ -423,5 +440,8 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 14,
       fontWeight: '600',
+    },
+    offlineBanner: {
+      marginBottom: 12,
     },
   });

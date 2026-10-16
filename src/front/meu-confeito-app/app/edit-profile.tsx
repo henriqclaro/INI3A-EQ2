@@ -25,6 +25,7 @@ import {
   BakerTagSelector,
   CustomButton,
   Input,
+  OfflineBanner,
   ShowcaseManager,
   ThemeSwitch,
 } from '@/src/components';
@@ -32,9 +33,11 @@ import { UserAvatar } from '@/src/components/common/UserAvatar';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useDeleteBakerProfile, useSaveBakerProfile } from '@/src/hooks/useBakerProfile';
+import { useNetwork } from '@/src/hooks/useNetwork';
 import { useUnsavedChangesWarning } from '@/src/hooks/useUnsavedChangesWarning';
 import { useUserEdit } from '@/src/hooks/useUsers';
 import { BakerProfileService } from '@/src/services/baker-profile';
+import { OfflineCacheService } from '@/src/services/offlineCache';
 import { UserEditData, UserService } from '@/src/services/user';
 import { AppTheme } from '@/src/theme/themes';
 import {
@@ -80,6 +83,7 @@ interface InitialUserData {
 export default function EditProfileScreen() {
   const { theme } = useThemeMode();
   const { user, updateUser } = useAuth();
+  const { isOffline } = useNetwork();
   const isBakerRole = isBaker(user?.role);
 
   const insets = useSafeAreaInsets();
@@ -149,6 +153,38 @@ export default function EditProfileScreen() {
     }
 
     async function loadBakerData() {
+      // Preload fast cache
+      const fastCached = OfflineCacheService.getBakerProfileFast();
+      if (fastCached && isMounted) {
+        const initialFastData: InitialBakerData = {
+          isPublicProfile: true,
+          publicName: fastCached.publicName || '',
+          whatsapp: fastCached.whatsapp ? formatPhoneInput(fastCached.whatsapp) : '',
+          bio: fastCached.bio || '',
+          instagram: fastCached.instagram || '',
+          city: fastCached.city || '',
+          neighborhood: fastCached.neighborhood || '',
+          locationCoords: fastCached.location
+            ? {
+                latitude: fastCached.location.latitude,
+                longitude: fastCached.location.longitude,
+              }
+            : null,
+          selectedTags: Array.isArray(fastCached.tags) ? fastCached.tags : [],
+        };
+        setInitialBakerData(initialFastData);
+        setIsPublicProfile(true);
+        setHasInitialBakerProfile(true);
+        setPublicName(initialFastData.publicName);
+        setWhatsapp(initialFastData.whatsapp);
+        setBio(initialFastData.bio);
+        setInstagram(initialFastData.instagram);
+        setCity(initialFastData.city);
+        setNeighborhood(initialFastData.neighborhood);
+        setLocationCoords(initialFastData.locationCoords);
+        setSelectedTags(initialFastData.selectedTags);
+      }
+
       try {
         const response = await BakerProfileService.getMyProfile();
         if (isMounted && response?.data?.bakerProfile) {
@@ -181,25 +217,57 @@ export default function EditProfileScreen() {
           setNeighborhood(initialData.neighborhood);
           setLocationCoords(initialData.locationCoords);
           setSelectedTags(initialData.selectedTags);
+          OfflineCacheService.saveBakerProfile(profile).catch(() => {});
         }
       } catch {
         if (isMounted) {
-          setInitialBakerData({
-            isPublicProfile: false,
-            publicName: '',
-            whatsapp: '',
-            bio: '',
-            instagram: '',
-            city: '',
-            neighborhood: '',
-            locationCoords: null,
-            selectedTags: [],
-          });
-          setIsPublicProfile(false);
-          setHasInitialBakerProfile(false);
-          setPublicName('');
-          setWhatsapp('');
-          setSelectedTags([]);
+          const cached = await OfflineCacheService.getBakerProfile();
+          if (cached) {
+            const initialCachedData: InitialBakerData = {
+              isPublicProfile: true,
+              publicName: cached.publicName || '',
+              whatsapp: cached.whatsapp ? formatPhoneInput(cached.whatsapp) : '',
+              bio: cached.bio || '',
+              instagram: cached.instagram || '',
+              city: cached.city || '',
+              neighborhood: cached.neighborhood || '',
+              locationCoords: cached.location
+                ? {
+                    latitude: cached.location.latitude,
+                    longitude: cached.location.longitude,
+                  }
+                : null,
+              selectedTags: Array.isArray(cached.tags) ? cached.tags : [],
+            };
+            setInitialBakerData(initialCachedData);
+            setIsPublicProfile(true);
+            setHasInitialBakerProfile(true);
+            setPublicName(initialCachedData.publicName);
+            setWhatsapp(initialCachedData.whatsapp);
+            setBio(initialCachedData.bio);
+            setInstagram(initialCachedData.instagram);
+            setCity(initialCachedData.city);
+            setNeighborhood(initialCachedData.neighborhood);
+            setLocationCoords(initialCachedData.locationCoords);
+            setSelectedTags(initialCachedData.selectedTags);
+          } else {
+            setInitialBakerData({
+              isPublicProfile: false,
+              publicName: '',
+              whatsapp: '',
+              bio: '',
+              instagram: '',
+              city: '',
+              neighborhood: '',
+              locationCoords: null,
+              selectedTags: [],
+            });
+            setIsPublicProfile(false);
+            setHasInitialBakerProfile(false);
+            setPublicName('');
+            setWhatsapp('');
+            setSelectedTags([]);
+          }
         }
       } finally {
         if (isMounted) {
@@ -661,6 +729,14 @@ export default function EditProfileScreen() {
 
   // The save button only serves to update profile information
   async function handleEdit() {
+    if (isOffline) {
+      Alert.alert(
+        'Modo Offline',
+        'Você está sem conexão com a internet. Conecte-se para salvar alterações no perfil.',
+      );
+      return;
+    }
+
     setTouched({ name: true, email: true, phone: true, whatsapp: true });
 
     const trimmedName = name.trim();
@@ -846,6 +922,11 @@ export default function EditProfileScreen() {
           bottomOffset={hasUnsavedChanges ? (isMobile ? 140 : 96) : 32}
         >
           <View style={styles.formWrapper}>
+            <OfflineBanner
+              isVisible={isOffline}
+              message="Você está offline. Salvar alterações no perfil requer conexão com a internet."
+            />
+
             {/* Account Information Card */}
             <View style={styles.card}>
               <View style={styles.avatarContainer}>

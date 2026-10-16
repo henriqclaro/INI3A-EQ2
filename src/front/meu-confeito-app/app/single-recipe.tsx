@@ -15,6 +15,7 @@ import { Stack, router, useFocusEffect, useLocalSearchParams } from 'expo-router
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
+import { OfflineBanner } from '@/src/components';
 import { ProduceRecipeModal } from '@/src/components/production';
 import {
   CustomizeRecipeModal,
@@ -556,18 +557,11 @@ export default function RecipeScreen() {
                 )}
 
                 {/* Offline Mode Banner */}
-                {isOffline && (
-                  <View style={styles.offlineBanner}>
-                    <MaterialCommunityIcons
-                      name="cloud-off-outline"
-                      size={18}
-                      color={theme.colors.secondary}
-                    />
-                    <Text style={styles.offlineBannerText}>
-                      Modo Offline: Visualizando a versão salva localmente no seu dispositivo.
-                    </Text>
-                  </View>
-                )}
+                <OfflineBanner
+                  isVisible={isOffline}
+                  message="Você está offline. Visualizando a versão salva localmente no seu dispositivo."
+                  onRetry={refetch}
+                />
 
                 {/* Title, Meta, Status and Tags Header */}
                 <View style={styles.headerSection}>

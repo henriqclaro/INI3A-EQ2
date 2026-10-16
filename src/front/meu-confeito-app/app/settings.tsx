@@ -19,6 +19,7 @@ import {
   DeleteAccountModal,
   InteractionSettingsCard,
   MenuOptionButton,
+  OfflineBanner,
   OperationalPreferencesCard,
   SettingsSection,
   StorageSettingsCard,
@@ -26,6 +27,7 @@ import {
 } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { useNetwork } from '@/src/hooks/useNetwork';
 import { useUserDelete } from '@/src/hooks/useUsers';
 import { AppTheme } from '@/src/theme/themes';
 import { getRoleLabel, isCustomer } from '@/src/utils/roles';
@@ -37,6 +39,7 @@ export default function SettingsScreen() {
   const isDesktop = Platform.OS === 'web' || width >= theme.breakpoints.md;
 
   const { user, signOut } = useAuth();
+  const { isOffline } = useNetwork();
   const { deleteUser, isLoading: isDeletingUser } = useUserDelete();
 
   const isCustomerRole = isCustomer(user?.role);
@@ -56,6 +59,14 @@ export default function SettingsScreen() {
   };
 
   const handleConfirmDeleteAccount = async () => {
+    if (isOffline) {
+      Alert.alert(
+        'Modo Offline',
+        'A exclusão definitiva da conta requer uma conexão ativa com a internet.',
+      );
+      return;
+    }
+
     if (!user?.id) {
       Alert.alert('Erro', 'Usuário não autenticado.');
       return;
@@ -106,6 +117,11 @@ export default function SettingsScreen() {
               digital.
             </Text>
           </View>
+
+          <OfflineBanner
+            isVisible={isOffline}
+            message="Você está offline. Algumas operações requerem conexão ativa com a internet."
+          />
 
           {/* Section 1: Account & Security */}
           {user && (
