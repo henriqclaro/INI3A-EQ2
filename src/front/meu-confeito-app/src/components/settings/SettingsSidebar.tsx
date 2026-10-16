@@ -22,6 +22,7 @@ export interface SettingsSidebarProps {
   selectedTopicId: SettingsTopicId;
   onSelectTopic: (topicId: SettingsTopicId) => void;
   isCustomerRole?: boolean;
+  isBakerRole?: boolean;
   onSelectShortcut?: (shortcut: SettingShortcutItem) => void;
   style?: StyleProp<ViewStyle>;
 }
@@ -31,6 +32,7 @@ export function SettingsSidebar({
   selectedTopicId,
   onSelectTopic,
   isCustomerRole = false,
+  isBakerRole = false,
   onSelectShortcut,
   style,
 }: SettingsSidebarProps) {
@@ -44,8 +46,9 @@ export function SettingsSidebar({
       query: searchQuery,
       isDesktop: true,
       isCustomerRole,
+      isBakerRole,
     });
-  }, [searchQuery, isCustomerRole]);
+  }, [searchQuery, isCustomerRole, isBakerRole]);
 
   const hasSearchQuery = searchQuery.trim().length > 0;
 

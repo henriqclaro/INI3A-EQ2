@@ -33,7 +33,7 @@ import { useNetwork } from '@/src/hooks/useNetwork';
 import { useUserDelete } from '@/src/hooks/useUsers';
 import { AppTheme } from '@/src/theme/themes';
 import { SettingsTopicId, SettingsTopicItem } from '@/src/types/settings';
-import { isCustomer } from '@/src/utils/roles';
+import { isBaker, isCustomer } from '@/src/utils/roles';
 
 export default function SettingsScreen() {
   const { theme } = useThemeMode();
@@ -49,6 +49,7 @@ export default function SettingsScreen() {
   const { deleteUser, isLoading: isDeletingUser } = useUserDelete();
 
   const isCustomerRole = isCustomer(user?.role);
+  const isBakerRole = isBaker(user?.role);
 
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [mobileSearchQuery, setMobileSearchQuery] = useState('');
@@ -58,8 +59,9 @@ export default function SettingsScreen() {
       query: mobileSearchQuery,
       isDesktop: false,
       isCustomerRole,
+      isBakerRole,
     });
-  }, [mobileSearchQuery, isCustomerRole]);
+  }, [mobileSearchQuery, isCustomerRole, isBakerRole]);
 
   const hasMobileSearch = mobileSearchQuery.trim().length > 0;
 
@@ -286,6 +288,7 @@ export default function SettingsScreen() {
             selectedTopicId={activeTopicId}
             onSelectTopic={handleSelectTopic}
             isCustomerRole={isCustomerRole}
+            isBakerRole={isBakerRole}
           />
 
           <ScrollView

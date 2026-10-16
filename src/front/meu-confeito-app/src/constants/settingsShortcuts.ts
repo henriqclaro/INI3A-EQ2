@@ -30,6 +30,41 @@ export const SETTING_SHORTCUTS: SettingShortcutItem[] = [
     icon: 'account-outline',
     synonyms: ['perfil', 'usuario', 'email', 'nome', 'cargo', 'dados'],
   },
+  {
+    id: 'edit-profile',
+    topicId: 'account',
+    topicTitle: 'Conta e Segurança',
+    title: 'Editar Perfil',
+    description: 'Atualize seu nome, foto, telefone e dados cadastrais',
+    icon: 'account-edit-outline',
+    synonyms: [
+      'editar perfil',
+      'foto',
+      'avatar',
+      'telefone',
+      'nome',
+      'cadastro',
+      'dados cadastrais',
+    ],
+  },
+  {
+    id: 'deactivate-baker-profile',
+    topicId: 'account',
+    topicTitle: 'Conta e Segurança',
+    title: 'Desativar Perfil de Confeiteiro',
+    description: 'Ocultar confeitaria das buscas e tornar perfil comercial privado',
+    icon: 'store-off-outline',
+    synonyms: [
+      'desativar',
+      'confeiteiro',
+      'perfil comercial',
+      'pausar',
+      'privado',
+      'ocultar',
+      'loja',
+    ],
+    isBakerOnly: true,
+  },
 
   // Aparência
   {
@@ -197,9 +232,20 @@ export const SETTING_SHORTCUTS: SettingShortcutItem[] = [
     topicId: 'about',
     topicTitle: 'Sobre o Aplicativo',
     title: 'Informações Técnicas',
-    description: 'Plataforma, status da conexão, ID do usuário e ID da sessão',
+    description: 'Plataforma, versão do sistema, status da conexão, ID do usuário e da sessão',
     icon: 'cellphone-link',
-    synonyms: ['técnico', 'id', 'sessão', 'conexão', 'versão', 'plataforma'],
+    synonyms: [
+      'técnico',
+      'id',
+      'sessão',
+      'conexão',
+      'versão',
+      'plataforma',
+      'sistema',
+      'so',
+      'android',
+      'ios',
+    ],
   },
   {
     id: 'help-support',
@@ -225,12 +271,14 @@ export interface FilterSettingShortcutsOptions {
   query: string;
   isDesktop: boolean;
   isCustomerRole: boolean;
+  isBakerRole?: boolean;
 }
 
 export function filterSettingShortcuts({
   query,
   isDesktop,
   isCustomerRole,
+  isBakerRole = false,
 }: FilterSettingShortcutsOptions): SettingShortcutItem[] {
   const trimmed = query.trim();
   if (!trimmed) {
@@ -245,6 +293,9 @@ export function filterSettingShortcuts({
       return false;
     }
     if (item.isCustomerAllowed === false && isCustomerRole) {
+      return false;
+    }
+    if (item.isBakerOnly && !isBakerRole) {
       return false;
     }
 

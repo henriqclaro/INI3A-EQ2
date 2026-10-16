@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Platform, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import * as Clipboard from 'expo-clipboard';
 import { Image } from 'expo-image';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -34,6 +35,25 @@ export function AboutAppTopic() {
   }, []);
 
   const styles = useMemo(() => createStyles(theme), [theme]);
+
+  const commercialSystemVersion = useMemo(() => {
+    if (Platform.OS === 'web') {
+      return null;
+    }
+    if (Platform.OS === 'android') {
+      const release = (Platform.constants as { Release?: string })?.Release;
+      return release ? `Android ${release}` : `Android ${Platform.Version}`;
+    }
+    if (Platform.OS === 'ios') {
+      return `iOS ${Platform.Version}`;
+    }
+    return `${Platform.OS} ${Platform.Version}`;
+  }, []);
+
+  const handleCopyInfo = (value?: string | null) => {
+    if (!value || value === '—') return;
+    Clipboard.setStringAsync(value).catch(() => {});
+  };
 
   const handleSupportPress = () => {
     Alert.alert(
@@ -91,7 +111,13 @@ export function AboutAppTopic() {
       <View style={styles.detailsCard}>
         <Text style={styles.detailsCardTitle}>Informações Técnicas</Text>
 
-        <View style={styles.detailRow}>
+        <TouchableOpacity
+          style={styles.detailRow}
+          activeOpacity={0.7}
+          onPress={() => handleCopyInfo(platformName)}
+          accessibilityRole="button"
+          accessibilityLabel={`Copiar plataforma: ${platformName}`}
+        >
           <View style={styles.detailLabelGroup}>
             <MaterialCommunityIcons
               name="cellphone-link"
@@ -101,11 +127,40 @@ export function AboutAppTopic() {
             <Text style={styles.detailLabel}>Plataforma</Text>
           </View>
           <Text style={styles.detailValue}>{platformName}</Text>
-        </View>
+        </TouchableOpacity>
+
+        {commercialSystemVersion && (
+          <>
+            <View style={styles.detailDivider} />
+            <TouchableOpacity
+              style={styles.detailRow}
+              activeOpacity={0.7}
+              onPress={() => handleCopyInfo(commercialSystemVersion)}
+              accessibilityRole="button"
+              accessibilityLabel={`Copiar versão do sistema: ${commercialSystemVersion}`}
+            >
+              <View style={styles.detailLabelGroup}>
+                <MaterialCommunityIcons
+                  name="cellphone-cog"
+                  size={18}
+                  color={theme.colors.onSurfaceVariant}
+                />
+                <Text style={styles.detailLabel}>Versão do Sistema</Text>
+              </View>
+              <Text style={styles.detailValue}>{commercialSystemVersion}</Text>
+            </TouchableOpacity>
+          </>
+        )}
 
         <View style={styles.detailDivider} />
 
-        <View style={styles.detailRow}>
+        <TouchableOpacity
+          style={styles.detailRow}
+          activeOpacity={0.7}
+          onPress={() => handleCopyInfo(isOffline ? 'Offline' : 'Online')}
+          accessibilityRole="button"
+          accessibilityLabel={`Copiar status de conexão: ${isOffline ? 'Offline' : 'Online'}`}
+        >
           <View style={styles.detailLabelGroup}>
             <MaterialCommunityIcons
               name={isOffline ? 'cloud-off-outline' : 'cloud-check-outline'}
@@ -119,11 +174,17 @@ export function AboutAppTopic() {
               {isOffline ? 'Offline' : 'Online'}
             </Text>
           </View>
-        </View>
+        </TouchableOpacity>
 
         <View style={styles.detailDivider} />
 
-        <View style={styles.detailRow}>
+        <TouchableOpacity
+          style={styles.detailRow}
+          activeOpacity={0.7}
+          onPress={() => handleCopyInfo(user?.id ? String(user.id) : null)}
+          accessibilityRole="button"
+          accessibilityLabel={`Copiar ID do usuário: ${user?.id ? String(user.id) : 'Indisponível'}`}
+        >
           <View style={styles.detailLabelGroup}>
             <MaterialCommunityIcons
               name="account-outline"
@@ -132,14 +193,20 @@ export function AboutAppTopic() {
             />
             <Text style={styles.detailLabel}>ID do Usuário</Text>
           </View>
-          <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="middle" selectable>
+          <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="middle">
             {user?.id ? String(user.id) : '—'}
           </Text>
-        </View>
+        </TouchableOpacity>
 
         <View style={styles.detailDivider} />
 
-        <View style={styles.detailRow}>
+        <TouchableOpacity
+          style={styles.detailRow}
+          activeOpacity={0.7}
+          onPress={() => handleCopyInfo(sessionId)}
+          accessibilityRole="button"
+          accessibilityLabel={`Copiar ID da sessão: ${sessionId || 'Indisponível'}`}
+        >
           <View style={styles.detailLabelGroup}>
             <MaterialCommunityIcons
               name="shield-key-outline"
@@ -148,10 +215,10 @@ export function AboutAppTopic() {
             />
             <Text style={styles.detailLabel}>ID da Sessão</Text>
           </View>
-          <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="middle" selectable>
+          <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="middle">
             {sessionId || '—'}
           </Text>
-        </View>
+        </TouchableOpacity>
       </View>
 
       {/* Support & Legal Links */}
@@ -253,7 +320,7 @@ const createStyles = (theme: AppTheme) =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      minHeight: 32,
+      minHeight: 48,
       gap: theme.spacing.space3,
     },
     detailLabelGroup: {

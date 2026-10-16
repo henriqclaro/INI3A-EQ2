@@ -28,4 +28,5 @@ export interface SettingShortcutItem {
   isDesktopOnly?: boolean;
   isMobileOnly?: boolean;
   isCustomerAllowed?: boolean;
+  isBakerOnly?: boolean;
 }
