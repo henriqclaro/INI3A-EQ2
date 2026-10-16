@@ -4,3 +4,8 @@ export { InteractionSettingsCard } from './InteractionSettingsCard';
 export { OperationalPreferencesCard } from './OperationalPreferencesCard';
 export { StorageSettingsCard } from './StorageSettingsCard';
 export { DeleteAccountModal, type DeleteAccountModalProps } from './DeleteAccountModal';
+export { SettingsTopicList, type SettingsTopicListProps } from './SettingsTopicList';
+export { SettingsSidebar, type SettingsSidebarProps } from './SettingsSidebar';
+export { SettingsTopicHeader, type SettingsTopicHeaderProps } from './SettingsTopicHeader';
+export { AccountSecurityTopic, type AccountSecurityTopicProps } from './AccountSecurityTopic';
+export { AboutAppTopic } from './AboutAppTopic';

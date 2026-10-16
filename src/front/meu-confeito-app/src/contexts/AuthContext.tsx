@@ -19,7 +19,7 @@ import { AuthService, LogInData, LogInResponse } from '../services/auth';
 import { UserService } from '../services/user';
 import { Storage } from '../utils/storage';
 
-interface UserProfile {
+export interface UserProfile {
   id: string;
   name: string;
   email: string;
