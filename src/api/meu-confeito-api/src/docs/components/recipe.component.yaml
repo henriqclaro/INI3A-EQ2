@@ -131,6 +131,20 @@ components:
                   format: uuid
                 title:
                   type: string
+                tags:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      tag:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          name:
+                            type: string
+                          type:
+                            type: string
             title:
               type: string
             coverUrl:
@@ -483,6 +497,20 @@ components:
                   format: uuid
                 title:
                   type: string
+                tags:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      tag:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          name:
+                            type: string
+                          type:
+                            type: string
             title:
               type: string
             coverUrl:
@@ -621,6 +649,20 @@ components:
                       lastUpdated:
                         type: string
                         format: date-time
+            tags:
+              type: array
+              items:
+                type: object
+                properties:
+                  tag:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      type:
+                        type: string
     RecipeSearchResponse:
       type: object
       properties:
