@@ -39,6 +39,7 @@ export interface PlannedProductionItem {
   recipeTitle?: string;
   baseYield?: number | string;
   yieldUnit?: string;
+  origins?: ('OWN' | 'SAVED' | 'DOWNLOADED')[];
 }
 
 export interface PurchaseProjectionRequest {

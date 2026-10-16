@@ -1,40 +1,46 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
+  BackHandler,
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
   View,
   useWindowDimensions,
 } from 'react-native';
 
-import { Image } from 'expo-image';
-import { Stack, router } from 'expo-router';
-
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Stack, router, useLocalSearchParams, useNavigation } from 'expo-router';
 
 import {
-  CustomButton,
+  AboutAppTopic,
+  AccountSecurityTopic,
   DeleteAccountModal,
   InteractionSettingsCard,
-  MenuOptionButton,
   OfflineBanner,
   OperationalPreferencesCard,
-  SettingsSection,
+  SettingsSearchBar,
+  SettingsSearchResults,
+  SettingsSidebar,
+  SettingsTopicHeader,
+  SettingsTopicList,
   StorageSettingsCard,
   ThemeToggleCard,
 } from '@/src/components';
+import { filterSettingShortcuts } from '@/src/constants/settingsShortcuts';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useNetwork } from '@/src/hooks/useNetwork';
 import { useUserDelete } from '@/src/hooks/useUsers';
 import { AppTheme } from '@/src/theme/themes';
-import { getRoleLabel, isCustomer } from '@/src/utils/roles';
+import { SettingsTopicId, SettingsTopicItem } from '@/src/types/settings';
+import { isBaker, isCustomer } from '@/src/utils/roles';
 
 export default function SettingsScreen() {
-  const { theme, isDarkMode } = useThemeMode();
+  const { theme } = useThemeMode();
   const { width } = useWindowDimensions();
+  const navigation = useNavigation();
+  const params = useLocalSearchParams<{ topic?: string }>();
+
   const isSmallScreen = width < theme.breakpoints.sm;
   const isDesktop = Platform.OS === 'web' || width >= theme.breakpoints.md;
 
@@ -43,10 +49,143 @@ export default function SettingsScreen() {
   const { deleteUser, isLoading: isDeletingUser } = useUserDelete();
 
   const isCustomerRole = isCustomer(user?.role);
+  const isBakerRole = isBaker(user?.role);
 
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [mobileSearchQuery, setMobileSearchQuery] = useState('');
 
-  const styles = useMemo(() => createStyles(theme, isSmallScreen), [theme, isSmallScreen]);
+  const mobileSearchResults = useMemo(() => {
+    return filterSettingShortcuts({
+      query: mobileSearchQuery,
+      isDesktop: false,
+      isCustomerRole,
+      isBakerRole,
+    });
+  }, [mobileSearchQuery, isCustomerRole, isBakerRole]);
+
+  const hasMobileSearch = mobileSearchQuery.trim().length > 0;
+
+  // Available topics list based on user role and platform
+  const topics: SettingsTopicItem[] = useMemo(() => {
+    const list: SettingsTopicItem[] = [
+      {
+        id: 'account',
+        title: 'Conta e Segurança',
+        description: 'Gerencie seus dados de acesso, credenciais e encerramento da conta',
+        icon: 'shield-account-outline',
+      },
+      {
+        id: 'appearance',
+        title: 'Aparência',
+        description: 'Personalize cores, alto contraste e economia de bateria em telas OLED',
+        icon: 'palette-outline',
+      },
+    ];
+
+    if (!isDesktop) {
+      list.push({
+        id: 'interaction',
+        title: 'Gestos e Resposta Tátil',
+        description: 'Controle a navegação por deslizamento e o retorno de vibração do aplicativo',
+        icon: 'cellphone-sound',
+      });
+    }
+
+    if (!isCustomerRole) {
+      list.push({
+        id: 'operational',
+        title: 'Preferências Operacionais',
+        description:
+          'Defina valores padrão para custos de receitas e a precisão de exibição das precificações',
+        icon: 'tune-variant',
+      });
+    }
+
+    list.push(
+      {
+        id: 'storage',
+        title: 'Dados e Armazenamento',
+        description:
+          'Gerencie o cache local, arquivos temporários e o uso de memória do aplicativo',
+        icon: 'database-outline',
+      },
+      {
+        id: 'about',
+        title: 'Sobre o Aplicativo',
+        description: 'Informações da versão, suporte e detalhes do sistema',
+        icon: 'information-outline',
+      },
+    );
+
+    return list;
+  }, [isDesktop, isCustomerRole]);
+
+  // Validate topic from route params or fallback
+  const validTopicIds = useMemo(() => new Set(topics.map((t) => t.id)), [topics]);
+
+  const topicParam = params.topic as SettingsTopicId | undefined;
+  const isValidParam = Boolean(topicParam && validTopicIds.has(topicParam));
+
+  const [localTopicId, setLocalTopicId] = useState<SettingsTopicId | null>(() => {
+    if (isValidParam && topicParam) {
+      return topicParam;
+    }
+    return isDesktop ? 'account' : null;
+  });
+
+  // Derived effective topic id
+  const effectiveTopicId = useMemo<SettingsTopicId | null>(() => {
+    if (isValidParam && topicParam) {
+      return topicParam;
+    }
+    if (isDesktop) {
+      return (localTopicId && validTopicIds.has(localTopicId) ? localTopicId : null) || 'account';
+    }
+    return localTopicId;
+  }, [isValidParam, topicParam, isDesktop, localTopicId, validTopicIds]);
+
+  // Hardware back button support on Android (returns to topic list when inside a topic)
+  useEffect(() => {
+    if (isDesktop || effectiveTopicId === null) {
+      return;
+    }
+
+    const backSubscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      setLocalTopicId(null);
+      router.setParams({ topic: '' });
+      return true;
+    });
+
+    return () => {
+      backSubscription.remove();
+    };
+  }, [isDesktop, effectiveTopicId]);
+
+  // Navigation back interception (CustomHeader back action)
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      if (!isDesktop && effectiveTopicId !== null) {
+        e.preventDefault();
+        setLocalTopicId(null);
+        router.setParams({ topic: '' });
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, isDesktop, effectiveTopicId]);
+
+  const activeTopicId: SettingsTopicId = effectiveTopicId || 'account';
+  const activeTopic = topics.find((t) => t.id === activeTopicId) || topics[0];
+
+  const handleSelectTopic = (topicId: SettingsTopicId) => {
+    setLocalTopicId(topicId);
+    router.setParams({ topic: topicId });
+  };
+
+  const handleBackToOverview = () => {
+    setLocalTopicId(null);
+    router.setParams({ topic: '' });
+  };
 
   const handleOpenDeleteModal = () => {
     setIsDeleteModalVisible(true);
@@ -99,175 +238,137 @@ export default function SettingsScreen() {
     }
   };
 
+  const styles = useMemo(
+    () => createStyles(theme, isSmallScreen, isDesktop),
+    [theme, isSmallScreen, isDesktop],
+  );
+
+  const screenTitle = useMemo(() => {
+    if (isDesktop) return 'Configurações';
+    if (effectiveTopicId !== null && activeTopic) {
+      return activeTopic.title;
+    }
+    return 'Configurações';
+  }, [isDesktop, effectiveTopicId, activeTopic]);
+
+  const renderTopicContent = (topicId: SettingsTopicId) => {
+    switch (topicId) {
+      case 'account':
+        return (
+          <AccountSecurityTopic
+            user={user}
+            onOpenDeleteModal={handleOpenDeleteModal}
+            isSmallScreen={isSmallScreen}
+          />
+        );
+      case 'appearance':
+        return <ThemeToggleCard />;
+      case 'interaction':
+        return <InteractionSettingsCard />;
+      case 'operational':
+        return <OperationalPreferencesCard />;
+      case 'storage':
+        return <StorageSettingsCard />;
+      case 'about':
+        return <AboutAppTopic />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <>
-      <Stack.Screen options={{ title: 'Configurações' }} />
+      <Stack.Screen options={{ title: screenTitle }} />
 
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.contentWrapper}>
-          {/* Header Editorial Stamp */}
-          <View style={styles.headerBlock}>
-            <Text style={styles.headerTitle}>Configurações</Text>
-            <Text style={styles.headerSubtitle}>
-              Personalize a aparência do Meu Confeito e configure sua experiência na cozinha
-              digital.
-            </Text>
-          </View>
-
-          <OfflineBanner
-            isVisible={isOffline}
-            message="Você está offline. Algumas operações requerem conexão ativa com a internet."
+      {isDesktop ? (
+        /* Web/Desktop: Embedded Docked Sidebar with Centered Content Area */
+        <View style={styles.desktopContainer}>
+          <SettingsSidebar
+            topics={topics}
+            selectedTopicId={activeTopicId}
+            onSelectTopic={handleSelectTopic}
+            isCustomerRole={isCustomerRole}
+            isBakerRole={isBakerRole}
           />
 
-          {/* Section 1: Account & Security */}
-          {user && (
-            <SettingsSection
-              title="Conta e Segurança"
-              description="Gerencie seus dados de acesso e credenciais de segurança"
-              icon="shield-account-outline"
-            >
-              <View style={styles.accountCard}>
-                <View style={styles.userInfoRow}>
-                  <View style={styles.avatarPlaceholder}>
-                    <Text style={styles.avatarText}>
-                      {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                    </Text>
-                  </View>
-                  <View style={styles.userDetailsCol}>
-                    <Text style={styles.userName} numberOfLines={1}>
-                      {user.name}
-                    </Text>
-                    <Text style={styles.userEmail} numberOfLines={1}>
-                      {user.email}
-                    </Text>
-                    <View style={styles.roleBadge}>
-                      <Text style={styles.roleBadgeText}>{getRoleLabel(user.role)}</Text>
-                    </View>
-                  </View>
-                </View>
+          <ScrollView
+            style={styles.desktopMainScroll}
+            contentContainerStyle={styles.desktopMainContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.desktopTopicCenteredWrapper}>
+              <OfflineBanner
+                isVisible={isOffline}
+                message="Você está offline. Algumas operações requerem conexão ativa com a internet."
+              />
 
-                <MenuOptionButton
-                  title="Alterar Senha"
-                  subtitle="Redefina sua senha de acesso ao aplicativo"
-                  icon="lock-reset"
-                  onPress={() => router.push('/reset-password')}
+              {activeTopic && (
+                <SettingsTopicHeader
+                  title={activeTopic.title}
+                  description={activeTopic.description}
+                  isMobile={false}
+                />
+              )}
+
+              {renderTopicContent(activeTopicId)}
+            </View>
+          </ScrollView>
+        </View>
+      ) : (
+        /* Mobile: Unified Scroll Layout */
+        <ScrollView
+          style={styles.mobileContainer}
+          contentContainerStyle={styles.mobileScrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.mobileContentWrapper}>
+            {effectiveTopicId === null && (
+              <View style={styles.mobileSearchWrapper}>
+                <SettingsSearchBar
+                  value={mobileSearchQuery}
+                  onChangeText={setMobileSearchQuery}
+                  onClear={() => setMobileSearchQuery('')}
+                  placeholder="Buscar configurações..."
                 />
               </View>
-            </SettingsSection>
-          )}
+            )}
 
-          {/* Section 2: Appearance & Theme Toggle */}
-          <SettingsSection
-            title="Aparência"
-            description="Personalize cores, alto contraste e economia de bateria em telas OLED"
-            icon="palette-outline"
-          >
-            <ThemeToggleCard />
-          </SettingsSection>
+            <OfflineBanner
+              isVisible={isOffline}
+              message="Você está offline. Algumas operações requerem conexão ativa com a internet."
+            />
 
-          {/* Section 3: Navigation & Haptics (Mobile only) */}
-          {!isDesktop && (
-            <SettingsSection
-              title="Gestos e Resposta Tátil"
-              description="Controle a navegação por deslizamento e o retorno de vibração do aplicativo"
-              icon="cellphone-sound"
-            >
-              <InteractionSettingsCard />
-            </SettingsSection>
-          )}
-
-          {/* Section 4: Operational Preferences */}
-          {!isCustomerRole && (
-            <SettingsSection
-              title="Preferências Operacionais"
-              description="Defina valores padrão para custos de receitas e a precisão de exibição das precificações"
-              icon="tune-variant"
-            >
-              <OperationalPreferencesCard />
-            </SettingsSection>
-          )}
-
-          {/* Section 5: Data & Storage */}
-          <SettingsSection
-            title="Dados e Armazenamento"
-            description="Gerencie o cache local, arquivos temporários e o uso de memória do aplicativo"
-            icon="database-outline"
-          >
-            <StorageSettingsCard />
-          </SettingsSection>
-
-          {/* Section 6: App Info & About */}
-          <SettingsSection
-            title="Sobre o Aplicativo"
-            description="Informações da versão e suporte"
-            icon="information-outline"
-          >
-            <View style={styles.aboutCard}>
-              <View style={styles.aboutHeader}>
-                <View style={styles.brandBadge}>
-                  <Image
-                    source={
-                      isDarkMode
-                        ? require('@/assets/images/logo-dark.png')
-                        : require('@/assets/images/logo-light.png')
-                    }
-                    style={styles.brandLogoImage}
-                    contentFit="contain"
+            {effectiveTopicId === null ? (
+              hasMobileSearch ? (
+                <SettingsSearchResults
+                  results={mobileSearchResults}
+                  searchQuery={mobileSearchQuery}
+                  onSelectShortcut={(shortcut) => {
+                    handleSelectTopic(shortcut.topicId);
+                    setMobileSearchQuery('');
+                  }}
+                  onClearSearch={() => setMobileSearchQuery('')}
+                />
+              ) : (
+                <SettingsTopicList topics={topics} onSelectTopic={handleSelectTopic} />
+              )
+            ) : (
+              <View style={styles.mobileTopicContent}>
+                {activeTopic && (
+                  <SettingsTopicHeader
+                    title={activeTopic.title}
+                    description={activeTopic.description}
+                    onBack={handleBackToOverview}
+                    isMobile={true}
                   />
-                </View>
-                <View style={styles.brandTextWrapper}>
-                  <Text style={styles.brandName}>Meu Confeito</Text>
-                  <Text style={styles.appVersion}>Versão 1.0.0 (Beta)</Text>
-                </View>
+                )}
+                {renderTopicContent(effectiveTopicId)}
               </View>
-
-              <Text style={styles.aboutDescription}>
-                Desenvolvido especialmente para confeiteiras e confeiteiros independentes que buscam
-                precisão no cálculo de custos e valorização do seu trabalho artesanal.
-              </Text>
-            </View>
-          </SettingsSection>
-
-          {/* Section 7: Danger Zone (Account Deletion) */}
-          <SettingsSection
-            title="Zona de Perigo"
-            description="Ações irreversíveis de encerramento da conta"
-            icon="alert-octagon-outline"
-          >
-            {/* Exclusão Definitiva */}
-            <View style={styles.dangerCard}>
-              <View style={styles.dangerCardHeader}>
-                <View style={styles.dangerIconBadge}>
-                  <MaterialCommunityIcons
-                    name="alert-circle-outline"
-                    size={22}
-                    color={theme.colors.error}
-                  />
-                </View>
-                <View style={styles.dangerHeaderTextWrapper}>
-                  <Text style={styles.dangerCardTitle}>Exclusão Definitiva de Conta</Text>
-                  <Text style={styles.dangerCardSubtitle}>
-                    Esta ação é permanente e irreversível. Ao confirmar, seus dados pessoais serão
-                    anonimizados, receitas desvinculadas excluídas e todas as sessões ativas
-                    revogadas.
-                  </Text>
-                </View>
-              </View>
-
-              <CustomButton
-                title="Excluir Minha Conta"
-                variant="danger"
-                style={styles.deleteAccountBtn}
-                onPress={handleOpenDeleteModal}
-              />
-            </View>
-          </SettingsSection>
-        </View>
-      </ScrollView>
+            )}
+          </View>
+        </ScrollView>
+      )}
 
       {/* Destructive Deletion Confirmation Modal */}
       <DeleteAccountModal
@@ -280,196 +381,49 @@ export default function SettingsScreen() {
   );
 }
 
-const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
+const createStyles = (theme: AppTheme, isSmallScreen: boolean, _isDesktop: boolean) =>
   StyleSheet.create({
-    container: {
+    desktopContainer: {
+      flex: 1,
+      flexDirection: 'row',
+      backgroundColor: theme.colors.background,
+    },
+    desktopMainScroll: {
       flex: 1,
       backgroundColor: theme.colors.background,
     },
-    scrollContent: {
+    desktopMainContent: {
+      alignItems: 'center',
+      paddingHorizontal: theme.spacing.space8,
+      paddingTop: theme.spacing.space6,
+      paddingBottom: theme.spacing.space16,
+    },
+    desktopTopicCenteredWrapper: {
+      width: '100%',
+      maxWidth: 760,
+      gap: theme.spacing.space5,
+    },
+    mobileContainer: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    mobileScrollContent: {
       paddingHorizontal: isSmallScreen ? theme.spacing.marginMobile : theme.spacing.marginTablet,
       paddingTop: theme.spacing.space4,
       paddingBottom: theme.spacing.space16,
       alignItems: 'center',
     },
-    contentWrapper: {
+    mobileContentWrapper: {
       width: '100%',
       maxWidth: 680,
       gap: theme.spacing.space6,
     },
-    headerBlock: {
-      marginTop: theme.spacing.space2,
-      marginBottom: theme.spacing.space1,
-    },
-    headerTitle: {
-      fontFamily: theme.typography.headlineLg.fontFamily,
-      fontSize: 26,
-      fontWeight: '600',
-      color: theme.colors.espressoDark,
-      letterSpacing: 0.5,
-    },
-    headerSubtitle: {
-      fontFamily: theme.typography.bodyMd.fontFamily,
-      fontSize: 15,
-      color: theme.colors.onSurfaceVariant,
-      marginTop: 6,
-      lineHeight: 22,
-    },
-    aboutCard: {
-      backgroundColor: theme.colors.surfaceContainerLowest,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      borderRadius: theme.rounded.lg,
-      padding: theme.spacing.space5,
+    mobileSearchWrapper: {
       width: '100%',
-      ...theme.shadows.soft,
+      marginTop: theme.spacing.space1,
     },
-    aboutHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: theme.spacing.space3,
-      marginBottom: theme.spacing.space3,
-    },
-    brandBadge: {
-      width: 44,
-      height: 44,
-      borderRadius: theme.rounded.md,
-      backgroundColor: theme.colors.surfaceContainerLow,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      alignItems: 'center',
-      justifyContent: 'center',
-      overflow: 'hidden',
-    },
-    brandLogoImage: {
-      width: 34,
-      height: 34,
-    },
-    brandTextWrapper: {
-      flex: 1,
-      gap: 2,
-    },
-    brandName: {
-      fontFamily: theme.typography.headlineMd.fontFamily,
-      fontSize: 18,
-      fontWeight: '600',
-      color: theme.colors.espressoDark,
-    },
-    appVersion: {
-      fontFamily: theme.typography.bodySm.fontFamily,
-      fontSize: 12,
-      color: theme.colors.onSurfaceVariant,
-    },
-    aboutDescription: {
-      fontFamily: theme.typography.bodySm.fontFamily,
-      fontSize: 13,
-      lineHeight: 20,
-      color: theme.colors.onSurfaceVariant,
-    },
-    accountCard: {
-      backgroundColor: theme.colors.surfaceContainerLowest,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      borderRadius: theme.rounded.lg,
-      padding: theme.spacing.space4,
+    mobileTopicContent: {
       width: '100%',
-      gap: theme.spacing.space4,
-      ...theme.shadows.soft,
-    },
-    userInfoRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: theme.spacing.space3,
-    },
-    avatarPlaceholder: {
-      width: 48,
-      height: 48,
-      borderRadius: theme.rounded.full,
-      backgroundColor: theme.colors.primaryFixed,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    avatarText: {
-      fontFamily: theme.typography.headlineMd.fontFamily,
-      fontSize: 20,
-      fontWeight: '700',
-      color: theme.colors.onPrimaryFixed,
-    },
-    userDetailsCol: {
-      flex: 1,
-      gap: 2,
-    },
-    userName: {
-      fontFamily: theme.typography.bodyMd.fontFamily,
-      fontSize: 16,
-      fontWeight: '600',
-      color: theme.colors.espressoDark,
-    },
-    userEmail: {
-      fontFamily: theme.typography.bodySm.fontFamily,
-      fontSize: 13,
-      color: theme.colors.onSurfaceVariant,
-    },
-    roleBadge: {
-      alignSelf: 'flex-start',
-      backgroundColor: theme.colors.surfaceContainerHigh,
-      paddingHorizontal: 8,
-      paddingVertical: 2,
-      borderRadius: theme.rounded.full,
-      marginTop: 2,
-    },
-    roleBadgeText: {
-      fontFamily: theme.typography.labelSm.fontFamily,
-      fontSize: 10,
-      fontWeight: '700',
-      color: theme.colors.onSurfaceVariant,
-      textTransform: 'uppercase',
-    },
-    dangerCard: {
-      backgroundColor: theme.colors.surfaceContainerLowest,
-      borderWidth: 1.5,
-      borderColor: theme.colors.errorContainer,
-      borderRadius: theme.rounded.lg,
-      padding: theme.spacing.space5,
-      width: '100%',
-      gap: theme.spacing.space4,
-      ...theme.shadows.soft,
-    },
-    dangerCardHeader: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      gap: theme.spacing.space3,
-    },
-    dangerIconBadge: {
-      width: 38,
-      height: 38,
-      borderRadius: theme.rounded.md,
-      backgroundColor: theme.colors.errorContainer,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    dangerHeaderTextWrapper: {
-      flex: 1,
-      gap: 4,
-    },
-    dangerCardTitle: {
-      fontFamily: theme.typography.headlineMd.fontFamily,
-      fontSize: 16,
-      fontWeight: '700',
-      color: theme.colors.error,
-    },
-    dangerCardSubtitle: {
-      fontFamily: theme.typography.bodySm.fontFamily,
-      fontSize: 13,
-      color: theme.colors.onSurfaceVariant,
-      lineHeight: 18,
-    },
-    deleteAccountBtn: {
-      width: '100%',
-      maxWidth: isSmallScreen ? undefined : 320,
-      alignSelf: isSmallScreen ? 'center' : 'flex-start',
-      marginVertical: 0,
+      gap: theme.spacing.space2,
     },
   });

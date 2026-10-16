@@ -31,7 +31,7 @@ export default function ProfileScreen() {
   const isStaffRole = isStaff(user?.role);
   const isAdminRole = isAdmin(user?.role);
   const canSearchBakers = !isBakerRole || isStaffRole;
-  const isDesktop = width >= 768;
+  const isDesktop = width >= theme.breakpoints.md;
   const {
     bakerProfile,
     hasBakerProfile,
@@ -117,205 +117,207 @@ export default function ProfileScreen() {
           onRetry={isBakerRole ? refetch : undefined}
         />
 
-        {/* Main Profile Card Container */}
-        <View style={styles.card}>
-          <View style={styles.avatarWrapper}>
-            <UserAvatar
-              url={user?.pfpUrl}
-              updatedAt={user?.updatedAt}
-              name={user?.name}
-              size={110}
-              fallbackType="icon"
-              fallbackIcon="account"
-              fallbackIconColor={theme.colors.placeholder}
-              fallbackBackgroundColor={theme.colors.surfaceContainerLow}
-              borderColor={theme.colors.primary}
-              borderWidth={3}
-              style={styles.avatarImage}
-            />
-
-            {/* Small Badge indicating Public vs Private Profile (bakers only) */}
-            {isBakerRole &&
-              (hasBakerProfile ? (
-                <View style={styles.publicBadge}>
-                  <View style={styles.chipDot} />
-                  <Text style={styles.publicBadgeText}>Perfil Público</Text>
-                </View>
-              ) : (
-                <View style={styles.privateBadge}>
-                  <MaterialCommunityIcons
-                    name="lock-outline"
-                    size={12}
-                    color={theme.colors.onSurfaceVariant}
-                  />
-                  <Text style={styles.privateBadgeText}>Perfil Privado</Text>
-                </View>
-              ))}
-          </View>
-
-          <Text style={styles.userName}>
-            {isBakerRole && bakerProfile?.publicName
-              ? bakerProfile.publicName
-              : user?.name || 'Usuário'}
-          </Text>
-          {isBakerRole && bakerProfile?.publicName && bakerProfile.publicName !== user?.name ? (
-            <Text style={styles.accountSubtext}>Responsável: {user?.name}</Text>
-          ) : null}
-
-          <View style={styles.roleBadge}>
-            <Text style={styles.userRole}>{getRoleLabel(user?.role)}</Text>
-          </View>
-
-          {user?.email ? (
-            <View style={styles.emailRow}>
-              <MaterialCommunityIcons
-                name="email-outline"
-                size={14}
-                color={theme.colors.placeholder}
+        <View style={styles.columnsWrapper}>
+          {/* Main Profile Card Container */}
+          <View style={styles.card}>
+            <View style={styles.avatarWrapper}>
+              <UserAvatar
+                url={user?.pfpUrl}
+                updatedAt={user?.updatedAt}
+                name={user?.name}
+                size={110}
+                fallbackType="icon"
+                fallbackIcon="account"
+                fallbackIconColor={theme.colors.placeholder}
+                fallbackBackgroundColor={theme.colors.surfaceContainerLow}
+                borderColor={theme.colors.primary}
+                borderWidth={3}
+                style={styles.avatarImage}
               />
-              <Text style={styles.email}>{user.email}</Text>
+
+              {/* Small Badge indicating Public vs Private Profile (bakers only) */}
+              {isBakerRole &&
+                (hasBakerProfile ? (
+                  <View style={styles.publicBadge}>
+                    <View style={styles.chipDot} />
+                    <Text style={styles.publicBadgeText}>Perfil Público</Text>
+                  </View>
+                ) : (
+                  <View style={styles.privateBadge}>
+                    <MaterialCommunityIcons
+                      name="lock-outline"
+                      size={12}
+                      color={theme.colors.onSurfaceVariant}
+                    />
+                    <Text style={styles.privateBadgeText}>Perfil Privado</Text>
+                  </View>
+                ))}
             </View>
-          ) : null}
 
-          {isBakerRole && locationSummary ? (
-            <View style={styles.locationRow}>
-              <MaterialCommunityIcons
-                name="map-marker-outline"
-                size={14}
-                color={theme.colors.secondary}
-              />
-              <Text style={styles.locationText}>{locationSummary}</Text>
+            <Text style={styles.userName}>
+              {isBakerRole && bakerProfile?.publicName
+                ? bakerProfile.publicName
+                : user?.name || 'Usuário'}
+            </Text>
+            {isBakerRole && bakerProfile?.publicName && bakerProfile.publicName !== user?.name ? (
+              <Text style={styles.accountSubtext}>Responsável: {user?.name}</Text>
+            ) : null}
+
+            <View style={styles.roleBadge}>
+              <Text style={styles.userRole}>{getRoleLabel(user?.role)}</Text>
             </View>
-          ) : null}
 
-          {/* Action buttons inside the card */}
-          <View style={styles.cardActions}>
-            <CustomButton
-              title="Editar Perfil"
-              variant="primary"
-              style={styles.cardButton}
-              onPress={() => router.push('/edit-profile')}
-            />
-
-            {isBakerRole &&
-              (hasBakerProfile ? (
-                <CustomButton
-                  title="Visualizar Perfil Público"
-                  variant="secondary"
-                  style={styles.cardButton}
-                  onPress={() =>
-                    router.push({
-                      pathname: '/public-profile',
-                      params: { id: user?.id },
-                    })
-                  }
+            {user?.email ? (
+              <View style={styles.emailRow}>
+                <MaterialCommunityIcons
+                  name="email-outline"
+                  size={14}
+                  color={theme.colors.placeholder}
                 />
-              ) : (
-                <View style={styles.activatePromptContainer}>
-                  <Text style={styles.activatePromptText}>
-                    Seu perfil está privado. Torne-o público para divulgar suas receitas e receber
-                    contato direto de clientes.
-                  </Text>
+                <Text style={styles.email}>{user.email}</Text>
+              </View>
+            ) : null}
+
+            {isBakerRole && locationSummary ? (
+              <View style={styles.locationRow}>
+                <MaterialCommunityIcons
+                  name="map-marker-outline"
+                  size={14}
+                  color={theme.colors.secondary}
+                />
+                <Text style={styles.locationText}>{locationSummary}</Text>
+              </View>
+            ) : null}
+
+            {/* Action buttons inside the card */}
+            <View style={styles.cardActions}>
+              <CustomButton
+                title="Editar Perfil"
+                variant="primary"
+                style={styles.cardButton}
+                onPress={() => router.push('/edit-profile')}
+              />
+
+              {isBakerRole &&
+                (hasBakerProfile ? (
                   <CustomButton
-                    title="Perfil Comercial"
-                    variant="dashed"
+                    title="Visualizar Perfil Público"
+                    variant="secondary"
                     style={styles.cardButton}
-                    onPress={handleCommercialProfilePress}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/public-profile',
+                        params: { id: user?.id },
+                      })
+                    }
                   />
-                </View>
-              ))}
+                ) : (
+                  <View style={styles.activatePromptContainer}>
+                    <Text style={styles.activatePromptText}>
+                      Seu perfil está privado. Torne-o público para divulgar suas receitas e receber
+                      contato direto de clientes.
+                    </Text>
+                    <CustomButton
+                      title="Perfil Comercial"
+                      variant="dashed"
+                      style={styles.cardButton}
+                      onPress={handleCommercialProfilePress}
+                    />
+                  </View>
+                ))}
+            </View>
           </View>
-        </View>
 
-        {/* OUTSIDE the container: Menu options with extracted buttons */}
-        <View style={styles.menuSection}>
-          <Text style={styles.menuSectionTitle}>Atalhos & Preferências</Text>
+          {/* OUTSIDE the container: Menu options with extracted buttons */}
+          <View style={styles.menuSection}>
+            <Text style={styles.menuSectionTitle}>Atalhos & Preferências</Text>
 
-          {/* Shortcut to search bakers nearby (Customers, Moderators and Admins) */}
-          {canSearchBakers && (
+            {/* Shortcut to search bakers nearby (Customers, Moderators and Admins) */}
+            {canSearchBakers && (
+              <MenuOptionButton
+                title="Buscar Confeitarias"
+                subtitle="Encontre confeitarias e artesãos de doces próximos a você"
+                icon="store-search-outline"
+                onPress={() => router.push('/search-bakers')}
+              />
+            )}
+
+            {/* Saved Recipes Button (Bakers only) */}
+            {isBakerRole && (
+              <MenuOptionButton
+                title="Receitas Salvas"
+                subtitle="Suas receitas favoritas guardadas da comunidade"
+                icon="bookmark-multiple-outline"
+                onPress={() => router.push('/saved-recipes')}
+              />
+            )}
+
+            {/* Archived Recipes Button (Bakers only) */}
+            {isBakerRole && (
+              <MenuOptionButton
+                title="Receitas Arquivadas"
+                subtitle="Consulte e gerencie suas receitas arquivadas"
+                icon="archive-outline"
+                onPress={() => router.push('/archived-recipes')}
+              />
+            )}
+
+            {/* Reviewed Recipes Button (Bakers only) */}
+            {isBakerRole && (
+              <MenuOptionButton
+                title="Minhas Avaliações"
+                subtitle="Receitas da comunidade que você avaliou"
+                icon="star-outline"
+                onPress={() => router.push('/my-reviews')}
+              />
+            )}
+
+            {/* Button to visualize how public profile looks (Bakers only) */}
+            {isBakerRole && hasBakerProfile ? (
+              <MenuOptionButton
+                title="Prévia do Perfil Comercial"
+                subtitle="Veja exatamente como os clientes visualizam sua página"
+                icon="eye-outline"
+                onPress={() =>
+                  router.push({
+                    pathname: '/public-profile',
+                    params: { id: user?.id },
+                  })
+                }
+              />
+            ) : null}
+
+            {/* Staff Management Screen Option (ADMIN and MODERATOR only) */}
+            {isStaffRole && (
+              <MenuOptionButton
+                title="Painel de Gestão"
+                subtitle={
+                  isAdminRole
+                    ? 'Recursos exclusivos de administração e controle da plataforma'
+                    : 'Recursos exclusivos de moderação da plataforma'
+                }
+                icon="shield-crown-outline"
+                onPress={() => router.push('/management')}
+              />
+            )}
+
+            {/* Settings Screen Option */}
             <MenuOptionButton
-              title="Buscar Confeitarias"
-              subtitle="Encontre confeitarias e artesãos de doces próximos a você"
-              icon="store-search-outline"
-              onPress={() => router.push('/search-bakers')}
+              title="Configurações"
+              subtitle="Aparência, tema e preferências do aplicativo"
+              icon="cog-outline"
+              onPress={() => router.push('/settings')}
             />
-          )}
 
-          {/* Saved Recipes Button (Bakers only) */}
-          {isBakerRole && (
+            {/* Log Out Option */}
             <MenuOptionButton
-              title="Receitas Salvas"
-              subtitle="Suas receitas favoritas guardadas da comunidade"
-              icon="bookmark-multiple-outline"
-              onPress={() => router.push('/saved-recipes')}
+              title="Sair da Conta"
+              subtitle="Encerrar sessão com segurança neste dispositivo"
+              icon="logout"
+              isDestructive={true}
+              onPress={handleLogOut}
             />
-          )}
-
-          {/* Archived Recipes Button (Bakers only) */}
-          {isBakerRole && (
-            <MenuOptionButton
-              title="Receitas Arquivadas"
-              subtitle="Consulte e gerencie suas receitas arquivadas"
-              icon="archive-outline"
-              onPress={() => router.push('/archived-recipes')}
-            />
-          )}
-
-          {/* Reviewed Recipes Button (Bakers only) */}
-          {isBakerRole && (
-            <MenuOptionButton
-              title="Minhas Avaliações"
-              subtitle="Receitas da comunidade que você avaliou"
-              icon="star-outline"
-              onPress={() => router.push('/my-reviews')}
-            />
-          )}
-
-          {/* Button to visualize how public profile looks (Bakers only) */}
-          {isBakerRole && hasBakerProfile ? (
-            <MenuOptionButton
-              title="Prévia do Perfil Comercial"
-              subtitle="Veja exatamente como os clientes visualizam sua página"
-              icon="eye-outline"
-              onPress={() =>
-                router.push({
-                  pathname: '/public-profile',
-                  params: { id: user?.id },
-                })
-              }
-            />
-          ) : null}
-
-          {/* Staff Management Screen Option (ADMIN and MODERATOR only) */}
-          {isStaffRole && (
-            <MenuOptionButton
-              title="Painel de Gestão"
-              subtitle={
-                isAdminRole
-                  ? 'Recursos exclusivos de administração e controle da plataforma'
-                  : 'Recursos exclusivos de moderação da plataforma'
-              }
-              icon="shield-crown-outline"
-              onPress={() => router.push('/management')}
-            />
-          )}
-
-          {/* Settings Screen Option */}
-          <MenuOptionButton
-            title="Configurações"
-            subtitle="Aparência, tema e preferências do aplicativo"
-            icon="cog-outline"
-            onPress={() => router.push('/settings')}
-          />
-
-          {/* Log Out Option */}
-          <MenuOptionButton
-            title="Sair da Conta"
-            subtitle="Encerrar sessão com segurança neste dispositivo"
-            icon="logout"
-            isDestructive={true}
-            onPress={handleLogOut}
-          />
+          </View>
         </View>
 
         {isLoading ? (
@@ -343,6 +345,11 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
     contentWrapper: {
       width: '100%',
       maxWidth: isDesktop ? 960 : 480,
+      alignItems: 'center',
+      gap: isDesktop ? 24 : theme.spacing.space5,
+    },
+    columnsWrapper: {
+      width: '100%',
       flexDirection: isDesktop ? 'row' : 'column',
       alignItems: isDesktop ? 'flex-start' : 'center',
       gap: isDesktop ? 24 : theme.spacing.space5,
@@ -510,7 +517,9 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       marginBottom: 2,
     },
     loadingIndicator: {
+      width: '100%',
       paddingVertical: theme.spacing.space3,
       alignItems: 'center',
+      justifyContent: 'center',
     },
   });

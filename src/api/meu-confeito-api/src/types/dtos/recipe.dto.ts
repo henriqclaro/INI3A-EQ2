@@ -70,6 +70,13 @@ export namespace RecipeDTO {
       parent: {
         id: string;
         title: string;
+        tags?: {
+          tag: {
+            id: number;
+            name: string;
+            type: TagType;
+          };
+        }[];
       } | null;
       title: string;
       coverUrl: string | null;
@@ -148,6 +155,13 @@ export namespace RecipeDTO {
       parent: {
         id: string;
         title: string;
+        tags?: {
+          tag: {
+            id: number;
+            name: string;
+            type: TagType;
+          };
+        }[];
       } | null;
       title: string;
       coverUrl: string | null;
@@ -199,6 +213,13 @@ export namespace RecipeDTO {
           costPerBaseUnit: Decimal;
           lastUpdated: Date;
         } | null;
+      }[];
+      tags?: {
+        tag: {
+          id: number;
+          name: string;
+          type: TagType;
+        };
       }[];
     };
   }

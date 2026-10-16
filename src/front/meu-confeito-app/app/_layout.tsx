@@ -1,8 +1,16 @@
 import { useEffect, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { Stack, useRouter, useSegments } from 'expo-router';
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider as NavigationThemeProvider,
+  Stack,
+  useRouter,
+  useSegments,
+} from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import * as SystemUI from 'expo-system-ui';
 
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { ActivityIndicator, PaperProvider } from 'react-native-paper';
@@ -49,58 +57,92 @@ function RootLayoutContent() {
   const { isLoadingStorage } = useAuth();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
+  const navigationTheme = useMemo(() => {
+    const baseNavTheme = isDarkMode ? DarkTheme : DefaultTheme;
+    return {
+      ...baseNavTheme,
+      dark: isDarkMode,
+      colors: {
+        ...baseNavTheme.colors,
+        background: theme.colors.background,
+        card: theme.colors.surface,
+        text: theme.colors.text,
+        border: theme.colors.outlineVariant,
+        primary: theme.colors.primary,
+        notification: theme.colors.primary,
+      },
+    };
+  }, [isDarkMode, theme]);
+
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(theme.colors.background).catch(() => {});
+  }, [theme.colors.background]);
+
   useProtectedRoute();
   useRoutePersistence();
 
   if (isLoadingStorage) {
     return (
       <PaperProvider theme={theme}>
-        <StatusBar style={isDarkMode ? 'light' : 'dark'} />
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-        </View>
+        <NavigationThemeProvider value={navigationTheme}>
+          <StatusBar style={isDarkMode ? 'light' : 'dark'} />
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
+          </View>
+        </NavigationThemeProvider>
       </PaperProvider>
     );
   }
 
   return (
     <PaperProvider theme={theme}>
-      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
-      <Stack
-        screenOptions={{
-          headerShown: true,
-          header: (props) => <CustomHeader {...props} />,
-          contentStyle: { backgroundColor: theme.colors.background },
-        }}
-      >
-        <Stack.Screen name="index" options={{ title: 'Bem-Vindo' }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="login" options={{ title: 'Login' }} />
-        <Stack.Screen name="register" options={{ title: 'Cadastro' }} />
-        <Stack.Screen name="single-recipe" options={{ title: 'Receita' }} />
-        <Stack.Screen name="public-recipes" options={{ title: 'Receitas Públicas' }} />
-        <Stack.Screen name="stock" options={{ title: 'Estoque' }} />
-        <Stack.Screen name="register-stock" options={{ title: 'Cadastrar no Estoque' }} />
-        <Stack.Screen name="create-recipe" options={{ title: 'Cadastrar Receita' }} />
-        <Stack.Screen name="edit-recipe" options={{ title: 'Editar Receita' }} />
-        <Stack.Screen name="edit-profile" options={{ title: 'Editar Perfil' }} />
-        <Stack.Screen name="public-profile" options={{ title: 'Perfil Público' }} />
-        <Stack.Screen name="productions" options={{ title: 'Histórico de Produções' }} />
-        <Stack.Screen name="saved-recipes" options={{ title: 'Receitas Salvas' }} />
-        <Stack.Screen name="archived-recipes" options={{ title: 'Receitas Arquivadas' }} />
-        <Stack.Screen name="search-bakers" options={{ title: 'Buscar Confeitarias' }} />
-        <Stack.Screen name="settings" options={{ title: 'Configurações' }} />
-        <Stack.Screen name="reset-password" options={{ title: 'Alterar Senha' }} />
-      </Stack>
-      <DesktopAlert />
-      <RateLimitBanner />
-      <ToastContainer />
+      <NavigationThemeProvider value={navigationTheme}>
+        <StatusBar style={isDarkMode ? 'light' : 'dark'} />
+        <View style={styles.rootContainer}>
+          <Stack
+            screenOptions={{
+              headerShown: true,
+              header: (props) => <CustomHeader {...props} />,
+              contentStyle: { backgroundColor: theme.colors.background },
+              navigationBarColor: theme.colors.background,
+            }}
+          >
+            <Stack.Screen name="index" options={{ title: 'Bem-Vindo' }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="login" options={{ title: 'Login' }} />
+            <Stack.Screen name="register" options={{ title: 'Cadastro' }} />
+            <Stack.Screen name="single-recipe" options={{ title: 'Receita' }} />
+            <Stack.Screen name="public-recipes" options={{ title: 'Receitas Públicas' }} />
+            <Stack.Screen name="stock" options={{ title: 'Estoque' }} />
+            <Stack.Screen name="register-stock" options={{ title: 'Cadastrar no Estoque' }} />
+            <Stack.Screen name="create-recipe" options={{ title: 'Cadastrar Receita' }} />
+            <Stack.Screen name="edit-recipe" options={{ title: 'Editar Receita' }} />
+            <Stack.Screen name="edit-profile" options={{ title: 'Editar Perfil' }} />
+            <Stack.Screen name="public-profile" options={{ title: 'Perfil Público' }} />
+            <Stack.Screen name="productions" options={{ title: 'Histórico de Produções' }} />
+            <Stack.Screen name="saved-recipes" options={{ title: 'Receitas Salvas' }} />
+            <Stack.Screen name="archived-recipes" options={{ title: 'Receitas Arquivadas' }} />
+            <Stack.Screen name="search-bakers" options={{ title: 'Buscar Confeitarias' }} />
+            <Stack.Screen name="settings" options={{ title: 'Configurações' }} />
+            <Stack.Screen name="reset-password" options={{ title: 'Alterar Senha' }} />
+            <Stack.Screen name="management" options={{ title: 'Gerenciamento' }} />
+            <Stack.Screen name="my-reviews" options={{ title: 'Minhas Avaliações' }} />
+          </Stack>
+          <DesktopAlert />
+          <RateLimitBanner />
+          <ToastContainer />
+        </View>
+      </NavigationThemeProvider>
     </PaperProvider>
   );
 }
 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
+    rootContainer: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
     loadingContainer: {
       flex: 1,
       justifyContent: 'center',

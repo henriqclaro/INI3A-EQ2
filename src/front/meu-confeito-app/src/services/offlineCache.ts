@@ -56,6 +56,8 @@ function compactSavedRecipe(item: UserSavedRecipeItem): UserSavedRecipeItem {
       id: item.recipe.id,
       title: item.recipe.title,
       coverUrl: item.recipe.coverUrl,
+      baseYield: item.recipe.baseYield,
+      yieldUnit: item.recipe.yieldUnit,
       profitMargin: item.recipe.profitMargin,
       overhead: item.recipe.overhead,
       hourlyLabor: item.recipe.hourlyLabor,
