@@ -39,14 +39,34 @@ async function copyToClipboard(text: string): Promise<boolean> {
   }
 }
 
+export interface PlannedRecipeShareItem {
+  title: string;
+  targetYield?: number | string | null;
+  yieldUnit?: string | null;
+}
+
+export interface ShareShoppingListOptions {
+  subtitle?: string;
+  plannedRecipes?: PlannedRecipeShareItem[];
+}
+
 export async function shareShoppingList(
   items: ShoppingListItem[],
   title: string = 'Lista de Compras • Meu Confeito',
+  options?: ShareShoppingListOptions,
 ): Promise<{ isShared: boolean; isCopied: boolean }> {
   if (!items || items.length === 0) {
     Alert.alert('Lista Vazia', 'Não há itens para compartilhar.');
     return { isShared: false, isCopied: false };
   }
+
+  const recipeLines = (options?.plannedRecipes || []).map((r) => {
+    const yieldPart =
+      r.targetYield !== undefined && r.targetYield !== null && r.targetYield !== ''
+        ? ` (${r.targetYield} ${r.yieldUnit || 'un'})`
+        : '';
+    return `• ${r.title}${yieldPart}`;
+  });
 
   const lines = items.map((it) => {
     const qtyPart =
@@ -56,7 +76,22 @@ export async function shareShoppingList(
     return `• ${it.name}${qtyPart}`;
   });
 
-  const message = `🧁 *${title}*\n\n${lines.join('\n')}\n\n_Gerado pelo aplicativo Meu Confeito_`;
+  const messageParts: string[] = [`🧁 *${title}*`];
+
+  if (options?.subtitle) {
+    messageParts.push(`_${options.subtitle}_`);
+  }
+
+  if (recipeLines.length > 0) {
+    messageParts.push('', '📋 *Produções Planejadas:*', recipeLines.join('\n'));
+    messageParts.push('', '🛒 *Insumos para Comprar:*', lines.join('\n'));
+  } else {
+    messageParts.push('', lines.join('\n'));
+  }
+
+  messageParts.push('', '_Gerado pelo aplicativo Meu Confeito_');
+
+  const message = messageParts.join('\n');
 
   const hasNativeShare = isShareSupported();
 

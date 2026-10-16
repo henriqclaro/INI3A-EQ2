@@ -4,7 +4,7 @@ import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'reac
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAvoidingView, KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import { RecipeSelector } from '@/src/components/recipe';
+import { RecipeSelector, RecipeWithOrigin } from '@/src/components/recipe';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
@@ -53,8 +53,9 @@ export function AddPlannedRecipeModal({
       recipeId: selectedRecipe.id,
       targetYield: yieldNumber,
       recipeTitle: selectedRecipe.title,
-      baseYield: selectedRecipe.baseYield,
+      baseYield: selectedRecipe.baseYield ? Number(selectedRecipe.baseYield) : undefined,
       yieldUnit: selectedRecipe.yieldUnit || 'un',
+      origins: (selectedRecipe as RecipeWithOrigin).origins,
     });
 
     setSelectedRecipe(null);
@@ -106,20 +107,24 @@ export function AddPlannedRecipeModal({
             bottomOffset={24}
           >
             <Text style={styles.modalSubtitle}>
-              Selecione uma das suas receitas e informe o rendimento que você planeja produzir.
+              Selecione uma de suas receitas, salvas ou baixadas, e informe o rendimento que você
+              planeja produzir.
             </Text>
 
             {/* Recipe Selector */}
             <View style={styles.fieldSection}>
               <RecipeSelector
                 userId={user?.id}
-                onlyUserRecipes={true}
+                onlyUserRecipes={false}
+                includeSavedAndDownloaded={true}
                 selectedRecipe={selectedRecipe}
                 onSelectRecipe={handleSelectRecipe}
+                excludeRecipeIds={excludedRecipeIds}
                 label="Receita a Produzir"
-                placeholder="Buscar em minhas receitas..."
+                placeholder="Buscar receitas próprias, salvas ou baixadas..."
                 isRequired={true}
                 canClear={true}
+                isDropdownOpenByDefault={true}
               />
             </View>
 

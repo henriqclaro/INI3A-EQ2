@@ -1,5 +1,12 @@
-import { useMemo, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useCallback, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
@@ -7,6 +14,7 @@ import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { PlannedProductionItem, PurchaseProjectionData } from '@/src/types/analytics';
 import { formatCurrency, formatQuantity } from '@/src/utils/formatters';
+import { ShoppingListItem, shareShoppingList } from '@/src/utils/share';
 
 import { AddPlannedRecipeModal } from './AddPlannedRecipeModal';
 
@@ -35,12 +43,15 @@ export function PurchaseProjectionSection({
   onRemovePlannedProduction,
   onClearPlannedProductions,
   onCalculate,
-  isDesktop = false,
+  isDesktop: isDesktopProp,
 }: PurchaseProjectionSectionProps) {
   const { theme } = useThemeMode();
+  const { width } = useWindowDimensions();
+  const isDesktop = isDesktopProp ?? width >= 768;
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
   const hasPlannedRecipes = plannedProductions.length > 0;
   const hasProjection = Boolean(projection);
@@ -51,6 +62,76 @@ export function PurchaseProjectionSection({
     [plannedProductions],
   );
 
+  const handleShareShoppingList = useCallback(async () => {
+    if (!projection || projection.items.length === 0 || isSharing) return;
+
+    setIsSharing(true);
+    try {
+      const shoppingItems: ShoppingListItem[] = projection.items.map((item) => ({
+        name: item.name,
+        quantity: formatQuantity(item.deficitQuantity),
+        unit: item.unit || 'un',
+      }));
+
+      const plannedRecipes = plannedProductions.map((p) => ({
+        title: p.recipeTitle || 'Receita',
+        targetYield: p.targetYield,
+        yieldUnit: p.yieldUnit,
+      }));
+
+      await shareShoppingList(shoppingItems, 'Insumos para Comprar • Previsão de Demanda', {
+        plannedRecipes,
+      });
+    } finally {
+      setIsSharing(false);
+    }
+  }, [projection, plannedProductions, isSharing]);
+
+  const renderOriginChips = (origins?: ('OWN' | 'SAVED' | 'DOWNLOADED')[]) => {
+    if (!origins || origins.length === 0) return null;
+
+    return (
+      <View style={styles.originsRow}>
+        {origins.map((origin) => (
+          <View
+            key={origin}
+            style={[
+              styles.originChip,
+              origin === 'OWN' && styles.originChipOwn,
+              origin === 'SAVED' && styles.originChipSaved,
+              origin === 'DOWNLOADED' && styles.originChipDownloaded,
+            ]}
+          >
+            {origin === 'SAVED' && (
+              <MaterialCommunityIcons
+                name="bookmark-outline"
+                size={11}
+                color={theme.colors.secondary}
+              />
+            )}
+            {origin === 'DOWNLOADED' && (
+              <MaterialCommunityIcons
+                name="cloud-check-outline"
+                size={11}
+                color={theme.colors.tertiary}
+              />
+            )}
+            <Text
+              style={[
+                styles.originChipText,
+                origin === 'OWN' && styles.originChipTextOwn,
+                origin === 'SAVED' && styles.originChipTextSaved,
+                origin === 'DOWNLOADED' && styles.originChipTextDownloaded,
+              ]}
+            >
+              {origin === 'OWN' ? 'Própria' : origin === 'SAVED' ? 'Salva' : 'Baixada'}
+            </Text>
+          </View>
+        ))}
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
       {/* Header Panel */}
@@ -59,8 +140,8 @@ export function PurchaseProjectionSection({
           <View style={styles.headerTextGroup}>
             <Text style={styles.sectionHeading}>Previsão de Compras</Text>
             <Text style={styles.sectionSubtitle}>
-              Simule a explosão de receitas planejadas e descubra exatamente o que falta no seu
-              estoque e quanto irá gastar.
+              Simule a explosão de receitas planejadas (próprias, salvas ou baixadas) e descubra
+              exatamente o que falta no seu estoque e quanto irá gastar.
             </Text>
           </View>
 
@@ -86,73 +167,154 @@ export function PurchaseProjectionSection({
             />
             <Text style={styles.emptyPlanTitle}>Nenhuma receita adicionada ao plano</Text>
             <Text style={styles.emptyPlanSubtitle}>
-              Clique em &quot;Adicionar Receita&quot; acima para selecionar o que pretende produzir
-              e calcular a demanda de ingredientes faltantes.
+              Clique em &quot;Adicionar Receita&quot; acima para selecionar receitas próprias,
+              salvas ou baixadas e calcular a demanda de insumos faltantes.
             </Text>
           </View>
         ) : (
           <View style={styles.plannedList}>
             <Text style={styles.plannedListTitle}>Receitas Planejadas:</Text>
-            {plannedProductions.map((item) => (
-              <View key={item.recipeId} style={styles.plannedItemCard}>
-                <View style={styles.itemInfoCol}>
-                  <Text style={styles.recipeTitleText} numberOfLines={1}>
-                    {item.recipeTitle || 'Receita'}
-                  </Text>
-                  <Text style={styles.recipeYieldSubtext}>
-                    Rendimento: {item.targetYield} {item.yieldUnit || 'un'}
-                  </Text>
-                </View>
+            {plannedProductions.map((item) =>
+              isDesktop ? (
+                /* Desktop Planned Recipe Row */
+                <View key={item.recipeId} style={styles.plannedItemCard}>
+                  <View style={styles.itemInfoCol}>
+                    <View style={styles.recipeTitleRow}>
+                      <Text style={styles.recipeTitleText} numberOfLines={1}>
+                        {item.recipeTitle || 'Receita'}
+                      </Text>
+                      {renderOriginChips(item.origins)}
+                    </View>
+                    <Text style={styles.recipeYieldSubtext}>
+                      Rendimento: {item.targetYield} {item.yieldUnit || 'un'}
+                    </Text>
+                  </View>
 
-                {/* Yield Stepper */}
-                <View style={styles.stepperGroup}>
+                  {/* Yield Stepper */}
+                  <View style={styles.stepperGroup}>
+                    <TouchableOpacity
+                      style={styles.stepMiniBtn}
+                      onPress={() =>
+                        onUpdateYield(item.recipeId, Math.max(1, item.targetYield - 1))
+                      }
+                      activeOpacity={0.7}
+                      accessibilityRole="button"
+                      accessibilityLabel="Diminuir rendimento planejado"
+                      hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                    >
+                      <MaterialCommunityIcons
+                        name="minus"
+                        size={16}
+                        color={theme.colors.espressoDark}
+                      />
+                    </TouchableOpacity>
+
+                    <Text style={styles.stepYieldValue}>{item.targetYield}</Text>
+
+                    <TouchableOpacity
+                      style={styles.stepMiniBtn}
+                      onPress={() => onUpdateYield(item.recipeId, item.targetYield + 1)}
+                      activeOpacity={0.7}
+                      accessibilityRole="button"
+                      accessibilityLabel="Aumentar rendimento planejado"
+                      hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                    >
+                      <MaterialCommunityIcons
+                        name="plus"
+                        size={16}
+                        color={theme.colors.espressoDark}
+                      />
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Remove Button */}
                   <TouchableOpacity
-                    style={styles.stepMiniBtn}
-                    onPress={() => onUpdateYield(item.recipeId, Math.max(1, item.targetYield - 1))}
+                    style={styles.removeItemBtn}
+                    onPress={() => onRemovePlannedProduction(item.recipeId)}
                     activeOpacity={0.7}
                     accessibilityRole="button"
-                    accessibilityLabel="Diminuir rendimento planejado"
+                    accessibilityLabel={`Remover receita ${item.recipeTitle} do plano`}
                   >
                     <MaterialCommunityIcons
-                      name="minus"
-                      size={16}
-                      color={theme.colors.espressoDark}
-                    />
-                  </TouchableOpacity>
-
-                  <Text style={styles.stepYieldValue}>{item.targetYield}</Text>
-
-                  <TouchableOpacity
-                    style={styles.stepMiniBtn}
-                    onPress={() => onUpdateYield(item.recipeId, item.targetYield + 1)}
-                    activeOpacity={0.7}
-                    accessibilityRole="button"
-                    accessibilityLabel="Aumentar rendimento planejado"
-                  >
-                    <MaterialCommunityIcons
-                      name="plus"
-                      size={16}
-                      color={theme.colors.espressoDark}
+                      name="trash-can-outline"
+                      size={20}
+                      color={theme.colors.error}
                     />
                   </TouchableOpacity>
                 </View>
+              ) : (
+                /* Mobile Planned Recipe Card */
+                <View key={item.recipeId} style={styles.plannedItemCardMobile}>
+                  <View style={styles.plannedMobileHeader}>
+                    <View style={styles.plannedMobileTitleGroup}>
+                      <Text style={styles.recipeTitleText} numberOfLines={2}>
+                        {item.recipeTitle || 'Receita'}
+                      </Text>
+                      {renderOriginChips(item.origins)}
+                    </View>
 
-                {/* Remove Button */}
-                <TouchableOpacity
-                  style={styles.removeItemBtn}
-                  onPress={() => onRemovePlannedProduction(item.recipeId)}
-                  activeOpacity={0.7}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Remover receita ${item.recipeTitle} do plano`}
-                >
-                  <MaterialCommunityIcons
-                    name="trash-can-outline"
-                    size={20}
-                    color={theme.colors.error}
-                  />
-                </TouchableOpacity>
-              </View>
-            ))}
+                    <TouchableOpacity
+                      style={styles.removeItemBtnMobile}
+                      onPress={() => onRemovePlannedProduction(item.recipeId)}
+                      activeOpacity={0.7}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Remover receita ${item.recipeTitle} do plano`}
+                    >
+                      <MaterialCommunityIcons
+                        name="trash-can-outline"
+                        size={20}
+                        color={theme.colors.error}
+                      />
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={styles.plannedMobileDivider} />
+
+                  <View style={styles.plannedMobileBottomRow}>
+                    <View style={styles.plannedMobileYieldInfo}>
+                      <Text style={styles.plannedMobileYieldLabel}>Rendimento a produzir:</Text>
+                      <Text style={styles.plannedMobileYieldUnit}>{item.yieldUnit || 'un'}</Text>
+                    </View>
+
+                    <View style={styles.stepperGroupMobile}>
+                      <TouchableOpacity
+                        style={styles.stepMiniBtnMobile}
+                        onPress={() =>
+                          onUpdateYield(item.recipeId, Math.max(1, item.targetYield - 1))
+                        }
+                        activeOpacity={0.7}
+                        accessibilityRole="button"
+                        accessibilityLabel="Diminuir rendimento planejado"
+                        hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+                      >
+                        <MaterialCommunityIcons
+                          name="minus"
+                          size={18}
+                          color={theme.colors.espressoDark}
+                        />
+                      </TouchableOpacity>
+
+                      <Text style={styles.stepYieldValueMobile}>{item.targetYield}</Text>
+
+                      <TouchableOpacity
+                        style={styles.stepMiniBtnMobile}
+                        onPress={() => onUpdateYield(item.recipeId, item.targetYield + 1)}
+                        activeOpacity={0.7}
+                        accessibilityRole="button"
+                        accessibilityLabel="Aumentar rendimento planejado"
+                        hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+                      >
+                        <MaterialCommunityIcons
+                          name="plus"
+                          size={18}
+                          color={theme.colors.espressoDark}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              ),
+            )}
 
             {/* Action Buttons */}
             <View style={styles.planActionsRow}>
@@ -271,51 +433,137 @@ export function PurchaseProjectionSection({
           {/* Deficit Items Table / List */}
           {hasDeficitItems && (
             <View style={styles.deficitCard}>
-              <View style={styles.deficitHeader}>
-                <Text style={styles.deficitTitle}>Lista de Insumos para Comprar</Text>
-                <Text style={styles.deficitSubtitle}>
-                  Quantidades faltantes calculadas após dedução do saldo atual em estoque
-                </Text>
+              <View style={styles.deficitHeaderRow}>
+                <View style={styles.deficitHeaderTextGroup}>
+                  <Text style={styles.deficitTitle}>Lista de Insumos para Comprar</Text>
+                  <Text style={styles.deficitSubtitle}>
+                    Quantidades faltantes calculadas após dedução do saldo atual em estoque
+                  </Text>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.shareListBtn}
+                  onPress={handleShareShoppingList}
+                  disabled={isSharing}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel="Compartilhar lista de compras de insumos faltantes"
+                >
+                  {isSharing ? (
+                    <ActivityIndicator size="small" color={theme.colors.primary} />
+                  ) : (
+                    <MaterialCommunityIcons
+                      name="share-variant-outline"
+                      size={18}
+                      color={theme.colors.primary}
+                    />
+                  )}
+                  <Text style={styles.shareListBtnText}>
+                    {isSharing
+                      ? 'Compartilhando...'
+                      : isDesktop
+                        ? 'Compartilhar Lista'
+                        : 'Compartilhar Lista de Compras'}
+                  </Text>
+                </TouchableOpacity>
               </View>
 
               <View style={styles.deficitList}>
-                {projection.items.map((item) => (
-                  <View key={item.ingredientId} style={styles.deficitRow}>
-                    <View style={styles.deficitItemMain}>
-                      <View style={styles.deficitItemTitleRow}>
-                        <Text style={styles.deficitItemName}>{item.name}</Text>
-                        {item.unestimated && (
-                          <View style={styles.unestimatedBadge}>
-                            <Text style={styles.unestimatedText}>Sem custo base</Text>
-                          </View>
-                        )}
+                {projection.items.map((item) =>
+                  isDesktop ? (
+                    /* Desktop Deficit Table Row */
+                    <View key={item.ingredientId} style={styles.deficitRow}>
+                      <View style={styles.deficitItemMain}>
+                        <View style={styles.deficitItemTitleRow}>
+                          <Text style={styles.deficitItemName}>{item.name}</Text>
+                          {item.unestimated && (
+                            <View style={styles.unestimatedBadge}>
+                              <Text style={styles.unestimatedText}>Sem custo base</Text>
+                            </View>
+                          )}
+                        </View>
+
+                        <View style={styles.deficitItemMetaRow}>
+                          <Text style={styles.deficitMetaText}>
+                            Necessário: {formatQuantity(item.requiredQuantity, item.unit)}
+                          </Text>
+                          <Text style={styles.metaDivider}>•</Text>
+                          <Text style={styles.deficitMetaText}>
+                            Estoque atual: {formatQuantity(item.currentQuantity, item.unit)}
+                          </Text>
+                        </View>
                       </View>
 
-                      <View style={styles.deficitItemMetaRow}>
-                        <Text style={styles.deficitMetaText}>
-                          Necessário: {formatQuantity(item.requiredQuantity, item.unit)}
-                        </Text>
-                        <Text style={styles.metaDivider}>•</Text>
-                        <Text style={styles.deficitMetaText}>
-                          Estoque atual: {formatQuantity(item.currentQuantity, item.unit)}
+                      <View style={styles.deficitItemValues}>
+                        <View style={styles.deficitQuantityPill}>
+                          <Text style={styles.deficitQuantityLabel}>Falta:</Text>
+                          <Text style={styles.deficitQuantityValue}>
+                            {formatQuantity(item.deficitQuantity, item.unit)}
+                          </Text>
+                        </View>
+
+                        <Text style={styles.estimatedCostText}>
+                          {item.unestimated ? '—' : formatCurrency(item.estimatedCost)}
                         </Text>
                       </View>
                     </View>
+                  ) : (
+                    /* Mobile Deficit Card */
+                    <View key={item.ingredientId} style={styles.deficitItemCardMobile}>
+                      <View style={styles.deficitMobileTopRow}>
+                        <View style={styles.deficitMobileNameCol}>
+                          <Text style={styles.deficitItemNameMobile} numberOfLines={2}>
+                            {item.name}
+                          </Text>
+                          {item.unestimated && (
+                            <View style={styles.unestimatedBadge}>
+                              <Text style={styles.unestimatedText}>Sem custo base</Text>
+                            </View>
+                          )}
+                        </View>
 
-                    <View style={styles.deficitItemValues}>
-                      <View style={styles.deficitQuantityPill}>
-                        <Text style={styles.deficitQuantityLabel}>Falta:</Text>
-                        <Text style={styles.deficitQuantityValue}>
-                          {formatQuantity(item.deficitQuantity, item.unit)}
-                        </Text>
+                        <View style={styles.deficitMobileCostCol}>
+                          <Text style={styles.deficitMobileCostLabel}>Custo est.</Text>
+                          <Text style={styles.deficitMobileCostValue}>
+                            {item.unestimated ? '—' : formatCurrency(item.estimatedCost)}
+                          </Text>
+                        </View>
                       </View>
 
-                      <Text style={styles.estimatedCostText}>
-                        {item.unestimated ? '—' : formatCurrency(item.estimatedCost)}
-                      </Text>
+                      <View style={styles.deficitMobileMetricsBar}>
+                        <View style={styles.deficitMobileMetricBox}>
+                          <Text style={styles.deficitMobileMetricLabel}>Necessário</Text>
+                          <Text style={styles.deficitMobileMetricValue}>
+                            {formatQuantity(item.requiredQuantity, item.unit)}
+                          </Text>
+                        </View>
+
+                        <View style={styles.deficitMobileMetricDivider} />
+
+                        <View style={styles.deficitMobileMetricBox}>
+                          <Text style={styles.deficitMobileMetricLabel}>Em Estoque</Text>
+                          <Text style={styles.deficitMobileMetricValue}>
+                            {formatQuantity(item.currentQuantity, item.unit)}
+                          </Text>
+                        </View>
+
+                        <View style={styles.deficitMobileMetricDivider} />
+
+                        <View
+                          style={[
+                            styles.deficitMobileMetricBox,
+                            styles.deficitMobileMetricBoxAlert,
+                          ]}
+                        >
+                          <Text style={styles.deficitMobileMetricLabelAlert}>A Comprar</Text>
+                          <Text style={styles.deficitMobileMetricValueAlert}>
+                            {formatQuantity(item.deficitQuantity, item.unit)}
+                          </Text>
+                        </View>
+                      </View>
                     </View>
-                  </View>
-                ))}
+                  ),
+                )}
               </View>
             </View>
           )}
@@ -351,7 +599,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
     },
     headerRow: {
       flexDirection: isDesktop ? 'row' : 'column',
-      alignItems: isDesktop ? 'center' : 'flex-start',
+      alignItems: isDesktop ? 'center' : 'stretch',
       justifyContent: 'space-between',
       gap: 12,
     },
@@ -398,7 +646,6 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       alignItems: 'center',
       justifyContent: 'center',
       gap: 8,
-      textAlign: 'center',
     },
     emptyPlanTitle: {
       fontFamily: theme.typography.labelMd.fontFamily,
@@ -438,6 +685,53 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
     itemInfoCol: {
       flex: 1,
       gap: 2,
+    },
+    recipeTitleRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      gap: 6,
+    },
+    originsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      gap: 4,
+    },
+    originChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 3,
+      paddingHorizontal: 6,
+      paddingVertical: 1,
+      borderRadius: theme.rounded.full,
+      borderWidth: 1,
+    },
+    originChipOwn: {
+      backgroundColor: theme.colors.chips.primary.background,
+      borderColor: theme.colors.outlineVariant,
+    },
+    originChipSaved: {
+      backgroundColor: theme.colors.chips.secondary.background,
+      borderColor: theme.colors.outlineVariant,
+    },
+    originChipDownloaded: {
+      backgroundColor: theme.colors.chips.success.background,
+      borderColor: theme.colors.outlineVariant,
+    },
+    originChipText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 10,
+      fontWeight: '600',
+    },
+    originChipTextOwn: {
+      color: theme.colors.chips.primary.text,
+    },
+    originChipTextSaved: {
+      color: theme.colors.chips.secondary.text,
+    },
+    originChipTextDownloaded: {
+      color: theme.colors.chips.success.text,
     },
     recipeTitleText: {
       fontFamily: theme.typography.bodyMd.fontFamily,
@@ -479,17 +773,97 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
+    plannedItemCardMobile: {
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.md,
+      padding: 12,
+      gap: 10,
+    },
+    plannedMobileHeader: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      gap: 8,
+    },
+    plannedMobileTitleGroup: {
+      flex: 1,
+      gap: 6,
+    },
+    removeItemBtnMobile: {
+      minWidth: theme.spacing.touchable,
+      minHeight: theme.spacing.touchable,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: -6,
+      marginRight: -6,
+    },
+    plannedMobileDivider: {
+      height: 1,
+      backgroundColor: theme.colors.surfaceContainerHigh,
+    },
+    plannedMobileBottomRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 8,
+    },
+    plannedMobileYieldInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    plannedMobileYieldLabel: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 12,
+      fontWeight: '600',
+      color: theme.colors.onSurfaceVariant,
+    },
+    plannedMobileYieldUnit: {
+      fontFamily: theme.typography.bodySm.fontFamily,
+      fontSize: 12,
+      color: theme.colors.outline,
+    },
+    stepperGroupMobile: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.default,
+      overflow: 'hidden',
+    },
+    stepMiniBtnMobile: {
+      width: 42,
+      height: 40,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    stepYieldValueMobile: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 14,
+      fontWeight: '700',
+      color: theme.colors.espressoDark,
+      minWidth: 36,
+      textAlign: 'center',
+    },
     planActionsRow: {
       flexDirection: 'row',
-      justifyContent: 'flex-end',
+      justifyContent: isDesktop ? 'flex-end' : 'flex-start',
       alignItems: 'center',
-      gap: 12,
+      gap: 10,
       marginTop: 8,
+      width: '100%',
     },
     clearPlanBtn: {
+      flexShrink: 0,
       minHeight: theme.spacing.touchable,
-      paddingHorizontal: 16,
+      paddingHorizontal: isDesktop ? 16 : 14,
       borderRadius: theme.rounded.default,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      backgroundColor: theme.colors.surfaceContainerLowest,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -500,8 +874,10 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       color: theme.colors.onSurfaceVariant,
     },
     calculateBtn: {
+      flex: isDesktop ? undefined : 1,
+      flexShrink: 0,
       minHeight: theme.spacing.touchable,
-      paddingHorizontal: 20,
+      paddingHorizontal: isDesktop ? 24 : 16,
       backgroundColor: theme.colors.primary,
       borderRadius: theme.rounded.default,
       flexDirection: 'row',
@@ -613,7 +989,14 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       gap: 16,
       ...theme.shadows.soft,
     },
-    deficitHeader: {
+    deficitHeaderRow: {
+      flexDirection: isDesktop ? 'row' : 'column',
+      alignItems: isDesktop ? 'center' : 'stretch',
+      justifyContent: 'space-between',
+      gap: 12,
+    },
+    deficitHeaderTextGroup: {
+      flex: 1,
       gap: 2,
     },
     deficitTitle: {
@@ -627,12 +1010,33 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       fontSize: 12,
       color: theme.colors.onSurfaceVariant,
     },
+    shareListBtn: {
+      minHeight: theme.spacing.touchable,
+      paddingHorizontal: 16,
+      borderRadius: theme.rounded.default,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      backgroundColor: isDesktop
+        ? theme.colors.surfaceContainerLowest
+        : theme.colors.surfaceContainerLow,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      alignSelf: isDesktop ? 'center' : 'stretch',
+    },
+    shareListBtnText: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.primary,
+    },
     deficitList: {
       width: '100%',
     },
     deficitRow: {
-      flexDirection: isDesktop ? 'row' : 'column',
-      alignItems: isDesktop ? 'center' : 'flex-start',
+      flexDirection: 'row',
+      alignItems: 'center',
       justifyContent: 'space-between',
       paddingVertical: 12,
       borderBottomWidth: 1,
@@ -655,6 +1059,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       color: theme.colors.espressoDark,
     },
     unestimatedBadge: {
+      alignSelf: 'flex-start',
       backgroundColor: theme.colors.surfaceContainerHigh,
       borderWidth: 1,
       borderColor: theme.colors.warning,
@@ -686,7 +1091,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 12,
-      alignSelf: isDesktop ? 'center' : 'flex-end',
+      alignSelf: 'center',
     },
     deficitQuantityPill: {
       flexDirection: 'row',
@@ -717,5 +1122,101 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       color: theme.colors.espressoDark,
       minWidth: 80,
       textAlign: 'right',
+    },
+    deficitItemCardMobile: {
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.md,
+      padding: 12,
+      gap: 10,
+      marginBottom: 10,
+    },
+    deficitMobileTopRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      gap: 8,
+    },
+    deficitMobileNameCol: {
+      flex: 1,
+      alignItems: 'flex-start',
+      gap: 4,
+    },
+    deficitItemNameMobile: {
+      fontFamily: theme.typography.bodyMd.fontFamily,
+      fontSize: 14,
+      fontWeight: '700',
+      color: theme.colors.espressoDark,
+    },
+    deficitMobileCostCol: {
+      alignItems: 'flex-end',
+      gap: 2,
+    },
+    deficitMobileCostLabel: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 10,
+      fontWeight: '600',
+      color: theme.colors.onSurfaceVariant,
+      textTransform: 'uppercase',
+    },
+    deficitMobileCostValue: {
+      fontFamily: theme.typography.bodyMd.fontFamily,
+      fontSize: 14,
+      fontWeight: '700',
+      color: theme.colors.espressoDark,
+    },
+    deficitMobileMetricsBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.rounded.default,
+      paddingVertical: 8,
+      paddingHorizontal: 4,
+    },
+    deficitMobileMetricBox: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 2,
+    },
+    deficitMobileMetricLabel: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 10,
+      fontWeight: '500',
+      color: theme.colors.onSurfaceVariant,
+    },
+    deficitMobileMetricValue: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 12,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
+      textAlign: 'center',
+    },
+    deficitMobileMetricDivider: {
+      width: 1,
+      height: 24,
+      backgroundColor: theme.colors.surfaceContainerHigh,
+    },
+    deficitMobileMetricBoxAlert: {
+      borderRadius: theme.rounded.sm,
+      backgroundColor: theme.colors.chips.primary.background,
+      paddingVertical: 2,
+      marginHorizontal: 2,
+    },
+    deficitMobileMetricLabelAlert: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 10,
+      fontWeight: '700',
+      color: theme.colors.chips.primary.text,
+    },
+    deficitMobileMetricValueAlert: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 12,
+      fontWeight: '700',
+      color: theme.colors.chips.primary.text,
+      textAlign: 'center',
     },
   });

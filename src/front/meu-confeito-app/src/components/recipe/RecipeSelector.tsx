@@ -14,12 +14,21 @@ import { Image } from 'expo-image';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { DownloadedRecipeService } from '@/src/services/downloadedRecipes';
+import { OfflineCacheService } from '@/src/services/offlineCache';
 import { RecipeService } from '@/src/services/recipe';
 import { UserService } from '@/src/services/user';
 import { AppTheme } from '@/src/theme/themes';
 import { PartialRecipe } from '@/src/types/recipe';
+import { PartialTag } from '@/src/types/tag';
 import { getStorageUrl } from '@/src/utils/image';
 import { getTagColors } from '@/src/utils/tag';
+
+export type RecipeOrigin = 'OWN' | 'SAVED' | 'DOWNLOADED';
+
+export interface RecipeWithOrigin extends PartialRecipe {
+  origins?: RecipeOrigin[];
+}
 
 export interface RecipeSelectorProps {
   selectedRecipeId?: string | null;
@@ -27,7 +36,9 @@ export interface RecipeSelectorProps {
   onSelectRecipe: (recipe: PartialRecipe | null) => void;
   userId?: string;
   onlyUserRecipes?: boolean;
+  includeSavedAndDownloaded?: boolean;
   excludeRecipeId?: string;
+  excludeRecipeIds?: string[];
   label?: string;
   placeholder?: string;
   helperText?: string;
@@ -36,6 +47,7 @@ export interface RecipeSelectorProps {
   isDisabled?: boolean;
   canClear?: boolean;
   initialRecipes?: PartialRecipe[];
+  isDropdownOpenByDefault?: boolean;
 }
 
 export function RecipeSelector({
@@ -44,7 +56,9 @@ export function RecipeSelector({
   onSelectRecipe,
   userId,
   onlyUserRecipes = true,
+  includeSavedAndDownloaded = false,
   excludeRecipeId,
+  excludeRecipeIds = [],
   label = 'Sub-receita',
   placeholder = 'Buscar sub-receita (ex: Brigadeiro)...',
   helperText,
@@ -53,22 +67,161 @@ export function RecipeSelector({
   isDisabled = false,
   canClear = true,
   initialRecipes = [],
+  isDropdownOpenByDefault = false,
 }: RecipeSelectorProps) {
   const { theme } = useThemeMode();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<PartialRecipe[]>([]);
+  const [combinedRecipes, setCombinedRecipes] = useState<RecipeWithOrigin[]>([]);
+  const [activeOriginFilter, setActiveOriginFilter] = useState<'ALL' | RecipeOrigin>('ALL');
   const [isSearching, setIsSearching] = useState(false);
-  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(Boolean(isDropdownOpenByDefault));
   const [fetchedRecipe, setFetchedRecipe] = useState<PartialRecipe | null>(null);
 
+  const [prevSelectedRecipe, setPrevSelectedRecipe] = useState(selectedRecipe);
+  if (selectedRecipe !== prevSelectedRecipe) {
+    setPrevSelectedRecipe(selectedRecipe);
+    if (!selectedRecipe && isDropdownOpenByDefault) {
+      setIsDropdownVisible(true);
+    }
+  }
+
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Load combined user, saved, and downloaded recipes when enabled
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!includeSavedAndDownloaded) {
+      return;
+    }
+
+    async function load() {
+      setIsSearching(true);
+      try {
+        const [userRes, savesRes, downloadedList] = await Promise.all([
+          userId ? UserService.getRecipes(userId).catch(() => null) : null,
+          userId ? UserService.getSavedRecipes(userId).catch(() => null) : null,
+          DownloadedRecipeService.getAllDownloadedRecipes().catch(() => []),
+        ]);
+
+        if (!isMounted) return;
+
+        const userList = userRes?.data?.recipes || (await OfflineCacheService.getUserRecipes());
+        const savedList =
+          savesRes?.data?.userSaves || (await OfflineCacheService.getSavedRecipes());
+
+        const recipeMap = new Map<string, RecipeWithOrigin>();
+
+        // 1. User's own recipes
+        for (const r of userList) {
+          if (r.status === 'ARCHIVED') continue;
+          recipeMap.set(r.id, {
+            ...r,
+            origins: ['OWN'],
+          });
+        }
+
+        // 2. Saved recipes
+        for (const s of savedList) {
+          const existing = recipeMap.get(s.recipe.id);
+          if (existing) {
+            if (!existing.origins?.includes('SAVED')) {
+              existing.origins = [...(existing.origins || []), 'SAVED'];
+            }
+          } else {
+            recipeMap.set(s.recipe.id, {
+              id: s.recipe.id,
+              title: s.recipe.title,
+              coverUrl: s.recipe.coverUrl,
+              baseYield: s.recipe.baseYield,
+              yieldUnit: s.recipe.yieldUnit,
+              prepTimeMinutes: s.recipe.prepTimeMinutes,
+              status: s.recipe.status,
+              tags: s.recipe.tags ?? [],
+              profitMargin: s.recipe.profitMargin,
+              overhead: s.recipe.overhead,
+              hourlyLabor: s.recipe.hourlyLabor,
+              packagingCost: s.recipe.packagingCost,
+              createdAt: s.savedAt,
+              updatedAt: s.recipe.updatedAt ?? s.savedAt,
+              origins: ['SAVED'],
+            });
+          }
+        }
+
+        // 3. Downloaded recipes
+        for (const d of downloadedList) {
+          const existing = recipeMap.get(d.id);
+          if (existing) {
+            if (!existing.origins?.includes('DOWNLOADED')) {
+              existing.origins = [...(existing.origins || []), 'DOWNLOADED'];
+            }
+            if (!existing.baseYield && d.recipe.baseYield) {
+              existing.baseYield = d.recipe.baseYield;
+            }
+            if (!existing.yieldUnit && d.recipe.yieldUnit) {
+              existing.yieldUnit = d.recipe.yieldUnit;
+            }
+          } else {
+            recipeMap.set(d.id, {
+              id: d.recipe.id,
+              title: d.recipe.title,
+              coverUrl: d.recipe.coverUrl,
+              baseYield: d.recipe.baseYield,
+              yieldUnit: d.recipe.yieldUnit,
+              prepTimeMinutes: d.recipe.prepTimeMinutes,
+              status: d.recipe.status,
+              tags: ((d.recipe as { tags?: { tag: PartialTag }[] }).tags ?? []) as {
+                tag: PartialTag;
+              }[],
+              parent: d.recipe.parent ?? null,
+              profitMargin: d.recipe.profitMargin,
+              overhead: d.recipe.overhead,
+              hourlyLabor: d.recipe.hourlyLabor,
+              packagingCost: d.recipe.packagingCost,
+              createdAt: d.recipe.createdAt,
+              updatedAt: d.recipe.updatedAt,
+              origins: ['DOWNLOADED'],
+            });
+          }
+        }
+
+        if (isMounted) {
+          setCombinedRecipes(Array.from(recipeMap.values()));
+        }
+      } catch (err) {
+        console.warn('Error loading combined recipes for RecipeSelector:', err);
+      } finally {
+        if (isMounted) {
+          setIsSearching(false);
+        }
+      }
+    }
+
+    load();
+
+    const unsubscribe = DownloadedRecipeService.subscribe(() => {
+      load();
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, [includeSavedAndDownloaded, userId]);
 
   // Active selected recipe resolution
   const activeRecipe: PartialRecipe | null = useMemo(() => {
     if (selectedRecipe) return selectedRecipe;
     if (!selectedRecipeId) return null;
+
+    if (includeSavedAndDownloaded) {
+      const fromCombined = combinedRecipes.find((r) => r.id === selectedRecipeId);
+      if (fromCombined) return fromCombined;
+    }
 
     const fromInitial = initialRecipes.find((r) => r.id === selectedRecipeId);
     if (fromInitial) return fromInitial;
@@ -81,15 +234,56 @@ export function RecipeSelector({
     }
 
     return null;
-  }, [selectedRecipe, selectedRecipeId, initialRecipes, searchResults, fetchedRecipe]);
+  }, [
+    selectedRecipe,
+    selectedRecipeId,
+    includeSavedAndDownloaded,
+    combinedRecipes,
+    initialRecipes,
+    searchResults,
+    fetchedRecipe,
+  ]);
+
+  const activeRecipeOrigins: RecipeOrigin[] | undefined = useMemo(() => {
+    if (!activeRecipe) return undefined;
+    const withOrigin = activeRecipe as RecipeWithOrigin;
+    if (withOrigin.origins && withOrigin.origins.length > 0) {
+      return withOrigin.origins;
+    }
+    const found = combinedRecipes.find((r) => r.id === activeRecipe.id);
+    return found?.origins;
+  }, [activeRecipe, combinedRecipes]);
 
   // Derived list of recipes to display based on query & initial list
   const currentList = useMemo(() => {
+    if (includeSavedAndDownloaded) {
+      let list = combinedRecipes;
+      if (activeOriginFilter !== 'ALL') {
+        list = list.filter((r) => r.origins?.includes(activeOriginFilter));
+      }
+      if (searchQuery.trim()) {
+        const lower = searchQuery.toLowerCase();
+        list = list.filter(
+          (r) =>
+            r.title.toLowerCase().includes(lower) ||
+            r.tags?.some((t) => t.tag?.name.toLowerCase().includes(lower)),
+        );
+      }
+      return list;
+    }
+
     if (!searchQuery.trim() && searchResults.length === 0 && initialRecipes.length > 0) {
       return initialRecipes;
     }
     return searchResults;
-  }, [searchQuery, searchResults, initialRecipes]);
+  }, [
+    includeSavedAndDownloaded,
+    combinedRecipes,
+    activeOriginFilter,
+    searchQuery,
+    searchResults,
+    initialRecipes,
+  ]);
 
   // Fetch recipe details if only ID is provided
   useEffect(() => {
@@ -144,6 +338,10 @@ export function RecipeSelector({
     setSearchQuery(text);
     setIsDropdownVisible(true);
 
+    if (includeSavedAndDownloaded) {
+      return;
+    }
+
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
@@ -156,7 +354,7 @@ export function RecipeSelector({
   const handleFocus = () => {
     if (isDisabled) return;
     setIsDropdownVisible(true);
-    if (searchResults.length === 0) {
+    if (!includeSavedAndDownloaded && searchResults.length === 0) {
       fetchSuggestions(searchQuery);
     }
   };
@@ -171,7 +369,7 @@ export function RecipeSelector({
     if (isDisabled) return;
     onSelectRecipe(null);
     setSearchQuery('');
-    setIsDropdownVisible(false);
+    setIsDropdownVisible(Boolean(isDropdownOpenByDefault));
   };
 
   useEffect(() => {
@@ -182,10 +380,14 @@ export function RecipeSelector({
     };
   }, []);
 
-  // Filter available suggestions (excluding current recipe if editing)
+  // Filter available suggestions (excluding current recipe if editing or already planned)
   const availableSuggestions = useMemo(() => {
-    return currentList.filter((r) => !excludeRecipeId || r.id !== excludeRecipeId);
-  }, [currentList, excludeRecipeId]);
+    return currentList.filter((r) => {
+      if (excludeRecipeId && r.id === excludeRecipeId) return false;
+      if (excludeRecipeIds.length > 0 && excludeRecipeIds.includes(r.id)) return false;
+      return true;
+    });
+  }, [currentList, excludeRecipeId, excludeRecipeIds]);
 
   const hasSelected = Boolean(activeRecipe);
   const hasError = Boolean(error);
@@ -252,9 +454,49 @@ export function RecipeSelector({
                     </View>
                   );
                 })()}
-              <View style={styles.subRecipeBadge}>
-                <Text style={styles.subRecipeBadgeText}>Sub-receita</Text>
-              </View>
+
+              {activeRecipeOrigins && activeRecipeOrigins.length > 0 ? (
+                activeRecipeOrigins.map((origin) => (
+                  <View
+                    key={origin}
+                    style={[
+                      styles.originBadge,
+                      origin === 'OWN' && styles.originBadgeOwn,
+                      origin === 'SAVED' && styles.originBadgeSaved,
+                      origin === 'DOWNLOADED' && styles.originBadgeDownloaded,
+                    ]}
+                  >
+                    {origin === 'SAVED' && (
+                      <MaterialCommunityIcons
+                        name="bookmark-outline"
+                        size={12}
+                        color={theme.colors.secondary}
+                      />
+                    )}
+                    {origin === 'DOWNLOADED' && (
+                      <MaterialCommunityIcons
+                        name="cloud-check-outline"
+                        size={12}
+                        color={theme.colors.tertiary}
+                      />
+                    )}
+                    <Text
+                      style={[
+                        styles.originBadgeText,
+                        origin === 'OWN' && styles.originBadgeTextOwn,
+                        origin === 'SAVED' && styles.originBadgeTextSaved,
+                        origin === 'DOWNLOADED' && styles.originBadgeTextDownloaded,
+                      ]}
+                    >
+                      {origin === 'OWN' ? 'Própria' : origin === 'SAVED' ? 'Salva' : 'Baixada'}
+                    </Text>
+                  </View>
+                ))
+              ) : (
+                <View style={styles.subRecipeBadge}>
+                  <Text style={styles.subRecipeBadgeText}>Sub-receita</Text>
+                </View>
+              )}
             </View>
           </View>
 
@@ -278,6 +520,93 @@ export function RecipeSelector({
       ) : (
         /* When NO recipe is selected, show Search Input + Dropdown */
         <View style={styles.searchContainer}>
+          {includeSavedAndDownloaded && (
+            <View style={styles.filterTabsRow}>
+              <TouchableOpacity
+                style={[styles.filterTab, activeOriginFilter === 'ALL' && styles.filterTabActive]}
+                onPress={() => {
+                  setActiveOriginFilter('ALL');
+                  setIsDropdownVisible(true);
+                }}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Exibir todas as receitas"
+              >
+                <Text
+                  style={[
+                    styles.filterTabText,
+                    activeOriginFilter === 'ALL' && styles.filterTabTextActive,
+                  ]}
+                >
+                  Todas ({combinedRecipes.length})
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.filterTab, activeOriginFilter === 'OWN' && styles.filterTabActive]}
+                onPress={() => {
+                  setActiveOriginFilter('OWN');
+                  setIsDropdownVisible(true);
+                }}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Exibir receitas próprias"
+              >
+                <Text
+                  style={[
+                    styles.filterTabText,
+                    activeOriginFilter === 'OWN' && styles.filterTabTextActive,
+                  ]}
+                >
+                  Próprias
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.filterTab, activeOriginFilter === 'SAVED' && styles.filterTabActive]}
+                onPress={() => {
+                  setActiveOriginFilter('SAVED');
+                  setIsDropdownVisible(true);
+                }}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Exibir receitas salvas"
+              >
+                <Text
+                  style={[
+                    styles.filterTabText,
+                    activeOriginFilter === 'SAVED' && styles.filterTabTextActive,
+                  ]}
+                >
+                  Salvas
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.filterTab,
+                  activeOriginFilter === 'DOWNLOADED' && styles.filterTabActive,
+                ]}
+                onPress={() => {
+                  setActiveOriginFilter('DOWNLOADED');
+                  setIsDropdownVisible(true);
+                }}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Exibir receitas baixadas"
+              >
+                <Text
+                  style={[
+                    styles.filterTabText,
+                    activeOriginFilter === 'DOWNLOADED' && styles.filterTabTextActive,
+                  ]}
+                >
+                  Baixadas
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           <View
             style={[
               styles.inputWrapper,
@@ -400,7 +729,51 @@ export function RecipeSelector({
                                   </View>
                                 );
                               })()}
-                            <Text style={styles.dropdownItemSubtitle}>Sub-receita</Text>
+
+                            {includeSavedAndDownloaded || (item as RecipeWithOrigin).origins ? (
+                              (item as RecipeWithOrigin).origins?.map((origin) => (
+                                <View
+                                  key={origin}
+                                  style={[
+                                    styles.originBadge,
+                                    origin === 'OWN' && styles.originBadgeOwn,
+                                    origin === 'SAVED' && styles.originBadgeSaved,
+                                    origin === 'DOWNLOADED' && styles.originBadgeDownloaded,
+                                  ]}
+                                >
+                                  {origin === 'SAVED' && (
+                                    <MaterialCommunityIcons
+                                      name="bookmark-outline"
+                                      size={11}
+                                      color={theme.colors.secondary}
+                                    />
+                                  )}
+                                  {origin === 'DOWNLOADED' && (
+                                    <MaterialCommunityIcons
+                                      name="cloud-check-outline"
+                                      size={11}
+                                      color={theme.colors.tertiary}
+                                    />
+                                  )}
+                                  <Text
+                                    style={[
+                                      styles.originBadgeText,
+                                      origin === 'OWN' && styles.originBadgeTextOwn,
+                                      origin === 'SAVED' && styles.originBadgeTextSaved,
+                                      origin === 'DOWNLOADED' && styles.originBadgeTextDownloaded,
+                                    ]}
+                                  >
+                                    {origin === 'OWN'
+                                      ? 'Própria'
+                                      : origin === 'SAVED'
+                                        ? 'Salva'
+                                        : 'Baixada'}
+                                  </Text>
+                                </View>
+                              ))
+                            ) : (
+                              <Text style={styles.dropdownItemSubtitle}>Sub-receita</Text>
+                            )}
                           </View>
                         </View>
                       </View>
@@ -428,7 +801,9 @@ export function RecipeSelector({
               ) : (
                 <View style={styles.dropdownEmptyState}>
                   <Text style={styles.dropdownEmptyText}>
-                    Nenhuma sub-receita cadastrada disponível.
+                    {includeSavedAndDownloaded
+                      ? 'Nenhuma receita disponível (própria, salva ou baixada).'
+                      : 'Nenhuma sub-receita cadastrada disponível.'}
                   </Text>
                 </View>
               )}
@@ -704,5 +1079,70 @@ const createStyles = (theme: AppTheme) =>
       fontFamily: theme.typography.bodySm.fontFamily,
       fontSize: 12,
       color: theme.colors.error,
+    },
+    filterTabsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+      marginBottom: 10,
+    },
+    filterTab: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      minHeight: theme.spacing.touchable,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: theme.rounded.full,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+    },
+    filterTabActive: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
+    filterTabText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 12,
+      fontWeight: '600',
+      color: theme.colors.onSurfaceVariant,
+    },
+    filterTabTextActive: {
+      color: theme.colors.onPrimary,
+    },
+    originBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 3,
+      paddingHorizontal: 7,
+      paddingVertical: 2,
+      borderRadius: theme.rounded.full,
+      borderWidth: 1,
+    },
+    originBadgeOwn: {
+      backgroundColor: theme.colors.chips.primary.background,
+      borderColor: theme.colors.outlineVariant,
+    },
+    originBadgeSaved: {
+      backgroundColor: theme.colors.chips.secondary.background,
+      borderColor: theme.colors.outlineVariant,
+    },
+    originBadgeDownloaded: {
+      backgroundColor: theme.colors.chips.success.background,
+      borderColor: theme.colors.outlineVariant,
+    },
+    originBadgeText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 10,
+      fontWeight: '600',
+    },
+    originBadgeTextOwn: {
+      color: theme.colors.chips.primary.text,
+    },
+    originBadgeTextSaved: {
+      color: theme.colors.chips.secondary.text,
+    },
+    originBadgeTextDownloaded: {
+      color: theme.colors.chips.success.text,
     },
   });

@@ -11,6 +11,8 @@ export interface SavedRecipeDetail {
   packagingCost?: number | string;
   prepTimeMinutes: number;
   status?: RecipeStatus | string;
+  baseYield?: number | string;
+  yieldUnit?: string;
   updatedAt?: string | Date;
   tags?: {
     tag: PartialTag;
