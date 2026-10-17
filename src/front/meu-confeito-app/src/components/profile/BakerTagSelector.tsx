@@ -296,7 +296,7 @@ export function BakerTagSelector({
           />
           <TextInput
             style={styles.searchInput}
-            placeholder="Buscar ou criar especialidade (ex: Macarons)..."
+            placeholder="Buscar especialidade (ex: Brownies)..."
             placeholderTextColor={theme.colors.placeholder}
             value={searchQuery}
             onChangeText={setSearchQuery}
