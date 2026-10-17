@@ -742,7 +742,7 @@ components:
               type: string
             status:
               type: string
-              enum: [DRAFT, PUBLISHED, ARCHIVED]
+              enum: [DRAFT, PUBLISHED, ARCHIVED, SUSPENDED]
             updatedAt:
               type: string
               format: date-time

@@ -618,33 +618,41 @@ export class RecipeService {
     id: string,
     data: RecipeDTO.UpdateVisibilityRequest,
   ) {
-    this.checkPermission(context, data.userId);
+    const isModeratorOrAdmin = context.userRole === 'ADMIN' || context.userRole === 'MODERATOR';
 
-    const [recipe, user] = await Promise.all([
-      prisma.recipe.findUnique({
-        where: { id },
-        select: {
-          id: true,
-          userId: true,
-          title: true,
-          status: true,
-        },
-      }),
-      prisma.user.findUnique({
-        where: { id: data.userId },
-        select: {
-          phone: true,
-        },
-      }),
-    ]);
+    if (data.status === 'SUSPENDED' && !isModeratorOrAdmin) {
+      throw new ForbiddenError('Action denied for lack of privileges');
+    }
 
-    if (!recipe || recipe.status === 'SUSPENDED') {
+    if (!isModeratorOrAdmin) {
+      this.checkPermission(context, data.userId);
+    }
+
+    const recipe = await prisma.recipe.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        userId: true,
+        title: true,
+        status: true,
+      },
+    });
+
+    if (!recipe || (recipe.status === 'SUSPENDED' && !isModeratorOrAdmin)) {
       throw new NotFoundError('Recipe not found', 'RESOURCE_NOT_FOUND');
     }
 
-    if (recipe.userId !== data.userId) {
+    if (!isModeratorOrAdmin && recipe.userId !== data.userId) {
       throw new ForbiddenError('Action denied for lack of privileges');
     }
+
+    const targetUserId = recipe.userId ?? data.userId;
+    const user = await prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: {
+        phone: true,
+      },
+    });
 
     if (!user) {
       throw new NotFoundError('User not found', 'USER_NOT_FOUND');

@@ -155,7 +155,7 @@ export const querySchema = z.object({
 
 export const updateVisibilitySchema = z.object({
   userId: z.uuid('Invalid UUID for User ID'),
-  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']),
+  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED', 'SUSPENDED']),
 });
 
 export const createReviewSchema = z.object({
