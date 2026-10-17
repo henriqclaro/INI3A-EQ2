@@ -9,10 +9,14 @@ import {
   ViewStyle,
 } from 'react-native';
 
+import { router } from 'expo-router';
+
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
+import { OnboardingCard } from '@/src/components/common/OnboardingCard';
 import { SettingsSearchBar } from '@/src/components/settings/SettingsSearchBar';
 import { filterSettingShortcuts } from '@/src/constants/settingsShortcuts';
+import { useOnboarding } from '@/src/contexts/OnboardingContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { SettingShortcutItem, SettingsTopicId, SettingsTopicItem } from '@/src/types/settings';
@@ -37,7 +41,13 @@ export function SettingsSidebar({
   style,
 }: SettingsSidebarProps) {
   const { theme, isHighContrast } = useThemeMode();
+  const { isCardDismissed } = useOnboarding();
   const styles = useMemo(() => createStyles(theme, isHighContrast), [theme, isHighContrast]);
+
+  const hasVisibleSidebarCards =
+    !isCardDismissed('settings_appearance') ||
+    (!isCustomerRole && !isCardDismissed('settings_operational')) ||
+    !isCardDismissed('settings_edit_profile');
 
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -145,6 +155,41 @@ export function SettingsSidebar({
         contentContainerStyle={styles.topicsList}
         style={styles.scrollArea}
       >
+        {/* Discovery & learning cards inside options container, below search box */}
+        {!hasSearchQuery && hasVisibleSidebarCards && (
+          <View style={styles.sidebarCardsWrapper}>
+            <OnboardingCard
+              id="settings_appearance"
+              icon="palette-outline"
+              title="Aparência Visual"
+              description="Personalize cores, alto contraste e tema OLED."
+              actionText="Ajustar Tema"
+              isCompact={true}
+              onPress={() => onSelectTopic('appearance')}
+            />
+            {!isCustomerRole && (
+              <OnboardingCard
+                id="settings_operational"
+                icon="tune-variant"
+                title="Preferências Operacionais"
+                description="Defina margens de lucro padrão e custos fixos."
+                actionText="Configurar Padrões"
+                isCompact={true}
+                onPress={() => onSelectTopic('operational')}
+              />
+            )}
+            <OnboardingCard
+              id="settings_edit_profile"
+              icon="account-edit-outline"
+              title="Complete seu Perfil"
+              description="Atualize fotos, dados cadastrais e telefone."
+              actionText="Editar Perfil"
+              isCompact={true}
+              onPress={() => router.push('/edit-profile')}
+            />
+          </View>
+        )}
+
         {topics.map((topic) => {
           const isSelected = selectedTopicId === topic.id;
 
@@ -322,6 +367,10 @@ const createStyles = (theme: AppTheme, isHighContrast: boolean) =>
       paddingHorizontal: theme.spacing.space3,
       paddingVertical: theme.spacing.space3,
       gap: theme.spacing.space2,
+    },
+    sidebarCardsWrapper: {
+      gap: theme.spacing.space2,
+      marginBottom: theme.spacing.space2,
     },
     navItem: {
       flexDirection: 'row',

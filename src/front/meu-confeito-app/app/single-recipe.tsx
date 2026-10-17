@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -15,7 +15,7 @@ import { Stack, router, useFocusEffect, useLocalSearchParams } from 'expo-router
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { OfflineBanner } from '@/src/components';
+import { OfflineBanner, OnboardingCard } from '@/src/components';
 import { ProduceRecipeModal } from '@/src/components/production';
 import {
   CustomizeRecipeModal,
@@ -26,6 +26,7 @@ import {
   RecipeScalerBar,
 } from '@/src/components/recipe';
 import { useAuth } from '@/src/contexts/AuthContext';
+import { useOnboarding } from '@/src/contexts/OnboardingContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useDownloadedRecipe } from '@/src/hooks/useDownloadedRecipes';
 import { useRecipeDelete, useSingleRecipe } from '@/src/hooks/useRecipes';
@@ -75,6 +76,7 @@ export default function RecipeScreen() {
   const [scaleFactor, setScaleFactor] = useState(1);
   const [isKitchenModeOpen, setIsKitchenModeOpen] = useState(false);
   const [isOwnerActionsExpanded, setIsOwnerActionsExpanded] = useState(true);
+  const recipeScrollViewRef = useRef<ScrollView>(null);
 
   const handleToggleSave = async () => {
     if (!user) {
@@ -126,6 +128,12 @@ export default function RecipeScreen() {
   const hasValidCover = Boolean(resolvedCoverUrl && !hasImageError);
 
   const isOwner = Boolean(user?.id && recipe?.userId && user.id === recipe.userId);
+  const isPublicNotOwned = Boolean(!isOwner && recipe && recipe.status === 'PUBLISHED');
+
+  const { isCardDismissed } = useOnboarding();
+  const hasVisibleRecipeCards =
+    !isCardDismissed('recipe_screen_awake') ||
+    (isPublicNotOwned && !isCardDismissed('recipe_review_rate'));
 
   const {
     isDownloaded,
@@ -564,10 +572,37 @@ export default function RecipeScreen() {
           </View>
         ) : (
           <ScrollView
+            ref={recipeScrollViewRef}
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
           >
+            {/* Discovery Cards: Modo Tela Sempre Ativa e Avaliação da Receita */}
+            {hasVisibleRecipeCards && (
+              <View style={styles.topCardsWrapper}>
+                <OnboardingCard
+                  id="recipe_screen_awake"
+                  icon="cellphone-lock"
+                  title="Modo Cozinha: Tela Sempre Ativa"
+                  description="Mantenha a tela sempre acesa durante o preparo para consultar ingredientes e instruções sem sujar o aparelho."
+                  actionText="Ativar Modo Cozinha"
+                  onPress={() => setIsKitchenModeOpen(true)}
+                />
+                {isPublicNotOwned && (
+                  <OnboardingCard
+                    id="recipe_review_rate"
+                    icon="star-outline"
+                    title="Avalie esta Receita"
+                    description="Já preparou essa delícia? Deixe sua nota e feedback para compartilhar sua experiência com a comunidade."
+                    actionText="Avaliar Receita"
+                    onPress={() => {
+                      recipeScrollViewRef.current?.scrollToEnd({ animated: true });
+                    }}
+                  />
+                )}
+              </View>
+            )}
+
             <View style={styles.innerWrapper}>
               <View style={styles.leftColumn}>
                 {/* Recipe Cover or Placeholder */}
@@ -1612,6 +1647,12 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       paddingTop: 16,
       paddingBottom: 60,
       alignItems: 'center',
+    },
+    topCardsWrapper: {
+      width: '100%',
+      maxWidth: isDesktop ? 1200 : 720,
+      gap: theme.spacing.space3,
+      marginBottom: theme.spacing.space4,
     },
     innerWrapper: {
       width: '100%',

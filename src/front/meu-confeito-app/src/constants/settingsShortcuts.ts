@@ -104,11 +104,50 @@ export const SETTING_SHORTCUTS: SettingShortcutItem[] = [
     synonyms: ['oled', 'amoled', 'bateria', 'preto', 'economia'],
   },
 
-  // Gestos e Resposta Tátil (Mobile Only)
+  // Acessibilidade e Interação
+  {
+    id: 'accessibility-overview',
+    topicId: 'accessibility',
+    topicTitle: 'Acessibilidade',
+    title: 'Acessibilidade e Interação',
+    description: 'Gestos, retorno tátil, alto contraste e visibilidade de cards de ajuda',
+    icon: 'wheelchair-accessibility',
+    synonyms: ['acessibilidade', 'cards', 'dicas', 'ajuda', 'tátil', 'gestos', 'contraste'],
+  },
+  {
+    id: 'hide-onboarding-cards',
+    topicId: 'accessibility',
+    topicTitle: 'Acessibilidade',
+    title: 'Ocultar Todos os Cards de Ajuda',
+    description: 'Remover todos os cards e banners informativos de todas as telas',
+    icon: 'eye-off-outline',
+    synonyms: [
+      'ocultar cards',
+      'remover cards',
+      'limpar cards',
+      'esconder dicas',
+      'desativar avisos',
+    ],
+  },
+  {
+    id: 'restore-onboarding-cards',
+    topicId: 'accessibility',
+    topicTitle: 'Acessibilidade',
+    title: 'Restaurar Cards de Dicas',
+    description: 'Fazer com que os cards e atalhos de aprendizado voltem a aparecer nas telas',
+    icon: 'restore',
+    synonyms: [
+      'restaurar cards',
+      'resetar cards',
+      'reexibir dicas',
+      'mostrar cards',
+      'reiniciar dicas',
+    ],
+  },
   {
     id: 'swipe-navigation',
-    topicId: 'interaction',
-    topicTitle: 'Gestos e Resposta Tátil',
+    topicId: 'accessibility',
+    topicTitle: 'Acessibilidade',
     title: 'Navegação por Gesto',
     description: 'Arrastar horizontalmente para alternar entre as abas principais',
     icon: 'gesture-swipe-horizontal',
@@ -117,8 +156,8 @@ export const SETTING_SHORTCUTS: SettingShortcutItem[] = [
   },
   {
     id: 'haptic-feedback',
-    topicId: 'interaction',
-    topicTitle: 'Gestos e Resposta Tátil',
+    topicId: 'accessibility',
+    topicTitle: 'Acessibilidade',
     title: 'Retorno Tátil (Vibração)',
     description: 'Vibrações ao tocar, alternar abas e confirmar ações no app',
     icon: 'vibrate',
@@ -127,13 +166,12 @@ export const SETTING_SHORTCUTS: SettingShortcutItem[] = [
   },
   {
     id: 'route-persistence',
-    topicId: 'interaction',
-    topicTitle: 'Gestos e Resposta Tátil',
+    topicId: 'accessibility',
+    topicTitle: 'Acessibilidade',
     title: 'Lembrar Última Tela',
     description: 'Restaurar a tela aberta ao fechar e reabrir o aplicativo',
     icon: 'history',
     synonyms: ['rota', 'lembrar', 'persistência', 'salvar tela', 'reabrir'],
-    isMobileOnly: true,
   },
 
   // Preferências Operacionais (Non-Customer Only)

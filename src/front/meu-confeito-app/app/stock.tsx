@@ -21,6 +21,7 @@ import {
   CustomButton,
   Input,
   OfflineBanner,
+  OnboardingCard,
   StockCard,
   StockOperationModal,
   StockOperationType,
@@ -284,6 +285,16 @@ export default function StockScreen() {
             )}
           </View>
         </View>
+
+        {/* Discovery & Incentive Card for Registering Insumo */}
+        <OnboardingCard
+          id="stock_register_item"
+          icon="package-variant-closed-plus"
+          title="Cadastre seu Primeiro Insumo"
+          description="Mantenha farinhas, açúcares e embalagens sob controle no estoque para cálculo automático e dinâmico dos custos das suas receitas."
+          actionText="Cadastrar Insumo Agora"
+          onPress={handleNavigateToRegister}
+        />
 
         <OfflineBanner
           isVisible={isOffline}

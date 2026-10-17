@@ -22,6 +22,7 @@ import {
   BakerStockAlertCard,
   NearbyBakersExplorer,
   OfflineBanner,
+  OnboardingCard,
   RecipeSmallView,
 } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
@@ -58,6 +59,15 @@ function CustomerHomeScreen() {
               <Text style={styles.subtitle}>
                 Descubra confeitarias e doces artesanais por proximidade ou por cidade.
               </Text>
+              <OnboardingCard
+                id="home_welcome"
+                isHero={true}
+                icon="cake-variant-outline"
+                title="Bem-vindo ao Meu Confeito!"
+                description="Conecte-se com os melhores confeiteiros da sua região, descubra delícias artesanais e encontre receitas exclusivas para qualquer ocasião."
+                actionText="Explorar Confeitarias"
+                style={styles.welcomeHeroCard}
+              />
             </View>
           }
         />
@@ -231,6 +241,17 @@ function BakerHomeScreen() {
               </View>
             )}
           </View>
+
+          {/* Welcome & App Presentation Hero Card */}
+          <OnboardingCard
+            id="home_welcome"
+            isHero={true}
+            icon="cake-variant-outline"
+            title="Bem-vindo ao Meu Confeito!"
+            description="Sua confeitaria digital para calcular custos precisos de receitas, monitorar estoque em tempo real e organizar produções artesanais com foco no lucro real."
+            actionText="Explorar Meu Confeito"
+            style={styles.welcomeHeroCard}
+          />
 
           {/* Offline Mode Banner */}
           <OfflineBanner
@@ -538,6 +559,9 @@ const createCustomerStyles = (theme: AppTheme, isDesktop: boolean) =>
       fontSize: isDesktop ? 16 : 15,
       lineHeight: 22,
     },
+    welcomeHeroCard: {
+      marginTop: theme.spacing.space3,
+    },
   });
 
 const createBakerStyles = (
@@ -567,6 +591,9 @@ const createBakerStyles = (
       width: '100%',
       maxWidth: isDesktop ? theme.spacing.containerMax : 720,
       gap: isDesktop ? theme.spacing.space6 : theme.spacing.space5,
+    },
+    welcomeHeroCard: {
+      width: '100%',
     },
     headerBlock: {
       paddingTop: theme.spacing.space1,

@@ -4,6 +4,7 @@ export type SettingsTopicId =
   | 'account'
   | 'appearance'
   | 'interaction'
+  | 'accessibility'
   | 'operational'
   | 'storage'
   | 'about';

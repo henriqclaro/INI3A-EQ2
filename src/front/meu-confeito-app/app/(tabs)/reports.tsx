@@ -13,7 +13,7 @@ import { router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { OfflineBanner } from '@/src/components';
+import { OfflineBanner, OnboardingCard } from '@/src/components';
 import {
   ProductionShortcutCard,
   ProfitSummarySection,
@@ -113,12 +113,31 @@ export default function ReportsScreen() {
             </View>
             <View style={styles.headerTextCol}>
               <Text style={styles.title}>Centro de Análises & Métricas</Text>
-              <Text style={styles.subtitle}>
-                Monitore o lucro líquido real, decomponha seus custos de produção e simule compras
-                estratégicas para suas próximas receitas.
-              </Text>
             </View>
           </View>
+
+          {/* Onboarding Cards: Resumo Transformed into Card + Previsão de Compras Card */}
+          <OnboardingCard
+            id="reports_profit_summary"
+            icon="chart-timeline-variant"
+            title="Demonstrativo de Rentabilidade"
+            description="Monitore o lucro líquido real, analise custos de produção e acompanhe a margem de contribuição de cada receita."
+            actionText="Visualizar Rentabilidade"
+            onPress={() => {
+              setActiveTab('profit');
+            }}
+          />
+
+          <OnboardingCard
+            id="reports_purchase_projection"
+            icon="cart-outline"
+            title="Previsão Inteligente de Compras"
+            description="Simule e planeje compras de insumos para encomendas futuras sem sobras ou falta de matéria-prima."
+            actionText="Abrir Previsão de Compras"
+            onPress={() => {
+              setActiveTab('projection');
+            }}
+          />
 
           {/* Quick Production History Card (Kept per request) */}
           <ProductionShortcutCard isDesktop={isDesktop} />

@@ -17,6 +17,7 @@ import {
   DeleteAccountModal,
   InteractionSettingsCard,
   OfflineBanner,
+  OnboardingCard,
   OperationalPreferencesCard,
   SettingsSearchBar,
   SettingsSearchResults,
@@ -28,6 +29,7 @@ import {
 } from '@/src/components';
 import { filterSettingShortcuts } from '@/src/constants/settingsShortcuts';
 import { useAuth } from '@/src/contexts/AuthContext';
+import { useOnboarding } from '@/src/contexts/OnboardingContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useNetwork } from '@/src/hooks/useNetwork';
 import { useUserDelete } from '@/src/hooks/useUsers';
@@ -47,9 +49,15 @@ export default function SettingsScreen() {
   const { user, signOut } = useAuth();
   const { isOffline } = useNetwork();
   const { deleteUser, isLoading: isDeletingUser } = useUserDelete();
+  const { isCardDismissed } = useOnboarding();
 
   const isCustomerRole = isCustomer(user?.role);
   const isBakerRole = isBaker(user?.role);
+
+  const hasVisibleSettingsCards =
+    !isCardDismissed('settings_appearance') ||
+    (!isCustomerRole && !isCardDismissed('settings_operational')) ||
+    !isCardDismissed('settings_edit_profile');
 
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [mobileSearchQuery, setMobileSearchQuery] = useState('');
@@ -80,16 +88,14 @@ export default function SettingsScreen() {
         description: 'Personalize cores, alto contraste e economia de bateria em telas OLED',
         icon: 'palette-outline',
       },
+      {
+        id: 'accessibility',
+        title: 'Acessibilidade',
+        description:
+          'Ajuste recursos de acessibilidade, resposta tátil, gestos e visibilidade de cards de ajuda',
+        icon: 'wheelchair-accessibility',
+      },
     ];
-
-    if (!isDesktop) {
-      list.push({
-        id: 'interaction',
-        title: 'Gestos e Resposta Tátil',
-        description: 'Controle a navegação por deslizamento e o retorno de vibração do aplicativo',
-        icon: 'cellphone-sound',
-      });
-    }
 
     if (!isCustomerRole) {
       list.push({
@@ -118,12 +124,13 @@ export default function SettingsScreen() {
     );
 
     return list;
-  }, [isDesktop, isCustomerRole]);
+  }, [isCustomerRole]);
 
   // Validate topic from route params or fallback
   const validTopicIds = useMemo(() => new Set(topics.map((t) => t.id)), [topics]);
 
-  const topicParam = params.topic as SettingsTopicId | undefined;
+  const rawTopicParam = params.topic as SettingsTopicId | undefined;
+  const topicParam = rawTopicParam === 'interaction' ? 'accessibility' : rawTopicParam;
   const isValidParam = Boolean(topicParam && validTopicIds.has(topicParam));
 
   const [localTopicId, setLocalTopicId] = useState<SettingsTopicId | null>(() => {
@@ -264,6 +271,7 @@ export default function SettingsScreen() {
       case 'appearance':
         return <ThemeToggleCard />;
       case 'interaction':
+      case 'accessibility':
         return <InteractionSettingsCard />;
       case 'operational':
         return <OperationalPreferencesCard />;
@@ -351,7 +359,40 @@ export default function SettingsScreen() {
                   onClearSearch={() => setMobileSearchQuery('')}
                 />
               ) : (
-                <SettingsTopicList topics={topics} onSelectTopic={handleSelectTopic} />
+                <>
+                  {hasVisibleSettingsCards && (
+                    <View style={styles.mobileCardsWrapper}>
+                      <OnboardingCard
+                        id="settings_appearance"
+                        icon="palette-outline"
+                        title="Personalize a Aparência"
+                        description="Alterne entre tema claro artesanal, modo escuro noturno, alto contraste e economia OLED."
+                        actionText="Ajustar Tema Visual"
+                        onPress={() => handleSelectTopic('appearance')}
+                      />
+                      {!isCustomerRole && (
+                        <OnboardingCard
+                          id="settings_operational"
+                          icon="tune-variant"
+                          title="Preferências Operacionais"
+                          description="Defina margens de lucro padrão, custos fixos (overhead) e precisão de casas decimais."
+                          actionText="Configurar Padrões"
+                          onPress={() => handleSelectTopic('operational')}
+                        />
+                      )}
+                      <OnboardingCard
+                        id="settings_edit_profile"
+                        icon="account-edit-outline"
+                        title="Complete seu Perfil"
+                        description="Mantenha seus dados cadastrais, telefone de contato e foto de avatar sempre atualizados."
+                        actionText="Editar Meu Perfil"
+                        onPress={() => router.push('/edit-profile')}
+                      />
+                    </View>
+                  )}
+
+                  <SettingsTopicList topics={topics} onSelectTopic={handleSelectTopic} />
+                </>
               )
             ) : (
               <View style={styles.mobileTopicContent}>
@@ -421,6 +462,10 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean, _isDesktop: boole
     mobileSearchWrapper: {
       width: '100%',
       marginTop: theme.spacing.space1,
+    },
+    mobileCardsWrapper: {
+      width: '100%',
+      gap: theme.spacing.space3,
     },
     mobileTopicContent: {
       width: '100%',

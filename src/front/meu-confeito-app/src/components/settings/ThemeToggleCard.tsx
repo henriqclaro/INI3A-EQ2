@@ -1,9 +1,11 @@
 import { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 
+import { router } from 'expo-router';
+
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { ThemeSwitch } from '@/src/components/common';
+import { MenuOptionButton, ThemeSwitch } from '@/src/components/common';
 import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme, colors, darkColors } from '@/src/theme/themes';
@@ -55,217 +57,234 @@ export function ThemeToggleCard() {
   };
 
   return (
-    <View style={styles.card}>
-      {/* Option 1: Seguir o sistema (First option in Appearance section) */}
-      <View style={styles.toggleRow}>
-        <View style={styles.toggleInfo}>
-          <View style={styles.iconCircle}>
-            <MaterialCommunityIcons
-              name="theme-light-dark"
-              size={22}
-              color={theme.colors.primary}
-            />
-          </View>
-          <View style={styles.textColumn}>
-            <View style={styles.titleWithBadge}>
-              <Text style={styles.title}>Seguir o Sistema</Text>
-              <View style={isFollowSystem ? styles.activeBadge : styles.inactiveBadge}>
-                <Text style={isFollowSystem ? styles.activeBadgeText : styles.inactiveBadgeText}>
-                  {isFollowSystem ? 'Ativado' : 'Desativado'}
-                </Text>
-              </View>
-            </View>
-            <Text style={styles.subtitle}>
-              Sincroniza automaticamente a aparência clara ou escura com o tema do seu dispositivo
-            </Text>
-          </View>
-        </View>
-
-        <ThemeSwitch
-          value={isFollowSystem}
-          onValueChange={handleToggleFollowSystem}
-          accessibilityLabel="Alternar opção de seguir o sistema operacional"
-        />
-      </View>
-
-      <View style={styles.divider} />
-
-      {/* Visual Theme Selector Tiles */}
-      <Text style={styles.selectorLabel}>
-        {isFollowSystem ? 'Aparência ativa no sistema:' : 'Escolha visual preferida:'}
-      </Text>
-
-      <View style={styles.tilesContainer}>
-        {/* Light Mode Tile */}
-        <TouchableOpacity
-          style={[styles.themeTile, isLightSelected && styles.themeTileActive]}
-          onPress={() => handleSetMode('light')}
-          accessibilityRole="radio"
-          accessibilityState={{ selected: isLightSelected }}
-          accessibilityLabel="Selecionar modo claro artesanal"
-          activeOpacity={0.8}
-        >
-          <View style={styles.tileHeader}>
-            <View style={[styles.tileIconCircle, isLightSelected && styles.tileIconCircleActive]}>
+    <View style={styles.container}>
+      <View style={styles.card}>
+        {/* Option 1: Seguir o sistema (First option in Appearance section) */}
+        <View style={styles.toggleRow}>
+          <View style={styles.toggleInfo}>
+            <View style={styles.iconCircle}>
               <MaterialCommunityIcons
-                name="weather-sunny"
-                size={20}
-                color={isLightSelected ? theme.colors.onPrimary : theme.colors.primary}
+                name="theme-light-dark"
+                size={22}
+                color={theme.colors.primary}
               />
             </View>
-            <MaterialCommunityIcons
-              name={isLightSelected ? 'radiobox-marked' : 'radiobox-blank'}
-              size={20}
-              color={isLightSelected ? theme.colors.primary : theme.colors.placeholder}
-            />
+            <View style={styles.textColumn}>
+              <View style={styles.titleWithBadge}>
+                <Text style={styles.title}>Seguir o Sistema</Text>
+                <View style={isFollowSystem ? styles.activeBadge : styles.inactiveBadge}>
+                  <Text style={isFollowSystem ? styles.activeBadgeText : styles.inactiveBadgeText}>
+                    {isFollowSystem ? 'Ativado' : 'Desativado'}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.subtitle}>
+                Sincroniza automaticamente a aparência clara ou escura com o tema do seu dispositivo
+              </Text>
+            </View>
           </View>
 
-          <Text style={styles.tileTitle}>Modo Claro</Text>
-          <Text style={styles.tileDescription}>Blush-cream suave com pergaminho</Text>
+          <ThemeSwitch
+            value={isFollowSystem}
+            onValueChange={handleToggleFollowSystem}
+            accessibilityLabel="Alternar opção de seguir o sistema operacional"
+          />
+        </View>
 
-          {/* Palette Swatches */}
-          <View style={styles.swatchRow}>
-            <View style={[styles.swatchDot, styles.swatchLight1]} />
-            <View style={[styles.swatchDot, styles.swatchLight2]} />
-            <View style={[styles.swatchDot, styles.swatchLight3]} />
+        <View style={styles.divider} />
+
+        {/* Visual Theme Selector Tiles */}
+        <Text style={styles.selectorLabel}>
+          {isFollowSystem ? 'Aparência ativa no sistema:' : 'Escolha visual preferida:'}
+        </Text>
+
+        <View style={styles.tilesContainer}>
+          {/* Light Mode Tile */}
+          <TouchableOpacity
+            style={[styles.themeTile, isLightSelected && styles.themeTileActive]}
+            onPress={() => handleSetMode('light')}
+            accessibilityRole="radio"
+            accessibilityState={{ selected: isLightSelected }}
+            accessibilityLabel="Selecionar modo claro artesanal"
+            activeOpacity={0.8}
+          >
+            <View style={styles.tileHeader}>
+              <View style={[styles.tileIconCircle, isLightSelected && styles.tileIconCircleActive]}>
+                <MaterialCommunityIcons
+                  name="weather-sunny"
+                  size={20}
+                  color={isLightSelected ? theme.colors.onPrimary : theme.colors.primary}
+                />
+              </View>
+              <MaterialCommunityIcons
+                name={isLightSelected ? 'radiobox-marked' : 'radiobox-blank'}
+                size={20}
+                color={isLightSelected ? theme.colors.primary : theme.colors.placeholder}
+              />
+            </View>
+
+            <Text style={styles.tileTitle}>Modo Claro</Text>
+            <Text style={styles.tileDescription}>Blush-cream suave com pergaminho</Text>
+
+            {/* Palette Swatches */}
+            <View style={styles.swatchRow}>
+              <View style={[styles.swatchDot, styles.swatchLight1]} />
+              <View style={[styles.swatchDot, styles.swatchLight2]} />
+              <View style={[styles.swatchDot, styles.swatchLight3]} />
+            </View>
+          </TouchableOpacity>
+
+          {/* Dark Mode Tile */}
+          <TouchableOpacity
+            style={[styles.themeTile, isDarkSelected && styles.themeTileActive]}
+            onPress={() => handleSetMode('dark')}
+            accessibilityRole="radio"
+            accessibilityState={{ selected: isDarkSelected }}
+            accessibilityLabel="Selecionar modo escuro aconchegante"
+            activeOpacity={0.8}
+          >
+            <View style={styles.tileHeader}>
+              <View style={[styles.tileIconCircle, isDarkSelected && styles.tileIconCircleActive]}>
+                <MaterialCommunityIcons
+                  name="weather-night"
+                  size={20}
+                  color={isDarkSelected ? theme.colors.onPrimary : theme.colors.primary}
+                />
+              </View>
+              <MaterialCommunityIcons
+                name={isDarkSelected ? 'radiobox-marked' : 'radiobox-blank'}
+                size={20}
+                color={isDarkSelected ? theme.colors.primary : theme.colors.placeholder}
+              />
+            </View>
+
+            <Text style={styles.tileTitle}>Modo Escuro</Text>
+            <Text style={styles.tileDescription}>Espresso profundo com calda rosa</Text>
+
+            {/* Palette Swatches */}
+            <View style={styles.swatchRow}>
+              <View style={[styles.swatchDot, styles.swatchDark1]} />
+              <View style={[styles.swatchDot, styles.swatchDark2]} />
+              <View style={[styles.swatchDot, styles.swatchDark3]} />
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.divider} />
+
+        {/* High Contrast Mode Toggle */}
+        <View style={styles.toggleRow}>
+          <View style={styles.toggleInfo}>
+            <View style={styles.iconCircle}>
+              <MaterialCommunityIcons name="contrast-box" size={22} color={theme.colors.primary} />
+            </View>
+            <View style={styles.textColumn}>
+              <View style={styles.titleWithBadge}>
+                <Text style={styles.title}>Modo Alto Contraste</Text>
+                <View style={isHighContrast ? styles.activeBadge : styles.inactiveBadge}>
+                  <Text style={isHighContrast ? styles.activeBadgeText : styles.inactiveBadgeText}>
+                    {isHighContrast ? 'Ativado' : 'Desativado'}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.subtitle}>
+                Reforça bordas e contraste visual para máxima legibilidade e acessibilidade
+              </Text>
+            </View>
           </View>
-        </TouchableOpacity>
 
-        {/* Dark Mode Tile */}
-        <TouchableOpacity
-          style={[styles.themeTile, isDarkSelected && styles.themeTileActive]}
-          onPress={() => handleSetMode('dark')}
-          accessibilityRole="radio"
-          accessibilityState={{ selected: isDarkSelected }}
-          accessibilityLabel="Selecionar modo escuro aconchegante"
-          activeOpacity={0.8}
-        >
-          <View style={styles.tileHeader}>
-            <View style={[styles.tileIconCircle, isDarkSelected && styles.tileIconCircleActive]}>
+          <ThemeSwitch
+            value={isHighContrast}
+            onValueChange={handleToggleHighContrast}
+            accessibilityLabel="Alternar modo de alto contraste"
+          />
+        </View>
+
+        <View style={styles.divider} />
+
+        {/* OLED / Pure Black Mode Toggle */}
+        <View style={[styles.toggleRow, !isPureBlackAvailable && styles.toggleRowDisabled]}>
+          <View style={styles.toggleInfo}>
+            <View style={[styles.iconCircle, !isPureBlackAvailable && styles.iconCircleDisabled]}>
               <MaterialCommunityIcons
                 name="weather-night"
-                size={20}
-                color={isDarkSelected ? theme.colors.onPrimary : theme.colors.primary}
+                size={22}
+                color={isPureBlackAvailable ? theme.colors.primary : theme.colors.placeholder}
               />
             </View>
-            <MaterialCommunityIcons
-              name={isDarkSelected ? 'radiobox-marked' : 'radiobox-blank'}
-              size={20}
-              color={isDarkSelected ? theme.colors.primary : theme.colors.placeholder}
-            />
-          </View>
-
-          <Text style={styles.tileTitle}>Modo Escuro</Text>
-          <Text style={styles.tileDescription}>Espresso profundo com calda rosa</Text>
-
-          {/* Palette Swatches */}
-          <View style={styles.swatchRow}>
-            <View style={[styles.swatchDot, styles.swatchDark1]} />
-            <View style={[styles.swatchDot, styles.swatchDark2]} />
-            <View style={[styles.swatchDot, styles.swatchDark3]} />
-          </View>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.divider} />
-
-      {/* High Contrast Mode Toggle */}
-      <View style={styles.toggleRow}>
-        <View style={styles.toggleInfo}>
-          <View style={styles.iconCircle}>
-            <MaterialCommunityIcons name="contrast-box" size={22} color={theme.colors.primary} />
-          </View>
-          <View style={styles.textColumn}>
-            <View style={styles.titleWithBadge}>
-              <Text style={styles.title}>Modo Alto Contraste</Text>
-              <View style={isHighContrast ? styles.activeBadge : styles.inactiveBadge}>
-                <Text style={isHighContrast ? styles.activeBadgeText : styles.inactiveBadgeText}>
-                  {isHighContrast ? 'Ativado' : 'Desativado'}
+            <View style={styles.textColumn}>
+              <View style={styles.titleWithBadge}>
+                <Text style={[styles.title, !isPureBlackAvailable && styles.titleDisabled]}>
+                  Preto Puro (OLED)
                 </Text>
-              </View>
-            </View>
-            <Text style={styles.subtitle}>
-              Reforça bordas e contraste visual para máxima legibilidade e acessibilidade
-            </Text>
-          </View>
-        </View>
-
-        <ThemeSwitch
-          value={isHighContrast}
-          onValueChange={handleToggleHighContrast}
-          accessibilityLabel="Alternar modo de alto contraste"
-        />
-      </View>
-
-      <View style={styles.divider} />
-
-      {/* OLED / Pure Black Mode Toggle */}
-      <View style={[styles.toggleRow, !isPureBlackAvailable && styles.toggleRowDisabled]}>
-        <View style={styles.toggleInfo}>
-          <View style={[styles.iconCircle, !isPureBlackAvailable && styles.iconCircleDisabled]}>
-            <MaterialCommunityIcons
-              name="weather-night"
-              size={22}
-              color={isPureBlackAvailable ? theme.colors.primary : theme.colors.placeholder}
-            />
-          </View>
-          <View style={styles.textColumn}>
-            <View style={styles.titleWithBadge}>
-              <Text style={[styles.title, !isPureBlackAvailable && styles.titleDisabled]}>
-                Preto Puro (OLED)
-              </Text>
-              <View
-                style={
-                  !isPureBlackAvailable
-                    ? styles.unavailableBadge
-                    : isPureBlack
-                      ? styles.activeBadge
-                      : styles.inactiveBadge
-                }
-              >
-                <Text
+                <View
                   style={
                     !isPureBlackAvailable
-                      ? styles.unavailableBadgeText
+                      ? styles.unavailableBadge
                       : isPureBlack
-                        ? styles.activeBadgeText
-                        : styles.inactiveBadgeText
+                        ? styles.activeBadge
+                        : styles.inactiveBadge
                   }
                 >
-                  {!isPureBlackAvailable ? 'Indisponível' : isPureBlack ? 'Ativado' : 'Desativado'}
-                </Text>
+                  <Text
+                    style={
+                      !isPureBlackAvailable
+                        ? styles.unavailableBadgeText
+                        : isPureBlack
+                          ? styles.activeBadgeText
+                          : styles.inactiveBadgeText
+                    }
+                  >
+                    {!isPureBlackAvailable
+                      ? 'Indisponível'
+                      : isPureBlack
+                        ? 'Ativado'
+                        : 'Desativado'}
+                  </Text>
+                </View>
               </View>
+              <Text style={[styles.subtitle, !isPureBlackAvailable && styles.subtitleDisabled]}>
+                {!isDarkMode
+                  ? 'Disponível apenas no Modo Escuro (economiza bateria em telas OLED)'
+                  : isHighContrast
+                    ? 'Indisponível enquanto o Modo Alto Contraste estiver ativado'
+                    : 'Substitui o fundo espresso por preto puro (#000000) para economizar bateria em telas OLED'}
+              </Text>
             </View>
-            <Text style={[styles.subtitle, !isPureBlackAvailable && styles.subtitleDisabled]}>
-              {!isDarkMode
-                ? 'Disponível apenas no Modo Escuro (economiza bateria em telas OLED)'
-                : isHighContrast
-                  ? 'Indisponível enquanto o Modo Alto Contraste estiver ativado'
-                  : 'Substitui o fundo espresso por preto puro (#000000) para economizar bateria em telas OLED'}
-            </Text>
           </View>
+
+          <ThemeSwitch
+            value={isPureBlack && isPureBlackAvailable}
+            disabled={!isPureBlackAvailable}
+            onValueChange={handleTogglePureBlack}
+            accessibilityLabel="Alternar modo preto puro para economia de bateria em telas OLED"
+          />
         </View>
 
-        <ThemeSwitch
-          value={isPureBlack && isPureBlackAvailable}
-          disabled={!isPureBlackAvailable}
-          onValueChange={handleTogglePureBlack}
-          accessibilityLabel="Alternar modo preto puro para economia de bateria em telas OLED"
-        />
+        {/* Info Callout */}
+        <View style={styles.infoCallout}>
+          <MaterialCommunityIcons
+            name="information-outline"
+            size={18}
+            color={theme.colors.primary}
+            style={styles.infoIcon}
+          />
+          <Text style={styles.infoText}>
+            Suas preferências visuais são salvas com segurança no dispositivo e aplicadas
+            automaticamente em todas as fichas técnicas, tabelas e menus.
+          </Text>
+        </View>
       </View>
 
-      {/* Info Callout */}
-      <View style={styles.infoCallout}>
-        <MaterialCommunityIcons
-          name="information-outline"
-          size={18}
-          color={theme.colors.primary}
-          style={styles.infoIcon}
+      {/* Accessibility Shortcut (outside container, same as AboutAppTopic.tsx) */}
+      <View style={styles.supportSection}>
+        <Text style={styles.supportSectionTitle}>Acessibilidade</Text>
+        <MenuOptionButton
+          title="Central de Acessibilidade"
+          subtitle="Gerencie cards de ajuda, retorno tátil e gestos de navegação"
+          icon="wheelchair-accessibility"
+          onPress={() => router.push('/settings?topic=accessibility')}
         />
-        <Text style={styles.infoText}>
-          Suas preferências visuais são salvas com segurança no dispositivo e aplicadas
-          automaticamente em todas as fichas técnicas, tabelas e menus.
-        </Text>
       </View>
     </View>
   );
@@ -501,5 +520,21 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean, isOledActive: boo
       fontSize: 12,
       lineHeight: 18,
       color: theme.colors.onSurfaceVariant,
+    },
+    container: {
+      width: '100%',
+      gap: theme.spacing.space6,
+    },
+    supportSection: {
+      gap: theme.spacing.space3,
+    },
+    supportSectionTitle: {
+      fontFamily: theme.typography.headlineMd.fontFamily,
+      fontSize: 16,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
+      letterSpacing: 0.4,
+      marginLeft: theme.spacing.space1,
+      marginBottom: 2,
     },
   });

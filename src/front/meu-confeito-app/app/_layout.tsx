@@ -18,6 +18,7 @@ import { pt, registerTranslation } from 'react-native-paper-dates';
 
 import { CustomHeader, DesktopAlert, RateLimitBanner, ToastContainer } from '@/src/components';
 import { AuthProvider, useAuth } from '@/src/contexts/AuthContext';
+import { OnboardingProvider } from '@/src/contexts/OnboardingContext';
 import { SettingsProvider } from '@/src/contexts/SettingsContext';
 import { ThemeProvider, useThemeMode } from '@/src/contexts/ThemeContext';
 import { ToastProvider } from '@/src/contexts/ToastContext';
@@ -157,9 +158,11 @@ export default function RootLayout() {
       <SettingsProvider>
         <ToastProvider>
           <AuthProvider>
-            <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
-              <RootLayoutContent />
-            </KeyboardProvider>
+            <OnboardingProvider>
+              <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
+                <RootLayoutContent />
+              </KeyboardProvider>
+            </OnboardingProvider>
           </AuthProvider>
         </ToastProvider>
       </SettingsProvider>
