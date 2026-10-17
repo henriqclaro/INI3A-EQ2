@@ -64,7 +64,7 @@ export function AppearanceTopic() {
           <View style={styles.toggleInfo}>
             <View style={styles.iconCircle}>
               <MaterialCommunityIcons
-                name="theme-light-dark"
+                name="lightbulb-auto-outline"
                 size={22}
                 color={theme.colors.primary}
               />
@@ -207,7 +207,7 @@ export function AppearanceTopic() {
           <View style={styles.toggleInfo}>
             <View style={[styles.iconCircle, !isPureBlackAvailable && styles.iconCircleDisabled]}>
               <MaterialCommunityIcons
-                name="weather-night"
+                name="lightbulb-night-outline"
                 size={22}
                 color={isPureBlackAvailable ? theme.colors.primary : theme.colors.placeholder}
               />

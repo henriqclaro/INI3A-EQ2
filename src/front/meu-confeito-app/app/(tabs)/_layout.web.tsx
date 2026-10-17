@@ -121,7 +121,7 @@ export default function TabsWebLayout() {
             href: isCustomerRole ? null : undefined,
             tabBarItemStyle: isCustomerRole ? { display: 'none' } : undefined,
             tabBarIcon: ({ color }) => (
-              <MaterialCommunityIcons name="book-open-variant-outline" color={color} size={24} />
+              <MaterialCommunityIcons name="book-open-page-variant-outline" color={color} size={24} />
             ),
           }}
         />
@@ -132,7 +132,7 @@ export default function TabsWebLayout() {
             href: isCustomerRole ? null : undefined,
             tabBarItemStyle: isCustomerRole ? { display: 'none' } : undefined,
             tabBarIcon: ({ color }) => (
-              <MaterialCommunityIcons name="chart-box-outline" color={color} size={24} />
+              <MaterialCommunityIcons name="chart-timeline-variant" color={color} size={24} />
             ),
           }}
         />

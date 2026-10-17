@@ -481,7 +481,7 @@ export default function RecipeScreen() {
                   accessibilityLabel="Abrir modo cozinha com tela ativa"
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <MaterialCommunityIcons name="chef-hat" size={22} color={theme.colors.primary} />
+                  <MaterialCommunityIcons name="sun-clock-outline" size={22} color={theme.colors.primary} />
                 </TouchableOpacity>
               )}
               {recipe && user && recipe.status === 'PUBLISHED' && (
@@ -582,7 +582,7 @@ export default function RecipeScreen() {
               <View style={styles.topCardsWrapper}>
                 <OnboardingCard
                   id="recipe_screen_awake"
-                  icon="cellphone-lock"
+                  icon="sun-clock-outline"
                   title="Modo Cozinha: Tela Sempre Ativa"
                   description="Mantenha a tela sempre acesa durante o preparo para consultar ingredientes e instruções sem sujar o aparelho."
                   actionText="Ativar Modo Cozinha"
@@ -1383,7 +1383,7 @@ export default function RecipeScreen() {
                       <View style={styles.keepAwakeShortcutLeft}>
                         <View style={styles.keepAwakeIconWrap}>
                           <MaterialCommunityIcons
-                            name="white-balance-sunny"
+                            name="sun-clock-outline"
                             size={18}
                             color={theme.colors.primary}
                           />

@@ -122,7 +122,7 @@ export function KitchenModeModal({
           <View style={styles.headerLeft}>
             <View style={styles.awakeBadge}>
               <MaterialCommunityIcons
-                name="white-balance-sunny"
+                name="sun-clock-outline"
                 size={14}
                 color={theme.colors.onPrimary}
               />
