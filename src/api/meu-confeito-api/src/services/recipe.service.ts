@@ -242,7 +242,9 @@ export class RecipeService {
       },
     });
 
-    if (!recipe || recipe.status === 'SUSPENDED') {
+    const isModeratorOrAdmin = context.userRole === 'ADMIN' || context.userRole === 'MODERATOR';
+
+    if (!recipe || (recipe.status === 'SUSPENDED' && !isModeratorOrAdmin)) {
       throw new NotFoundError('Recipe not found', 'RESOURCE_NOT_FOUND');
     }
 
@@ -250,12 +252,12 @@ export class RecipeService {
       recipe.user &&
       !recipe.user.isActive &&
       context.userId !== recipe.userId &&
-      context.userRole !== 'ADMIN'
+      !isModeratorOrAdmin
     ) {
       throw new NotFoundError('Recipe not found', 'RESOURCE_NOT_FOUND');
     }
 
-    if (context.userId !== recipe.userId && recipe.status !== 'PUBLISHED') {
+    if (context.userId !== recipe.userId && recipe.status !== 'PUBLISHED' && !isModeratorOrAdmin) {
       // Privacidade para os usuários
       if (context.userRole === 'ADMIN') {
         throw new ForbiddenError('Action denied for lack of privileges');
