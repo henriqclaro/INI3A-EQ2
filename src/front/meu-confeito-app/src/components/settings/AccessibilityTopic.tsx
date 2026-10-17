@@ -19,7 +19,7 @@ import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
-export function InteractionSettingsCard() {
+export function AccessibilityTopic() {
   const { theme, isHighContrast } = useThemeMode();
   const {
     isSwipeNavigationEnabled,
@@ -301,8 +301,9 @@ export function InteractionSettingsCard() {
   );
 }
 
-// Backward-compatible alias export
-export const AccessibilitySettingsCard = InteractionSettingsCard;
+// Backward-compatible alias exports
+export const InteractionSettingsCard = AccessibilityTopic;
+export const AccessibilitySettingsCard = AccessibilityTopic;
 
 const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
   StyleSheet.create({

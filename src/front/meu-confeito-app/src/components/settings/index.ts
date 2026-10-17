@@ -1,8 +1,18 @@
 export { SettingsSection, type SettingsSectionProps } from './SettingsSection';
-export { ThemeToggleCard } from './ThemeToggleCard';
-export { InteractionSettingsCard, AccessibilitySettingsCard } from './InteractionSettingsCard';
-export { OperationalPreferencesCard } from './OperationalPreferencesCard';
-export { StorageSettingsCard } from './StorageSettingsCard';
+export { AppearanceTopic, AppearanceTopic as ThemeToggleCard } from './AppearanceTopic';
+export {
+  AccessibilityTopic,
+  AccessibilityTopic as InteractionSettingsCard,
+  AccessibilityTopic as AccessibilitySettingsCard,
+} from './AccessibilityTopic';
+export {
+  OperationalPreferencesTopic,
+  OperationalPreferencesTopic as OperationalPreferencesCard,
+} from './OperationalPreferencesTopic';
+export {
+  StorageSettingsTopic,
+  StorageSettingsTopic as StorageSettingsCard,
+} from './StorageSettingsTopic';
 export { DeleteAccountModal, type DeleteAccountModalProps } from './DeleteAccountModal';
 export { SettingsTopicList, type SettingsTopicListProps } from './SettingsTopicList';
 export { SettingsSidebar, type SettingsSidebarProps } from './SettingsSidebar';

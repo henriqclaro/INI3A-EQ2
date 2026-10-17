@@ -62,7 +62,7 @@ const PRECISION_OPTIONS: PrecisionOption[] = [
   },
 ];
 
-export function OperationalPreferencesCard() {
+export function OperationalPreferencesTopic() {
   const { theme } = useThemeMode();
   const {
     priceDecimalPlaces,
@@ -694,3 +694,5 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       color: theme.colors.espressoDark,
     },
   });
+
+export const OperationalPreferencesCard = OperationalPreferencesTopic;

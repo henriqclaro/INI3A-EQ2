@@ -10,7 +10,7 @@ import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme, colors, darkColors } from '@/src/theme/themes';
 
-export function ThemeToggleCard() {
+export function AppearanceTopic() {
   const {
     theme,
     currentMode,
@@ -538,3 +538,5 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean, isOledActive: boo
       marginBottom: 2,
     },
   });
+
+export const ThemeToggleCard = AppearanceTopic;

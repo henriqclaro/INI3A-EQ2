@@ -13,19 +13,19 @@ import { Stack, router, useLocalSearchParams, useNavigation } from 'expo-router'
 
 import {
   AboutAppTopic,
+  AccessibilityTopic,
   AccountSecurityTopic,
+  AppearanceTopic,
   DeleteAccountModal,
-  InteractionSettingsCard,
   OfflineBanner,
   OnboardingCard,
-  OperationalPreferencesCard,
+  OperationalPreferencesTopic,
   SettingsSearchBar,
   SettingsSearchResults,
   SettingsSidebar,
   SettingsTopicHeader,
   SettingsTopicList,
-  StorageSettingsCard,
-  ThemeToggleCard,
+  StorageSettingsTopic,
 } from '@/src/components';
 import { filterSettingShortcuts } from '@/src/constants/settingsShortcuts';
 import { useAuth } from '@/src/contexts/AuthContext';
@@ -269,14 +269,14 @@ export default function SettingsScreen() {
           />
         );
       case 'appearance':
-        return <ThemeToggleCard />;
+        return <AppearanceTopic />;
       case 'interaction':
       case 'accessibility':
-        return <InteractionSettingsCard />;
+        return <AccessibilityTopic />;
       case 'operational':
-        return <OperationalPreferencesCard />;
+        return <OperationalPreferencesTopic />;
       case 'storage':
-        return <StorageSettingsCard />;
+        return <StorageSettingsTopic />;
       case 'about':
         return <AboutAppTopic />;
       default:

@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ReactNode, useMemo } from 'react';
+import { StyleProp, StyleSheet, TextStyle, View, ViewStyle } from 'react-native';
 
 import { router } from 'expo-router';
 
@@ -8,31 +8,51 @@ import { Appbar } from 'react-native-paper';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
+export interface CustomHeaderOptions {
+  title?: string;
+  headerTitle?: string | ((props: { children: string; tintColor?: string }) => ReactNode);
+  headerBackVisible?: boolean;
+  headerTintColor?: string;
+  headerStyle?: StyleProp<ViewStyle>;
+  headerTitleStyle?: StyleProp<TextStyle>;
+  headerRight?: (props: { canGoBack?: boolean }) => ReactNode;
+}
+
 export interface CustomHeaderProps {
   route?: {
     name: string;
-    [key: string]: any;
+    key?: string;
+    params?: object;
   };
-  options?: any;
-  navigation?: any;
+  options?: unknown;
+  navigation?: {
+    canGoBack?: () => boolean;
+    goBack?: () => void;
+  };
   back?: {
     title?: string;
-    [key: string]: any;
+    href?: string;
   };
 }
 
-export const CustomHeader = ({ navigation, route, options, back }: CustomHeaderProps) => {
+export const CustomHeader = ({
+  navigation,
+  route,
+  options: rawOptions,
+  back,
+}: CustomHeaderProps) => {
   const { theme } = useThemeMode();
+  const options = (rawOptions ?? {}) as CustomHeaderOptions;
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const title =
-    typeof options?.headerTitle === 'string'
+    typeof options.headerTitle === 'string'
       ? options.headerTitle
-      : (options?.title ?? route?.name ?? '');
+      : (options.title ?? route?.name ?? '');
 
-  const isBackDisabled = options?.headerBackVisible === false;
-  const isBackForced = options?.headerBackVisible === true;
+  const isBackDisabled = options.headerBackVisible === false;
+  const isBackForced = options.headerBackVisible === true;
   const canGoBack = Boolean(back);
   const shouldShowBackAction = !isBackDisabled && (canGoBack || isBackForced);
 
@@ -48,10 +68,13 @@ export const CustomHeader = ({ navigation, route, options, back }: CustomHeaderP
     }
   };
 
-  const backColor = options?.headerTintColor ?? theme.colors.espressoDark;
+  const backColor =
+    typeof options.headerTintColor === 'string'
+      ? options.headerTintColor
+      : theme.colors.espressoDark;
 
   return (
-    <Appbar.Header mode="small" elevated={false} style={[styles.header, options?.headerStyle]}>
+    <Appbar.Header mode="small" elevated={false} style={[styles.header, options.headerStyle]}>
       {shouldShowBackAction && (
         <Appbar.BackAction
           color={backColor}
@@ -66,9 +89,9 @@ export const CustomHeader = ({ navigation, route, options, back }: CustomHeaderP
           styles.headerTitleContainer,
           !shouldShowBackAction && styles.headerTitleContainerNoBack,
         ]}
-        titleStyle={[styles.headerText, options?.headerTitleStyle]}
+        titleStyle={[styles.headerText, options.headerTitleStyle]}
       />
-      {options?.headerRight && (
+      {typeof options.headerRight === 'function' && (
         <View style={styles.headerRight}>
           {options.headerRight({ canGoBack: shouldShowBackAction })}
         </View>

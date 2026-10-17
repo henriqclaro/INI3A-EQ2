@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { GestureResponderEvent, Keyboard, Platform, useWindowDimensions } from 'react-native';
 
-import { router } from 'expo-router';
+import { Href, router } from 'expo-router';
 
 import { useSettings } from '../contexts/SettingsContext';
 
@@ -152,7 +152,7 @@ export function useTabSwipe({ activeTab, isCustomerRole }: UseTabSwipeOptions) {
 
         triggerHaptic('selection');
 
-        router.navigate(`/(tabs)/${nextTab}` as any);
+        router.navigate(`/(tabs)/${nextTab}` as Href);
 
         setTimeout(() => {
           isTransitioningRef.current = false;

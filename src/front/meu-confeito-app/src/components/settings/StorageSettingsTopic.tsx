@@ -19,7 +19,7 @@ import { AppTheme } from '@/src/theme/themes';
 import { clearAppCache } from '@/src/utils/cache';
 import { clearAllFormDrafts } from '@/src/utils/drafts';
 
-export function StorageSettingsCard() {
+export function StorageSettingsTopic() {
   const { theme } = useThemeMode();
   const { triggerHaptic } = useSettings();
   const { width } = useWindowDimensions();
@@ -594,3 +594,5 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       color: theme.colors.onSurfaceVariant,
     },
   });
+
+export const StorageSettingsCard = StorageSettingsTopic;

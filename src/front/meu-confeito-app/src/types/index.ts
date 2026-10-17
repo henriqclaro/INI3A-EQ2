@@ -95,4 +95,4 @@ export {
   UserReviewSummaryRecipe,
 } from './review';
 export { DownloadedRecipe, ClearDownloadedRecipesResult } from './downloaded-recipe';
-export { SettingsTopicId, SettingsTopicItem } from './settings';
+export { SettingShortcutItem, SettingsTopicId, SettingsTopicItem } from './settings';
