@@ -259,6 +259,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number) =
     },
     searchInput: {
       width: '100%',
+      margin: 0,
     },
     metaRow: {
       flexDirection: 'row',

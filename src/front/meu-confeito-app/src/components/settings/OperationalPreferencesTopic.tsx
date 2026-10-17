@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -62,7 +62,15 @@ const PRECISION_OPTIONS: PrecisionOption[] = [
   },
 ];
 
-export function OperationalPreferencesTopic() {
+export interface OperationalPreferencesTopicProps {
+  targetSection?: string;
+  onScrollToSection?: (yOffset: number) => void;
+}
+
+export function OperationalPreferencesTopic({
+  targetSection,
+  onScrollToSection,
+}: OperationalPreferencesTopicProps = {}) {
   const { theme } = useThemeMode();
   const {
     priceDecimalPlaces,
@@ -194,8 +202,49 @@ export function OperationalPreferencesTopic() {
     setPriceDecimalPlaces(places);
   };
 
+  const cardYRef = useRef(0);
+  const precisionYRef = useRef(0);
+  const hasTriggeredScrollRef = useRef(false);
+  const [isHighlighted, setIsHighlighted] = useState(false);
+
+  const checkAndScroll = useCallback(() => {
+    if (
+      (targetSection === 'decimals' || targetSection === 'price-precision') &&
+      !hasTriggeredScrollRef.current &&
+      onScrollToSection &&
+      precisionYRef.current > 0
+    ) {
+      hasTriggeredScrollRef.current = true;
+      setIsHighlighted(true);
+      requestAnimationFrame(() => {
+        const targetY = Math.max(0, cardYRef.current + precisionYRef.current - 24);
+        onScrollToSection(targetY);
+      });
+
+      const timer = setTimeout(() => {
+        setIsHighlighted(false);
+      }, 2500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [targetSection, onScrollToSection]);
+
+  useEffect(() => {
+    if (targetSection === 'decimals' || targetSection === 'price-precision') {
+      hasTriggeredScrollRef.current = false;
+      const cleanup = checkAndScroll();
+      return cleanup;
+    }
+  }, [targetSection, checkAndScroll]);
+
   return (
-    <View style={styles.card}>
+    <View
+      style={styles.card}
+      onLayout={(e) => {
+        cardYRef.current = e.nativeEvent.layout.y;
+        checkAndScroll();
+      }}
+    >
       {preferences.map((pref, index) => {
         const isLastItem = index === preferences.length - 1;
 
@@ -280,7 +329,13 @@ export function OperationalPreferencesTopic() {
       <View style={styles.sectionDivider} />
 
       {/* Pricing Display Decimal Places Section */}
-      <View style={styles.precisionSection}>
+      <View
+        onLayout={(e) => {
+          precisionYRef.current = e.nativeEvent.layout.y;
+          checkAndScroll();
+        }}
+        style={[styles.precisionSection, isHighlighted && styles.precisionSectionHighlighted]}
+      >
         <View style={styles.settingRow}>
           <View style={styles.settingInfo}>
             <View style={styles.iconCircle}>
@@ -296,6 +351,11 @@ export function OperationalPreferencesTopic() {
                 <View style={styles.activeBadge}>
                   <Text style={styles.activeBadgeText}>{priceDecimalPlaces} casas</Text>
                 </View>
+                {isHighlighted && (
+                  <View style={styles.highlightBadge}>
+                    <Text style={styles.highlightBadgeText}>Em Destaque</Text>
+                  </View>
+                )}
               </View>
               <Text style={styles.subtitle}>
                 Controle a quantidade de casas decimais na exibição de preços e custos unitários
@@ -564,6 +624,30 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
     },
     precisionSection: {
       gap: theme.spacing.space3,
+      borderRadius: theme.rounded.md,
+      padding: 0,
+    },
+    precisionSectionHighlighted: {
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1.5,
+      borderColor: theme.colors.primary,
+      padding: theme.spacing.space3,
+      borderRadius: theme.rounded.md,
+      ...theme.shadows.glow,
+    },
+    highlightBadge: {
+      backgroundColor: theme.colors.primary,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: theme.rounded.full,
+    },
+    highlightBadgeText: {
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontSize: 10,
+      fontWeight: '700',
+      color: theme.colors.onPrimary,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
     },
     selectorLabel: {
       fontFamily: theme.typography.labelMd.fontFamily,

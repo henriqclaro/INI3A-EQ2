@@ -296,6 +296,21 @@ export default function StockScreen() {
           onPress={handleNavigateToRegister}
         />
 
+        {/* Operational Preferences Card: Pricing Decimal Places */}
+        <OnboardingCard
+          id="stock_pricing_decimals"
+          icon="decimal-increase"
+          title="Casas Decimais em Precificações"
+          description="Personalize a exibição de custos unitários e preços no estoque com 2, 3 ou 4 casas decimais para maior precisão em insumos fracionados."
+          actionText="Ajustar Casas Decimais"
+          onPress={() => {
+            router.push({
+              pathname: '/settings',
+              params: { topic: 'operational', section: 'decimals' },
+            });
+          }}
+        />
+
         <OfflineBanner
           isVisible={isOffline}
           message="Você está offline. Visualizando estoque salvo no dispositivo."
@@ -677,8 +692,8 @@ const createStyles = (
     },
     mobileShareButtonWrapper: {
       width: '100%',
-      marginTop: 12,
-      marginBottom: 6,
+      marginTop: -4,
+      marginBottom: 0,
     },
     mobileShareButton: {
       width: '100%',

@@ -46,7 +46,7 @@ export function SettingsSidebar({
 
   const hasVisibleSidebarCards =
     !isCardDismissed('settings_appearance') ||
-    (!isCustomerRole && !isCardDismissed('settings_operational')) ||
+    !isCardDismissed('settings_accessibility') ||
     !isCardDismissed('settings_edit_profile');
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -167,17 +167,15 @@ export function SettingsSidebar({
               isCompact={true}
               onPress={() => onSelectTopic('appearance')}
             />
-            {!isCustomerRole && (
-              <OnboardingCard
-                id="settings_operational"
-                icon="tune-variant"
-                title="Preferências Operacionais"
-                description="Defina margens de lucro padrão e custos fixos."
-                actionText="Configurar Padrões"
-                isCompact={true}
-                onPress={() => onSelectTopic('operational')}
-              />
-            )}
+            <OnboardingCard
+              id="settings_accessibility"
+              icon="wheelchair-accessibility"
+              title="Acessibilidade & Interação"
+              description="Ajuste resposta tátil, gestos e cards de ajuda."
+              actionText="Ajustar Acessibilidade"
+              isCompact={true}
+              onPress={() => onSelectTopic('accessibility')}
+            />
             <OnboardingCard
               id="settings_edit_profile"
               icon="account-edit-outline"

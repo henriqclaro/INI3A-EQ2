@@ -481,7 +481,11 @@ export default function RecipeScreen() {
                   accessibilityLabel="Abrir modo cozinha com tela ativa"
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <MaterialCommunityIcons name="sun-clock-outline" size={22} color={theme.colors.primary} />
+                  <MaterialCommunityIcons
+                    name="sun-clock-outline"
+                    size={22}
+                    color={theme.colors.primary}
+                  />
                 </TouchableOpacity>
               )}
               {recipe && user && recipe.status === 'PUBLISHED' && (
@@ -1768,7 +1772,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
 
     // Header Details
     headerSection: {
-      marginBottom: 20,
+      marginBottom: 14,
       gap: 10,
     },
     titleSection: {
@@ -2457,6 +2461,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       justifyContent: 'center',
       gap: 12,
       width: '100%',
+      marginTop: 10,
     },
     metaBadge: {
       flex: 1,

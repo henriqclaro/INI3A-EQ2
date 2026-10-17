@@ -162,7 +162,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isTablet: boolean) =>
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
       padding: isWide ? 14 : 10,
-      marginBottom: 16,
+      marginBottom: isWide ? 16 : 0,
       ...theme.shadows.soft,
     },
     grid: {

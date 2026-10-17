@@ -167,7 +167,7 @@ export function ProfitSummarySection({
                 <Text style={styles.kpiLabel}>Faturamento Estimado</Text>
                 <View style={styles.kpiIconBox}>
                   <MaterialCommunityIcons
-                    name="cash-register"
+                    name="cash-multiple"
                     size={20}
                     color={theme.colors.primary}
                   />

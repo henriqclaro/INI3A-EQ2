@@ -70,6 +70,7 @@ export interface RecipeFormProps {
   isSubmitting?: boolean;
   onSubmit: (data: RecipeFormSubmitData) => Promise<void>;
   submitButtonText?: string;
+  onboardingCard?: React.ReactNode;
 }
 
 interface RecipeFormItem {
@@ -103,6 +104,7 @@ export function RecipeForm({
   isSubmitting = false,
   onSubmit,
   submitButtonText,
+  onboardingCard,
 }: RecipeFormProps) {
   const { theme } = useThemeMode();
   const { user } = useAuth();
@@ -281,6 +283,12 @@ export function RecipeForm({
     const hasMeaningfulContent =
       title.trim().length > 0 ||
       baseYield.trim().length > 0 ||
+      prepTimeMinutes.trim().length > 0 ||
+      profitMargin.trim().length > 0 ||
+      overhead.trim().length > 0 ||
+      hourlyLabor.trim().length > 0 ||
+      packagingCost.trim().length > 0 ||
+      steps.some((s) => s.title.trim().length > 0 || s.description.trim().length > 0) ||
       items.some(
         (it) =>
           it.ingredientId.trim().length > 0 ||
@@ -718,6 +726,8 @@ export function RecipeForm({
         onRestore={handleRestoreDraft}
         onDiscard={handleDiscardDraft}
       />
+
+      {onboardingCard ? <View style={styles.onboardingWrapper}>{onboardingCard}</View> : null}
 
       {/* Card: Basic Data */}
       <View style={styles.box}>
@@ -1369,6 +1379,10 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
     },
     hiddenField: {
       display: 'none',
+    },
+    onboardingWrapper: {
+      width: '100%',
+      marginBottom: 20,
     },
     box: {
       backgroundColor: theme.colors.surfaceContainerLowest,

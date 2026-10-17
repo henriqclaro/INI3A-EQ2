@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
@@ -34,6 +34,10 @@ export default function ReportsScreen() {
   const { width } = useWindowDimensions();
   const [activeTab, setActiveTab] = useState<AnalyticsTab>('profit');
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const scrollViewRef = useRef<ScrollView>(null);
+  const contentYRef = useRef(0);
+  const tabSelectorYRef = useRef(0);
 
   const isDesktop = width >= 768;
 
@@ -81,6 +85,18 @@ export default function ReportsScreen() {
     }
   }, [activeTab, refetchProfit, plannedProductions.length, calculateProjection]);
 
+  const handleSelectTabWithScroll = useCallback((tab: AnalyticsTab) => {
+    setActiveTab(tab);
+    setTimeout(() => {
+      const totalY = contentYRef.current + tabSelectorYRef.current;
+      const targetY = Math.max(0, totalY - 16);
+      scrollViewRef.current?.scrollTo({
+        y: targetY,
+        animated: true,
+      });
+    }, 100);
+  }, []);
+
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
   if (!user || !isBakerRole) {
@@ -90,6 +106,7 @@ export default function ReportsScreen() {
   return (
     <View style={styles.container}>
       <ScrollView
+        ref={scrollViewRef}
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -101,7 +118,12 @@ export default function ReportsScreen() {
           />
         }
       >
-        <View style={styles.content}>
+        <View
+          style={styles.content}
+          onLayout={(e) => {
+            contentYRef.current = e.nativeEvent.layout.y;
+          }}
+        >
           {/* Header Banner */}
           <View style={styles.headerSection}>
             <View style={styles.iconCircle}>
@@ -124,7 +146,7 @@ export default function ReportsScreen() {
             description="Monitore o lucro líquido real, analise custos de produção e acompanhe a margem de contribuição de cada receita."
             actionText="Visualizar Rentabilidade"
             onPress={() => {
-              setActiveTab('profit');
+              handleSelectTabWithScroll('profit');
             }}
           />
 
@@ -135,7 +157,7 @@ export default function ReportsScreen() {
             description="Simule e planeje compras de insumos para encomendas futuras sem sobras ou falta de matéria-prima."
             actionText="Abrir Previsão de Compras"
             onPress={() => {
-              setActiveTab('projection');
+              handleSelectTabWithScroll('projection');
             }}
           />
 
@@ -150,7 +172,12 @@ export default function ReportsScreen() {
           />
 
           {/* Tab Selector Buttons */}
-          <View style={styles.tabSelectorContainer}>
+          <View
+            style={styles.tabSelectorContainer}
+            onLayout={(e) => {
+              tabSelectorYRef.current = e.nativeEvent.layout.y;
+            }}
+          >
             <TouchableOpacity
               style={[styles.tabButton, activeTab === 'profit' && styles.tabButtonActive]}
               onPress={() => setActiveTab('profit')}

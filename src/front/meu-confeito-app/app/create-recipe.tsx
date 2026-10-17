@@ -13,7 +13,7 @@ import { Stack, router, useLocalSearchParams } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { OfflineBanner, RecipeForm, RecipeFormSubmitData } from '@/src/components';
+import { OfflineBanner, OnboardingCard, RecipeForm, RecipeFormSubmitData } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useNetwork } from '@/src/hooks/useNetwork';
@@ -308,6 +308,23 @@ export default function CreateRecipeScreen() {
               isEditMode={isEditMode}
               isSubmitting={isSubmitting}
               onSubmit={handleSubmit}
+              onboardingCard={
+                !isEditMode ? (
+                  <OnboardingCard
+                    id="recipe_default_operational_values"
+                    icon="tune-variant"
+                    title="Valores Padrão de Precificação"
+                    description="Defina margens de lucro, custos fixos e mão de obra padrão nas preferências para preencher automaticamente suas receitas."
+                    actionText="Configurar Padrões"
+                    onPress={() => {
+                      router.push({
+                        pathname: '/settings',
+                        params: { topic: 'operational' },
+                      });
+                    }}
+                  />
+                ) : undefined
+              }
               submitButtonText={
                 isCustomizing
                   ? 'Salvar Minha Versão'

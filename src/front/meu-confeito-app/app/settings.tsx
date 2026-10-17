@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   BackHandler,
@@ -41,7 +41,9 @@ export default function SettingsScreen() {
   const { theme } = useThemeMode();
   const { width } = useWindowDimensions();
   const navigation = useNavigation();
-  const params = useLocalSearchParams<{ topic?: string }>();
+  const params = useLocalSearchParams<{ topic?: string; section?: string }>();
+  const desktopScrollRef = useRef<ScrollView>(null);
+  const mobileScrollRef = useRef<ScrollView>(null);
 
   const isSmallScreen = width < theme.breakpoints.sm;
   const isDesktop = Platform.OS === 'web' || width >= theme.breakpoints.md;
@@ -56,7 +58,7 @@ export default function SettingsScreen() {
 
   const hasVisibleSettingsCards =
     !isCardDismissed('settings_appearance') ||
-    (!isCustomerRole && !isCardDismissed('settings_operational')) ||
+    !isCardDismissed('settings_accessibility') ||
     !isCardDismissed('settings_edit_profile');
 
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
@@ -274,7 +276,18 @@ export default function SettingsScreen() {
       case 'accessibility':
         return <AccessibilityTopic />;
       case 'operational':
-        return <OperationalPreferencesTopic />;
+        return (
+          <OperationalPreferencesTopic
+            targetSection={params.section}
+            onScrollToSection={(yOffset) => {
+              const scrollRef = isDesktop ? desktopScrollRef : mobileScrollRef;
+              scrollRef.current?.scrollTo({
+                y: yOffset,
+                animated: true,
+              });
+            }}
+          />
+        );
       case 'storage':
         return <StorageSettingsTopic />;
       case 'about':
@@ -295,11 +308,17 @@ export default function SettingsScreen() {
             topics={topics}
             selectedTopicId={activeTopicId}
             onSelectTopic={handleSelectTopic}
+            onSelectShortcut={(shortcut) => {
+              if (shortcut.id === 'price-precision') {
+                router.setParams({ section: 'decimals' });
+              }
+            }}
             isCustomerRole={isCustomerRole}
             isBakerRole={isBakerRole}
           />
 
           <ScrollView
+            ref={desktopScrollRef}
             style={styles.desktopMainScroll}
             contentContainerStyle={styles.desktopMainContent}
             showsVerticalScrollIndicator={false}
@@ -325,6 +344,7 @@ export default function SettingsScreen() {
       ) : (
         /* Mobile: Unified Scroll Layout */
         <ScrollView
+          ref={mobileScrollRef}
           style={styles.mobileContainer}
           contentContainerStyle={styles.mobileScrollContent}
           showsVerticalScrollIndicator={false}
@@ -354,6 +374,9 @@ export default function SettingsScreen() {
                   searchQuery={mobileSearchQuery}
                   onSelectShortcut={(shortcut) => {
                     handleSelectTopic(shortcut.topicId);
+                    if (shortcut.id === 'price-precision') {
+                      router.setParams({ section: 'decimals' });
+                    }
                     setMobileSearchQuery('');
                   }}
                   onClearSearch={() => setMobileSearchQuery('')}
@@ -370,16 +393,14 @@ export default function SettingsScreen() {
                         actionText="Ajustar Tema Visual"
                         onPress={() => handleSelectTopic('appearance')}
                       />
-                      {!isCustomerRole && (
-                        <OnboardingCard
-                          id="settings_operational"
-                          icon="tune-variant"
-                          title="Preferências Operacionais"
-                          description="Defina margens de lucro padrão, custos fixos (overhead) e precisão de casas decimais."
-                          actionText="Configurar Padrões"
-                          onPress={() => handleSelectTopic('operational')}
-                        />
-                      )}
+                      <OnboardingCard
+                        id="settings_accessibility"
+                        icon="wheelchair-accessibility"
+                        title="Acessibilidade & Interação"
+                        description="Ajuste resposta tátil, gestos, escala de botões e visibilidade de cards de ajuda."
+                        actionText="Ajustar Acessibilidade"
+                        onPress={() => handleSelectTopic('accessibility')}
+                      />
                       <OnboardingCard
                         id="settings_edit_profile"
                         icon="account-edit-outline"

@@ -14,11 +14,14 @@ import { useAuth } from './AuthContext';
 export const ONBOARDING_CARD_IDS = [
   'home_welcome',
   'stock_register_item',
+  'stock_pricing_decimals',
   'reports_profit_summary',
   'reports_purchase_projection',
   'recipe_screen_awake',
   'recipe_review_rate',
+  'recipe_default_operational_values',
   'settings_appearance',
+  'settings_accessibility',
   'settings_operational',
   'settings_edit_profile',
 ] as const;
