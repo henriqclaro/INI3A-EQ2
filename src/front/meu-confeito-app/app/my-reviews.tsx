@@ -16,37 +16,43 @@ import { Stack, router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { Input, OfflineBanner } from '@/src/components';
-import { ReviewedRecipeCard } from '@/src/components/recipe';
+import { Input, OfflineBanner, ReviewedRecipeCard } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { useDebounce } from '@/src/hooks/useDebounce';
 import { useUserReviews } from '@/src/hooks/useUserReviews';
 import { AppTheme } from '@/src/theme/themes';
 import { UserReviewItem } from '@/src/types/review';
+import { matchesSearch } from '@/src/utils/text';
 
 export default function MyReviewsScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
   const { width } = useWindowDimensions();
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 200);
   const [removingId, setRemovingId] = useState<string | null>(null);
 
   const isDesktop = width >= 768;
+  const containerWidth = Math.min(width - (isDesktop ? 64 : 32), 1040);
+  const cardWidth = isDesktop ? Math.floor((containerWidth - 16) / 2) : Math.min(width - 32, 540);
   const { userReviews, isLoading, isOffline, refetch, deleteReview } = useUserReviews(user?.id);
 
-  const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
+  const styles = useMemo(
+    () => createStyles(theme, isDesktop, cardWidth),
+    [theme, isDesktop, cardWidth],
+  );
 
-  const hasActiveSearch = Boolean(search.trim().length > 0);
+  const hasActiveSearch = Boolean(debouncedSearch.trim().length > 0);
 
   const filteredReviews: UserReviewItem[] = useMemo(() => {
-    const trimmed = search.trim().toLowerCase();
-    if (!trimmed) return userReviews;
+    if (!debouncedSearch.trim()) return userReviews;
 
     return userReviews.filter((item) => {
-      const hasTitleMatch = item.recipe.title.toLowerCase().includes(trimmed);
+      const hasTitleMatch = matchesSearch(item.recipe.title, debouncedSearch);
       return hasTitleMatch;
     });
-  }, [userReviews, search]);
+  }, [userReviews, debouncedSearch]);
 
   const handleRemove = useCallback(
     (recipeId: string, recipeTitle: string) => {
@@ -91,10 +97,11 @@ export default function MyReviewsScreen() {
           }
           onRemove={() => handleRemove(item.recipe.id, item.recipe.title)}
           isRemoving={removingId === item.recipe.id}
+          style={isDesktop ? styles.desktopCard : undefined}
         />
       </View>
     ),
-    [handleRemove, removingId, styles.cardWrapper],
+    [handleRemove, isDesktop, removingId, styles.cardWrapper, styles.desktopCard],
   );
 
   const listEmpty = useMemo(() => {
@@ -233,7 +240,7 @@ export default function MyReviewsScreen() {
   );
 }
 
-const createStyles = (theme: AppTheme, isDesktop: boolean) =>
+const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -291,15 +298,20 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
     columnWrapper: {
       gap: 16,
       width: '100%',
+      maxWidth: 1040,
+      alignSelf: 'center',
+      justifyContent: 'flex-start',
     },
     separator: {
       height: 16,
     },
     cardWrapper: {
-      width: isDesktop ? undefined : '100%',
-      flex: isDesktop ? 1 : undefined,
-      minWidth: isDesktop ? 320 : '100%',
-      maxWidth: isDesktop ? 510 : '100%',
+      width: cardWidth,
+      maxWidth: isDesktop ? cardWidth : 540,
+      alignSelf: 'center',
+    },
+    desktopCard: {
+      height: 132,
     },
     feedbackContainer: {
       flex: 1,

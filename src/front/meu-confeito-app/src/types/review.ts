@@ -61,6 +61,7 @@ export interface UserReviewSummaryRecipe {
   averageRating: number | string;
   totalReviews: number;
   updatedAt?: string | Date;
+  status?: string;
 }
 
 export interface UserReviewItem {

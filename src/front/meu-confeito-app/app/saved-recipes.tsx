@@ -34,9 +34,14 @@ export default function SavedRecipesScreen() {
   const [removingId, setRemovingId] = useState<string | null>(null);
 
   const isDesktop = width >= 768;
+  const containerWidth = Math.min(width - (isDesktop ? 64 : 32), 1040);
+  const cardWidth = isDesktop ? Math.floor((containerWidth - 16) / 2) : Math.min(width - 32, 540);
   const { savedRecipes, isLoading, isOffline, refetch, removeSave } = useSavedRecipes(user?.id);
 
-  const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
+  const styles = useMemo(
+    () => createStyles(theme, isDesktop, cardWidth),
+    [theme, isDesktop, cardWidth],
+  );
 
   const hasActiveSearch = Boolean(debouncedSearch.trim().length > 0);
 
@@ -98,10 +103,11 @@ export default function SavedRecipesScreen() {
           }
           onRemove={() => handleRemove(item.recipe.id, item.recipe.title)}
           isRemoving={removingId === item.recipe.id}
+          style={isDesktop ? styles.desktopCard : undefined}
         />
       </View>
     ),
-    [handleRemove, removingId, styles.cardWrapper],
+    [handleRemove, isDesktop, removingId, styles.cardWrapper, styles.desktopCard],
   );
 
   const listEmpty = useMemo(() => {
@@ -255,7 +261,7 @@ export default function SavedRecipesScreen() {
   );
 }
 
-const createStyles = (theme: AppTheme, isDesktop: boolean) =>
+const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -313,15 +319,20 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
     columnWrapper: {
       gap: 16,
       width: '100%',
+      maxWidth: 1040,
+      alignSelf: 'center',
+      justifyContent: 'flex-start',
     },
     separator: {
       height: 16,
     },
     cardWrapper: {
-      width: isDesktop ? undefined : '100%',
-      flex: isDesktop ? 1 : undefined,
-      minWidth: isDesktop ? 320 : '100%',
-      maxWidth: isDesktop ? 510 : '100%',
+      width: cardWidth,
+      maxWidth: isDesktop ? cardWidth : 540,
+      alignSelf: 'center',
+    },
+    desktopCard: {
+      height: 132,
     },
     feedbackContainer: {
       flex: 1,

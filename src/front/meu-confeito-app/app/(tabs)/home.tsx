@@ -381,7 +381,7 @@ function BakerHomeScreen() {
                   <View style={styles.tipCardTop}>
                     <View style={styles.tipIconBox}>
                       <MaterialCommunityIcons
-                        name="chef-hat"
+                        name="calculator-variant-outline"
                         size={20}
                         color={theme.colors.primary}
                       />
