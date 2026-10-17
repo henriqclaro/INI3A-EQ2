@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -14,12 +14,21 @@ import { Stack, router } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { CustomButton, Input, OfflineBanner, UserAvatar } from '@/src/components';
+import {
+  CustomButton,
+  Input,
+  OfflineBanner,
+  RecipeCompactCard,
+  UserAvatar,
+} from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useNetwork } from '@/src/hooks/useNetwork';
 import { SearchUserItem, useUserBan, useUserSearch } from '@/src/hooks/useUsers';
+import { RecipeService } from '@/src/services/recipe';
 import { AppTheme } from '@/src/theme/themes';
+import { PartialRecipe } from '@/src/types/recipe';
+import { formatDate } from '@/src/utils/formatters';
 import { getRoleLabel, isAdmin, isModerator, isStaff } from '@/src/utils/roles';
 
 export default function ManagementScreen() {
@@ -34,7 +43,16 @@ export default function ManagementScreen() {
   const isModeratorUser = isModerator(user?.role);
 
   const [searchEmail, setSearchEmail] = useState('');
+  const [hasSearchedUsers, setHasSearchedUsers] = useState(false);
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
+
+  const [recipeSearchTerm, setRecipeSearchTerm] = useState('');
+  const [hasSearchedRecipes, setHasSearchedRecipes] = useState(false);
+  const [isSearchingRecipes, setIsSearchingRecipes] = useState(false);
+  const [recipeSearchError, setRecipeSearchError] = useState<string | null>(null);
+  const [recipeResults, setRecipeResults] = useState<PartialRecipe[]>([]);
+  const [expandedRecipeId, setExpandedRecipeId] = useState<string | null>(null);
+  const [suspendingRecipeId, setSuspendingRecipeId] = useState<string | null>(null);
 
   const {
     users,
@@ -47,13 +65,6 @@ export default function ManagementScreen() {
   const { banUser, isLoading: isBanningUser } = useUserBan();
 
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
-
-  // Load initial active users when staff enters the screen
-  useEffect(() => {
-    if (isStaffUser) {
-      searchUsers('').catch((err) => console.error('Error fetching initial users list:', err));
-    }
-  }, [isStaffUser, searchUsers]);
 
   // Protect route against unauthorized common users
   if (!user || !isStaffUser) {
@@ -85,18 +96,178 @@ export default function ManagementScreen() {
       Alert.alert('Modo Offline', 'A busca de usuários requer uma conexão ativa com a internet.');
       return;
     }
+    const trimmed = searchEmail.trim();
+    if (!trimmed) {
+      Alert.alert('Termo Necessário', 'Digite um e-mail para buscar usuários.');
+      return;
+    }
     setExpandedUserId(null);
+    setHasSearchedUsers(true);
     searchUsers(searchEmail).catch((err) => console.error('Error searching users:', err));
   };
 
   const handleClear = () => {
     setSearchEmail('');
+    setHasSearchedUsers(false);
+    setUsers([]);
     setExpandedUserId(null);
-    searchUsers('').catch((err) => console.error('Error resetting users list:', err));
   };
 
   const handleToggleExpand = (id: string) => {
     setExpandedUserId((prev) => (prev === id ? null : id));
+  };
+
+  const handleRecipeSearch = async () => {
+    if (isOffline) {
+      Alert.alert('Modo Offline', 'A busca de receitas requer uma conexão ativa com a internet.');
+      return;
+    }
+    const trimmed = recipeSearchTerm.trim();
+    if (!trimmed) {
+      Alert.alert('Termo Necessário', 'Digite ao menos uma palavra para buscar receitas.');
+      return;
+    }
+    setExpandedRecipeId(null);
+    setHasSearchedRecipes(true);
+    setIsSearchingRecipes(true);
+    setRecipeSearchError(null);
+    try {
+      const res = await RecipeService.search({ search: trimmed });
+      setRecipeResults(res.data?.recipes ?? []);
+    } catch (err: unknown) {
+      console.error('Error searching recipes for moderation:', err);
+      const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
+      setRecipeSearchError(
+        apiErr?.response?.data?.message || apiErr?.message || 'Erro ao buscar receitas.',
+      );
+    } finally {
+      setIsSearchingRecipes(false);
+    }
+  };
+
+  const handleClearRecipeSearch = () => {
+    setRecipeSearchTerm('');
+    setHasSearchedRecipes(false);
+    setRecipeResults([]);
+    setExpandedRecipeId(null);
+    setRecipeSearchError(null);
+  };
+
+  const handleToggleExpandRecipe = (id: string) => {
+    setExpandedRecipeId((prev) => (prev === id ? null : id));
+  };
+
+  const executeSuspendRecipe = async (targetRecipe: PartialRecipe) => {
+    if (isOffline) {
+      Alert.alert('Modo Offline', 'Operações de moderação requerem conexão com a internet.');
+      return;
+    }
+
+    try {
+      setSuspendingRecipeId(targetRecipe.id);
+      await RecipeService.updateVisibility(targetRecipe.id, {
+        userId: user.id,
+        status: 'SUSPENDED',
+      });
+      Alert.alert(
+        'Receita Suspensa',
+        `A receita "${targetRecipe.title}" foi suspensa com sucesso e não está mais visível para a comunidade.`,
+      );
+      setRecipeResults((prev) =>
+        prev.map((item) => (item.id === targetRecipe.id ? { ...item, status: 'SUSPENDED' } : item)),
+      );
+    } catch (err: unknown) {
+      const apiErr = err as {
+        response?: { data?: { message?: string }; status?: number };
+        message?: string;
+      };
+      const msg =
+        apiErr?.response?.data?.message ||
+        apiErr?.message ||
+        'Não foi possível suspender a receita. Verifique suas permissões.';
+      Alert.alert('Erro ao Suspender', msg);
+    } finally {
+      setSuspendingRecipeId(null);
+    }
+  };
+
+  const executeReactivateRecipe = async (targetRecipe: PartialRecipe) => {
+    if (isOffline) {
+      Alert.alert('Modo Offline', 'Operações de moderação requerem conexão com a internet.');
+      return;
+    }
+
+    try {
+      setSuspendingRecipeId(targetRecipe.id);
+      await RecipeService.updateVisibility(targetRecipe.id, {
+        userId: user.id,
+        status: 'PUBLISHED',
+      });
+      Alert.alert(
+        'Receita Reativada',
+        `A receita "${targetRecipe.title}" foi reativada com sucesso e voltou a ser pública para a comunidade.`,
+      );
+      setRecipeResults((prev) =>
+        prev.map((item) => (item.id === targetRecipe.id ? { ...item, status: 'PUBLISHED' } : item)),
+      );
+    } catch (err: unknown) {
+      const apiErr = err as {
+        response?: { data?: { message?: string }; status?: number };
+        message?: string;
+      };
+      const msg =
+        apiErr?.response?.data?.message ||
+        apiErr?.message ||
+        'Não foi possível reativar a receita. Verifique suas permissões.';
+      Alert.alert('Erro ao Reativar', msg);
+    } finally {
+      setSuspendingRecipeId(null);
+    }
+  };
+
+  const handlePromptSuspendRecipe = (targetRecipe: PartialRecipe) => {
+    if (!isAdminUser && !isModeratorUser) {
+      Alert.alert(
+        'Acesso Restrito',
+        'Apenas moderadores e administradores podem suspender receitas.',
+      );
+      return;
+    }
+
+    Alert.alert(
+      'Confirmar Suspensão',
+      `Deseja realmente suspender a receita "${targetRecipe.title}"? Ela será removida da lista pública e de buscas comunitárias.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Suspender',
+          style: 'destructive',
+          onPress: () => executeSuspendRecipe(targetRecipe),
+        },
+      ],
+    );
+  };
+
+  const handlePromptReactivateRecipe = (targetRecipe: PartialRecipe) => {
+    if (!isAdminUser && !isModeratorUser) {
+      Alert.alert(
+        'Acesso Restrito',
+        'Apenas moderadores e administradores podem reativar receitas.',
+      );
+      return;
+    }
+
+    Alert.alert(
+      'Confirmar Reativação',
+      `Deseja reativar a receita "${targetRecipe.title}"? Ela voltará a ser exibida publicamente para os usuários.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Reativar',
+          onPress: () => executeReactivateRecipe(targetRecipe),
+        },
+      ],
+    );
   };
 
   const executeBan = async (targetUser: SearchUserItem) => {
@@ -288,6 +459,19 @@ export default function ManagementScreen() {
                   <ActivityIndicator size="large" color={theme.colors.primary} />
                   <Text style={styles.loadingText}>Buscando usuários...</Text>
                 </View>
+              ) : !hasSearchedUsers ? (
+                <View style={styles.emptyContainer}>
+                  <MaterialCommunityIcons
+                    name="account-search-outline"
+                    size={36}
+                    color={theme.colors.onSurfaceVariant}
+                  />
+                  <Text style={styles.emptyTitle}>Buscar Usuários</Text>
+                  <Text style={styles.emptySubtitle}>
+                    Digite um e-mail acima e toque em Buscar para inspecionar contas, receitas ou
+                    aplicar banimento.
+                  </Text>
+                </View>
               ) : users.length === 0 ? (
                 <View style={styles.emptyContainer}>
                   <MaterialCommunityIcons
@@ -299,7 +483,7 @@ export default function ManagementScreen() {
                   <Text style={styles.emptySubtitle}>
                     {searchEmail.trim()
                       ? `Não encontramos usuários cadastrados com o e-mail "${searchEmail.trim()}".`
-                      : 'Nenhum usuário ativo retornado.'}
+                      : 'Nenhum usuário encontrado com os filtros informados.'}
                   </Text>
                 </View>
               ) : (
@@ -525,12 +709,12 @@ export default function ManagementScreen() {
             </View>
           </View>
 
-          {/* Section: Ferramentas de Moderação (Em Breve) */}
+          {/* Section: Moderação de Conteúdo */}
           <View style={styles.card}>
             <View style={styles.cardHeader}>
               <View style={styles.cardIconCircle}>
                 <MaterialCommunityIcons
-                  name="flag-outline"
+                  name="shield-alert-outline"
                   size={22}
                   color={theme.colors.primary}
                 />
@@ -538,21 +722,232 @@ export default function ManagementScreen() {
               <View style={styles.cardHeaderTextCol}>
                 <View style={styles.cardTitleRow}>
                   <Text style={styles.cardTitle}>Moderação de Conteúdo</Text>
-                  <View style={styles.upcomingBadge}>
-                    <Text style={styles.upcomingBadgeText}>Em Breve</Text>
-                  </View>
                 </View>
                 <Text style={styles.cardSubtitle}>
-                  Fila de análise de denúncias de receitas, fotos e avaliações públicas.
+                  Busque receitas públicas por título para inspecionar conteúdo ou aplicar
+                  suspensão.
                 </Text>
               </View>
             </View>
 
-            <View style={styles.upcomingContentBox}>
-              <Text style={styles.upcomingDescription}>
-                Recursos de moderação de publicações e denúncias da comunidade estão em
-                desenvolvimento e serão disponibilizados para moderadores e administradores.
-              </Text>
+            <View style={styles.searchSectionWrapper}>
+              {/* Recipe Search Bar Row */}
+              <View style={styles.searchRow}>
+                <Input
+                  value={recipeSearchTerm}
+                  onChangeText={setRecipeSearchTerm}
+                  placeholder="Buscar receita pública por título..."
+                  placeholderTextColor={theme.colors.placeholder}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  returnKeyType="search"
+                  onSubmitEditing={handleRecipeSearch}
+                  containerStyle={styles.searchInput}
+                  isClearable={true}
+                  onClear={handleClearRecipeSearch}
+                  leftIcon={
+                    <MaterialCommunityIcons
+                      name="book-search-outline"
+                      size={20}
+                      color={theme.colors.onSurfaceVariant}
+                    />
+                  }
+                />
+
+                <TouchableOpacity
+                  style={[styles.searchButton, isSearchingRecipes && styles.buttonDisabled]}
+                  onPress={handleRecipeSearch}
+                  disabled={isSearchingRecipes}
+                  activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Buscar receitas públicas por título"
+                >
+                  {isSearchingRecipes ? (
+                    <ActivityIndicator size="small" color={theme.colors.primary} />
+                  ) : (
+                    <>
+                      <MaterialCommunityIcons
+                        name="magnify"
+                        size={20}
+                        color={theme.colors.primary}
+                      />
+                      {isDesktop && <Text style={styles.searchButtonText}>Buscar</Text>}
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              {recipeSearchError ? (
+                <View style={styles.errorBanner}>
+                  <MaterialCommunityIcons
+                    name="alert-circle-outline"
+                    size={16}
+                    color={theme.colors.error}
+                  />
+                  <Text style={styles.errorBannerText}>{recipeSearchError}</Text>
+                </View>
+              ) : null}
+
+              {/* Recipe Results List */}
+              {isSearchingRecipes && recipeResults.length === 0 ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color={theme.colors.primary} />
+                  <Text style={styles.loadingText}>Buscando receitas...</Text>
+                </View>
+              ) : !hasSearchedRecipes ? (
+                <View style={styles.emptyContainer}>
+                  <MaterialCommunityIcons
+                    name="book-search-outline"
+                    size={36}
+                    color={theme.colors.onSurfaceVariant}
+                  />
+                  <Text style={styles.emptyTitle}>Buscar Receitas Públicas</Text>
+                  <Text style={styles.emptySubtitle}>
+                    Digite o título de uma receita acima e toque em Buscar para inspecionar ou
+                    aplicar moderação.
+                  </Text>
+                </View>
+              ) : recipeResults.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                  <MaterialCommunityIcons
+                    name="book-remove-outline"
+                    size={36}
+                    color={theme.colors.onSurfaceVariant}
+                  />
+                  <Text style={styles.emptyTitle}>Nenhuma receita encontrada</Text>
+                  <Text style={styles.emptySubtitle}>
+                    {recipeSearchTerm.trim()
+                      ? `Não encontramos receitas públicas com o título "${recipeSearchTerm.trim()}".`
+                      : 'Nenhuma receita pública retornada.'}
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.usersList}>
+                  <Text style={styles.resultsCountLabel}>
+                    {recipeResults.length}{' '}
+                    {recipeResults.length === 1 ? 'receita encontrada' : 'receitas encontradas'}
+                  </Text>
+
+                  {recipeResults.map((targetRecipe) => {
+                    const isExpanded = expandedRecipeId === targetRecipe.id;
+                    const isSuspended = targetRecipe.status === 'SUSPENDED';
+                    const isSuspendingCurrent = suspendingRecipeId === targetRecipe.id;
+
+                    return (
+                      <RecipeCompactCard
+                        key={targetRecipe.id}
+                        title={targetRecipe.title}
+                        coverUrl={targetRecipe.coverUrl}
+                        updatedAt={targetRecipe.updatedAt}
+                        status={targetRecipe.status || 'PUBLISHED'}
+                        isRatingVisible={false}
+                        isExpandable={true}
+                        isExpanded={isExpanded}
+                        onToggleExpand={() => handleToggleExpandRecipe(targetRecipe.id)}
+                      >
+                        <View style={styles.userExpandedMeta}>
+                          <View style={styles.metaInfoRow}>
+                            <Text style={styles.metaLabel}>ID:</Text>
+                            <Text style={styles.metaValue} selectable numberOfLines={1}>
+                              {targetRecipe.id}
+                            </Text>
+                          </View>
+
+                          <View style={styles.metaInfoRow}>
+                            <Text style={styles.metaLabel}>Status:</Text>
+                            <Text
+                              style={[styles.metaValue, isSuspended && styles.metaValueSuspended]}
+                            >
+                              {isSuspended ? 'Suspensa pela Moderação' : 'Pública na Comunidade'}
+                            </Text>
+                          </View>
+
+                          {targetRecipe.createdAt ? (
+                            <View style={styles.metaInfoRow}>
+                              <Text style={styles.metaLabel}>Publicada em:</Text>
+                              <Text style={styles.metaValue}>
+                                {formatDate(targetRecipe.createdAt)}
+                              </Text>
+                            </View>
+                          ) : null}
+                        </View>
+
+                        <View style={styles.actionsContainer}>
+                          {/* Action 1: Access Single Recipe */}
+                          <TouchableOpacity
+                            style={styles.actionBtnSecondary}
+                            onPress={() =>
+                              router.push({
+                                pathname: '/single-recipe',
+                                params: { recipeId: targetRecipe.id },
+                              })
+                            }
+                            activeOpacity={0.8}
+                            accessibilityRole="button"
+                            accessibilityLabel={`Acessar receita ${targetRecipe.title}`}
+                          >
+                            <MaterialCommunityIcons
+                              name="book-open-page-variant"
+                              size={18}
+                              color={theme.colors.primary}
+                            />
+                            <Text style={styles.actionBtnSecondaryText} numberOfLines={1}>
+                              Acessar Receita
+                            </Text>
+                          </TouchableOpacity>
+
+                          {/* Action 2: Suspend or Reactivate Recipe */}
+                          {isSuspended ? (
+                            <TouchableOpacity
+                              style={styles.actionBtnSuccess}
+                              onPress={() => handlePromptReactivateRecipe(targetRecipe)}
+                              activeOpacity={0.8}
+                              accessibilityRole="button"
+                              accessibilityLabel={`Reativar receita ${targetRecipe.title}`}
+                              disabled={isSuspendingCurrent}
+                            >
+                              {isSuspendingCurrent ? (
+                                <ActivityIndicator size="small" color={theme.colors.onTertiary} />
+                              ) : (
+                                <MaterialCommunityIcons
+                                  name="check-circle-outline"
+                                  size={18}
+                                  color={theme.colors.onTertiary}
+                                />
+                              )}
+                              <Text style={styles.actionBtnSuccessText} numberOfLines={1}>
+                                Reativar Receita
+                              </Text>
+                            </TouchableOpacity>
+                          ) : (
+                            <TouchableOpacity
+                              style={styles.actionBtnDanger}
+                              onPress={() => handlePromptSuspendRecipe(targetRecipe)}
+                              activeOpacity={0.8}
+                              accessibilityRole="button"
+                              accessibilityLabel={`Suspender receita ${targetRecipe.title}`}
+                              disabled={isSuspendingCurrent}
+                            >
+                              {isSuspendingCurrent ? (
+                                <ActivityIndicator size="small" color={theme.colors.onError} />
+                              ) : (
+                                <MaterialCommunityIcons
+                                  name="alert-octagon-outline"
+                                  size={18}
+                                  color={theme.colors.onError}
+                                />
+                              )}
+                              <Text style={styles.actionBtnDangerText} numberOfLines={1}>
+                                Suspender Receita
+                              </Text>
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                      </RecipeCompactCard>
+                    );
+                  })}
+                </View>
+              )}
             </View>
           </View>
         </View>
@@ -888,6 +1283,10 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       color: theme.colors.espressoDark,
       flex: 1,
     },
+    metaValueSuspended: {
+      color: theme.colors.error,
+      fontWeight: '600',
+    },
     actionsContainer: {
       flexDirection: isDesktop ? 'row' : 'column',
       alignItems: isDesktop ? 'center' : 'stretch',
@@ -937,6 +1336,26 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       color: theme.colors.onError,
       textAlign: 'center',
     },
+    actionBtnSuccess: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      height: 48,
+      minHeight: 48,
+      width: isDesktop ? undefined : '100%',
+      paddingHorizontal: 16,
+      backgroundColor: theme.colors.tertiary,
+      borderRadius: theme.rounded.default,
+      ...theme.shadows.soft,
+    },
+    actionBtnSuccessText: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.colors.onTertiary,
+      textAlign: 'center',
+    },
     noActionBox: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -948,30 +1367,6 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       fontSize: 13,
       color: theme.colors.onSurfaceVariant,
       fontStyle: 'italic',
-    },
-    upcomingBadge: {
-      paddingHorizontal: 8,
-      paddingVertical: 3,
-      borderRadius: theme.rounded.full,
-      backgroundColor: theme.colors.surfaceContainerHigh,
-    },
-    upcomingBadgeText: {
-      fontFamily: theme.typography.labelSm.fontFamily,
-      fontSize: 11,
-      color: theme.colors.onSurfaceVariant,
-    },
-    upcomingContentBox: {
-      backgroundColor: theme.colors.surfaceContainerLow,
-      padding: 14,
-      borderRadius: theme.rounded.md,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-    },
-    upcomingDescription: {
-      fontFamily: theme.typography.bodySm.fontFamily,
-      fontSize: 13,
-      color: theme.colors.onSurfaceVariant,
-      lineHeight: 18,
     },
     unauthorizedContainer: {
       flex: 1,

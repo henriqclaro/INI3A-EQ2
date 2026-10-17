@@ -194,7 +194,7 @@ export interface RecipeRegisterResponseData {
 
 export interface UpdateRecipeVisibilityInput {
   userId: string;
-  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+  status: RecipeStatus;
 }
 
 export interface UpdateRecipeVisibilityResponseData {
