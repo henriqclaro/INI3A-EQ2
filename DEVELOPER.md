@@ -23,30 +23,33 @@
 
 Antes de iniciar, certifique-se de ter os seguintes itens instalados:
 
-* **Node.js:**
+- **Node.js:**
   Necessário para rodar o projeto.
+
   > https://nodejs.org/ (recomenda-se a versão LTS)
   >
   > ...ou no Terminal do Windows:
+  >
   > ```bash
   > winget install -e --id OpenJS.NodeJS.LTS
   > ```
 
-* **Git:**
+- **Git:**
   Utilizado para versionamento de código.
+
   > https://git-scm.com/downloads
   >
   > ...ou no Terminal do Windows:
+  >
   > ```bash
   > winget install -e --id Git.Git
   > ```
 
-* **Expo Go**
+- **Expo Go**
   Aplicativo para testar o projeto no celular:
-
-  * Android: [Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent&pcampaignid=web_share)
-  * iOS: [App Store](https://apps.apple.com/br/app/expo-go/id982107779)
-  * Geral: Abrir pelo navegador
+  - Android: [Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent&pcampaignid=web_share)
+  - iOS: [App Store](https://apps.apple.com/br/app/expo-go/id982107779)
+  - Geral: Abrir pelo navegador
 
 ---
 
@@ -55,13 +58,16 @@ Antes de iniciar, certifique-se de ter os seguintes itens instalados:
 No terminal, execute os passos abaixo na ordem:
 
 ### 1. Faça login no git
-* Configure as variáveis no terminal:
+
+- Configure as variáveis no terminal:
+
   ```bash
   git config --global user.name "Seu Nome do GitHub"
   git config --global user.email "seu.email@unesp.br"
   ```
 
   > Se quiser, pode tentar fazer login com o [GitHub CLI](https://cli.github.com/):
+  >
   > ```bash
   > gh auth login
   > ```
@@ -76,11 +82,11 @@ git clone https://github.com/henriqclaro/INI3A-EQ2.git
 
 No terminal do Windows:
 
-* Front:
+- Front:
   ```bash
   cd .\INI3A-EQ2\src\front\meu-confeito-app\
   ```
-* API:
+- API:
   ```bash
   cd .\INI3A-EQ2\src\api\meu-confeito-api\
   ```
@@ -93,9 +99,9 @@ npm install
 
 ### 5. Configure as variáveis de ambiente (`.env`)
 
-* Copie o arquivo `.env.example` e configure as variáveis.
-* *Não se esqueça de apagar o* `.example` *no final do arquivo.*
-* ***Nunca** apague o* `.env.example` *, ele sobe pro GitHub (diferentemente do* `.env` *)*
+- Copie o arquivo `.env.example` e configure as variáveis.
+- _Não se esqueça de apagar o_ `.example` _no final do arquivo._
+- **\*Nunca** apague o* `.env.example` *, ele sobe pro GitHub (diferentemente do* `.env` *)\*
 
 ## Ambiente de Desenvolvimento (VS Code)
 
@@ -103,47 +109,46 @@ Para manter a consistência do código e melhorar a produtividade da equipe, ins
 
 ### Extensões Gerais
 
-* ⚠️ **ESLint** (`dbaeumer.vscode-eslint`) *(Obrigatório)*
+- ⚠️ **ESLint** (`dbaeumer.vscode-eslint`) _(Obrigatório)_
   Identifica e reporta padrões incorretos no código.
 
-* ⚠️ **Prettier - Code formatter** (`esbenp.prettier-vscode`) *(Obrigatório)*
+- ⚠️ **Prettier - Code formatter** (`esbenp.prettier-vscode`) _(Obrigatório)_
   Formata o código automaticamente.
 
-* ⚠️ **JavaScript and TypeScript Nightly** (`ms-vscode.vscode-typescript-next`) *(Obrigatório)*
+- ⚠️ **JavaScript and TypeScript Nightly** (`ms-vscode.vscode-typescript-next`) _(Obrigatório)_
   Suporte atualizado para JavaScript e TypeScript.
 
-* ✅ **Error Lens** (`usernamehw.errorlens`)
+- ✅ **Error Lens** (`usernamehw.errorlens`)
   Exibe erros diretamente na linha do código.
 
-* ✅ **Path Intellisense** (`christian-kohler.path-intellisense`)
+- ✅ **Path Intellisense** (`christian-kohler.path-intellisense`)
   Autocompletar para nomes de arquivos.
 
 ### Extensões Front-end
-  
-* ⚠️ **React Native Tools** (`msjsdiag.vscode-react-native`) *(Obrigatório)*
+
+- ⚠️ **React Native Tools** (`msjsdiag.vscode-react-native`) _(Obrigatório)_
   Suporte completo para desenvolvimento React Native.
 
-* ⚠️ **ES7+ React/Redux/React-Native snippets** (`dsznajder.es7-react-js-snippets`) *(Obrigatório)*
+- ⚠️ **ES7+ React/Redux/React-Native snippets** (`dsznajder.es7-react-js-snippets`) _(Obrigatório)_
   Atalhos para criação rápida de componentes.
 
-* ✅ **Auto Rename Tag** (`formulahendry.auto-rename-tag`)
+- ✅ **Auto Rename Tag** (`formulahendry.auto-rename-tag`)
   Renomeia automaticamente tags pareadas (HTML/JSX).
 
-* ✅ **Color Highlight** (`naumovs.color-highlight`)
+- ✅ **Color Highlight** (`naumovs.color-highlight`)
   Destaca cores diretamente no código.
 
 ### Extensões Back-end
 
-* ⚠️ **Express Snippets** (`ExpressSnippets.vscode-express-snippets`) *(Obrigatório)*
+- ⚠️ **Express Snippets** (`ExpressSnippets.vscode-express-snippets`) _(Obrigatório)_
   Atalhos práticos de código para o Express.
 
-* ⚠️ **Prisma** (`Prisma.prisma`) *(Obrigatório)*
+- ⚠️ **Prisma** (`Prisma.prisma`) _(Obrigatório)_
   Suporte oficial de sintaxe e formatação para o ORM Prisma.
-  
-* ✅ **DotENV** (`mikestead.dotenv`)
+- ✅ **DotENV** (`mikestead.dotenv`)
   Suporte de sintaxe para arquivos de ambiente .env.
 
-* ✅ **npm Intellisense** (`christian-kohler.npm-intellisense`)
+- ✅ **npm Intellisense** (`christian-kohler.npm-intellisense`)
   Autocompletar para importação de módulos npm.
 
 ---
@@ -154,40 +159,40 @@ Para manter a base de código organizada, legível e consistente entre toda a eq
 
 ### Idioma do código
 
-* Tente ao máximo utilizar **inglês** para nomes de arquivos, variáveis, funções e componentes.
-* Evite misturar idiomas no código.
+- Tente ao máximo utilizar **inglês** para nomes de arquivos, variáveis, funções e componentes.
+- Evite misturar idiomas no código.
 
 ---
 
 ### Pastas
 
-* Use **kebab-case** (minúsculas com hífen)
+- Use **kebab-case** (minúsculas com hífen)
   Ex: `components`, `screens`, `utils`, `controllers`, `routes`
 
 ### Arquivos Front-end (Componentes e Telas)
 
-* Componentes com iniciais maiúsculas (**PascalCase**)
-  * Ex: `PrimaryButton.tsx`, `CustomTabBar.tsx`
-  
-* Rotas (telas) com tudo em minúsculo, separado por hífen (**kebab-case**)
-  * Ex: `index.tsx`, `user-profile.tsx`
+- Componentes com iniciais maiúsculas (**PascalCase**)
+  - Ex: `PrimaryButton.tsx`, `CustomTabBar.tsx`
+- Rotas (telas) com tudo em minúsculo, separado por hífen (**kebab-case**)
+  - Ex: `index.tsx`, `user-profile.tsx`
 
 ### Arquivos Back-end (Expresss)
 
-* Tudo minúsculo, uso de pontos para separar a entidade e a sua camada/responsabilidade
-  * Ex: `app.ts`, `user.controller.ts`, `auth.middleware.ts`
+- Tudo minúsculo, uso de pontos para separar a entidade e a sua camada/responsabilidade
+  - Ex: `app.ts`, `user.controller.ts`, `auth.middleware.ts`
 
 ### Variáveis e Funções
 
-* Use **camelCase**
-  * Ex: `loggedUser`, `validateForm()`, `handleSubmit`
+- Use **camelCase**
+  - Ex: `loggedUser`, `validateForm()`, `handleSubmit`
 
 ### Constantes Globais
 
-* Use **UPPER_SNAKE_CASE**
-  * Ex: `API_URL`, `PRIMARY_COLOR`, `MAX_ATTEMPTS`
+- Use **UPPER_SNAKE_CASE**
+  - Ex: `API_URL`, `PRIMARY_COLOR`, `MAX_ATTEMPTS`
 
 ---
+
 ## Desenvolvimento do Front
 
 Árvore da aplicação, com pastas e arquivos mais importantes:
@@ -223,12 +228,12 @@ npx expo start
 
 ### 3. Teste a aplicação
 
-* **Celulares Android:**
+- **Celulares Android:**
   Abra o **Expo Go** e escaneie o QR Code exibido no terminal.
 
-* **Geral:**
+- **Geral:**
   Abra no navegador por meio da URL local no terminal.
-  * OBS: use o **Inspecionar** para simular as dimensões de um celular se necessário.
+  - OBS: use o **Inspecionar** para simular as dimensões de um celular se necessário.
 
 ---
 
@@ -279,6 +284,7 @@ npm run dev
 ```
 
 #### Para abrir o gerenciador do Banco no navegador, rode:
+
 ```bash
 npx prisma studio
 ```
@@ -287,13 +293,13 @@ npx prisma studio
 
 ## Notas para a Equipe
 
-* Sempre execute **antes de começar** e **antes de fazer um commit**:
+- Sempre execute **antes de começar** e **antes de fazer um commit**:
 
 ```bash
 git pull
 ```
 
-* Se ocorrerem erros após atualizações:
+- Se ocorrerem erros após atualizações:
 
 ```bash
 npm install
