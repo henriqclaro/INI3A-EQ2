@@ -30,8 +30,14 @@ import { useInventory } from '@/src/hooks/useInventory';
 import { useNetwork } from '@/src/hooks/useNetwork';
 import { useUnsavedChangesWarning } from '@/src/hooks/useUnsavedChangesWarning';
 import { AppTheme } from '@/src/theme/themes';
+import { PartialIngredient } from '@/src/types/ingredient';
 import { InventoryItem } from '@/src/types/inventory';
-import { formatCurrency, formatDateForApi, formatQuantity } from '@/src/utils/formatters';
+import {
+  formatCurrency,
+  formatDateForApi,
+  formatQuantity,
+  getIngredientDisplayUnit,
+} from '@/src/utils/formatters';
 
 type EntryMode = 'purchase' | 'adjustment';
 
@@ -65,6 +71,7 @@ export default function RegisterStockScreen() {
   };
 
   // Form Fields
+  const [selectedIngredient, setSelectedIngredient] = useState<PartialIngredient | null>(null);
   const [selectedIngredientId, setSelectedIngredientId] = useState('');
   const [quantityInput, setQuantityInput] = useState('');
   const [totalCostInput, setTotalCostInput] = useState('');
@@ -109,13 +116,16 @@ export default function RegisterStockScreen() {
   });
 
   // Find the selected ingredient object
-  const selectedIngredient = useMemo(() => {
+  const currentIngredient = useMemo(() => {
+    if (selectedIngredient && String(selectedIngredient.id) === String(selectedIngredientId)) {
+      return selectedIngredient;
+    }
     return (
       availableIngredients.find((ing) => String(ing.id) === String(selectedIngredientId)) || null
     );
-  }, [availableIngredients, selectedIngredientId]);
+  }, [selectedIngredient, availableIngredients, selectedIngredientId]);
 
-  const baseUnit = selectedIngredient?.baseUnit || 'un';
+  const baseUnit = getIngredientDisplayUnit(currentIngredient);
 
   // Check if ingredient already exists in current user inventory
   const existingStockItem = useMemo(() => {
@@ -153,7 +163,7 @@ export default function RegisterStockScreen() {
 
   // Mock item for live preview card
   const previewItem: InventoryItem | null = useMemo(() => {
-    if (!selectedIngredient) return null;
+    if (!currentIngredient) return null;
 
     const currentQty = existingStockItem ? Number(existingStockItem.currentQuantity) : 0;
     const currentCost = existingStockItem ? Number(existingStockItem.costPerBaseUnit) : 0;
@@ -175,29 +185,30 @@ export default function RegisterStockScreen() {
     }
 
     return {
-      ingredientId: Number(selectedIngredient.id),
+      ingredientId: Number(currentIngredient.id),
       currentQuantity: finalQty,
       costPerBaseUnit: finalCost,
       expirationDate: expirationDate ? (formatDateForApi(expirationDate) ?? null) : null,
       lastUpdated: new Date(),
       ingredient: {
-        id: Number(selectedIngredient.id),
-        name: selectedIngredient.name,
-        slug: selectedIngredient.slug || '',
-        category: selectedIngredient.category,
-        baseDimension: selectedIngredient.baseDimension || 'MASS',
-        baseUnit: selectedIngredient.baseUnit || 'un',
-        description: selectedIngredient.description || null,
+        id: Number(currentIngredient.id),
+        name: currentIngredient.name,
+        slug: currentIngredient.slug || '',
+        category: currentIngredient.category,
+        baseDimension: currentIngredient.baseDimension || 'MASS',
+        baseUnit: currentIngredient.baseUnit || baseUnit,
+        description: currentIngredient.description || null,
       },
     };
   }, [
-    selectedIngredient,
+    currentIngredient,
     existingStockItem,
     parsedQuantity,
     calculatedUnitCost,
     entryMode,
     parsedCost,
     expirationDate,
+    baseUnit,
   ]);
 
   const handleSubmit = async () => {
@@ -387,8 +398,9 @@ export default function RegisterStockScreen() {
 
             <IngredientSelector
               selectedIngredientId={selectedIngredientId}
-              selectedIngredient={selectedIngredient}
+              selectedIngredient={currentIngredient}
               onSelectIngredient={(ing) => {
+                setSelectedIngredient(ing);
                 setSelectedIngredientId(ing ? String(ing.id) : '');
                 setHasTouchedIngredient(true);
               }}

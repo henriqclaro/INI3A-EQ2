@@ -24,19 +24,66 @@ export const formatCurrency = (
   });
 };
 
+export const formatUnit = (unit?: string | null): string => {
+  if (!unit) return 'un';
+  const clean = unit.trim().toUpperCase();
+  switch (clean) {
+    case 'G':
+    case 'GRAM':
+    case 'GRAMA':
+    case 'GRAMAS':
+      return 'g';
+    case 'KG':
+    case 'QUILO':
+    case 'QUILOS':
+    case 'KILOGRAM':
+      return 'kg';
+    case 'ML':
+    case 'MILILITRO':
+    case 'MILILITROS':
+      return 'ml';
+    case 'L':
+    case 'LITRO':
+    case 'LITROS':
+      return 'L';
+    case 'UN':
+    case 'UND':
+    case 'UNIDADE':
+    case 'UNIDADES':
+      return 'un';
+    default:
+      return unit.trim().toLowerCase();
+  }
+};
+
+export const getIngredientDisplayUnit = (
+  ingredient?: {
+    baseUnit?: string | null;
+    baseDimension?: string | null;
+  } | null,
+): string => {
+  if (ingredient?.baseUnit) {
+    return formatUnit(ingredient.baseUnit);
+  }
+  if (ingredient?.baseDimension === 'MASS') return 'g';
+  if (ingredient?.baseDimension === 'VOLUME') return 'ml';
+  return 'un';
+};
+
 export const formatQuantity = (
   value: number | string | null | undefined,
   unit?: string,
 ): string => {
   const num = typeof value === 'string' ? parseFloat(value) : (value ?? 0);
-  if (isNaN(num)) return `0 ${unit || ''}`.trim();
+  const formattedUnit = unit ? formatUnit(unit) : '';
+  if (isNaN(num)) return `0 ${formattedUnit}`.trim();
 
   // Format with max 3 decimals if fractional, otherwise integer
   const formattedNumber = num.toLocaleString('pt-BR', {
     maximumFractionDigits: 3,
   });
 
-  return unit ? `${formattedNumber} ${unit}` : formattedNumber;
+  return formattedUnit ? `${formattedNumber} ${formattedUnit}` : formattedNumber;
 };
 
 export const parseDateSafely = (value: Date | string | null | undefined): Date | null => {

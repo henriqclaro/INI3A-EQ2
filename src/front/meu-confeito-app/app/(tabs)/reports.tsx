@@ -9,7 +9,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
-import { router } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
@@ -32,9 +32,20 @@ export default function ReportsScreen() {
   const { user } = useAuth();
   const isBakerRole = isBaker(user?.role);
   const { width } = useWindowDimensions();
-  const [activeTab, setActiveTab] = useState<AnalyticsTab>('profit');
+  const params = useLocalSearchParams<{
+    tab?: string;
+    recipeId?: string;
+    targetYield?: string;
+    recipeTitle?: string;
+    yieldUnit?: string;
+  }>();
+
+  const [activeTab, setActiveTab] = useState<AnalyticsTab>(() =>
+    params.tab === 'projection' ? 'projection' : 'profit',
+  );
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const lastHandledParamsKeyRef = useRef<string>('');
   const scrollViewRef = useRef<ScrollView>(null);
   const contentYRef = useRef(0);
   const tabSelectorYRef = useRef(0);
@@ -70,7 +81,51 @@ export default function ReportsScreen() {
     removePlannedProduction,
     clearPlannedProductions,
     calculateProjection,
+    setAndCalculatePlannedProductions,
   } = usePurchaseProjection();
+
+  useFocusEffect(
+    useCallback(() => {
+      if (params.tab === 'projection' && activeTab !== 'projection') {
+        setActiveTab('projection');
+      }
+
+      if (params.recipeId && params.targetYield) {
+        const paramKey = `${params.recipeId}_${params.targetYield}`;
+        if (lastHandledParamsKeyRef.current !== paramKey) {
+          lastHandledParamsKeyRef.current = paramKey;
+          if (activeTab !== 'projection') {
+            setActiveTab('projection');
+          }
+
+          setAndCalculatePlannedProductions([
+            {
+              recipeId: String(params.recipeId),
+              targetYield: Number(params.targetYield) || 1,
+              recipeTitle: params.recipeTitle ? String(params.recipeTitle) : undefined,
+              yieldUnit: params.yieldUnit ? String(params.yieldUnit) : undefined,
+            },
+          ]);
+
+          setTimeout(() => {
+            const totalY = contentYRef.current + tabSelectorYRef.current;
+            scrollViewRef.current?.scrollTo({
+              y: Math.max(0, totalY - 16),
+              animated: true,
+            });
+          }, 150);
+        }
+      }
+    }, [
+      params.tab,
+      params.recipeId,
+      params.targetYield,
+      params.recipeTitle,
+      params.yieldUnit,
+      activeTab,
+      setAndCalculatePlannedProductions,
+    ]),
+  );
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);

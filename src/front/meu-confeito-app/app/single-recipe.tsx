@@ -16,7 +16,7 @@ import { Stack, router, useFocusEffect, useLocalSearchParams } from 'expo-router
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { OfflineBanner, OnboardingCard } from '@/src/components';
-import { ProduceRecipeModal } from '@/src/components/production';
+import { InsufficientStockModal, ProduceRecipeModal } from '@/src/components/production';
 import {
   CustomizeRecipeModal,
   KitchenModeModal,
@@ -31,8 +31,10 @@ import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useDownloadedRecipe } from '@/src/hooks/useDownloadedRecipes';
 import { useRecipeDelete, useSingleRecipe } from '@/src/hooks/useRecipes';
 import { useSavedRecipes } from '@/src/hooks/useSavedRecipes';
+import { AnalyticsService } from '@/src/services/analytics';
 import { AppTheme } from '@/src/theme/themes';
 import { PartialTag, RecipeInstructionStep, RecipeItem, RecipeStatus } from '@/src/types';
+import { PurchaseProjectionDeficitItem } from '@/src/types/analytics';
 import { getStorageUrl } from '@/src/utils/image';
 import { parseRecipeInstructions } from '@/src/utils/recipe';
 import { shareRecipeSummary } from '@/src/utils/share';
@@ -72,11 +74,91 @@ export default function RecipeScreen() {
   const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'recipe' | 'pricing'>('recipe');
   const [isProduceModalOpen, setIsProduceModalOpen] = useState(false);
+  const [isCheckingStock, setIsCheckingStock] = useState(false);
+  const [isInsufficientStockModalOpen, setIsInsufficientStockModalOpen] = useState(false);
+  const [insufficientStockData, setInsufficientStockData] = useState<{
+    items: PurchaseProjectionDeficitItem[];
+    totalEstimatedExpenditure: number | string;
+    targetYield: number;
+  } | null>(null);
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
   const [scaleFactor, setScaleFactor] = useState(1);
   const [isKitchenModeOpen, setIsKitchenModeOpen] = useState(false);
   const [isOwnerActionsExpanded, setIsOwnerActionsExpanded] = useState(true);
   const recipeScrollViewRef = useRef<ScrollView>(null);
+
+  const scaledYield = useMemo(() => {
+    if (!recipe?.baseYield) return 1;
+    return Number((Number(recipe.baseYield) * scaleFactor).toFixed(2));
+  }, [recipe?.baseYield, scaleFactor]);
+
+  const handlePressProduce = useCallback(async () => {
+    if (!user) {
+      Alert.alert(
+        'Login Necessário',
+        'Faça login para verificar o estoque e registrar a produção desta receita.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Fazer Login', onPress: () => router.push('/login') },
+        ],
+      );
+      return;
+    }
+
+    if (!recipe) return;
+
+    const currentTargetYield = scaledYield;
+
+    try {
+      setIsCheckingStock(true);
+      const res = await AnalyticsService.projectPurchases({
+        plannedProductions: [
+          {
+            recipeId: recipe.id,
+            targetYield: currentTargetYield,
+          },
+        ],
+      });
+
+      const projection = res?.data?.projection;
+      if (projection && Array.isArray(projection.items) && projection.items.length > 0) {
+        setInsufficientStockData({
+          items: projection.items,
+          totalEstimatedExpenditure: projection.totalEstimatedExpenditure,
+          targetYield: currentTargetYield,
+        });
+        setIsInsufficientStockModalOpen(true);
+      } else {
+        setIsProduceModalOpen(true);
+      }
+    } catch (err: unknown) {
+      console.warn('Could not verify stock projection beforehand, opening produce modal:', err);
+      setIsProduceModalOpen(true);
+    } finally {
+      setIsCheckingStock(false);
+    }
+  }, [user, recipe, scaledYield]);
+
+  const handleNavigateToForecast = useCallback(() => {
+    setIsInsufficientStockModalOpen(false);
+    const targetYield = insufficientStockData?.targetYield ?? scaledYield;
+    router.push({
+      pathname: '/(tabs)/reports',
+      params: {
+        tab: 'projection',
+        recipeId: recipe?.id,
+        targetYield: String(targetYield),
+        recipeTitle: recipe?.title,
+        yieldUnit: recipe?.yieldUnit || 'UN',
+      },
+    });
+  }, [
+    insufficientStockData?.targetYield,
+    scaledYield,
+    recipe?.id,
+    recipe?.title,
+    recipe?.yieldUnit,
+  ]);
 
   const handleToggleSave = async () => {
     if (!user) {
@@ -825,17 +907,24 @@ export default function RecipeScreen() {
                     {/* Primary Action: Produzir */}
                     <TouchableOpacity
                       style={styles.btnActionProduce}
-                      onPress={() => setIsProduceModalOpen(true)}
+                      onPress={handlePressProduce}
+                      disabled={isCheckingStock}
                       activeOpacity={0.85}
                       accessibilityRole="button"
                       accessibilityLabel="Registrar produção desta receita"
                     >
-                      <MaterialCommunityIcons
-                        name="pot-steam"
-                        size={20}
-                        color={theme.colors.onPrimary}
-                      />
-                      <Text style={styles.btnActionTextProduce}>Produzir Receita</Text>
+                      {isCheckingStock ? (
+                        <ActivityIndicator size="small" color={theme.colors.onPrimary} />
+                      ) : (
+                        <MaterialCommunityIcons
+                          name="pot-steam"
+                          size={20}
+                          color={theme.colors.onPrimary}
+                        />
+                      )}
+                      <Text style={styles.btnActionTextProduce}>
+                        {isCheckingStock ? 'Verificando Estoque...' : 'Produzir Receita'}
+                      </Text>
                     </TouchableOpacity>
 
                     {isOwnerActionsExpanded && (
@@ -1131,17 +1220,24 @@ export default function RecipeScreen() {
                     {/* Primary Action: Produzir */}
                     <TouchableOpacity
                       style={styles.btnActionProduceGuest}
-                      onPress={() => setIsProduceModalOpen(true)}
+                      onPress={handlePressProduce}
+                      disabled={isCheckingStock}
                       activeOpacity={0.85}
                       accessibilityRole="button"
                       accessibilityLabel="Registrar produção desta receita pública"
                     >
-                      <MaterialCommunityIcons
-                        name="pot-steam"
-                        size={20}
-                        color={theme.colors.onPrimary}
-                      />
-                      <Text style={styles.btnActionTextProduceGuest}>Produzir Receita</Text>
+                      {isCheckingStock ? (
+                        <ActivityIndicator size="small" color={theme.colors.onPrimary} />
+                      ) : (
+                        <MaterialCommunityIcons
+                          name="pot-steam"
+                          size={20}
+                          color={theme.colors.onPrimary}
+                        />
+                      )}
+                      <Text style={styles.btnActionTextProduceGuest}>
+                        {isCheckingStock ? 'Verificando Estoque...' : 'Produzir Receita'}
+                      </Text>
                     </TouchableOpacity>
 
                     {/* Secondary Actions: Salvar, Compartilhar, Baixar/Atualizar, Personalizar */}
@@ -1589,6 +1685,7 @@ export default function RecipeScreen() {
           <ProduceRecipeModal
             isVisible={isProduceModalOpen}
             recipe={recipe}
+            initialYield={scaledYield}
             onClose={() => setIsProduceModalOpen(false)}
             onSuccess={(production) => {
               setIsProduceModalOpen(false);
@@ -1605,6 +1702,19 @@ export default function RecipeScreen() {
                 ],
               );
             }}
+          />
+        )}
+
+        {recipe && insufficientStockData && (
+          <InsufficientStockModal
+            isVisible={isInsufficientStockModalOpen}
+            recipeTitle={recipe.title}
+            targetYield={insufficientStockData.targetYield}
+            yieldUnit={recipe.yieldUnit || 'UN'}
+            deficitItems={insufficientStockData.items}
+            totalEstimatedExpenditure={insufficientStockData.totalEstimatedExpenditure}
+            onClose={() => setIsInsufficientStockModalOpen(false)}
+            onNavigateToForecast={handleNavigateToForecast}
           />
         )}
 

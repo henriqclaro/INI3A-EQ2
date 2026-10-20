@@ -28,6 +28,7 @@ import {
   formatDate,
   formatDateForApi,
   formatQuantity,
+  getIngredientDisplayUnit,
   isExpired,
 } from '@/src/utils/formatters';
 
@@ -67,7 +68,7 @@ const StockOperationModalForm = ({
 
   const currentQty = Number(item.currentQuantity) || 0;
   const unitCost = Number(item.costPerBaseUnit) || 0;
-  const baseUnit = item.ingredient?.baseUnit || 'un';
+  const baseUnit = getIngredientDisplayUnit(item.ingredient);
   const ingredientName = item.ingredient?.name || 'Ingrediente';
   const isItemExpired = currentQty > 0 && isExpired(item.expirationDate);
 

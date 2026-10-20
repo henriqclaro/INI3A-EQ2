@@ -15,6 +15,7 @@ import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { IngredientService } from '@/src/services/ingredient';
 import { AppTheme } from '@/src/theme/themes';
 import { PartialIngredient } from '@/src/types/ingredient';
+import { getIngredientDisplayUnit } from '@/src/utils/formatters';
 import { matchesSearch } from '@/src/utils/text';
 
 export interface IngredientSelectorProps {
@@ -232,7 +233,7 @@ export function IngredientSelector({
 
               <View style={styles.unitChip}>
                 <Text style={styles.unitChipText}>
-                  Unidade: {activeIngredient.baseUnit || 'un'}
+                  Unidade: {getIngredientDisplayUnit(activeIngredient)}
                 </Text>
               </View>
 
@@ -360,7 +361,7 @@ export function IngredientSelector({
                               <Text style={styles.dropdownCategoryChipText}>{item.category}</Text>
                             </View>
                             <Text style={styles.dropdownItemUnitText}>
-                              Unidade: {item.baseUnit || 'un'}
+                              Unidade: {getIngredientDisplayUnit(item)}
                             </Text>
                           </View>
                         </View>

@@ -305,6 +305,46 @@ export function usePurchaseProjection() {
     }
   }, [plannedProductions]);
 
+  const setAndCalculatePlannedProductions = useCallback(async (items: PlannedProductionItem[]) => {
+    setPlannedProductions(items);
+    if (items.length === 0) {
+      setProjection(null);
+      return null;
+    }
+
+    setIsCalculating(true);
+    setHasError(false);
+    setErrorMessage(null);
+
+    try {
+      const payload = {
+        plannedProductions: items.map((p) => ({
+          recipeId: p.recipeId,
+          targetYield: p.targetYield,
+        })),
+      };
+
+      const response = await AnalyticsService.projectPurchases(payload);
+      const data = response.data.projection;
+      setProjection(data);
+      return data;
+    } catch (err: unknown) {
+      setHasError(true);
+      const apiErr = err as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
+      setErrorMessage(
+        apiErr?.response?.data?.message ||
+          apiErr?.message ||
+          'Não foi possível calcular a projeção de compras.',
+      );
+      return null;
+    } finally {
+      setIsCalculating(false);
+    }
+  }, []);
+
   const resetProjection = useCallback(() => {
     setProjection(null);
   }, []);
@@ -320,6 +360,7 @@ export function usePurchaseProjection() {
     removePlannedProduction,
     clearPlannedProductions,
     calculateProjection,
+    setAndCalculatePlannedProductions,
     resetProjection,
   };
 }

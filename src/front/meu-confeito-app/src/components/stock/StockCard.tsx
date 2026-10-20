@@ -11,6 +11,7 @@ import {
   formatCurrency,
   formatDate,
   formatQuantity,
+  getIngredientDisplayUnit,
   isExpired,
   isExpiringSoon,
 } from '@/src/utils/formatters';
@@ -46,7 +47,7 @@ export const StockCard = memo(function StockCard({
 
   const ingredientName = item.ingredient?.name || 'Ingrediente';
   const categoryName = item.ingredient?.category || 'Geral';
-  const baseUnit = item.ingredient?.baseUnit || 'un';
+  const baseUnit = getIngredientDisplayUnit(item.ingredient);
 
   return (
     <View style={[styles.card, cardWidth ? { width: cardWidth } : undefined, style]}>

@@ -10,6 +10,8 @@ import {
   View,
 } from 'react-native';
 
+import { router } from 'expo-router';
+
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAvoidingView, KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
@@ -28,21 +30,30 @@ export interface ProduceRecipeModalProps {
     baseYield: number | string;
     yieldUnit?: string;
   } | null;
+  initialYield?: number | string;
   onClose: () => void;
   onSuccess: (production: ProductionItem) => void;
 }
 
 interface ProduceRecipeModalContentProps {
   recipe: NonNullable<ProduceRecipeModalProps['recipe']>;
+  initialYield?: number | string;
   onClose: () => void;
   onSuccess: (production: ProductionItem) => void;
 }
 
-function ProduceRecipeModalContent({ recipe, onClose, onSuccess }: ProduceRecipeModalContentProps) {
+function ProduceRecipeModalContent({
+  recipe,
+  initialYield,
+  onClose,
+  onSuccess,
+}: ProduceRecipeModalContentProps) {
   const { theme } = useThemeMode();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
-  const [yieldProduced, setYieldProduced] = useState(String(recipe.baseYield || '1'));
+  const [yieldProduced, setYieldProduced] = useState(
+    String(initialYield ?? recipe.baseYield ?? '1'),
+  );
   const [expirationDate, setExpirationDate] = useState<Date | null>(null);
 
   const { registerProduction, isLoading: isSubmitting } = useRegisterProduction();
@@ -84,7 +95,26 @@ function ProduceRecipeModalContent({ recipe, onClose, onSuccess }: ProduceRecipe
         Alert.alert(
           'Estoque Insuficiente',
           apiErr.response.data.message ||
-            'Você não possui ingredientes suficientes no estoque para esta produção. Verifique suas quantidades no Estoque.',
+            'Você não possui ingredientes suficientes no estoque para esta produção. Deseja abrir a Previsão de Compras?',
+          [
+            { text: 'Fechar', style: 'cancel' },
+            {
+              text: 'Previsão de Compras',
+              onPress: () => {
+                onClose();
+                router.push({
+                  pathname: '/(tabs)/reports',
+                  params: {
+                    tab: 'projection',
+                    recipeId: recipe.id,
+                    targetYield: String(yieldNum),
+                    recipeTitle: recipe.title,
+                    yieldUnit: recipe.yieldUnit || 'UN',
+                  },
+                });
+              },
+            },
+          ],
         );
       } else {
         const errorMsg =
@@ -216,6 +246,7 @@ function ProduceRecipeModalContent({ recipe, onClose, onSuccess }: ProduceRecipe
 export function ProduceRecipeModal({
   isVisible,
   recipe,
+  initialYield,
   onClose,
   onSuccess,
 }: ProduceRecipeModalProps) {
@@ -223,7 +254,12 @@ export function ProduceRecipeModal({
 
   return (
     <Modal visible={isVisible} transparent animationType="fade" onRequestClose={onClose}>
-      <ProduceRecipeModalContent recipe={recipe} onClose={onClose} onSuccess={onSuccess} />
+      <ProduceRecipeModalContent
+        recipe={recipe}
+        initialYield={initialYield}
+        onClose={onClose}
+        onSuccess={onSuccess}
+      />
     </Modal>
   );
 }

@@ -32,7 +32,7 @@ import { useDebounce } from '@/src/hooks/useDebounce';
 import { useInventory } from '@/src/hooks/useInventory';
 import { AppTheme } from '@/src/theme/themes';
 import { InventoryItem } from '@/src/types/inventory';
-import { isExpired, isExpiringSoon } from '@/src/utils/formatters';
+import { getIngredientDisplayUnit, isExpired, isExpiringSoon } from '@/src/utils/formatters';
 import { shareShoppingList } from '@/src/utils/share';
 import { matchesSearch } from '@/src/utils/text';
 
@@ -115,7 +115,7 @@ export default function StockScreen() {
       .map((item) => ({
         name: item.ingredient?.name || 'Insumo',
         quantity: null,
-        unit: item.ingredient?.baseUnit || 'un',
+        unit: getIngredientDisplayUnit(item.ingredient),
         category: item.ingredient?.category || null,
       }));
 
