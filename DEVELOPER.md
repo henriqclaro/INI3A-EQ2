@@ -1,20 +1,17 @@
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/LogoDarkHorizontal-MeuConfeito.png">
-    <img src="docs/assets/LogoLightHorizontal-MeuConfeito.png">
+    <img src="docs/assets/LogoLightHorizontal-MeuConfeito.png" alt="Meu Confeito Logo" width="420">
   </picture>
-</div>
-
-<br>
-
-<div align="center">
-    <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-22.x-6DA55F?style=for-the-badge&logo=node.js" alt="Node.js Badge"></a>
-    <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-6.x-007ACC?style=for-the-badge&logo=typescript" alt="TypeScript Badge"></a><br>
-    <a href="https://expressjs.com"><img src="https://img.shields.io/badge/Express.js-5.x-lightgrey?style=for-the-badge&logo=express" alt="Express.js Badge"></a>
-    <a href="https://www.prisma.io/orm"><img src="https://img.shields.io/badge/Prisma-7.x-6366f1?style=for-the-badge&logo=prisma" alt="Prisma ORM Badge"></a>
-    <a href="https://www.postgresql.org"><img src="https://img.shields.io/badge/Postgresql-18.x-336791?style=for-the-badge&logo=postgresql" alt="PostgreSQL Badge"></a><br>
-    <a href="https://react.dev/"><img src="https://img.shields.io/badge/React_Native-0.86.x-61DAFB?style=for-the-badge&logo=React" alt="React Native Badge"></a>
-    <a href="https://expo.dev/go"><img src="https://img.shields.io/badge/Expo-57.x-white?style=for-the-badge&logo=Expo" alt="Expo Badge"></a>
+  <p>
+    <a href="https://reactnative.dev/"><img src="https://img.shields.io/badge/React_Native-0.86-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React Native" /></a>
+    <a href="https://expo.dev/"><img src="https://img.shields.io/badge/Expo-57-000000?style=flat-square&logo=expo&logoColor=white" alt="Expo" /></a>
+    <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-6.x-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" /></a>
+    <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-22.x-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js" /></a>
+    <a href="https://expressjs.com/"><img src="https://img.shields.io/badge/Express.js-5.x-000000?style=flat-square&logo=express&logoColor=white" alt="Express" /></a>
+    <a href="https://www.prisma.io/orm"><img src="https://img.shields.io/badge/Prisma-7.x-2D3748?style=flat-square&logo=prisma&logoColor=white" alt="Prisma" /></a>
+    <a href="https://www.postgresql.org/"><img src="https://img.shields.io/badge/PostgreSQL-PostGIS-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL" /></a>
+  </p>
 </div>
 
 ---
