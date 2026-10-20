@@ -1820,9 +1820,18 @@ ol {
 }
 
 .footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mc-space-2);
   font-size: 13px;
   color: var(--mc-on-surface-variant);
   transition: color var(--mc-transition-fast);
+}
+
+.footer-link svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
 }
 
 .footer-link:hover {

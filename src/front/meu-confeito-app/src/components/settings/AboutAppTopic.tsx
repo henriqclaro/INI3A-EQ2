@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Linking, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import * as Clipboard from 'expo-clipboard';
 import { Image } from 'expo-image';
@@ -55,6 +55,20 @@ export function AboutAppTopic() {
     Clipboard.setStringAsync(value).catch(() => {});
   };
 
+  const handleOpenExternalUrl = async (url: string, fallbackCopyText: string) => {
+    try {
+      const canOpen = await Linking.canOpenURL(url);
+      if (canOpen) {
+        await Linking.openURL(url);
+        return;
+      }
+    } catch {
+      // Fallback below
+    }
+    await Clipboard.setStringAsync(fallbackCopyText).catch(() => {});
+    Alert.alert('Copiado', `${fallbackCopyText} copiado para a área de transferência.`);
+  };
+
   const handleSupportPress = () => {
     Alert.alert(
       'Central de Ajuda & Suporte',
@@ -96,7 +110,7 @@ export function AboutAppTopic() {
           </View>
           <View style={styles.brandTextWrapper}>
             <Text style={styles.brandName}>Meu Confeito</Text>
-            <Text style={styles.appVersion}>Versão 1.1.0 (Beta)</Text>
+            <Text style={styles.appVersion}>Versão 1.1.2 (Beta)</Text>
           </View>
         </View>
 
@@ -217,6 +231,83 @@ export function AboutAppTopic() {
           </View>
           <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="middle">
             {sessionId || '—'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Project Team Card */}
+      <View style={styles.detailsCard}>
+        <Text style={styles.detailsCardTitle}>Equipe do Projeto</Text>
+
+        <TouchableOpacity
+          style={styles.detailRow}
+          activeOpacity={0.7}
+          onPress={() =>
+            handleOpenExternalUrl(
+              'https://github.com/henriqclaro/INI3A-EQ2',
+              'https://github.com/henriqclaro/INI3A-EQ2',
+            )
+          }
+          onLongPress={() => handleCopyInfo('https://github.com/henriqclaro/INI3A-EQ2')}
+          accessibilityRole="link"
+          accessibilityLabel="Abrir repositório no GitHub: https://github.com/henriqclaro/INI3A-EQ2"
+        >
+          <View style={styles.detailLabelGroup}>
+            <MaterialCommunityIcons name="github" size={18} color={theme.colors.onSurfaceVariant} />
+            <Text style={styles.detailLabel}>GitHub</Text>
+          </View>
+          <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="middle">
+            henriqclaro/INI3A-EQ2
+          </Text>
+        </TouchableOpacity>
+
+        <View style={styles.detailDivider} />
+
+        <TouchableOpacity
+          style={styles.detailRow}
+          activeOpacity={0.7}
+          onPress={() =>
+            handleOpenExternalUrl('mailto:meuconfeito4@gmail.com', 'meuconfeito4@gmail.com')
+          }
+          onLongPress={() => handleCopyInfo('meuconfeito4@gmail.com')}
+          accessibilityRole="link"
+          accessibilityLabel="Enviar e-mail para meuconfeito4@gmail.com"
+        >
+          <View style={styles.detailLabelGroup}>
+            <MaterialCommunityIcons
+              name="email-outline"
+              size={18}
+              color={theme.colors.onSurfaceVariant}
+            />
+            <Text style={styles.detailLabel}>E-mail</Text>
+          </View>
+          <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="middle">
+            meuconfeito4@gmail.com
+          </Text>
+        </TouchableOpacity>
+
+        <View style={styles.detailDivider} />
+
+        <TouchableOpacity
+          style={styles.detailRow}
+          activeOpacity={0.7}
+          onPress={() =>
+            handleOpenExternalUrl('https://instagram.com/meuconfeito.tcc', '@meuconfeito.tcc')
+          }
+          onLongPress={() => handleCopyInfo('@meuconfeito.tcc')}
+          accessibilityRole="link"
+          accessibilityLabel="Abrir perfil no Instagram: @meuconfeito.tcc"
+        >
+          <View style={styles.detailLabelGroup}>
+            <MaterialCommunityIcons
+              name="instagram"
+              size={18}
+              color={theme.colors.onSurfaceVariant}
+            />
+            <Text style={styles.detailLabel}>Instagram</Text>
+          </View>
+          <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="middle">
+            @meuconfeito.tcc
           </Text>
         </TouchableOpacity>
       </View>
