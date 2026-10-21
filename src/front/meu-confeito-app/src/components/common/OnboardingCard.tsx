@@ -9,17 +9,18 @@ import {
   ViewStyle,
 } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
 import { useOnboarding } from '@/src/contexts/OnboardingContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
+import { MaterialSymbolName } from '@/src/types/materialSymbols';
+
+import { MaterialSymbol } from './MaterialSymbol';
 
 export interface OnboardingCardProps {
   id: string;
   title: string;
   description: string;
-  icon?: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon?: MaterialSymbolName;
   actionText?: string;
   onPress?: () => void;
   onDismiss?: () => void;
@@ -86,7 +87,7 @@ export function OnboardingCard({
         <View style={styles.mainRow}>
           {icon ? (
             <View style={styles.iconContainer}>
-              <MaterialCommunityIcons
+              <MaterialSymbol
                 name={icon}
                 size={isHero ? 26 : isCompact ? 16 : 20}
                 color={theme.colors.primary}
@@ -107,8 +108,8 @@ export function OnboardingCard({
         {actionText ? (
           <View style={styles.footerRow}>
             <Text style={styles.actionText}>{actionText}</Text>
-            <MaterialCommunityIcons
-              name="arrow-right"
+            <MaterialSymbol
+              name="arrow_forward"
               size={isCompact ? 13 : 16}
               color={theme.colors.primary}
             />
@@ -131,7 +132,7 @@ export function OnboardingCard({
           accessibilityLabel="Dispensar card de dica"
           accessibilityHint="Fecha este card permanentemente"
         >
-          <MaterialCommunityIcons
+          <MaterialSymbol
             name="close"
             size={isCompact ? 15 : 18}
             color={theme.colors.onSurfaceVariant}

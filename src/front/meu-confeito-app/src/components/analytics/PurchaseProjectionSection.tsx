@@ -8,8 +8,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { PlannedProductionItem, PurchaseProjectionData } from '@/src/types/analytics';
@@ -103,18 +102,10 @@ export function PurchaseProjectionSection({
             ]}
           >
             {origin === 'SAVED' && (
-              <MaterialCommunityIcons
-                name="bookmark-outline"
-                size={11}
-                color={theme.colors.secondary}
-              />
+              <MaterialSymbol name="bookmark" size={11} color={theme.colors.secondary} />
             )}
             {origin === 'DOWNLOADED' && (
-              <MaterialCommunityIcons
-                name="cloud-check-outline"
-                size={11}
-                color={theme.colors.tertiary}
-              />
+              <MaterialSymbol name="cloud_done" size={11} color={theme.colors.tertiary} />
             )}
             <Text
               style={[
@@ -152,7 +143,7 @@ export function PurchaseProjectionSection({
             accessibilityRole="button"
             accessibilityLabel="Adicionar receita ao planejamento de compras"
           >
-            <MaterialCommunityIcons name="plus" size={20} color={theme.colors.onPrimary} />
+            <MaterialSymbol name="add" size={20} color={theme.colors.onPrimary} />
             <Text style={styles.addRecipeBtnText}>Adicionar Receita</Text>
           </TouchableOpacity>
         </View>
@@ -160,11 +151,7 @@ export function PurchaseProjectionSection({
         {/* Planned Recipes List */}
         {!hasPlannedRecipes ? (
           <View style={styles.emptyPlanCard}>
-            <MaterialCommunityIcons
-              name="basket-plus-outline"
-              size={36}
-              color={theme.colors.outline}
-            />
+            <MaterialSymbol name="shopping_basket" size={36} color={theme.colors.outline} />
             <Text style={styles.emptyPlanTitle}>Nenhuma receita adicionada ao plano</Text>
             <Text style={styles.emptyPlanSubtitle}>
               Clique em &quot;Adicionar Receita&quot; acima para selecionar receitas próprias,
@@ -202,11 +189,7 @@ export function PurchaseProjectionSection({
                       accessibilityLabel="Diminuir rendimento planejado"
                       hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
                     >
-                      <MaterialCommunityIcons
-                        name="minus"
-                        size={16}
-                        color={theme.colors.espressoDark}
-                      />
+                      <MaterialSymbol name="remove" size={16} color={theme.colors.espressoDark} />
                     </TouchableOpacity>
 
                     <Text style={styles.stepYieldValue}>{item.targetYield}</Text>
@@ -219,11 +202,7 @@ export function PurchaseProjectionSection({
                       accessibilityLabel="Aumentar rendimento planejado"
                       hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
                     >
-                      <MaterialCommunityIcons
-                        name="plus"
-                        size={16}
-                        color={theme.colors.espressoDark}
-                      />
+                      <MaterialSymbol name="add" size={16} color={theme.colors.espressoDark} />
                     </TouchableOpacity>
                   </View>
 
@@ -235,11 +214,7 @@ export function PurchaseProjectionSection({
                     accessibilityRole="button"
                     accessibilityLabel={`Remover receita ${item.recipeTitle} do plano`}
                   >
-                    <MaterialCommunityIcons
-                      name="trash-can-outline"
-                      size={20}
-                      color={theme.colors.error}
-                    />
+                    <MaterialSymbol name="delete" size={20} color={theme.colors.error} />
                   </TouchableOpacity>
                 </View>
               ) : (
@@ -260,11 +235,7 @@ export function PurchaseProjectionSection({
                       accessibilityRole="button"
                       accessibilityLabel={`Remover receita ${item.recipeTitle} do plano`}
                     >
-                      <MaterialCommunityIcons
-                        name="trash-can-outline"
-                        size={20}
-                        color={theme.colors.error}
-                      />
+                      <MaterialSymbol name="delete" size={20} color={theme.colors.error} />
                     </TouchableOpacity>
                   </View>
 
@@ -287,11 +258,7 @@ export function PurchaseProjectionSection({
                         accessibilityLabel="Diminuir rendimento planejado"
                         hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
                       >
-                        <MaterialCommunityIcons
-                          name="minus"
-                          size={18}
-                          color={theme.colors.espressoDark}
-                        />
+                        <MaterialSymbol name="remove" size={18} color={theme.colors.espressoDark} />
                       </TouchableOpacity>
 
                       <Text style={styles.stepYieldValueMobile}>{item.targetYield}</Text>
@@ -304,11 +271,7 @@ export function PurchaseProjectionSection({
                         accessibilityLabel="Aumentar rendimento planejado"
                         hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
                       >
-                        <MaterialCommunityIcons
-                          name="plus"
-                          size={18}
-                          color={theme.colors.espressoDark}
-                        />
+                        <MaterialSymbol name="add" size={18} color={theme.colors.espressoDark} />
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -340,11 +303,7 @@ export function PurchaseProjectionSection({
                 {isCalculating ? (
                   <ActivityIndicator size="small" color={theme.colors.onPrimary} />
                 ) : (
-                  <MaterialCommunityIcons
-                    name="calculator"
-                    size={18}
-                    color={theme.colors.onPrimary}
-                  />
+                  <MaterialSymbol name="calculate" size={18} color={theme.colors.onPrimary} />
                 )}
                 <Text style={styles.calculateBtnText}>
                   {isCalculating ? 'Calculando...' : 'Calcular Insumos Faltantes'}
@@ -358,11 +317,7 @@ export function PurchaseProjectionSection({
       {/* Error Banner */}
       {hasError && (
         <View style={styles.errorCard}>
-          <MaterialCommunityIcons
-            name="alert-circle-outline"
-            size={20}
-            color={theme.colors.error}
-          />
+          <MaterialSymbol name="error" size={20} color={theme.colors.error} />
           <Text style={styles.errorText}>
             {errorMessage || 'Erro ao calcular a projeção de compras.'}
           </Text>
@@ -377,8 +332,8 @@ export function PurchaseProjectionSection({
             <View style={styles.resultKpiCard}>
               <View style={styles.kpiTopRow}>
                 <Text style={styles.kpiLabel}>Insumos em Falta</Text>
-                <MaterialCommunityIcons
-                  name="alert-circle-outline"
+                <MaterialSymbol
+                  name="error"
                   size={20}
                   color={
                     projection.totalItemsToPurchase > 0 ? theme.colors.error : theme.colors.tertiary
@@ -399,11 +354,7 @@ export function PurchaseProjectionSection({
             <View style={styles.resultKpiCard}>
               <View style={styles.kpiTopRow}>
                 <Text style={styles.kpiLabel}>Gasto Estimado</Text>
-                <MaterialCommunityIcons
-                  name="currency-usd"
-                  size={20}
-                  color={theme.colors.primary}
-                />
+                <MaterialSymbol name="attach_money" size={20} color={theme.colors.primary} />
               </View>
               <Text style={styles.resultKpiValue}>
                 {formatCurrency(projection.totalEstimatedExpenditure)}
@@ -415,11 +366,7 @@ export function PurchaseProjectionSection({
           {/* 100% Stock Sufficient Banner */}
           {!hasDeficitItems && (
             <View style={styles.allCoveredCard}>
-              <MaterialCommunityIcons
-                name="check-decagram"
-                size={32}
-                color={theme.colors.tertiary}
-              />
+              <MaterialSymbol name="verified" size={32} color={theme.colors.tertiary} />
               <View style={styles.allCoveredTextGroup}>
                 <Text style={styles.allCoveredTitle}>Estoque 100% Abastecido!</Text>
                 <Text style={styles.allCoveredSubtitle}>
@@ -452,11 +399,7 @@ export function PurchaseProjectionSection({
                   {isSharing ? (
                     <ActivityIndicator size="small" color={theme.colors.primary} />
                   ) : (
-                    <MaterialCommunityIcons
-                      name="share-variant-outline"
-                      size={18}
-                      color={theme.colors.primary}
-                    />
+                    <MaterialSymbol name="share" size={18} color={theme.colors.primary} />
                   )}
                   <Text style={styles.shareListBtnText}>
                     {isSharing

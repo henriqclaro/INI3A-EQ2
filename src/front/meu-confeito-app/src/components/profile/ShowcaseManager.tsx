@@ -3,8 +3,7 @@ import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } fr
 
 import { Image } from 'expo-image';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useMyShowcase } from '@/src/hooks/useBakerProfile';
 import { AppTheme } from '@/src/theme/themes';
@@ -95,11 +94,7 @@ export function ShowcaseManager({ userId }: ShowcaseManagerProps) {
       {/* Header */}
       <View style={styles.headerRow}>
         <View style={styles.headerTitleRow}>
-          <MaterialCommunityIcons
-            name="storefront-outline"
-            size={20}
-            color={theme.colors.primary}
-          />
+          <MaterialSymbol name="storefront" size={20} color={theme.colors.primary} />
           <Text style={styles.sectionTitle}>Vitrine de Destaques</Text>
           <View style={styles.badgeOptional}>
             <Text style={styles.badgeOptionalText}>opcional</Text>
@@ -161,11 +156,7 @@ export function ShowcaseManager({ userId }: ShowcaseManagerProps) {
                   />
                 ) : (
                   <View style={[styles.thumbnail, styles.placeholderThumbnail]}>
-                    <MaterialCommunityIcons
-                      name="cake-variant-outline"
-                      size={20}
-                      color={theme.colors.primary}
-                    />
+                    <MaterialSymbol name="cake" size={20} color={theme.colors.primary} />
                   </View>
                 )}
 
@@ -175,7 +166,7 @@ export function ShowcaseManager({ userId }: ShowcaseManagerProps) {
                   </Text>
                   {item.recipe.averageRating && Number(item.recipe.averageRating) > 0 ? (
                     <View style={styles.ratingRow}>
-                      <MaterialCommunityIcons name="star" size={12} color="#D97706" />
+                      <MaterialSymbol name="star" size={12} color="#D97706" />
                       <Text style={styles.ratingText}>
                         {Number(item.recipe.averageRating).toFixed(1)}
                       </Text>
@@ -195,8 +186,8 @@ export function ShowcaseManager({ userId }: ShowcaseManagerProps) {
                     accessibilityRole="button"
                     accessibilityLabel="Mover para cima"
                   >
-                    <MaterialCommunityIcons
-                      name="chevron-up"
+                    <MaterialSymbol
+                      name="keyboard_arrow_up"
                       size={20}
                       color={canMoveUp ? theme.colors.espressoDark : theme.colors.outlineVariant}
                     />
@@ -210,8 +201,8 @@ export function ShowcaseManager({ userId }: ShowcaseManagerProps) {
                     accessibilityRole="button"
                     accessibilityLabel="Mover para baixo"
                   >
-                    <MaterialCommunityIcons
-                      name="chevron-down"
+                    <MaterialSymbol
+                      name="keyboard_arrow_down"
                       size={20}
                       color={canMoveDown ? theme.colors.espressoDark : theme.colors.outlineVariant}
                     />
@@ -225,11 +216,7 @@ export function ShowcaseManager({ userId }: ShowcaseManagerProps) {
                     accessibilityRole="button"
                     accessibilityLabel={`Remover ${item.recipe.title} da vitrine`}
                   >
-                    <MaterialCommunityIcons
-                      name="trash-can-outline"
-                      size={18}
-                      color={theme.colors.error}
-                    />
+                    <MaterialSymbol name="delete" size={18} color={theme.colors.error} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -238,11 +225,7 @@ export function ShowcaseManager({ userId }: ShowcaseManagerProps) {
         </View>
       ) : (
         <View style={styles.emptyBox}>
-          <MaterialCommunityIcons
-            name="storefront-outline"
-            size={36}
-            color={theme.colors.placeholder}
-          />
+          <MaterialSymbol name="storefront" size={36} color={theme.colors.placeholder} />
           <Text style={styles.emptyTitle}>Sua vitrine está vazia</Text>
           <Text style={styles.emptySubtitle}>
             Adicione suas melhores receitas publicadas para que os clientes conheçam seus produtos
@@ -260,7 +243,7 @@ export function ShowcaseManager({ userId }: ShowcaseManagerProps) {
         accessibilityRole="button"
         accessibilityLabel="Adicionar nova receita à vitrine"
       >
-        <MaterialCommunityIcons name="plus" size={18} color={theme.colors.primary} />
+        <MaterialSymbol name="add" size={18} color={theme.colors.primary} />
         <Text style={styles.addBtnText}>Adicionar Receita à Vitrine</Text>
       </TouchableOpacity>
 

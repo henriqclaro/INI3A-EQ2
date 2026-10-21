@@ -5,11 +5,10 @@ import * as Crypto from 'expo-crypto';
 import { Image } from 'expo-image';
 import { Link, Stack, router } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { ActivityIndicator } from 'react-native-paper';
 
-import { CustomButton, Input, RateLimitLabel } from '@/src/components';
+import { CustomButton, Input, MaterialSymbol, RateLimitLabel } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { isUserAccountGoneError } from '@/src/services/api';
@@ -132,11 +131,7 @@ export default function LogInScreen() {
                 E-mail <Text style={styles.required}>*</Text>
               </Text>
               {touched.email && isEmailFormatValid && (
-                <MaterialCommunityIcons
-                  name="check-circle-outline"
-                  size={16}
-                  color={theme.colors.tertiary}
-                />
+                <MaterialSymbol name="check_circle" size={16} color={theme.colors.tertiary} />
               )}
             </View>
             <Input
@@ -161,8 +156,8 @@ export default function LogInScreen() {
             <View style={styles.helperRow}>
               {emailError ? (
                 <>
-                  <MaterialCommunityIcons
-                    name="alert-circle-outline"
+                  <MaterialSymbol
+                    name="error"
                     size={14}
                     color={theme.colors.error}
                     style={styles.helperIcon}
@@ -182,11 +177,7 @@ export default function LogInScreen() {
                 Senha <Text style={styles.required}>*</Text>
               </Text>
               {touched.password && !passwordError && password.length >= 8 && (
-                <MaterialCommunityIcons
-                  name="check-circle-outline"
-                  size={16}
-                  color={theme.colors.tertiary}
-                />
+                <MaterialSymbol name="check_circle" size={16} color={theme.colors.tertiary} />
               )}
             </View>
             <Input
@@ -210,8 +201,8 @@ export default function LogInScreen() {
             <View style={styles.helperRow}>
               {passwordError ? (
                 <>
-                  <MaterialCommunityIcons
-                    name="alert-circle-outline"
+                  <MaterialSymbol
+                    name="error"
                     size={14}
                     color={theme.colors.error}
                     style={styles.helperIcon}

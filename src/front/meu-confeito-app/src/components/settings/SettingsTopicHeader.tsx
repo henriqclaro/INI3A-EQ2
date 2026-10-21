@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
@@ -32,7 +31,7 @@ export function SettingsTopicHeader({
           accessibilityRole="button"
           accessibilityLabel="Voltar para todas as configurações"
         >
-          <MaterialCommunityIcons name="arrow-left" size={20} color={theme.colors.primary} />
+          <MaterialSymbol name="arrow_back" size={20} color={theme.colors.primary} />
           <Text style={styles.backButtonText}>Todas as Configurações</Text>
         </TouchableOpacity>
       )}

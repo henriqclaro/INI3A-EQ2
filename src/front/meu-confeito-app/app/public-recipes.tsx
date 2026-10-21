@@ -13,10 +13,9 @@ import {
 
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
 import {
   Input,
+  MaterialSymbol,
   OfflineBanner,
   RecipeDateFilterModal,
   RecipeFilterChip,
@@ -130,11 +129,7 @@ export default function PublicRecipesScreen() {
       <View style={styles.emptyWrapper}>
         <View style={styles.feedbackContainer}>
           <View style={styles.emptyIconWrapper}>
-            <MaterialCommunityIcons
-              name="book-search-outline"
-              size={44}
-              color={theme.colors.primary}
-            />
+            <MaterialSymbol name="find_in_page" size={44} color={theme.colors.primary} />
           </View>
           <Text style={styles.emptyTitle}>
             {hasActiveFilters
@@ -163,11 +158,7 @@ export default function PublicRecipesScreen() {
               accessibilityRole="button"
               accessibilityLabel="Limpar todos os filtros"
             >
-              <MaterialCommunityIcons
-                name="close-circle-outline"
-                size={18}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="cancel" size={18} color={theme.colors.primary} />
               <Text style={styles.clearSearchBtnText}>Limpar filtros</Text>
             </TouchableOpacity>
           )}
@@ -216,11 +207,7 @@ export default function PublicRecipesScreen() {
             accessibilityRole="button"
             accessibilityLabel="Carregar mais receitas"
           >
-            <MaterialCommunityIcons
-              name="chevron-down-circle-outline"
-              size={18}
-              color={theme.colors.primary}
-            />
+            <MaterialSymbol name="expand_circle_down" size={18} color={theme.colors.primary} />
             <Text style={styles.loadMoreBtnText}>Carregar mais receitas</Text>
           </TouchableOpacity>
         </View>
@@ -246,11 +233,7 @@ export default function PublicRecipesScreen() {
       <View style={styles.listHeaderWrapper}>
         {isUserSpecific ? (
           <View style={styles.userBanner}>
-            <MaterialCommunityIcons
-              name="account-circle-outline"
-              size={20}
-              color={theme.colors.primary}
-            />
+            <MaterialSymbol name="account_circle" size={20} color={theme.colors.primary} />
             <Text style={styles.userBannerText}>
               {userName
                 ? `Receitas públicas compartilhadas por ${userName}`
@@ -261,13 +244,13 @@ export default function PublicRecipesScreen() {
           <View style={styles.filtersRow}>
             <RecipeFilterChip
               label="Mais Salvas"
-              icon="bookmark-multiple-outline"
+              icon="bookmarks"
               isSelected={activeSort === 'saves'}
               onPress={() => setActiveSort((prev) => (prev === 'saves' ? null : 'saves'))}
             />
             <RecipeFilterChip
               label="Mais Avaliadas"
-              icon="comment-text-multiple-outline"
+              icon="comment"
               isSelected={activeSort === 'reviews'}
               onPress={() => setActiveSort((prev) => (prev === 'reviews' ? null : 'reviews'))}
             />
@@ -279,8 +262,8 @@ export default function PublicRecipesScreen() {
             />
             <RecipeFilterChip
               label={dateFilterLabel}
-              icon="calendar-clock-outline"
-              trailingIcon="chevron-down"
+              icon="event_upcoming"
+              trailingIcon="keyboard_arrow_down"
               isSelected={hasDateFilter}
               onPress={() => setIsDateModalVisible(true)}
               accessibilityLabel={`Filtrar por período. Seleção atual: ${dateFilterLabel}`}
@@ -351,11 +334,7 @@ export default function PublicRecipesScreen() {
               onChangeText={setSearch}
               containerStyle={styles.searchInput}
               leftIcon={
-                <MaterialCommunityIcons
-                  name="magnify"
-                  size={22}
-                  color={theme.colors.onSurfaceVariant}
-                />
+                <MaterialSymbol name="search" size={22} color={theme.colors.onSurfaceVariant} />
               }
               isClearable={true}
               onClear={() => setSearch('')}

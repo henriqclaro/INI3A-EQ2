@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
@@ -95,15 +94,15 @@ export function BakerStockAlertCard({
                 : styles.iconCircleNormal,
           ]}
         >
-          <MaterialCommunityIcons
+          <MaterialSymbol
             name={
               totalItemsCount === 0
-                ? 'package-variant'
+                ? 'package_2'
                 : hasExpired
-                  ? 'alert-decagram'
+                  ? 'warning'
                   : hasAlert
-                    ? 'clock-alert-outline'
-                    : 'check-circle-outline'
+                    ? 'schedule'
+                    : 'check_circle'
             }
             size={24}
             color={
@@ -149,8 +148,8 @@ export function BakerStockAlertCard({
           </Text>
         </View>
 
-        <MaterialCommunityIcons
-          name="chevron-right"
+        <MaterialSymbol
+          name="chevron_right"
           size={22}
           color={theme.colors.onSurfaceVariant}
           style={styles.chevron}

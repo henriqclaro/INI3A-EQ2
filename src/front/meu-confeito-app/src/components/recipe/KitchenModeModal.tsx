@@ -3,9 +3,9 @@ import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'rea
 
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { MaterialSymbol } from '@/src/components/common';
 import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
@@ -121,11 +121,7 @@ export function KitchenModeModal({
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <View style={styles.awakeBadge}>
-              <MaterialCommunityIcons
-                name="sun-clock-outline"
-                size={14}
-                color={theme.colors.onPrimary}
-              />
+              <MaterialSymbol name="schedule" size={14} color={theme.colors.onPrimary} />
               <Text style={styles.awakeBadgeText}>Tela Sempre Ativa</Text>
             </View>
             <Text style={styles.headerTitle} numberOfLines={1}>
@@ -141,11 +137,7 @@ export function KitchenModeModal({
               accessibilityRole="button"
               accessibilityLabel="Compartilhar resumo da receita"
             >
-              <MaterialCommunityIcons
-                name="share-variant-outline"
-                size={22}
-                color={theme.colors.onSurface}
-              />
+              <MaterialSymbol name="share" size={22} color={theme.colors.onSurface} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -155,7 +147,7 @@ export function KitchenModeModal({
               accessibilityRole="button"
               accessibilityLabel="Sair do modo cozinha"
             >
-              <MaterialCommunityIcons name="close" size={24} color={theme.colors.onSurface} />
+              <MaterialSymbol name="close" size={24} color={theme.colors.onSurface} />
             </TouchableOpacity>
           </View>
         </View>
@@ -182,8 +174,8 @@ export function KitchenModeModal({
             accessibilityRole="button"
             accessibilityLabel="Ver lista de ingredientes do modo cozinha"
           >
-            <MaterialCommunityIcons
-              name="silverware-fork-knife"
+            <MaterialSymbol
+              name="restaurant"
               size={18}
               color={
                 activeTab === 'ingredients' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant
@@ -206,8 +198,8 @@ export function KitchenModeModal({
             accessibilityRole="button"
             accessibilityLabel="Ver etapas de preparo do modo cozinha"
           >
-            <MaterialCommunityIcons
-              name="format-list-checks"
+            <MaterialSymbol
+              name="checklist"
               size={18}
               color={activeTab === 'steps' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant}
             />
@@ -256,11 +248,7 @@ export function KitchenModeModal({
                       style={[styles.checkboxCircle, isChecked && styles.checkboxCircleChecked]}
                     >
                       {isChecked && (
-                        <MaterialCommunityIcons
-                          name="check"
-                          size={18}
-                          color={theme.colors.onPrimary}
-                        />
+                        <MaterialSymbol name="check" size={18} color={theme.colors.onPrimary} />
                       )}
                     </View>
 
@@ -295,11 +283,7 @@ export function KitchenModeModal({
                   >
                     <View style={[styles.stepBadge, isDone && styles.stepBadgeDone]}>
                       {isDone ? (
-                        <MaterialCommunityIcons
-                          name="check-bold"
-                          size={16}
-                          color={theme.colors.onTertiary}
-                        />
+                        <MaterialSymbol name="check" size={16} color={theme.colors.onTertiary} />
                       ) : (
                         <Text style={styles.stepBadgeNumber}>{step.step}</Text>
                       )}

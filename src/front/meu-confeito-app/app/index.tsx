@@ -11,9 +11,7 @@ import {
 import { Image } from 'expo-image';
 import { Link, Stack } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
-import { CustomButton } from '@/src/components';
+import { CustomButton, MaterialSymbol } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
@@ -38,8 +36,8 @@ export default function WelcomeScreen() {
               accessibilityLabel={isDarkMode ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <MaterialCommunityIcons
-                name={isDarkMode ? 'weather-sunny' : 'weather-night'}
+              <MaterialSymbol
+                name={isDarkMode ? 'light_mode' : 'dark_mode'}
                 size={22}
                 color={theme.colors.espressoDark}
               />

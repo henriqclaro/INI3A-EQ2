@@ -13,9 +13,7 @@ import {
 import { Image } from 'expo-image';
 import { Stack, router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
-import { OfflineBanner, OnboardingCard } from '@/src/components';
+import { MaterialSymbol, OfflineBanner, OnboardingCard } from '@/src/components';
 import { InsufficientStockModal, ProduceRecipeModal } from '@/src/components/production';
 import {
   CustomizeRecipeModal,
@@ -502,21 +500,21 @@ export default function RecipeScreen() {
       case 'PUBLISHED':
         return {
           label: 'Pública',
-          icon: 'earth' as const,
+          icon: 'public' as const,
           color: theme.colors.chips.success.text,
           bgColor: theme.colors.chips.success.background,
         };
       case 'ARCHIVED':
         return {
           label: 'Arquivada',
-          icon: 'archive-outline' as const,
+          icon: 'inventory_2' as const,
           color: theme.colors.onSurfaceVariant,
           bgColor: theme.colors.surfaceContainerHigh,
         };
       case 'SUSPENDED':
         return {
           label: 'Suspensa',
-          icon: 'alert-octagon-outline' as const,
+          icon: 'report' as const,
           color: theme.colors.error,
           bgColor: theme.colors.errorContainer,
         };
@@ -524,7 +522,7 @@ export default function RecipeScreen() {
       default:
         return {
           label: 'Rascunho',
-          icon: 'file-document-edit-outline' as const,
+          icon: 'edit_document' as const,
           color: theme.colors.chips.primary.text,
           bgColor: theme.colors.chips.primary.background,
         };
@@ -548,11 +546,7 @@ export default function RecipeScreen() {
                   accessibilityLabel="Compartilhar resumo da receita"
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <MaterialCommunityIcons
-                    name="share-variant-outline"
-                    size={22}
-                    color={theme.colors.primary}
-                  />
+                  <MaterialSymbol name="share" size={22} color={theme.colors.primary} />
                 </TouchableOpacity>
               )}
               {recipe && (
@@ -563,11 +557,7 @@ export default function RecipeScreen() {
                   accessibilityLabel="Abrir modo cozinha com tela ativa"
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <MaterialCommunityIcons
-                    name="sun-clock-outline"
-                    size={22}
-                    color={theme.colors.primary}
-                  />
+                  <MaterialSymbol name="schedule" size={22} color={theme.colors.primary} />
                 </TouchableOpacity>
               )}
               {recipe && user && recipe.status === 'PUBLISHED' && (
@@ -582,8 +572,8 @@ export default function RecipeScreen() {
                   {isTogglingSave ? (
                     <ActivityIndicator size="small" color={theme.colors.primary} />
                   ) : (
-                    <MaterialCommunityIcons
-                      name={hasSavedRecipe ? 'bookmark' : 'bookmark-outline'}
+                    <MaterialSymbol
+                      name={hasSavedRecipe ? 'bookmark' : 'bookmark'}
                       size={24}
                       color={theme.colors.primary}
                     />
@@ -598,11 +588,7 @@ export default function RecipeScreen() {
                   accessibilityLabel="Personalizar receita"
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <MaterialCommunityIcons
-                    name="source-fork"
-                    size={22}
-                    color={theme.colors.primary}
-                  />
+                  <MaterialSymbol name="fork_right" size={22} color={theme.colors.primary} />
                 </TouchableOpacity>
               )}
               {isOwner && recipe && (
@@ -618,11 +604,7 @@ export default function RecipeScreen() {
                   accessibilityLabel="Editar receita"
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <MaterialCommunityIcons
-                    name="pencil-outline"
-                    size={22}
-                    color={theme.colors.primary}
-                  />
+                  <MaterialSymbol name="edit" size={22} color={theme.colors.primary} />
                 </TouchableOpacity>
               )}
             </View>
@@ -637,11 +619,7 @@ export default function RecipeScreen() {
           </View>
         ) : !recipe ? (
           <View style={styles.notFoundContainer}>
-            <MaterialCommunityIcons
-              name="book-remove-outline"
-              size={56}
-              color={theme.colors.placeholder}
-            />
+            <MaterialSymbol name="menu_book" size={56} color={theme.colors.placeholder} />
             <Text style={styles.notFoundTitle}>Receita não encontrada</Text>
             <Text style={styles.notFoundSubtitle}>
               Não foi possível carregar as informações desta receita.
@@ -668,7 +646,7 @@ export default function RecipeScreen() {
               <View style={styles.topCardsWrapper}>
                 <OnboardingCard
                   id="recipe_screen_awake"
-                  icon="sun-clock-outline"
+                  icon="schedule"
                   title="Modo Cozinha: Tela Sempre Ativa"
                   description="Mantenha a tela sempre acesa durante o preparo para consultar ingredientes e instruções sem sujar o aparelho."
                   actionText="Ativar Modo Cozinha"
@@ -677,7 +655,7 @@ export default function RecipeScreen() {
                 {isPublicNotOwned && (
                   <OnboardingCard
                     id="recipe_review_rate"
-                    icon="star-outline"
+                    icon="star"
                     title="Avalie esta Receita"
                     description="Já preparou essa delícia? Deixe sua nota e feedback para compartilhar sua experiência com a comunidade."
                     actionText="Avaliar Receita"
@@ -705,11 +683,7 @@ export default function RecipeScreen() {
                 ) : (
                   <View style={styles.heroPlaceholder}>
                     <View style={styles.heroPlaceholderBadge}>
-                      <MaterialCommunityIcons
-                        name="cake-variant-outline"
-                        size={44}
-                        color={theme.colors.primary}
-                      />
+                      <MaterialSymbol name="cake" size={44} color={theme.colors.primary} />
                     </View>
                     <Text style={styles.heroPlaceholderTitle}>Receita Sem Foto</Text>
                     <Text style={styles.heroPlaceholderSubtitle}>
@@ -737,10 +711,8 @@ export default function RecipeScreen() {
                             hasDownloadedUpdate && styles.downloadedBadgeUpdate,
                           ]}
                         >
-                          <MaterialCommunityIcons
-                            name={
-                              hasDownloadedUpdate ? 'cloud-sync-outline' : 'cloud-check-outline'
-                            }
+                          <MaterialSymbol
+                            name={hasDownloadedUpdate ? 'cloud_sync' : 'cloud_done'}
                             size={13}
                             color={
                               hasDownloadedUpdate ? theme.colors.onTertiary : theme.colors.primary
@@ -758,8 +730,8 @@ export default function RecipeScreen() {
                       )}
                       {Boolean(recipe.parent) && (
                         <View style={styles.forkBadge}>
-                          <MaterialCommunityIcons
-                            name="source-fork"
+                          <MaterialSymbol
+                            name="fork_right"
                             size={13}
                             color={theme.colors.secondary}
                           />
@@ -767,7 +739,7 @@ export default function RecipeScreen() {
                         </View>
                       )}
                       <View style={[styles.statusBadge, { backgroundColor: statusBadge.bgColor }]}>
-                        <MaterialCommunityIcons
+                        <MaterialSymbol
                           name={statusBadge.icon}
                           size={14}
                           color={statusBadge.color}
@@ -796,11 +768,7 @@ export default function RecipeScreen() {
                       accessibilityLabel={`Ver receita original: ${recipe.parent?.title || 'Receita original'}`}
                     >
                       <View style={styles.parentRecipeBannerIconWrap}>
-                        <MaterialCommunityIcons
-                          name="source-fork"
-                          size={18}
-                          color={theme.colors.primary}
-                        />
+                        <MaterialSymbol name="fork_right" size={18} color={theme.colors.primary} />
                       </View>
                       <View style={styles.parentRecipeBannerTextCol}>
                         <Text style={styles.parentRecipeBannerLabel}>
@@ -812,8 +780,8 @@ export default function RecipeScreen() {
                       </View>
                       <View style={styles.parentRecipeBannerAction}>
                         <Text style={styles.parentRecipeBannerActionText}>Ver original</Text>
-                        <MaterialCommunityIcons
-                          name="arrow-top-right"
+                        <MaterialSymbol
+                          name="arrow_outward"
                           size={15}
                           color={theme.colors.primary}
                         />
@@ -847,11 +815,7 @@ export default function RecipeScreen() {
                   {typeof recipe.totalSaves === 'number' && recipe.totalSaves > 0 && (
                     <View style={styles.savesBadgeRow}>
                       <View style={styles.savesBadge}>
-                        <MaterialCommunityIcons
-                          name="bookmark-outline"
-                          size={14}
-                          color={theme.colors.primary}
-                        />
+                        <MaterialSymbol name="bookmark" size={14} color={theme.colors.primary} />
                         <Text style={styles.savesBadgeText}>
                           {recipe.totalSaves} {recipe.totalSaves === 1 ? 'salvo' : 'salvos'}
                         </Text>
@@ -863,11 +827,7 @@ export default function RecipeScreen() {
                   <View style={styles.metaRow}>
                     {Boolean(recipe.baseYield) && (
                       <View style={styles.metaBadge}>
-                        <MaterialCommunityIcons
-                          name="scale"
-                          size={18}
-                          color={theme.colors.espressoDark}
-                        />
+                        <MaterialSymbol name="scale" size={18} color={theme.colors.espressoDark} />
                         <Text style={styles.metaBadgeText}>
                           Rende {recipe.baseYield} {recipe.yieldUnit || 'UN'}
                         </Text>
@@ -876,11 +836,7 @@ export default function RecipeScreen() {
 
                     {Number(recipe.prepTimeMinutes) > 0 && (
                       <View style={styles.metaBadge}>
-                        <MaterialCommunityIcons
-                          name="timer-outline"
-                          size={18}
-                          color={theme.colors.espressoDark}
-                        />
+                        <MaterialSymbol name="timer" size={18} color={theme.colors.espressoDark} />
                         <Text style={styles.metaBadgeText}>{recipe.prepTimeMinutes} min</Text>
                       </View>
                     )}
@@ -892,11 +848,7 @@ export default function RecipeScreen() {
                   <View style={styles.ownerControlCard}>
                     <View style={styles.ownerControlHeader}>
                       <View style={styles.ownerControlTitleGroup}>
-                        <MaterialCommunityIcons
-                          name="cog-outline"
-                          size={18}
-                          color={theme.colors.primary}
-                        />
+                        <MaterialSymbol name="settings" size={18} color={theme.colors.primary} />
                         <Text style={styles.ownerControlTitle}>Painel da Receita</Text>
                       </View>
                       {isUpdatingVisibility && (
@@ -916,11 +868,7 @@ export default function RecipeScreen() {
                       {isCheckingStock ? (
                         <ActivityIndicator size="small" color={theme.colors.onPrimary} />
                       ) : (
-                        <MaterialCommunityIcons
-                          name="pot-steam"
-                          size={20}
-                          color={theme.colors.onPrimary}
-                        />
+                        <MaterialSymbol name="cooking" size={20} color={theme.colors.onPrimary} />
                       )}
                       <Text style={styles.btnActionTextProduce}>
                         {isCheckingStock ? 'Verificando Estoque...' : 'Produzir Receita'}
@@ -931,11 +879,7 @@ export default function RecipeScreen() {
                       <>
                         {recipe.status === 'SUSPENDED' && (
                           <View style={styles.suspendedBanner}>
-                            <MaterialCommunityIcons
-                              name="alert-circle-outline"
-                              size={18}
-                              color={theme.colors.error}
-                            />
+                            <MaterialSymbol name="error" size={18} color={theme.colors.error} />
                             <Text style={styles.suspendedBannerText}>
                               Esta receita está suspensa porque a conta do criador foi desativada ou
                               suspensa.
@@ -955,8 +899,8 @@ export default function RecipeScreen() {
                                 accessibilityRole="button"
                                 accessibilityLabel="Mudar receita para rascunho"
                               >
-                                <MaterialCommunityIcons
-                                  name="lock-outline"
+                                <MaterialSymbol
+                                  name="lock"
                                   size={18}
                                   color={theme.colors.onSurfaceVariant}
                                 />
@@ -971,8 +915,8 @@ export default function RecipeScreen() {
                                 accessibilityRole="button"
                                 accessibilityLabel="Publicar receita na comunidade"
                               >
-                                <MaterialCommunityIcons
-                                  name="earth"
+                                <MaterialSymbol
+                                  name="public"
                                   size={18}
                                   color={theme.colors.onTertiary}
                                 />
@@ -988,11 +932,7 @@ export default function RecipeScreen() {
                             accessibilityRole="button"
                             accessibilityLabel="Compartilhar resumo da receita"
                           >
-                            <MaterialCommunityIcons
-                              name="share-variant-outline"
-                              size={18}
-                              color={theme.colors.primary}
-                            />
+                            <MaterialSymbol name="share" size={18} color={theme.colors.primary} />
                             <Text style={styles.btnActionTextShare}>Compartilhar</Text>
                           </TouchableOpacity>
 
@@ -1010,8 +950,8 @@ export default function RecipeScreen() {
                                 <ActivityIndicator size="small" color={theme.colors.primary} />
                               ) : (
                                 <>
-                                  <MaterialCommunityIcons
-                                    name="cloud-download-outline"
+                                  <MaterialSymbol
+                                    name="cloud_download"
                                     size={18}
                                     color={theme.colors.primary}
                                   />
@@ -1035,8 +975,8 @@ export default function RecipeScreen() {
                                 />
                               ) : (
                                 <>
-                                  <MaterialCommunityIcons
-                                    name="cloud-sync-outline"
+                                  <MaterialSymbol
+                                    name="cloud_sync"
                                     size={18}
                                     color={theme.colors.onTertiaryContainer}
                                   />
@@ -1057,8 +997,8 @@ export default function RecipeScreen() {
                                 <ActivityIndicator size="small" color={theme.colors.error} />
                               ) : (
                                 <>
-                                  <MaterialCommunityIcons
-                                    name="cloud-remove-outline"
+                                  <MaterialSymbol
+                                    name="cloud_sync"
                                     size={18}
                                     color={theme.colors.error}
                                   />
@@ -1081,11 +1021,7 @@ export default function RecipeScreen() {
                             accessibilityRole="button"
                             accessibilityLabel="Editar informações da receita"
                           >
-                            <MaterialCommunityIcons
-                              name="pencil-outline"
-                              size={18}
-                              color={theme.colors.primary}
-                            />
+                            <MaterialSymbol name="edit" size={18} color={theme.colors.primary} />
                             <Text style={styles.btnActionTextEdit}>Editar</Text>
                           </TouchableOpacity>
 
@@ -1100,8 +1036,8 @@ export default function RecipeScreen() {
                                 accessibilityRole="button"
                                 accessibilityLabel="Restaurar receita arquivada"
                               >
-                                <MaterialCommunityIcons
-                                  name="archive-arrow-up-outline"
+                                <MaterialSymbol
+                                  name="unarchive"
                                   size={18}
                                   color={theme.colors.onPrimaryContainer}
                                 />
@@ -1116,8 +1052,8 @@ export default function RecipeScreen() {
                                 accessibilityRole="button"
                                 accessibilityLabel="Arquivar receita"
                               >
-                                <MaterialCommunityIcons
-                                  name="archive-arrow-down-outline"
+                                <MaterialSymbol
+                                  name="archive"
                                   size={18}
                                   color={theme.colors.onSurfaceVariant}
                                 />
@@ -1138,8 +1074,8 @@ export default function RecipeScreen() {
                               <ActivityIndicator size="small" color={theme.colors.error} />
                             ) : (
                               <>
-                                <MaterialCommunityIcons
-                                  name="trash-can-outline"
+                                <MaterialSymbol
+                                  name="delete"
                                   size={18}
                                   color={theme.colors.error}
                                 />
@@ -1162,11 +1098,7 @@ export default function RecipeScreen() {
                           accessibilityRole="button"
                           accessibilityLabel="Ver produções anteriores desta receita"
                         >
-                          <MaterialCommunityIcons
-                            name="history"
-                            size={18}
-                            color={theme.colors.primary}
-                          />
+                          <MaterialSymbol name="history" size={18} color={theme.colors.primary} />
                           <Text style={styles.historyLinkText}>
                             Ver histórico de produções desta receita
                           </Text>
@@ -1186,8 +1118,8 @@ export default function RecipeScreen() {
                           : 'Expandir opções do painel da receita'
                       }
                     >
-                      <MaterialCommunityIcons
-                        name={isOwnerActionsExpanded ? 'chevron-up' : 'chevron-down'}
+                      <MaterialSymbol
+                        name={isOwnerActionsExpanded ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
                         size={22}
                         color={theme.colors.onSurfaceVariant}
                       />
@@ -1199,11 +1131,7 @@ export default function RecipeScreen() {
                   <View style={styles.guestProduceCard}>
                     <View style={styles.guestProduceHeader}>
                       <View style={styles.guestProduceTitleGroup}>
-                        <MaterialCommunityIcons
-                          name="earth"
-                          size={18}
-                          color={theme.colors.primary}
-                        />
+                        <MaterialSymbol name="public" size={18} color={theme.colors.primary} />
                         <Text style={styles.guestProduceTitle}>Receita da Comunidade</Text>
                       </View>
                       <View style={styles.guestProduceBadge}>
@@ -1229,11 +1157,7 @@ export default function RecipeScreen() {
                       {isCheckingStock ? (
                         <ActivityIndicator size="small" color={theme.colors.onPrimary} />
                       ) : (
-                        <MaterialCommunityIcons
-                          name="pot-steam"
-                          size={20}
-                          color={theme.colors.onPrimary}
-                        />
+                        <MaterialSymbol name="cooking" size={20} color={theme.colors.onPrimary} />
                       )}
                       <Text style={styles.btnActionTextProduceGuest}>
                         {isCheckingStock ? 'Verificando Estoque...' : 'Produzir Receita'}
@@ -1270,8 +1194,8 @@ export default function RecipeScreen() {
                             />
                           ) : (
                             <>
-                              <MaterialCommunityIcons
-                                name={hasSavedRecipe ? 'bookmark-check' : 'bookmark-outline'}
+                              <MaterialSymbol
+                                name={hasSavedRecipe ? 'bookmark_check' : 'bookmark'}
                                 size={18}
                                 color={
                                   hasSavedRecipe
@@ -1300,11 +1224,7 @@ export default function RecipeScreen() {
                         accessibilityRole="button"
                         accessibilityLabel="Compartilhar resumo da receita"
                       >
-                        <MaterialCommunityIcons
-                          name="share-variant-outline"
-                          size={18}
-                          color={theme.colors.primary}
-                        />
+                        <MaterialSymbol name="share" size={18} color={theme.colors.primary} />
                         <Text style={styles.btnActionTextShareGuest}>Compartilhar</Text>
                       </TouchableOpacity>
 
@@ -1322,8 +1242,8 @@ export default function RecipeScreen() {
                             <ActivityIndicator size="small" color={theme.colors.primary} />
                           ) : (
                             <>
-                              <MaterialCommunityIcons
-                                name="cloud-download-outline"
+                              <MaterialSymbol
+                                name="cloud_download"
                                 size={18}
                                 color={theme.colors.primary}
                               />
@@ -1347,8 +1267,8 @@ export default function RecipeScreen() {
                             />
                           ) : (
                             <>
-                              <MaterialCommunityIcons
-                                name="cloud-sync-outline"
+                              <MaterialSymbol
+                                name="cloud_sync"
                                 size={18}
                                 color={theme.colors.onTertiaryContainer}
                               />
@@ -1369,8 +1289,8 @@ export default function RecipeScreen() {
                             <ActivityIndicator size="small" color={theme.colors.error} />
                           ) : (
                             <>
-                              <MaterialCommunityIcons
-                                name="cloud-remove-outline"
+                              <MaterialSymbol
+                                name="cloud_sync"
                                 size={18}
                                 color={theme.colors.error}
                               />
@@ -1388,11 +1308,7 @@ export default function RecipeScreen() {
                         accessibilityRole="button"
                         accessibilityLabel="Personalizar e criar sua versão desta receita"
                       >
-                        <MaterialCommunityIcons
-                          name="source-fork"
-                          size={18}
-                          color={theme.colors.primary}
-                        />
+                        <MaterialSymbol name="fork_right" size={18} color={theme.colors.primary} />
                         <Text style={styles.btnActionTextCustomizeGuest}>Personalizar</Text>
                       </TouchableOpacity>
                     </View>
@@ -1413,8 +1329,8 @@ export default function RecipeScreen() {
                     accessibilityRole="button"
                     accessibilityLabel="Modo Receita"
                   >
-                    <MaterialCommunityIcons
-                      name="book-open-outline"
+                    <MaterialSymbol
+                      name="menu_book"
                       size={18}
                       color={
                         viewMode === 'recipe'
@@ -1442,8 +1358,8 @@ export default function RecipeScreen() {
                     accessibilityRole="button"
                     accessibilityLabel="Custos e Precificação"
                   >
-                    <MaterialCommunityIcons
-                      name="cash-multiple"
+                    <MaterialSymbol
+                      name="payments"
                       size={18}
                       color={
                         viewMode === 'pricing'
@@ -1482,11 +1398,7 @@ export default function RecipeScreen() {
                     >
                       <View style={styles.keepAwakeShortcutLeft}>
                         <View style={styles.keepAwakeIconWrap}>
-                          <MaterialCommunityIcons
-                            name="sun-clock-outline"
-                            size={18}
-                            color={theme.colors.primary}
-                          />
+                          <MaterialSymbol name="schedule" size={18} color={theme.colors.primary} />
                         </View>
                         <View style={styles.keepAwakeTextCol}>
                           <Text style={styles.keepAwakeTitle}>Modo Tela Sempre Ativa</Text>
@@ -1495,8 +1407,8 @@ export default function RecipeScreen() {
                           </Text>
                         </View>
                       </View>
-                      <MaterialCommunityIcons
-                        name="chevron-right"
+                      <MaterialSymbol
+                        name="chevron_right"
                         size={20}
                         color={theme.colors.onSurfaceVariant}
                       />
@@ -1511,11 +1423,7 @@ export default function RecipeScreen() {
                     {/* Items Cost Breakdown */}
                     <View style={styles.cardBox}>
                       <View style={styles.cardHeader}>
-                        <MaterialCommunityIcons
-                          name="tag-outline"
-                          size={22}
-                          color={theme.colors.primary}
-                        />
+                        <MaterialSymbol name="tag" size={22} color={theme.colors.primary} />
                         <Text style={styles.cardTitle}>Custo por Insumo (Estoque)</Text>
                       </View>
 
@@ -1562,11 +1470,7 @@ export default function RecipeScreen() {
                     {/* Cost Summary Card */}
                     <View style={styles.cardBox}>
                       <View style={styles.cardHeader}>
-                        <MaterialCommunityIcons
-                          name="calculator-variant-outline"
-                          size={22}
-                          color={theme.colors.primary}
-                        />
+                        <MaterialSymbol name="calculate" size={22} color={theme.colors.primary} />
                         <Text style={styles.cardTitle}>Custos Operacionais</Text>
                       </View>
 
@@ -1629,11 +1533,7 @@ export default function RecipeScreen() {
                     {/* Markup & Selling Price Suggestion Card */}
                     <View style={styles.suggestionHighlightCard}>
                       <View style={styles.cardHeader}>
-                        <MaterialCommunityIcons
-                          name="star-circle-outline"
-                          size={22}
-                          color={theme.colors.primary}
-                        />
+                        <MaterialSymbol name="stars" size={22} color={theme.colors.primary} />
                         <Text style={styles.cardTitle}>Sugestão de Preço</Text>
                       </View>
 

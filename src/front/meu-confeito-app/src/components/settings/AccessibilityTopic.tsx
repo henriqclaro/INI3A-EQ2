@@ -11,9 +11,7 @@ import {
 
 import { router } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
-import { MenuOptionButton, ThemeSwitch } from '@/src/components/common';
+import { MaterialSymbol, MenuOptionButton, ThemeSwitch } from '@/src/components/common';
 import { useOnboarding } from '@/src/contexts/OnboardingContext';
 import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
@@ -102,11 +100,7 @@ export function AccessibilityTopic() {
             <View style={styles.settingRow}>
               <View style={styles.settingInfo}>
                 <View style={styles.iconCircle}>
-                  <MaterialCommunityIcons
-                    name="gesture-swipe-horizontal"
-                    size={22}
-                    color={theme.colors.primary}
-                  />
+                  <MaterialSymbol name="swipe" size={22} color={theme.colors.primary} />
                 </View>
                 <View style={styles.textColumn}>
                   <View style={styles.titleWithBadge}>
@@ -144,7 +138,7 @@ export function AccessibilityTopic() {
             <View style={styles.settingRow}>
               <View style={styles.settingInfo}>
                 <View style={styles.iconCircle}>
-                  <MaterialCommunityIcons name="vibrate" size={22} color={theme.colors.primary} />
+                  <MaterialSymbol name="mobile_vibrate" size={22} color={theme.colors.primary} />
                 </View>
                 <View style={styles.textColumn}>
                   <View style={styles.titleWithBadge}>
@@ -181,8 +175,8 @@ export function AccessibilityTopic() {
                   accessibilityRole="button"
                   accessibilityLabel="Testar vibração no aparelho"
                 >
-                  <MaterialCommunityIcons
-                    name={hasTestedHaptic ? 'check-circle-outline' : 'cellphone-wireless'}
+                  <MaterialSymbol
+                    name={hasTestedHaptic ? 'check_circle' : 'cell_tower'}
                     size={18}
                     color={hasTestedHaptic ? theme.colors.onPrimary : theme.colors.primary}
                   />
@@ -203,7 +197,7 @@ export function AccessibilityTopic() {
         <View style={styles.settingRow}>
           <View style={styles.settingInfo}>
             <View style={styles.iconCircle}>
-              <MaterialCommunityIcons name="history" size={22} color={theme.colors.primary} />
+              <MaterialSymbol name="history" size={22} color={theme.colors.primary} />
             </View>
             <View style={styles.textColumn}>
               <View style={styles.titleWithBadge}>
@@ -234,8 +228,8 @@ export function AccessibilityTopic() {
 
         {/* Info Callout */}
         <View style={styles.infoCallout}>
-          <MaterialCommunityIcons
-            name="information-outline"
+          <MaterialSymbol
+            name="info"
             size={18}
             color={theme.colors.primary}
             style={styles.infoIcon}
@@ -266,7 +260,7 @@ export function AccessibilityTopic() {
             accessibilityRole="button"
             accessibilityLabel="Ocultar todos os cards de ajuda da aplicação"
           >
-            <MaterialCommunityIcons name="eye-off-outline" size={18} color={theme.colors.error} />
+            <MaterialSymbol name="visibility_off" size={18} color={theme.colors.error} />
             <Text style={styles.dismissAllButtonText}>
               {hasDismissedAllCards ? 'Cards Ocultados' : 'Ocultar Todos os Cards'}
             </Text>
@@ -280,7 +274,7 @@ export function AccessibilityTopic() {
             accessibilityRole="button"
             accessibilityLabel="Restaurar cards de ajuda para que apareçam novamente"
           >
-            <MaterialCommunityIcons name="restore" size={18} color={theme.colors.primary} />
+            <MaterialSymbol name="settings_backup_restore" size={18} color={theme.colors.primary} />
             <Text style={styles.resetButtonText}>Restaurar Cards</Text>
           </TouchableOpacity>
         </View>
@@ -292,7 +286,7 @@ export function AccessibilityTopic() {
         <MenuOptionButton
           title="Modo Alto Contraste"
           subtitle="Ajuste nitidez de bordas e contraste reforçado na tela de Aparência"
-          icon="contrast-box"
+          icon="contrast"
           badge={isHighContrast ? 'Ativado' : undefined}
           onPress={() => router.push('/settings?topic=appearance')}
         />

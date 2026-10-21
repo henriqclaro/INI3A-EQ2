@@ -10,10 +10,9 @@ import {
   View,
 } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAvoidingView, KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import { DateInput } from '@/src/components/common';
+import { DateInput, MaterialSymbol } from '@/src/components/common';
 import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
@@ -210,7 +209,7 @@ const StockOperationModalForm = ({
               accessibilityRole="button"
               accessibilityLabel="Fechar modal"
             >
-              <MaterialCommunityIcons name="close" size={24} color={theme.colors.onSurface} />
+              <MaterialSymbol name="close" size={24} color={theme.colors.onSurface} />
             </TouchableOpacity>
           </View>
 
@@ -224,8 +223,8 @@ const StockOperationModalForm = ({
               }}
               activeOpacity={0.8}
             >
-              <MaterialCommunityIcons
-                name="tune-variant"
+              <MaterialSymbol
+                name="tune"
                 size={16}
                 color={isAdjustMode ? theme.colors.primary : theme.colors.onSurfaceVariant}
               />
@@ -240,8 +239,8 @@ const StockOperationModalForm = ({
               }}
               activeOpacity={0.8}
             >
-              <MaterialCommunityIcons
-                name="cart-plus"
+              <MaterialSymbol
+                name="add_shopping_cart"
                 size={16}
                 color={isPurchaseMode ? theme.colors.primary : theme.colors.onSurfaceVariant}
               />
@@ -269,8 +268,8 @@ const StockOperationModalForm = ({
               }}
               activeOpacity={0.8}
             >
-              <MaterialCommunityIcons
-                name="trash-can-outline"
+              <MaterialSymbol
+                name="delete"
                 size={16}
                 color={isWasteMode ? theme.colors.primary : theme.colors.onSurfaceVariant}
               />
@@ -409,8 +408,8 @@ const StockOperationModalForm = ({
               <View style={styles.formContainer}>
                 {isItemExpired ? (
                   <View style={styles.expiredBanner}>
-                    <MaterialCommunityIcons
-                      name="alert-decagram"
+                    <MaterialSymbol
+                      name="warning"
                       size={22}
                       color={theme.colors.error}
                       style={styles.expiredBannerIcon}
@@ -454,8 +453,8 @@ const StockOperationModalForm = ({
                         accessibilityRole="button"
                         accessibilityLabel={`Preencher com todo o estoque atual: ${formatQuantity(currentQty, baseUnit)}`}
                       >
-                        <MaterialCommunityIcons
-                          name={isItemExpired ? 'trash-can-outline' : 'lightning-bolt-outline'}
+                        <MaterialSymbol
+                          name={isItemExpired ? 'delete' : 'bolt'}
                           size={14}
                           color={isItemExpired ? theme.colors.error : theme.colors.primary}
                         />
@@ -519,8 +518,8 @@ const StockOperationModalForm = ({
                         }}
                         activeOpacity={0.7}
                       >
-                        <MaterialCommunityIcons
-                          name="check-all"
+                        <MaterialSymbol
+                          name="done_all"
                           size={14}
                           color={
                             parsedQty === currentQty

@@ -82,21 +82,21 @@ export default function SettingsScreen() {
         id: 'account',
         title: 'Conta e Segurança',
         description: 'Gerencie seus dados de acesso, credenciais e encerramento da conta',
-        icon: 'shield-account-outline',
+        icon: 'admin_panel_settings',
       },
       {
         id: 'appearance',
         title: 'Aparência',
         description:
           'Personalize cores, alto contraste, fonte do dispositivo e economia de bateria OLED',
-        icon: 'palette-outline',
+        icon: 'palette',
       },
       {
         id: 'accessibility',
         title: 'Acessibilidade',
         description:
           'Ajuste recursos de acessibilidade, resposta tátil, gestos e visibilidade de cards de ajuda',
-        icon: 'wheelchair-accessibility',
+        icon: 'accessible',
       },
     ];
 
@@ -106,7 +106,7 @@ export default function SettingsScreen() {
         title: 'Preferências Operacionais',
         description:
           'Defina valores padrão para custos de receitas e a precisão de exibição das precificações',
-        icon: 'tune-variant',
+        icon: 'tune',
       });
     }
 
@@ -116,13 +116,13 @@ export default function SettingsScreen() {
         title: 'Dados e Armazenamento',
         description:
           'Gerencie o cache local, arquivos temporários e o uso de memória do aplicativo',
-        icon: 'database-outline',
+        icon: 'database',
       },
       {
         id: 'about',
         title: 'Sobre o Aplicativo',
         description: 'Informações da versão, suporte e detalhes do sistema',
-        icon: 'information-outline',
+        icon: 'info',
       },
     );
 
@@ -388,7 +388,7 @@ export default function SettingsScreen() {
                     <View style={styles.mobileCardsWrapper}>
                       <OnboardingCard
                         id="settings_appearance"
-                        icon="palette-outline"
+                        icon="palette"
                         title="Personalize a Aparência"
                         description="Alterne entre tema claro artesanal, modo escuro, alto contraste, fonte do dispositivo e economia OLED."
                         actionText="Ajustar Tema Visual"
@@ -396,7 +396,7 @@ export default function SettingsScreen() {
                       />
                       <OnboardingCard
                         id="settings_accessibility"
-                        icon="wheelchair-accessibility"
+                        icon="accessible"
                         title="Acessibilidade & Interação"
                         description="Ajuste resposta tátil, gestos, escala de botões e visibilidade de cards de ajuda."
                         actionText="Ajustar Acessibilidade"
@@ -404,7 +404,7 @@ export default function SettingsScreen() {
                       />
                       <OnboardingCard
                         id="settings_edit_profile"
-                        icon="account-edit-outline"
+                        icon="manage_accounts"
                         title="Complete seu Perfil"
                         description="Mantenha seus dados cadastrais, telefone de contato e foto de avatar sempre atualizados."
                         actionText="Editar Meu Perfil"

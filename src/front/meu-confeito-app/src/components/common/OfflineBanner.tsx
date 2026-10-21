@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
+
+import { MaterialSymbol } from './MaterialSymbol';
 
 export interface OfflineBannerProps {
   isVisible?: boolean;
@@ -29,7 +29,7 @@ export function OfflineBanner({
   return (
     <View style={[styles.container, style]}>
       <View style={styles.iconWrapper}>
-        <MaterialCommunityIcons name="cloud-off-outline" size={20} color={theme.colors.secondary} />
+        <MaterialSymbol name="cloud_off" size={20} color={theme.colors.secondary} />
       </View>
       <View style={styles.textWrapper}>
         <Text style={styles.message}>{message}</Text>
@@ -42,7 +42,7 @@ export function OfflineBanner({
           accessibilityRole="button"
           accessibilityLabel="Tentar reconectar à internet"
         >
-          <MaterialCommunityIcons name="refresh" size={16} color={theme.colors.primary} />
+          <MaterialSymbol name="refresh" size={16} color={theme.colors.primary} />
           <Text style={styles.retryText}>Atualizar</Text>
         </TouchableOpacity>
       )}

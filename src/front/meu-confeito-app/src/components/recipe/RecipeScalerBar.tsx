@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
@@ -48,7 +47,7 @@ export function RecipeScalerBar({
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <View style={styles.titleGroup}>
-          <MaterialCommunityIcons name="scale" size={18} color={theme.colors.primary} />
+          <MaterialSymbol name="scale" size={18} color={theme.colors.primary} />
           <Text style={styles.title}>Multiplicador de Receita</Text>
         </View>
 
@@ -96,7 +95,7 @@ export function RecipeScalerBar({
             accessibilityRole="button"
             accessibilityLabel="Diminuir rendimento em 0.25 vezes"
           >
-            <MaterialCommunityIcons name="minus" size={18} color={theme.colors.onSurface} />
+            <MaterialSymbol name="remove" size={18} color={theme.colors.onSurface} />
           </TouchableOpacity>
 
           <View style={styles.scaleDisplay}>
@@ -110,7 +109,7 @@ export function RecipeScalerBar({
             accessibilityRole="button"
             accessibilityLabel="Aumentar rendimento em 0.25 vezes"
           >
-            <MaterialCommunityIcons name="plus" size={18} color={theme.colors.onSurface} />
+            <MaterialSymbol name="add" size={18} color={theme.colors.onSurface} />
           </TouchableOpacity>
 
           {scaleFactor !== 1 && (
@@ -121,7 +120,7 @@ export function RecipeScalerBar({
               accessibilityRole="button"
               accessibilityLabel="Redefinir para rendimento original"
             >
-              <MaterialCommunityIcons name="refresh" size={16} color={theme.colors.primary} />
+              <MaterialSymbol name="refresh" size={16} color={theme.colors.primary} />
               <Text style={styles.resetBtnText}>Redefinir</Text>
             </TouchableOpacity>
           )}

@@ -18,3 +18,4 @@ export * from './ToastContainer';
 export * from './UserAvatar';
 export * from './OfflineBanner';
 export * from './OnboardingCard';
+export * from './MaterialSymbol';

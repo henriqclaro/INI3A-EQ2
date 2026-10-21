@@ -4,9 +4,7 @@ import { Alert, Linking, Platform, StyleSheet, Text, TouchableOpacity, View } fr
 import * as Clipboard from 'expo-clipboard';
 import { Image } from 'expo-image';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
-import { MenuOptionButton } from '@/src/components/common';
+import { MaterialSymbol, MenuOptionButton } from '@/src/components/common';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useNetwork } from '@/src/hooks/useNetwork';
@@ -133,11 +131,7 @@ export function AboutAppTopic() {
           accessibilityLabel={`Copiar plataforma: ${platformName}`}
         >
           <View style={styles.detailLabelGroup}>
-            <MaterialCommunityIcons
-              name="cellphone-link"
-              size={18}
-              color={theme.colors.onSurfaceVariant}
-            />
+            <MaterialSymbol name="devices" size={18} color={theme.colors.onSurfaceVariant} />
             <Text style={styles.detailLabel}>Plataforma</Text>
           </View>
           <Text style={styles.detailValue}>{platformName}</Text>
@@ -154,8 +148,8 @@ export function AboutAppTopic() {
               accessibilityLabel={`Copiar versão do sistema: ${commercialSystemVersion}`}
             >
               <View style={styles.detailLabelGroup}>
-                <MaterialCommunityIcons
-                  name="cellphone-cog"
+                <MaterialSymbol
+                  name="settings_phone"
                   size={18}
                   color={theme.colors.onSurfaceVariant}
                 />
@@ -176,8 +170,8 @@ export function AboutAppTopic() {
           accessibilityLabel={`Copiar status de conexão: ${isOffline ? 'Offline' : 'Online'}`}
         >
           <View style={styles.detailLabelGroup}>
-            <MaterialCommunityIcons
-              name={isOffline ? 'cloud-off-outline' : 'cloud-check-outline'}
+            <MaterialSymbol
+              name={isOffline ? 'cloud_off' : 'cloud_done'}
               size={18}
               color={isOffline ? theme.colors.error : theme.colors.tertiary}
             />
@@ -200,11 +194,7 @@ export function AboutAppTopic() {
           accessibilityLabel={`Copiar ID do usuário: ${user?.id ? String(user.id) : 'Indisponível'}`}
         >
           <View style={styles.detailLabelGroup}>
-            <MaterialCommunityIcons
-              name="account-outline"
-              size={18}
-              color={theme.colors.onSurfaceVariant}
-            />
+            <MaterialSymbol name="person" size={18} color={theme.colors.onSurfaceVariant} />
             <Text style={styles.detailLabel}>ID do Usuário</Text>
           </View>
           <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="middle">
@@ -222,11 +212,7 @@ export function AboutAppTopic() {
           accessibilityLabel={`Copiar ID da sessão: ${sessionId || 'Indisponível'}`}
         >
           <View style={styles.detailLabelGroup}>
-            <MaterialCommunityIcons
-              name="shield-key-outline"
-              size={18}
-              color={theme.colors.onSurfaceVariant}
-            />
+            <MaterialSymbol name="password" size={18} color={theme.colors.onSurfaceVariant} />
             <Text style={styles.detailLabel}>ID da Sessão</Text>
           </View>
           <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="middle">
@@ -253,7 +239,7 @@ export function AboutAppTopic() {
           accessibilityLabel="Abrir repositório no GitHub: https://github.com/henriqclaro/INI3A-EQ2"
         >
           <View style={styles.detailLabelGroup}>
-            <MaterialCommunityIcons name="github" size={18} color={theme.colors.onSurfaceVariant} />
+            <MaterialSymbol name="code" size={18} color={theme.colors.onSurfaceVariant} />
             <Text style={styles.detailLabel}>GitHub</Text>
           </View>
           <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="middle">
@@ -274,11 +260,7 @@ export function AboutAppTopic() {
           accessibilityLabel="Enviar e-mail para meuconfeito4@gmail.com"
         >
           <View style={styles.detailLabelGroup}>
-            <MaterialCommunityIcons
-              name="email-outline"
-              size={18}
-              color={theme.colors.onSurfaceVariant}
-            />
+            <MaterialSymbol name="mail" size={18} color={theme.colors.onSurfaceVariant} />
             <Text style={styles.detailLabel}>E-mail</Text>
           </View>
           <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="middle">
@@ -299,11 +281,7 @@ export function AboutAppTopic() {
           accessibilityLabel="Abrir perfil no Instagram: @meuconfeito.tcc"
         >
           <View style={styles.detailLabelGroup}>
-            <MaterialCommunityIcons
-              name="instagram"
-              size={18}
-              color={theme.colors.onSurfaceVariant}
-            />
+            <MaterialSymbol name="photo_camera" size={18} color={theme.colors.onSurfaceVariant} />
             <Text style={styles.detailLabel}>Instagram</Text>
           </View>
           <Text style={styles.detailValue} numberOfLines={1} ellipsizeMode="middle">
@@ -318,13 +296,13 @@ export function AboutAppTopic() {
         <MenuOptionButton
           title="Central de Ajuda & Suporte"
           subtitle="Canais de atendimento, dúvidas frequentes e contato"
-          icon="help-circle-outline"
+          icon="help"
           onPress={handleSupportPress}
         />
         <MenuOptionButton
           title="Termos de Uso & Privacidade"
           subtitle="Política de proteção de dados e diretrizes da plataforma"
-          icon="file-document-outline"
+          icon="description"
           onPress={handleTermsPress}
         />
       </View>

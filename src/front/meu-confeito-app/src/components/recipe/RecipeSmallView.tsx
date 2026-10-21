@@ -3,8 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { Image } from 'expo-image';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { getStorageUrl } from '@/src/utils/image';
@@ -68,11 +67,7 @@ export const RecipeSmallView = memo(function RecipeSmallView({
         />
       ) : (
         <View style={[styles.image, styles.placeholder]}>
-          <MaterialCommunityIcons
-            name="cake-variant-outline"
-            size={28}
-            color={theme.colors.primary}
-          />
+          <MaterialSymbol name="cake" size={28} color={theme.colors.primary} />
         </View>
       )}
 
@@ -84,18 +79,14 @@ export const RecipeSmallView = memo(function RecipeSmallView({
         <View style={styles.badgesRow}>
           {hasPrepTime ? (
             <View style={styles.timeBadge}>
-              <MaterialCommunityIcons
-                name="timer-outline"
-                size={13}
-                color={theme.colors.onSurfaceVariant}
-              />
+              <MaterialSymbol name="timer" size={13} color={theme.colors.onSurfaceVariant} />
               <Text style={styles.timeText}>{prepTimeMinutes} min</Text>
             </View>
           ) : null}
 
           {formattedRating !== null ? (
             <View style={styles.ratingBadge}>
-              <MaterialCommunityIcons name="star" size={13} color="#D97706" />
+              <MaterialSymbol name="star" size={13} color="#D97706" />
               <Text style={styles.ratingText}>
                 {formattedRating}
                 {typeof totalReviews === 'number' && totalReviews > 0 ? ` (${totalReviews})` : ''}
@@ -106,8 +97,8 @@ export const RecipeSmallView = memo(function RecipeSmallView({
       </View>
 
       {isInteractive && onPress ? (
-        <MaterialCommunityIcons
-          name="chevron-right"
+        <MaterialSymbol
+          name="chevron_right"
           size={20}
           color={theme.colors.outline}
           style={styles.chevron}

@@ -9,10 +9,10 @@ import {
   ViewStyle,
 } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
+
+import { MaterialSymbol } from './MaterialSymbol';
 
 interface InputProps extends TextInputProps {
   containerStyle?: StyleProp<ViewStyle>;
@@ -102,8 +102,8 @@ export const Input = ({
           accessibilityRole="button"
           accessibilityLabel={isPasswordVisible ? 'Ocultar senha' : 'Exibir senha'}
         >
-          <MaterialCommunityIcons
-            name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
+          <MaterialSymbol
+            name={isPasswordVisible ? 'visibility_off' : 'visibility'}
             size={22}
             color={theme.colors.onSurfaceVariant}
           />
@@ -118,11 +118,7 @@ export const Input = ({
           accessibilityRole="button"
           accessibilityLabel="Limpar texto"
         >
-          <MaterialCommunityIcons
-            name="close-circle-outline"
-            size={20}
-            color={theme.colors.placeholder}
-          />
+          <MaterialSymbol name="cancel" size={20} color={theme.colors.placeholder} />
         </TouchableOpacity>
       )}
 

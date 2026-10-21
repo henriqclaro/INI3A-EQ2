@@ -14,12 +14,11 @@ import {
 
 import { Stack, router, useFocusEffect } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
 import {
   AddStockCard,
   CustomButton,
   Input,
+  MaterialSymbol,
   OfflineBanner,
   OnboardingCard,
   StockCard,
@@ -265,11 +264,7 @@ export default function StockScreen() {
                 accessibilityLabel="Compartilhar lista de compras de insumos em falta"
               >
                 <View style={styles.shareBtnContent}>
-                  <MaterialCommunityIcons
-                    name="share-variant-outline"
-                    size={18}
-                    color={theme.colors.primary}
-                  />
+                  <MaterialSymbol name="share" size={18} color={theme.colors.primary} />
                   <Text style={styles.shareBtnText}>Compartilhar Falta</Text>
                 </View>
               </CustomButton>
@@ -289,7 +284,7 @@ export default function StockScreen() {
         {/* Discovery & Incentive Card for Registering Insumo */}
         <OnboardingCard
           id="stock_register_item"
-          icon="package-variant-closed-plus"
+          icon="add_box"
           title="Cadastre seu Primeiro Insumo"
           description="Mantenha farinhas, açúcares e embalagens sob controle no estoque para cálculo automático e dinâmico dos custos das suas receitas."
           actionText="Cadastrar Insumo Agora"
@@ -299,7 +294,7 @@ export default function StockScreen() {
         {/* Operational Preferences Card: Pricing Decimal Places */}
         <OnboardingCard
           id="stock_pricing_decimals"
-          icon="decimal-increase"
+          icon="decimal_increase"
           title="Casas Decimais em Precificações"
           description="Personalize a exibição de custos unitários e preços no estoque com 2, 3 ou 4 casas decimais para maior precisão em insumos fracionados."
           actionText="Ajustar Casas Decimais"
@@ -335,11 +330,7 @@ export default function StockScreen() {
               accessibilityLabel="Compartilhar lista de compras de insumos em falta"
             >
               <View style={styles.shareBtnContent}>
-                <MaterialCommunityIcons
-                  name="share-variant-outline"
-                  size={18}
-                  color={theme.colors.primary}
-                />
+                <MaterialSymbol name="share" size={18} color={theme.colors.primary} />
                 <Text style={styles.shareBtnText}>Compartilhar Falta</Text>
               </View>
             </CustomButton>
@@ -355,11 +346,7 @@ export default function StockScreen() {
             onClear={() => setSearch('')}
             containerStyle={styles.searchInput}
             leftIcon={
-              <MaterialCommunityIcons
-                name="magnify"
-                size={20}
-                color={theme.colors.onSurfaceVariant}
-              />
+              <MaterialSymbol name="search" size={20} color={theme.colors.onSurfaceVariant} />
             }
           />
         </View>
@@ -496,11 +483,7 @@ export default function StockScreen() {
     if (error && inventory.length === 0) {
       return (
         <View style={styles.feedbackContainer}>
-          <MaterialCommunityIcons
-            name="alert-circle-outline"
-            size={40}
-            color={theme.colors.error}
-          />
+          <MaterialSymbol name="error" size={40} color={theme.colors.error} />
           <Text style={styles.errorText}>{error}</Text>
           <CustomButton
             title="Tentar Novamente"
@@ -513,11 +496,7 @@ export default function StockScreen() {
     }
     return (
       <View style={styles.feedbackContainer}>
-        <MaterialCommunityIcons
-          name="package-variant"
-          size={48}
-          color={theme.colors.onSurfaceVariant}
-        />
+        <MaterialSymbol name="package_2" size={48} color={theme.colors.onSurfaceVariant} />
         <Text style={styles.emptyTitle}>
           {search.trim() || selectedFilter !== 'all' ? 'Nenhum insumo encontrado' : 'Estoque vazio'}
         </Text>
@@ -605,7 +584,7 @@ export default function StockScreen() {
             accessibilityRole="button"
             accessibilityLabel="Cadastrar novo insumo no estoque"
           >
-            <MaterialCommunityIcons name="plus" size={28} color={theme.colors.onPrimary} />
+            <MaterialSymbol name="add" size={28} color={theme.colors.onPrimary} />
           </TouchableOpacity>
         )}
 

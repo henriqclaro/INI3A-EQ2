@@ -12,10 +12,9 @@ import {
 
 import { router } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAvoidingView, KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import { DateInput } from '@/src/components/common';
+import { DateInput, MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useRegisterProduction } from '@/src/hooks/useProductions';
 import { AppTheme } from '@/src/theme/themes';
@@ -131,7 +130,7 @@ function ProduceRecipeModalContent({
       <View style={styles.modalContent}>
         <View style={styles.modalHeader}>
           <View style={styles.modalHeaderTitleGroup}>
-            <MaterialCommunityIcons name="pot-steam" size={22} color={theme.colors.primary} />
+            <MaterialSymbol name="cooking" size={22} color={theme.colors.primary} />
             <Text style={styles.modalTitle} numberOfLines={1}>
               Produzir Receita
             </Text>
@@ -142,7 +141,7 @@ function ProduceRecipeModalContent({
             accessibilityRole="button"
             accessibilityLabel="Fechar modal"
           >
-            <MaterialCommunityIcons name="close" size={20} color={theme.colors.onSurface} />
+            <MaterialSymbol name="close" size={20} color={theme.colors.onSurface} />
           </TouchableOpacity>
         </View>
 
@@ -170,7 +169,7 @@ function ProduceRecipeModalContent({
               onChangeText={setYieldProduced}
             />
             <View style={styles.scaleRow}>
-              <MaterialCommunityIcons name="scale-balance" size={14} color={theme.colors.primary} />
+              <MaterialSymbol name="balance" size={14} color={theme.colors.primary} />
               <Text style={styles.scaleText}>
                 Fator de escala: <Text style={styles.scaleTextBold}>{scaleFactor}x</Text> da receita
                 base
@@ -189,8 +188,8 @@ function ProduceRecipeModalContent({
           </View>
 
           <View style={styles.infoBox}>
-            <MaterialCommunityIcons
-              name="information-outline"
+            <MaterialSymbol
+              name="info"
               size={18}
               color={theme.colors.primary}
               style={styles.infoIcon}
@@ -232,7 +231,7 @@ function ProduceRecipeModalContent({
               <ActivityIndicator size="small" color={theme.colors.onPrimary} />
             ) : (
               <>
-                <MaterialCommunityIcons name="check" size={18} color={theme.colors.onPrimary} />
+                <MaterialSymbol name="check" size={18} color={theme.colors.onPrimary} />
                 <Text style={styles.confirmBtnText}>Confirmar</Text>
               </>
             )}

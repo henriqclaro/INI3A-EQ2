@@ -1,8 +1,7 @@
 import { memo, useMemo } from 'react';
 import { Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
@@ -71,11 +70,7 @@ export const RecipeDateFilterModal = memo(function RecipeDateFilterModal({
         >
           <View style={styles.header}>
             <View style={styles.headerIconCircle}>
-              <MaterialCommunityIcons
-                name="calendar-clock-outline"
-                size={22}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="event_upcoming" size={22} color={theme.colors.primary} />
             </View>
             <View style={styles.headerTextCol}>
               <Text style={styles.title}>Filtrar por Período</Text>
@@ -98,8 +93,8 @@ export const RecipeDateFilterModal = memo(function RecipeDateFilterModal({
                   accessibilityState={{ selected: isOptionSelected }}
                   accessibilityLabel={opt.label}
                 >
-                  <MaterialCommunityIcons
-                    name={isOptionSelected ? 'radiobox-marked' : 'radiobox-blank'}
+                  <MaterialSymbol
+                    name={isOptionSelected ? 'radio_button_checked' : 'radio_button_unchecked'}
                     size={22}
                     color={isOptionSelected ? theme.colors.primary : theme.colors.onSurfaceVariant}
                   />

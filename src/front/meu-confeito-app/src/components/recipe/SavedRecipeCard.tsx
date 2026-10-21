@@ -12,8 +12,7 @@ import {
 
 import { Image } from 'expo-image';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { UserSavedRecipeItem } from '@/src/types/saved-recipe';
@@ -111,11 +110,7 @@ export const SavedRecipeCard = memo(function SavedRecipeCard({
             />
           ) : (
             <View style={styles.placeholder}>
-              <MaterialCommunityIcons
-                name="cake-variant-outline"
-                size={34}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="cake" size={34} color={theme.colors.primary} />
             </View>
           )}
         </View>
@@ -128,11 +123,7 @@ export const SavedRecipeCard = memo(function SavedRecipeCard({
             </Text>
             {item.recipe.status === 'SUSPENDED' && (
               <View style={styles.suspendedBadge}>
-                <MaterialCommunityIcons
-                  name="alert-octagon-outline"
-                  size={12}
-                  color={theme.colors.error}
-                />
+                <MaterialSymbol name="report" size={12} color={theme.colors.error} />
                 <Text style={styles.suspendedBadgeText}>Suspensa</Text>
               </View>
             )}
@@ -174,22 +165,14 @@ export const SavedRecipeCard = memo(function SavedRecipeCard({
             <View style={styles.metaContainer}>
               {item.recipe.prepTimeMinutes > 0 && (
                 <View style={styles.prepTimeBadge}>
-                  <MaterialCommunityIcons
-                    name="timer-outline"
-                    size={13}
-                    color={theme.colors.onSurfaceVariant}
-                  />
+                  <MaterialSymbol name="timer" size={13} color={theme.colors.onSurfaceVariant} />
                   <Text style={styles.metaText}>{item.recipe.prepTimeMinutes} min</Text>
                 </View>
               )}
 
               {Boolean(formattedDate) && (
                 <View style={styles.dateBadge}>
-                  <MaterialCommunityIcons
-                    name="bookmark-check"
-                    size={13}
-                    color={theme.colors.primary}
-                  />
+                  <MaterialSymbol name="bookmark_check" size={13} color={theme.colors.primary} />
                   <Text style={styles.dateText} numberOfLines={1}>
                     Salva em {formattedDate}
                   </Text>
@@ -214,11 +197,7 @@ export const SavedRecipeCard = memo(function SavedRecipeCard({
           <ActivityIndicator size="small" color={theme.colors.error} />
         ) : (
           <>
-            <MaterialCommunityIcons
-              name="bookmark-remove-outline"
-              size={15}
-              color={theme.colors.error}
-            />
+            <MaterialSymbol name="bookmark_remove" size={15} color={theme.colors.error} />
             <Text style={styles.removeBtnText}>Remover</Text>
           </>
         )}

@@ -11,8 +11,7 @@ import {
 
 import { Image } from 'expo-image';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { DownloadedRecipeService } from '@/src/services/downloadedRecipes';
 import { OfflineCacheService } from '@/src/services/offlineCache';
@@ -420,11 +419,7 @@ export function RecipeSelector({
             />
           ) : (
             <View style={styles.selectedIconBox}>
-              <MaterialCommunityIcons
-                name="cake-variant-outline"
-                size={22}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="cake" size={22} color={theme.colors.primary} />
             </View>
           )}
 
@@ -467,18 +462,10 @@ export function RecipeSelector({
                     ]}
                   >
                     {origin === 'SAVED' && (
-                      <MaterialCommunityIcons
-                        name="bookmark-outline"
-                        size={12}
-                        color={theme.colors.secondary}
-                      />
+                      <MaterialSymbol name="bookmark" size={12} color={theme.colors.secondary} />
                     )}
                     {origin === 'DOWNLOADED' && (
-                      <MaterialCommunityIcons
-                        name="cloud-check-outline"
-                        size={12}
-                        color={theme.colors.tertiary}
-                      />
+                      <MaterialSymbol name="cloud_done" size={12} color={theme.colors.tertiary} />
                     )}
                     <Text
                       style={[
@@ -509,11 +496,7 @@ export function RecipeSelector({
               accessibilityLabel="Trocar ou remover sub-receita selecionada"
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <MaterialCommunityIcons
-                name="close-circle-outline"
-                size={22}
-                color={theme.colors.onSurfaceVariant}
-              />
+              <MaterialSymbol name="cancel" size={22} color={theme.colors.onSurfaceVariant} />
             </TouchableOpacity>
           )}
         </View>
@@ -614,8 +597,8 @@ export function RecipeSelector({
               isDropdownVisible && styles.inputWrapperFocused,
             ]}
           >
-            <MaterialCommunityIcons
-              name="magnify"
+            <MaterialSymbol
+              name="search"
               size={20}
               color={theme.colors.placeholder}
               style={styles.searchIcon}
@@ -651,11 +634,7 @@ export function RecipeSelector({
                 accessibilityLabel="Limpar busca"
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <MaterialCommunityIcons
-                  name="close-circle"
-                  size={18}
-                  color={theme.colors.placeholder}
-                />
+                <MaterialSymbol name="cancel" size={18} color={theme.colors.placeholder} />
               </TouchableOpacity>
             )}
           </View>
@@ -690,11 +669,7 @@ export function RecipeSelector({
                           />
                         ) : (
                           <View style={styles.dropdownItemIconContainer}>
-                            <MaterialCommunityIcons
-                              name="cake-variant-outline"
-                              size={16}
-                              color={theme.colors.primary}
-                            />
+                            <MaterialSymbol name="cake" size={16} color={theme.colors.primary} />
                           </View>
                         )}
 
@@ -742,15 +717,15 @@ export function RecipeSelector({
                                   ]}
                                 >
                                   {origin === 'SAVED' && (
-                                    <MaterialCommunityIcons
-                                      name="bookmark-outline"
+                                    <MaterialSymbol
+                                      name="bookmark"
                                       size={11}
                                       color={theme.colors.secondary}
                                     />
                                   )}
                                   {origin === 'DOWNLOADED' && (
-                                    <MaterialCommunityIcons
-                                      name="cloud-check-outline"
+                                    <MaterialSymbol
+                                      name="cloud_done"
                                       size={11}
                                       color={theme.colors.tertiary}
                                     />
@@ -779,11 +754,7 @@ export function RecipeSelector({
                       </View>
 
                       <View style={styles.selectActionContainer}>
-                        <MaterialCommunityIcons
-                          name="plus-circle-outline"
-                          size={22}
-                          color={theme.colors.primary}
-                        />
+                        <MaterialSymbol name="add_circle" size={22} color={theme.colors.primary} />
                       </View>
                     </TouchableOpacity>
                   ))}
@@ -815,11 +786,7 @@ export function RecipeSelector({
       {/* Error display */}
       {hasError && (
         <View style={styles.errorRow}>
-          <MaterialCommunityIcons
-            name="alert-circle-outline"
-            size={14}
-            color={theme.colors.error}
-          />
+          <MaterialSymbol name="error" size={14} color={theme.colors.error} />
           <Text style={styles.errorText}>{error}</Text>
         </View>
       )}

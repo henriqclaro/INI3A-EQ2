@@ -11,8 +11,7 @@ import {
 
 import { router } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { OnboardingCard } from '@/src/components/common/OnboardingCard';
 import { SettingsSearchBar } from '@/src/components/settings/SettingsSearchBar';
 import { filterSettingShortcuts } from '@/src/constants/settingsShortcuts';
@@ -103,11 +102,7 @@ export function SettingsSidebar({
                   >
                     <View style={styles.dropdownItemContent}>
                       <View style={styles.dropdownIconBox}>
-                        <MaterialCommunityIcons
-                          name={item.icon}
-                          size={16}
-                          color={theme.colors.primary}
-                        />
+                        <MaterialSymbol name={item.icon} size={16} color={theme.colors.primary} />
                       </View>
 
                       <View style={styles.dropdownTextCol}>
@@ -125,8 +120,8 @@ export function SettingsSidebar({
                       </View>
                     </View>
 
-                    <MaterialCommunityIcons
-                      name="chevron-right"
+                    <MaterialSymbol
+                      name="chevron_right"
                       size={18}
                       color={theme.colors.onSurfaceVariant}
                     />
@@ -135,11 +130,7 @@ export function SettingsSidebar({
               </ScrollView>
             ) : (
               <View style={styles.dropdownEmpty}>
-                <MaterialCommunityIcons
-                  name="file-search-outline"
-                  size={20}
-                  color={theme.colors.placeholder}
-                />
+                <MaterialSymbol name="find_in_page" size={20} color={theme.colors.placeholder} />
                 <Text style={styles.dropdownEmptyText}>
                   Nenhuma opção encontrada para &quot;{searchQuery}&quot;
                 </Text>
@@ -160,7 +151,7 @@ export function SettingsSidebar({
           <View style={styles.sidebarCardsWrapper}>
             <OnboardingCard
               id="settings_appearance"
-              icon="palette-outline"
+              icon="palette"
               title="Aparência Visual"
               description="Personalize cores, alto contraste e tema OLED."
               actionText="Ajustar Tema"
@@ -169,7 +160,7 @@ export function SettingsSidebar({
             />
             <OnboardingCard
               id="settings_accessibility"
-              icon="wheelchair-accessibility"
+              icon="accessible"
               title="Acessibilidade & Interação"
               description="Ajuste resposta tátil, gestos e cards de ajuda."
               actionText="Ajustar Acessibilidade"
@@ -178,7 +169,7 @@ export function SettingsSidebar({
             />
             <OnboardingCard
               id="settings_edit_profile"
-              icon="account-edit-outline"
+              icon="manage_accounts"
               title="Complete seu Perfil"
               description="Atualize fotos, dados cadastrais e telefone."
               actionText="Editar Perfil"
@@ -215,7 +206,7 @@ export function SettingsSidebar({
               )}
 
               <View style={styles.iconSlot}>
-                <MaterialCommunityIcons
+                <MaterialSymbol
                   name={topic.icon}
                   size={20}
                   color={

@@ -9,14 +9,14 @@ import {
   View,
 } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { IngredientService } from '@/src/services/ingredient';
 import { AppTheme } from '@/src/theme/themes';
 import { PartialIngredient } from '@/src/types/ingredient';
 import { getIngredientDisplayUnit } from '@/src/utils/formatters';
 import { matchesSearch } from '@/src/utils/text';
+
+import { MaterialSymbol } from './MaterialSymbol';
 
 export interface IngredientSelectorProps {
   selectedIngredientId?: number | string | null;
@@ -212,11 +212,7 @@ export function IngredientSelector({
       {hasSelected && activeIngredient ? (
         <View style={[styles.selectedCard, hasError && styles.selectedCardError]}>
           <View style={styles.selectedIconBox}>
-            <MaterialCommunityIcons
-              name="food-apple-outline"
-              size={22}
-              color={theme.colors.primary}
-            />
+            <MaterialSymbol name="nutrition" size={22} color={theme.colors.primary} />
           </View>
 
           <View style={styles.selectedInfo}>
@@ -260,11 +256,7 @@ export function IngredientSelector({
               accessibilityLabel="Trocar ou remover insumo selecionado"
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <MaterialCommunityIcons
-                name="close-circle-outline"
-                size={22}
-                color={theme.colors.onSurfaceVariant}
-              />
+              <MaterialSymbol name="cancel" size={22} color={theme.colors.onSurfaceVariant} />
             </TouchableOpacity>
           )}
         </View>
@@ -278,8 +270,8 @@ export function IngredientSelector({
               isDropdownVisible && styles.inputWrapperFocused,
             ]}
           >
-            <MaterialCommunityIcons
-              name="magnify"
+            <MaterialSymbol
+              name="search"
               size={20}
               color={theme.colors.placeholder}
               style={styles.searchIcon}
@@ -315,11 +307,7 @@ export function IngredientSelector({
                 accessibilityLabel="Limpar busca"
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <MaterialCommunityIcons
-                  name="close-circle"
-                  size={18}
-                  color={theme.colors.placeholder}
-                />
+                <MaterialSymbol name="cancel" size={18} color={theme.colors.placeholder} />
               </TouchableOpacity>
             )}
           </View>
@@ -344,11 +332,7 @@ export function IngredientSelector({
                     >
                       <View style={styles.dropdownItemContent}>
                         <View style={styles.itemIconContainer}>
-                          <MaterialCommunityIcons
-                            name="food-apple-outline"
-                            size={16}
-                            color={theme.colors.primary}
-                          />
+                          <MaterialSymbol name="nutrition" size={16} color={theme.colors.primary} />
                         </View>
 
                         <View style={styles.itemTextContainer}>
@@ -368,11 +352,7 @@ export function IngredientSelector({
                       </View>
 
                       <View style={styles.selectActionContainer}>
-                        <MaterialCommunityIcons
-                          name="plus-circle-outline"
-                          size={22}
-                          color={theme.colors.primary}
-                        />
+                        <MaterialSymbol name="add_circle" size={22} color={theme.colors.primary} />
                       </View>
                     </TouchableOpacity>
                   ))}
@@ -402,11 +382,7 @@ export function IngredientSelector({
       {/* Error display */}
       {hasError && (
         <View style={styles.errorRow}>
-          <MaterialCommunityIcons
-            name="alert-circle-outline"
-            size={14}
-            color={theme.colors.error}
-          />
+          <MaterialSymbol name="error" size={14} color={theme.colors.error} />
           <Text style={styles.errorText}>{error}</Text>
         </View>
       )}

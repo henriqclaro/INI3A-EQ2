@@ -3,8 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { router } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
@@ -26,7 +25,7 @@ export function ProductionShortcutCard({ isDesktop = false }: ProductionShortcut
     >
       <View style={styles.topRow}>
         <View style={styles.iconContainer}>
-          <MaterialCommunityIcons name="pot-steam" size={24} color={theme.colors.primary} />
+          <MaterialSymbol name="cooking" size={24} color={theme.colors.primary} />
         </View>
         <View style={styles.badge}>
           <Text style={styles.badgeText}>Lotes & Histórico</Text>
@@ -43,7 +42,7 @@ export function ProductionShortcutCard({ isDesktop = false }: ProductionShortcut
 
       <View style={styles.footerRow}>
         <Text style={styles.actionText}>Acessar produções</Text>
-        <MaterialCommunityIcons name="arrow-right" size={20} color={theme.colors.primary} />
+        <MaterialSymbol name="arrow_forward" size={20} color={theme.colors.primary} />
       </View>
     </TouchableOpacity>
   );

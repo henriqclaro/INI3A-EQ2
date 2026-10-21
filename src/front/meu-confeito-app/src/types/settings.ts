@@ -1,4 +1,4 @@
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { MaterialSymbolName } from './materialSymbols';
 
 export type SettingsTopicId =
   | 'account'
@@ -13,7 +13,7 @@ export interface SettingsTopicItem {
   id: SettingsTopicId;
   title: string;
   description: string;
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon: MaterialSymbolName;
   isDestructive?: boolean;
   isVisible?: boolean;
 }
@@ -24,7 +24,7 @@ export interface SettingShortcutItem {
   topicTitle: string;
   title: string;
   description: string;
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon: MaterialSymbolName;
   synonyms: string[];
   isDesktopOnly?: boolean;
   isMobileOnly?: boolean;

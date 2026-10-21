@@ -1,8 +1,7 @@
 import { memo, useMemo } from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
@@ -108,14 +107,8 @@ export const StockCard = memo(function StockCard({
                 : undefined,
           ]}
         >
-          <MaterialCommunityIcons
-            name={
-              isCardExpired
-                ? 'alert-circle'
-                : isCardExpiringSoon
-                  ? 'clock-alert-outline'
-                  : 'calendar-month-outline'
-            }
+          <MaterialSymbol
+            name={isCardExpired ? 'error' : isCardExpiringSoon ? 'schedule' : 'calendar_month'}
             size={16}
             color={
               isCardExpired
@@ -144,11 +137,7 @@ export const StockCard = memo(function StockCard({
         </View>
       ) : (
         <View style={[styles.expirationRow, styles.expirationNone]}>
-          <MaterialCommunityIcons
-            name="calendar-blank-outline"
-            size={16}
-            color={theme.colors.placeholder}
-          />
+          <MaterialSymbol name="calendar_today" size={16} color={theme.colors.placeholder} />
           <Text style={[styles.expirationText, styles.expirationTextNone]}>
             Sem validade informada
           </Text>
@@ -164,7 +153,7 @@ export const StockCard = memo(function StockCard({
           accessibilityRole="button"
           accessibilityLabel={`Ajustar estoque de ${ingredientName}`}
         >
-          <MaterialCommunityIcons name="tune-variant" size={18} color={theme.colors.onSurface} />
+          <MaterialSymbol name="tune" size={18} color={theme.colors.onSurface} />
           <Text style={styles.actionBtnTextSecondary} numberOfLines={1}>
             Ajustar
           </Text>
@@ -177,7 +166,7 @@ export const StockCard = memo(function StockCard({
           accessibilityRole="button"
           accessibilityLabel={`Registrar compra para ${ingredientName}`}
         >
-          <MaterialCommunityIcons name="plus" size={18} color={theme.colors.onPrimary} />
+          <MaterialSymbol name="add" size={18} color={theme.colors.onPrimary} />
           <Text style={styles.actionBtnTextPrimary} numberOfLines={1}>
             Compra
           </Text>
@@ -198,8 +187,8 @@ export const StockCard = memo(function StockCard({
           }
           disabled={isOutOfStock}
         >
-          <MaterialCommunityIcons
-            name={isCardExpired && !isOutOfStock ? 'delete-alert-outline' : 'trash-can-outline'}
+          <MaterialSymbol
+            name={isCardExpired && !isOutOfStock ? 'delete_forever' : 'delete'}
             size={18}
             color={isOutOfStock ? theme.colors.outline : theme.colors.error}
           />

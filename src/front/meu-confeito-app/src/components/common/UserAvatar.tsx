@@ -3,10 +3,11 @@ import { Platform, StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle } fro
 
 import { Image, ImageStyle } from 'expo-image';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
 import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { MaterialSymbolName } from '@/src/types/materialSymbols';
 import { getStorageUrl } from '@/src/utils/image';
+
+import { MaterialSymbol } from './MaterialSymbol';
 
 export interface UserAvatarProps {
   url?: string | null;
@@ -14,7 +15,7 @@ export interface UserAvatarProps {
   name?: string | null;
   size?: number;
   fallbackType?: 'initial' | 'icon';
-  fallbackIcon?: keyof typeof MaterialCommunityIcons.glyphMap;
+  fallbackIcon?: MaterialSymbolName;
   fallbackIconColor?: string;
   fallbackBackgroundColor?: string;
   borderColor?: string;
@@ -32,7 +33,7 @@ export const UserAvatar = memo(function UserAvatar({
   name,
   size = 52,
   fallbackType = 'icon',
-  fallbackIcon = 'account',
+  fallbackIcon = 'person',
   fallbackIconColor,
   fallbackBackgroundColor,
   borderColor,
@@ -139,7 +140,7 @@ export const UserAvatar = memo(function UserAvatar({
 
   return (
     <View style={[dynamicStyles.container, dynamicStyles.fallbackIconBg, style]}>
-      <MaterialCommunityIcons
+      <MaterialSymbol
         name={fallbackIcon}
         size={iconSize}
         color={fallbackIconColor || theme.colors.primary}

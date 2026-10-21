@@ -9,9 +9,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
-import { CustomButton } from '@/src/components/common';
+import { CustomButton, MaterialSymbol } from '@/src/components/common';
 import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
@@ -61,22 +59,14 @@ export function InsufficientStockModal({
       <View style={styles.itemCard}>
         <View style={styles.itemCardHeader}>
           <View style={styles.itemTitleRow}>
-            <MaterialCommunityIcons
-              name="food-apple-outline"
-              size={18}
-              color={theme.colors.primary}
-            />
+            <MaterialSymbol name="nutrition" size={18} color={theme.colors.primary} />
             <Text style={styles.itemName} numberOfLines={1}>
               {item.name}
             </Text>
           </View>
 
           <View style={styles.deficitBadge}>
-            <MaterialCommunityIcons
-              name="alert-circle-outline"
-              size={14}
-              color={theme.colors.error}
-            />
+            <MaterialSymbol name="error" size={14} color={theme.colors.error} />
             <Text style={styles.deficitBadgeText}>
               Falta {formatQuantity(item.deficitQuantity, item.unit)}
             </Text>
@@ -129,11 +119,7 @@ export function InsufficientStockModal({
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.headerIconContainer}>
-              <MaterialCommunityIcons
-                name="package-variant-remove"
-                size={28}
-                color={theme.colors.error}
-              />
+              <MaterialSymbol name="indeterminate_check_box" size={28} color={theme.colors.error} />
             </View>
             <View style={styles.headerTextGroup}>
               <Text style={styles.title}>Estoque Insuficiente</Text>
@@ -148,11 +134,7 @@ export function InsufficientStockModal({
               accessibilityRole="button"
               accessibilityLabel="Fechar aviso de estoque insuficiente"
             >
-              <MaterialCommunityIcons
-                name="close"
-                size={20}
-                color={theme.colors.onSurfaceVariant}
-              />
+              <MaterialSymbol name="close" size={20} color={theme.colors.onSurfaceVariant} />
             </TouchableOpacity>
           </View>
 
@@ -173,11 +155,7 @@ export function InsufficientStockModal({
           {hasEstimatedCost && (
             <View style={styles.estimatedCostBanner}>
               <View style={styles.estimatedCostIconWrap}>
-                <MaterialCommunityIcons
-                  name="calculator-variant-outline"
-                  size={18}
-                  color={theme.colors.tertiary}
-                />
+                <MaterialSymbol name="calculate" size={18} color={theme.colors.tertiary} />
               </View>
               <View style={styles.estimatedCostTextCol}>
                 <Text style={styles.estimatedCostLabel}>Estimativa Total para Reposição</Text>
@@ -197,11 +175,7 @@ export function InsufficientStockModal({
               accessibilityLabel="Ir para previsão de compras desta receita"
             >
               <View style={styles.forecastBtnContent}>
-                <MaterialCommunityIcons
-                  name="cart-outline"
-                  size={18}
-                  color={theme.colors.onPrimary}
-                />
+                <MaterialSymbol name="shopping_cart" size={18} color={theme.colors.onPrimary} />
                 <Text style={styles.forecastBtnText}>Previsão de Compras</Text>
               </View>
             </CustomButton>

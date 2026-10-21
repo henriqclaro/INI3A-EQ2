@@ -10,9 +10,7 @@ import {
 
 import { router } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
-import { MenuOptionButton, ThemeSwitch } from '@/src/components/common';
+import { MaterialSymbol, MenuOptionButton, ThemeSwitch } from '@/src/components/common';
 import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme, colors, darkColors } from '@/src/theme/themes';
@@ -78,11 +76,7 @@ export function AppearanceTopic() {
         <View style={styles.toggleRow}>
           <View style={styles.toggleInfo}>
             <View style={styles.iconCircle}>
-              <MaterialCommunityIcons
-                name="lightbulb-auto-outline"
-                size={22}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="lightbulb" size={22} color={theme.colors.primary} />
             </View>
             <View style={styles.textColumn}>
               <View style={styles.titleWithBadge}>
@@ -125,14 +119,14 @@ export function AppearanceTopic() {
           >
             <View style={styles.tileHeader}>
               <View style={[styles.tileIconCircle, isLightSelected && styles.tileIconCircleActive]}>
-                <MaterialCommunityIcons
-                  name="weather-sunny"
+                <MaterialSymbol
+                  name="light_mode"
                   size={20}
                   color={isLightSelected ? theme.colors.onPrimary : theme.colors.primary}
                 />
               </View>
-              <MaterialCommunityIcons
-                name={isLightSelected ? 'radiobox-marked' : 'radiobox-blank'}
+              <MaterialSymbol
+                name={isLightSelected ? 'radio_button_checked' : 'radio_button_unchecked'}
                 size={20}
                 color={isLightSelected ? theme.colors.primary : theme.colors.placeholder}
               />
@@ -160,14 +154,14 @@ export function AppearanceTopic() {
           >
             <View style={styles.tileHeader}>
               <View style={[styles.tileIconCircle, isDarkSelected && styles.tileIconCircleActive]}>
-                <MaterialCommunityIcons
-                  name="weather-night"
+                <MaterialSymbol
+                  name="dark_mode"
                   size={20}
                   color={isDarkSelected ? theme.colors.onPrimary : theme.colors.primary}
                 />
               </View>
-              <MaterialCommunityIcons
-                name={isDarkSelected ? 'radiobox-marked' : 'radiobox-blank'}
+              <MaterialSymbol
+                name={isDarkSelected ? 'radio_button_checked' : 'radio_button_unchecked'}
                 size={20}
                 color={isDarkSelected ? theme.colors.primary : theme.colors.placeholder}
               />
@@ -191,7 +185,7 @@ export function AppearanceTopic() {
         <View style={styles.toggleRow}>
           <View style={styles.toggleInfo}>
             <View style={styles.iconCircle}>
-              <MaterialCommunityIcons name="contrast-box" size={22} color={theme.colors.primary} />
+              <MaterialSymbol name="contrast" size={22} color={theme.colors.primary} />
             </View>
             <View style={styles.textColumn}>
               <View style={styles.titleWithBadge}>
@@ -221,8 +215,8 @@ export function AppearanceTopic() {
         <View style={[styles.toggleRow, !isPureBlackAvailable && styles.toggleRowDisabled]}>
           <View style={styles.toggleInfo}>
             <View style={[styles.iconCircle, !isPureBlackAvailable && styles.iconCircleDisabled]}>
-              <MaterialCommunityIcons
-                name="lightbulb-night-outline"
+              <MaterialSymbol
+                name="bedtime"
                 size={22}
                 color={isPureBlackAvailable ? theme.colors.primary : theme.colors.placeholder}
               />
@@ -278,8 +272,8 @@ export function AppearanceTopic() {
 
         {/* Info Callout */}
         <View style={styles.infoCallout}>
-          <MaterialCommunityIcons
-            name="information-outline"
+          <MaterialSymbol
+            name="info"
             size={18}
             color={theme.colors.primary}
             style={styles.infoIcon}
@@ -297,7 +291,7 @@ export function AppearanceTopic() {
           <View style={styles.toggleRow}>
             <View style={styles.toggleInfo}>
               <View style={styles.iconCircle}>
-                <MaterialCommunityIcons name="format-font" size={22} color={theme.colors.primary} />
+                <MaterialSymbol name="font_download" size={22} color={theme.colors.primary} />
               </View>
               <View style={styles.textColumn}>
                 <View style={styles.titleWithBadge}>
@@ -331,7 +325,7 @@ export function AppearanceTopic() {
         <MenuOptionButton
           title="Central de Acessibilidade"
           subtitle="Gerencie cards de ajuda, retorno tátil e gestos de navegação"
-          icon="wheelchair-accessibility"
+          icon="accessible"
           onPress={() => router.push('/settings?topic=accessibility')}
         />
       </View>

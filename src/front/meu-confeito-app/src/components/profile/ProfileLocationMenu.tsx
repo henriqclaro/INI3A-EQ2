@@ -1,8 +1,7 @@
 import React, { useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { BakerProfileLocation } from '@/src/types/baker-profile';
@@ -34,7 +33,7 @@ export const ProfileLocationMenu = ({
       <View style={styles.headerRow}>
         <View style={styles.headerTitleGroup}>
           <View style={styles.iconCircle}>
-            <MaterialCommunityIcons name="crosshairs-gps" size={18} color={theme.colors.primary} />
+            <MaterialSymbol name="my_location" size={18} color={theme.colors.primary} />
           </View>
           <View style={styles.headerTextGroup}>
             <Text style={styles.headerTitle}>Localização Geográfica (GPS)</Text>
@@ -48,11 +47,7 @@ export const ProfileLocationMenu = ({
 
         <View style={hasCoords ? styles.statusBadgeActive : styles.statusBadgeOptional}>
           {hasCoords ? (
-            <MaterialCommunityIcons
-              name="check-circle"
-              size={12}
-              color={theme.colors.chips.success.text}
-            />
+            <MaterialSymbol name="check_circle" size={12} color={theme.colors.chips.success.text} />
           ) : null}
           <Text style={hasCoords ? styles.statusBadgeActiveText : styles.statusBadgeOptionalText}>
             {hasCoords ? 'GPS Ativo' : 'Opcional'}
@@ -65,11 +60,7 @@ export const ProfileLocationMenu = ({
         <View style={styles.activeContainer}>
           <View style={styles.coordsCard}>
             <View style={styles.coordsCardHeader}>
-              <MaterialCommunityIcons
-                name="map-marker-check"
-                size={16}
-                color={theme.colors.tertiary}
-              />
+              <MaterialSymbol name="pin_drop" size={16} color={theme.colors.tertiary} />
               <Text style={styles.coordsCardHeaderText}>Ponto GPS Registrado</Text>
             </View>
 
@@ -103,7 +94,7 @@ export const ProfileLocationMenu = ({
               {isFetchingLocation ? (
                 <ActivityIndicator size="small" color={theme.colors.primary} />
               ) : (
-                <MaterialCommunityIcons name="refresh" size={18} color={theme.colors.primary} />
+                <MaterialSymbol name="refresh" size={18} color={theme.colors.primary} />
               )}
               <Text style={styles.refreshButtonText}>
                 {isFetchingLocation ? 'Atualizando...' : 'Atualizar GPS'}
@@ -118,11 +109,7 @@ export const ProfileLocationMenu = ({
               accessibilityRole="button"
               accessibilityLabel="Remover coordenadas GPS"
             >
-              <MaterialCommunityIcons
-                name="trash-can-outline"
-                size={18}
-                color={theme.colors.error}
-              />
+              <MaterialSymbol name="delete" size={18} color={theme.colors.error} />
               <Text style={styles.removeButtonText}>Remover GPS</Text>
             </TouchableOpacity>
           </View>
@@ -130,8 +117,8 @@ export const ProfileLocationMenu = ({
       ) : (
         <View style={styles.inactiveContainer}>
           <View style={styles.infoBanner}>
-            <MaterialCommunityIcons
-              name="information-outline"
+            <MaterialSymbol
+              name="info"
               size={18}
               color={theme.colors.onSurfaceVariant}
               style={styles.infoBannerIcon}
@@ -153,11 +140,7 @@ export const ProfileLocationMenu = ({
             {isFetchingLocation ? (
               <ActivityIndicator size="small" color={theme.colors.primary} />
             ) : (
-              <MaterialCommunityIcons
-                name="map-marker-radius-outline"
-                size={20}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="my_location" size={20} color={theme.colors.primary} />
             )}
             <Text style={styles.fetchButtonText}>
               {isFetchingLocation

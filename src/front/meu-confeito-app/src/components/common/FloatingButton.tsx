@@ -10,15 +10,16 @@ import {
   ViewStyle,
 } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
+import { MaterialSymbolName } from '@/src/types/materialSymbols';
+
+import { MaterialSymbol } from './MaterialSymbol';
 
 export interface FloatingActionItem {
   id: string;
   label: string;
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon: MaterialSymbolName;
   onPress: () => void;
   variant?: 'primary' | 'secondary' | 'neutral';
   accessibilityLabel?: string;
@@ -126,7 +127,7 @@ export const FloatingButton = ({
                     },
                   ]}
                 >
-                  <MaterialCommunityIcons name={action.icon} size={22} color={actionColors.icon} />
+                  <MaterialSymbol name={action.icon} size={22} color={actionColors.icon} />
                 </View>
               </TouchableOpacity>
             );
@@ -145,15 +146,15 @@ export const FloatingButton = ({
       >
         {hasActions ? (
           isExpanded ? (
-            <MaterialCommunityIcons
+            <MaterialSymbol
               name="close"
               size={26}
               color={variant === 'secondary' ? theme.colors.primary : theme.colors.onPrimary}
             />
           ) : (
             children || (
-              <MaterialCommunityIcons
-                name="cake-variant-outline"
+              <MaterialSymbol
+                name="cake"
                 size={26}
                 color={variant === 'secondary' ? theme.colors.primary : theme.colors.onPrimary}
               />

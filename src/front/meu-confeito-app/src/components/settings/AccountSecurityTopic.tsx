@@ -3,9 +3,7 @@ import { Alert, StyleSheet, Text, View } from 'react-native';
 
 import { router } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
-import { CustomButton, MenuOptionButton } from '@/src/components/common';
+import { CustomButton, MaterialSymbol, MenuOptionButton } from '@/src/components/common';
 import { UserProfile } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useDeleteBakerProfile, useMyBakerProfile } from '@/src/hooks/useBakerProfile';
@@ -106,7 +104,7 @@ export function AccountSecurityTopic({
           <MenuOptionButton
             title="Alterar Senha"
             subtitle="Redefina sua senha de acesso ao aplicativo"
-            icon="lock-reset"
+            icon="lock_reset"
             onPress={() => router.push('/reset-password')}
           />
         </View>
@@ -117,11 +115,7 @@ export function AccountSecurityTopic({
         <View style={styles.bakerCard}>
           <View style={styles.bakerCardHeader}>
             <View style={styles.bakerIconBadge}>
-              <MaterialCommunityIcons
-                name="store-off-outline"
-                size={22}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="storefront" size={22} color={theme.colors.primary} />
             </View>
             <View style={styles.bakerHeaderTextWrapper}>
               <Text style={styles.bakerCardTitle}>Perfil Comercial de Confeiteiro</Text>
@@ -149,7 +143,7 @@ export function AccountSecurityTopic({
         <MenuOptionButton
           title="Editar Perfil"
           subtitle="Atualize seu nome, foto, telefone e informações cadastrais"
-          icon="account-edit-outline"
+          icon="manage_accounts"
           onPress={() => router.push('/edit-profile')}
         />
       </View>
@@ -157,11 +151,7 @@ export function AccountSecurityTopic({
       {/* Visual Distinction: Danger Zone Section Header */}
       <View style={styles.dangerSectionHeader}>
         <View style={styles.dangerSectionTitleRow}>
-          <MaterialCommunityIcons
-            name="alert-octagon-outline"
-            size={20}
-            color={theme.colors.error}
-          />
+          <MaterialSymbol name="report" size={20} color={theme.colors.error} />
           <Text style={styles.dangerSectionTitle}>Zona de Perigo</Text>
         </View>
         <Text style={styles.dangerSectionSubtitle}>
@@ -173,11 +163,7 @@ export function AccountSecurityTopic({
       <View style={styles.dangerCard}>
         <View style={styles.dangerCardHeader}>
           <View style={styles.dangerIconBadge}>
-            <MaterialCommunityIcons
-              name="alert-circle-outline"
-              size={22}
-              color={theme.colors.error}
-            />
+            <MaterialSymbol name="error" size={22} color={theme.colors.error} />
           </View>
           <View style={styles.dangerHeaderTextWrapper}>
             <Text style={styles.dangerCardTitle}>Exclusão Definitiva de Conta</Text>

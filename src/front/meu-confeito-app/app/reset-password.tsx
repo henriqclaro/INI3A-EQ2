@@ -3,11 +3,10 @@ import { Alert, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } 
 
 import { Stack, router } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { ActivityIndicator } from 'react-native-paper';
 
-import { CustomButton, Input, RateLimitLabel } from '@/src/components';
+import { CustomButton, Input, MaterialSymbol, RateLimitLabel } from '@/src/components';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useResetPassword } from '@/src/hooks/useUsers';
 import { AppTheme } from '@/src/theme/themes';
@@ -153,7 +152,7 @@ export default function ResetPasswordScreen() {
           {/* Header / Brand Stamp */}
           <View style={styles.headerBlock}>
             <View style={styles.iconCircle}>
-              <MaterialCommunityIcons name="lock-reset" size={28} color={theme.colors.primary} />
+              <MaterialSymbol name="lock_reset" size={28} color={theme.colors.primary} />
             </View>
             <Text style={styles.title}>Redefinir Senha de Acesso</Text>
             <Text style={styles.subtitle}>
@@ -182,13 +181,7 @@ export default function ResetPasswordScreen() {
                   styles.inputContainer,
                   Boolean(oldPasswordError) && styles.inputError,
                 ]}
-                leftIcon={
-                  <MaterialCommunityIcons
-                    name="lock-outline"
-                    size={20}
-                    color={theme.colors.placeholder}
-                  />
-                }
+                leftIcon={<MaterialSymbol name="lock" size={20} color={theme.colors.placeholder} />}
               />
               {oldPasswordError ? <Text style={styles.errorText}>{oldPasswordError}</Text> : null}
             </View>
@@ -212,8 +205,8 @@ export default function ResetPasswordScreen() {
                   Boolean(newPasswordError) && styles.inputError,
                 ]}
                 leftIcon={
-                  <MaterialCommunityIcons
-                    name="lock-plus-outline"
+                  <MaterialSymbol
+                    name="enhanced_encryption"
                     size={20}
                     color={theme.colors.placeholder}
                   />
@@ -241,11 +234,7 @@ export default function ResetPasswordScreen() {
                   Boolean(confirmPasswordError) && styles.inputError,
                 ]}
                 leftIcon={
-                  <MaterialCommunityIcons
-                    name="lock-check-outline"
-                    size={20}
-                    color={theme.colors.placeholder}
-                  />
+                  <MaterialSymbol name="lock_clock" size={20} color={theme.colors.placeholder} />
                 }
               />
               {confirmPasswordError ? (
@@ -257,8 +246,8 @@ export default function ResetPasswordScreen() {
             <View style={styles.requirementsBox}>
               <Text style={styles.requirementsTitle}>Requisitos da nova senha:</Text>
               <View style={styles.reqItemRow}>
-                <MaterialCommunityIcons
-                  name={isNewPasswordValid ? 'check-circle' : 'circle-outline'}
+                <MaterialSymbol
+                  name={isNewPasswordValid ? 'check_circle' : 'radio_button_unchecked'}
                   size={16}
                   color={isNewPasswordValid ? theme.colors.tertiary : theme.colors.placeholder}
                 />
@@ -267,8 +256,8 @@ export default function ResetPasswordScreen() {
                 </Text>
               </View>
               <View style={styles.reqItemRow}>
-                <MaterialCommunityIcons
-                  name={isDifferentFromOld ? 'check-circle' : 'circle-outline'}
+                <MaterialSymbol
+                  name={isDifferentFromOld ? 'check_circle' : 'radio_button_unchecked'}
                   size={16}
                   color={isDifferentFromOld ? theme.colors.tertiary : theme.colors.placeholder}
                 />
@@ -277,8 +266,8 @@ export default function ResetPasswordScreen() {
                 </Text>
               </View>
               <View style={styles.reqItemRow}>
-                <MaterialCommunityIcons
-                  name={isConfirmValid ? 'check-circle' : 'circle-outline'}
+                <MaterialSymbol
+                  name={isConfirmValid ? 'check_circle' : 'radio_button_unchecked'}
                   size={16}
                   color={isConfirmValid ? theme.colors.tertiary : theme.colors.placeholder}
                 />

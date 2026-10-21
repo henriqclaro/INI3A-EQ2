@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { formatRemainingTime } from '@/src/utils/rateLimit';
+
+import { MaterialSymbol } from './MaterialSymbol';
 
 export interface RateLimitLabelProps {
   message: string;
@@ -28,7 +28,7 @@ export function RateLimitLabel({
   return (
     <View style={[styles.container, style]} accessibilityRole="alert">
       <View style={styles.iconCircle}>
-        <MaterialCommunityIcons name="clock-alert-outline" size={20} color={theme.colors.error} />
+        <MaterialSymbol name="schedule" size={20} color={theme.colors.error} />
       </View>
 
       <View style={styles.textContainer}>
@@ -50,7 +50,7 @@ export function RateLimitLabel({
           accessibilityLabel="Fechar aviso de limite"
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <MaterialCommunityIcons name="close" size={18} color={theme.colors.onSurfaceVariant} />
+          <MaterialSymbol name="close" size={18} color={theme.colors.onSurfaceVariant} />
         </TouchableOpacity>
       )}
     </View>

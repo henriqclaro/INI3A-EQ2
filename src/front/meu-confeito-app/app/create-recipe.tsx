@@ -11,9 +11,13 @@ import {
 
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
-import { OfflineBanner, OnboardingCard, RecipeForm, RecipeFormSubmitData } from '@/src/components';
+import {
+  MaterialSymbol,
+  OfflineBanner,
+  OnboardingCard,
+  RecipeForm,
+  RecipeFormSubmitData,
+} from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useNetwork } from '@/src/hooks/useNetwork';
@@ -217,11 +221,7 @@ export default function CreateRecipeScreen() {
           <View style={styles.centerContainer}>
             <View style={styles.errorCard}>
               <View style={styles.iconCircle}>
-                <MaterialCommunityIcons
-                  name="book-remove-outline"
-                  size={40}
-                  color={theme.colors.onSurfaceVariant}
-                />
+                <MaterialSymbol name="menu_book" size={40} color={theme.colors.onSurfaceVariant} />
               </View>
               <Text style={styles.errorTitle}>Receita não encontrada</Text>
               <Text style={styles.errorSubtitle}>
@@ -243,11 +243,7 @@ export default function CreateRecipeScreen() {
           <View style={styles.centerContainer}>
             <View style={styles.errorCard}>
               <View style={styles.iconCircle}>
-                <MaterialCommunityIcons
-                  name="shield-lock-outline"
-                  size={40}
-                  color={theme.colors.error}
-                />
+                <MaterialSymbol name="lock" size={40} color={theme.colors.error} />
               </View>
               <Text style={styles.errorTitle}>Acesso Negado</Text>
               <Text style={styles.errorSubtitle}>
@@ -274,19 +270,11 @@ export default function CreateRecipeScreen() {
               <View style={styles.forkBannerWrapper}>
                 <View style={styles.forkBanner}>
                   <View style={styles.forkBannerIconWrap}>
-                    <MaterialCommunityIcons
-                      name="source-fork"
-                      size={22}
-                      color={theme.colors.primary}
-                    />
+                    <MaterialSymbol name="fork_right" size={22} color={theme.colors.primary} />
                   </View>
                   <View style={styles.forkBannerContent}>
                     <View style={styles.forkBannerBadge}>
-                      <MaterialCommunityIcons
-                        name="earth"
-                        size={12}
-                        color={theme.colors.onPrimaryFixed}
-                      />
+                      <MaterialSymbol name="public" size={12} color={theme.colors.onPrimaryFixed} />
                       <Text style={styles.forkBannerBadgeText}>Personalizando Receita Pública</Text>
                     </View>
                     <Text style={styles.forkBannerTitle} numberOfLines={1}>
@@ -312,7 +300,7 @@ export default function CreateRecipeScreen() {
                 !isEditMode ? (
                   <OnboardingCard
                     id="recipe_default_operational_values"
-                    icon="tune-variant"
+                    icon="tune"
                     title="Valores Padrão de Precificação"
                     description="Defina margens de lucro, custos fixos e mão de obra padrão nas preferências para preencher automaticamente suas receitas."
                     actionText="Configurar Padrões"

@@ -5,11 +5,10 @@ import * as Crypto from 'expo-crypto';
 import { Image } from 'expo-image';
 import { Link, Stack, router, useLocalSearchParams } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { ActivityIndicator } from 'react-native-paper';
 
-import { CustomButton, Input } from '@/src/components';
+import { CustomButton, Input, MaterialSymbol } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useUserRegister } from '@/src/hooks/useUsers';
@@ -270,8 +269,8 @@ export default function RegisterScreen() {
                 onPress={() => setSelectedRole('BAKER')}
                 activeOpacity={0.8}
               >
-                <MaterialCommunityIcons
-                  name="cake-variant-outline"
+                <MaterialSymbol
+                  name="cake"
                   size={20}
                   color={role === 'BAKER' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant}
                 />
@@ -287,8 +286,8 @@ export default function RegisterScreen() {
                 onPress={() => setSelectedRole('CUSTOMER')}
                 activeOpacity={0.8}
               >
-                <MaterialCommunityIcons
-                  name="account-outline"
+                <MaterialSymbol
+                  name="person"
                   size={20}
                   color={
                     role === 'CUSTOMER' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant
@@ -314,8 +313,8 @@ export default function RegisterScreen() {
           {/* Fieldset: Dados Pessoais */}
           <View style={styles.fieldset}>
             <View style={styles.titleContainer}>
-              <MaterialCommunityIcons
-                name="account-circle-outline"
+              <MaterialSymbol
+                name="account_circle"
                 size={24}
                 color={theme.colors.espressoDark}
                 style={styles.icon}
@@ -330,11 +329,7 @@ export default function RegisterScreen() {
                   Nome completo <Text style={styles.required}>*</Text>
                 </Text>
                 {touched.name && isNameValid && (
-                  <MaterialCommunityIcons
-                    name="check-circle-outline"
-                    size={16}
-                    color={theme.colors.tertiary}
-                  />
+                  <MaterialSymbol name="check_circle" size={16} color={theme.colors.tertiary} />
                 )}
               </View>
               <Input
@@ -355,8 +350,8 @@ export default function RegisterScreen() {
               <View style={styles.helperRow}>
                 {nameError ? (
                   <>
-                    <MaterialCommunityIcons
-                      name="alert-circle-outline"
+                    <MaterialSymbol
+                      name="error"
                       size={14}
                       color={theme.colors.error}
                       style={styles.helperIcon}
@@ -376,11 +371,7 @@ export default function RegisterScreen() {
                   E-mail <Text style={styles.required}>*</Text>
                 </Text>
                 {touched.email && isEmailValid && (
-                  <MaterialCommunityIcons
-                    name="check-circle-outline"
-                    size={16}
-                    color={theme.colors.tertiary}
-                  />
+                  <MaterialSymbol name="check_circle" size={16} color={theme.colors.tertiary} />
                 )}
               </View>
               <Input
@@ -402,8 +393,8 @@ export default function RegisterScreen() {
               <View style={styles.helperRow}>
                 {emailError ? (
                   <>
-                    <MaterialCommunityIcons
-                      name="alert-circle-outline"
+                    <MaterialSymbol
+                      name="error"
                       size={14}
                       color={theme.colors.error}
                       style={styles.helperIcon}
@@ -423,11 +414,7 @@ export default function RegisterScreen() {
                   Senha <Text style={styles.required}>*</Text>
                 </Text>
                 {touched.password && isPasswordValid && (
-                  <MaterialCommunityIcons
-                    name="check-circle-outline"
-                    size={16}
-                    color={theme.colors.tertiary}
-                  />
+                  <MaterialSymbol name="check_circle" size={16} color={theme.colors.tertiary} />
                 )}
               </View>
               <Input
@@ -448,8 +435,8 @@ export default function RegisterScreen() {
               <View style={styles.helperRow}>
                 {passwordError ? (
                   <>
-                    <MaterialCommunityIcons
-                      name="alert-circle-outline"
+                    <MaterialSymbol
+                      name="error"
                       size={14}
                       color={theme.colors.error}
                       style={styles.helperIcon}
@@ -469,11 +456,7 @@ export default function RegisterScreen() {
                   Confirmação da senha <Text style={styles.required}>*</Text>
                 </Text>
                 {touched.passVef && isPassVefValid && (
-                  <MaterialCommunityIcons
-                    name="check-circle-outline"
-                    size={16}
-                    color={theme.colors.tertiary}
-                  />
+                  <MaterialSymbol name="check_circle" size={16} color={theme.colors.tertiary} />
                 )}
               </View>
               <Input
@@ -494,8 +477,8 @@ export default function RegisterScreen() {
               <View style={styles.helperRow}>
                 {passVefError ? (
                   <>
-                    <MaterialCommunityIcons
-                      name="alert-circle-outline"
+                    <MaterialSymbol
+                      name="error"
                       size={14}
                       color={theme.colors.error}
                       style={styles.helperIcon}
@@ -514,8 +497,8 @@ export default function RegisterScreen() {
             <>
               <View style={styles.fieldset}>
                 <View style={styles.titleContainer}>
-                  <MaterialCommunityIcons
-                    name="phone-outline"
+                  <MaterialSymbol
+                    name="call"
                     size={24}
                     color={theme.colors.espressoDark}
                     style={styles.icon}
@@ -527,11 +510,7 @@ export default function RegisterScreen() {
                   <View style={styles.labelRow}>
                     <Text style={styles.label}>Telefone / WhatsApp</Text>
                     {touched.phone && phone.trim().length > 0 && isPhoneValid && (
-                      <MaterialCommunityIcons
-                        name="check-circle-outline"
-                        size={16}
-                        color={theme.colors.tertiary}
-                      />
+                      <MaterialSymbol name="check_circle" size={16} color={theme.colors.tertiary} />
                     )}
                   </View>
                   <Input
@@ -554,8 +533,8 @@ export default function RegisterScreen() {
                   <View style={styles.helperRow}>
                     {phoneError ? (
                       <>
-                        <MaterialCommunityIcons
-                          name="alert-circle-outline"
+                        <MaterialSymbol
+                          name="error"
                           size={14}
                           color={theme.colors.error}
                           style={styles.helperIcon}
@@ -573,7 +552,7 @@ export default function RegisterScreen() {
 
               {/*{<View style={styles.fieldset}>
                   <View style={styles.titleContainer}>
-                    <MaterialCommunityIcons name="map-marker" size={26} style={styles.icon} />
+                    <MaterialSymbol name="place" size={26} style={styles.icon} />
                     <Text style={styles.title}>Localização</Text>
                   </View>
                   <Input placeholder="Cidade" />

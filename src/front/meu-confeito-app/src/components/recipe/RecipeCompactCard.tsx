@@ -3,8 +3,7 @@ import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from '
 
 import { Image } from 'expo-image';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { RecipeStatus } from '@/src/types/recipe';
@@ -71,7 +70,7 @@ export const RecipeCompactCard = memo(function RecipeCompactCard({
       case 'SUSPENDED':
         return {
           label: 'Suspensa',
-          icon: 'alert-octagon-outline' as const,
+          icon: 'report' as const,
           color: theme.colors.onErrorContainer,
           bgColor: theme.colors.errorContainer,
           borderColor: theme.colors.error,
@@ -79,7 +78,7 @@ export const RecipeCompactCard = memo(function RecipeCompactCard({
       case 'PUBLISHED':
         return {
           label: 'Pública',
-          icon: 'earth' as const,
+          icon: 'public' as const,
           color: theme.colors.onSecondaryContainer,
           bgColor: theme.colors.secondaryContainer,
           borderColor: theme.colors.outlineVariant,
@@ -87,7 +86,7 @@ export const RecipeCompactCard = memo(function RecipeCompactCard({
       case 'ARCHIVED':
         return {
           label: 'Arquivada',
-          icon: 'archive-outline' as const,
+          icon: 'inventory_2' as const,
           color: theme.colors.onSurfaceVariant,
           bgColor: theme.colors.surfaceContainerHigh,
           borderColor: theme.colors.outlineVariant,
@@ -96,7 +95,7 @@ export const RecipeCompactCard = memo(function RecipeCompactCard({
       default:
         return {
           label: 'Rascunho',
-          icon: 'file-document-edit-outline' as const,
+          icon: 'edit_document' as const,
           color: theme.colors.onSurfaceVariant,
           bgColor: theme.colors.surfaceContainerLow,
           borderColor: theme.colors.outlineVariant,
@@ -118,11 +117,7 @@ export const RecipeCompactCard = memo(function RecipeCompactCard({
         />
       ) : (
         <View style={[styles.image, styles.placeholder]}>
-          <MaterialCommunityIcons
-            name="cake-variant-outline"
-            size={24}
-            color={theme.colors.primary}
-          />
+          <MaterialSymbol name="cake" size={24} color={theme.colors.primary} />
         </View>
       )}
 
@@ -142,11 +137,7 @@ export const RecipeCompactCard = memo(function RecipeCompactCard({
                 },
               ]}
             >
-              <MaterialCommunityIcons
-                name={statusBadgeInfo.icon}
-                size={12}
-                color={statusBadgeInfo.color}
-              />
+              <MaterialSymbol name={statusBadgeInfo.icon} size={12} color={statusBadgeInfo.color} />
               <Text style={[styles.badgeText, { color: statusBadgeInfo.color }]}>
                 {statusBadgeInfo.label}
               </Text>
@@ -155,7 +146,7 @@ export const RecipeCompactCard = memo(function RecipeCompactCard({
 
           {formattedRating !== null && (
             <View style={styles.ratingBadge}>
-              <MaterialCommunityIcons name="star" size={13} color="#D97706" />
+              <MaterialSymbol name="star" size={13} color="#D97706" />
               <Text style={styles.ratingText}>{formattedRating}</Text>
             </View>
           )}
@@ -163,15 +154,15 @@ export const RecipeCompactCard = memo(function RecipeCompactCard({
       </View>
 
       {isExpandable ? (
-        <MaterialCommunityIcons
-          name={isExpanded ? 'chevron-up' : 'chevron-down'}
+        <MaterialSymbol
+          name={isExpanded ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
           size={24}
           color={theme.colors.onSurfaceVariant}
           style={styles.chevron}
         />
       ) : onPress ? (
-        <MaterialCommunityIcons
-          name="chevron-right"
+        <MaterialSymbol
+          name="chevron_right"
           size={20}
           color={theme.colors.outline}
           style={styles.chevron}

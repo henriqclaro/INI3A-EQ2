@@ -3,9 +3,7 @@ import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } fr
 
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
-import { OfflineBanner, RecipeForm, RecipeFormSubmitData } from '@/src/components';
+import { MaterialSymbol, OfflineBanner, RecipeForm, RecipeFormSubmitData } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useNetwork } from '@/src/hooks/useNetwork';
@@ -160,11 +158,7 @@ export default function EditRecipeScreen() {
                 {isDeletingRecipe ? (
                   <ActivityIndicator size="small" color={theme.colors.error} />
                 ) : (
-                  <MaterialCommunityIcons
-                    name="trash-can-outline"
-                    size={22}
-                    color={theme.colors.error}
-                  />
+                  <MaterialSymbol name="delete" size={22} color={theme.colors.error} />
                 )}
               </TouchableOpacity>
             ) : null,
@@ -181,11 +175,7 @@ export default function EditRecipeScreen() {
           <View style={styles.centerContainer}>
             <View style={styles.errorCard}>
               <View style={styles.iconCircle}>
-                <MaterialCommunityIcons
-                  name="book-remove-outline"
-                  size={40}
-                  color={theme.colors.onSurfaceVariant}
-                />
+                <MaterialSymbol name="menu_book" size={40} color={theme.colors.onSurfaceVariant} />
               </View>
               <Text style={styles.errorTitle}>Receita não encontrada</Text>
               <Text style={styles.errorSubtitle}>
@@ -205,8 +195,8 @@ export default function EditRecipeScreen() {
           <View style={styles.centerContainer}>
             <View style={styles.errorCard}>
               <View style={styles.iconCircle}>
-                <MaterialCommunityIcons
-                  name={recipe?.status === 'PUBLISHED' ? 'source-fork' : 'shield-lock-outline'}
+                <MaterialSymbol
+                  name={recipe?.status === 'PUBLISHED' ? 'fork_right' : 'lock'}
                   size={40}
                   color={recipe?.status === 'PUBLISHED' ? theme.colors.primary : theme.colors.error}
                 />

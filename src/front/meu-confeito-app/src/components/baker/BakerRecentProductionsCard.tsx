@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { ProductionItem } from '@/src/types/production';
@@ -36,7 +35,7 @@ export function BakerRecentProductionsCard({
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTitleGroup}>
-          <MaterialCommunityIcons name="pot-steam-outline" size={20} color={theme.colors.primary} />
+          <MaterialSymbol name="skillet" size={20} color={theme.colors.primary} />
           <Text style={styles.headerTitle}>Últimas Produções</Text>
         </View>
 
@@ -62,8 +61,8 @@ export function BakerRecentProductionsCard({
                 style={[styles.productionRow, !isLast && styles.productionRowBorder]}
               >
                 <View style={styles.iconBox}>
-                  <MaterialCommunityIcons
-                    name={isCanceled ? 'close-circle-outline' : 'check-circle-outline'}
+                  <MaterialSymbol
+                    name={isCanceled ? 'cancel' : 'check_circle'}
                     size={20}
                     color={isCanceled ? theme.colors.error : theme.colors.tertiary}
                   />

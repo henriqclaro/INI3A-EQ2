@@ -12,7 +12,6 @@ import {
 
 import { Stack, router } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { ActivityIndicator } from 'react-native-paper';
 
@@ -20,6 +19,7 @@ import {
   CustomButton,
   DateInput,
   IngredientSelector,
+  MaterialSymbol,
   OfflineBanner,
   StockCard,
 } from '@/src/components';
@@ -331,11 +331,7 @@ export default function RegisterStockScreen() {
           {/* Header section */}
           <View style={styles.headerArea}>
             <View style={styles.headerIconContainer}>
-              <MaterialCommunityIcons
-                name="package-variant-closed-plus"
-                size={30}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="add_box" size={30} color={theme.colors.primary} />
             </View>
             <Text style={styles.headline}>Entrada no Estoque</Text>
             <Text style={styles.subheadline}>
@@ -355,8 +351,8 @@ export default function RegisterStockScreen() {
               onPress={() => setEntryMode('purchase')}
               activeOpacity={0.8}
             >
-              <MaterialCommunityIcons
-                name="cart-plus"
+              <MaterialSymbol
+                name="add_shopping_cart"
                 size={18}
                 color={entryMode === 'purchase' ? theme.colors.primary : theme.colors.text}
               />
@@ -372,8 +368,8 @@ export default function RegisterStockScreen() {
               onPress={() => setEntryMode('adjustment')}
               activeOpacity={0.8}
             >
-              <MaterialCommunityIcons
-                name="tune-variant"
+              <MaterialSymbol
+                name="tune"
                 size={18}
                 color={entryMode === 'adjustment' ? theme.colors.primary : theme.colors.text}
               />
@@ -388,11 +384,7 @@ export default function RegisterStockScreen() {
           {/* Section 1: Insumo / Ingrediente */}
           <View style={styles.fieldset}>
             <View style={styles.fieldsetHeader}>
-              <MaterialCommunityIcons
-                name="food-apple-outline"
-                size={20}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="nutrition" size={20} color={theme.colors.primary} />
               <Text style={styles.fieldsetSectionTitle}>1. Seleção do Insumo</Text>
             </View>
 
@@ -415,11 +407,7 @@ export default function RegisterStockScreen() {
             {/* Existing Stock Alert */}
             {isAlreadyInStock && existingStockItem && (
               <View style={styles.existingStockBanner}>
-                <MaterialCommunityIcons
-                  name="information-outline"
-                  size={18}
-                  color={theme.colors.primary}
-                />
+                <MaterialSymbol name="info" size={18} color={theme.colors.primary} />
                 <View style={styles.existingStockTextContainer}>
                   <Text style={styles.existingStockTitle}>Item já possui estoque:</Text>
                   <Text style={styles.existingStockDetail}>
@@ -439,7 +427,7 @@ export default function RegisterStockScreen() {
           {/* Section 2: Quantidade e Custo */}
           <View style={styles.fieldset}>
             <View style={styles.fieldsetHeader}>
-              <MaterialCommunityIcons name="scale-balance" size={20} color={theme.colors.primary} />
+              <MaterialSymbol name="balance" size={20} color={theme.colors.primary} />
               <Text style={styles.fieldsetSectionTitle}>
                 {entryMode === 'purchase' ? '2. Dados da Compra' : '2. Quantidade Física Real'}
               </Text>
@@ -452,8 +440,8 @@ export default function RegisterStockScreen() {
                 onPress={() => setIsPackageHelperEnabled(!isPackageHelperEnabled)}
                 activeOpacity={0.8}
               >
-                <MaterialCommunityIcons
-                  name={isPackageHelperEnabled ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                <MaterialSymbol
+                  name={isPackageHelperEnabled ? 'check_box' : 'check_box_outline_blank'}
                   size={20}
                   color={theme.colors.primary}
                 />
@@ -558,11 +546,7 @@ export default function RegisterStockScreen() {
             {entryMode === 'purchase' && (
               <View style={styles.costSummaryBox}>
                 <View style={styles.costSummaryHeader}>
-                  <MaterialCommunityIcons
-                    name="calculator-variant-outline"
-                    size={18}
-                    color={theme.colors.primary}
-                  />
+                  <MaterialSymbol name="calculate" size={18} color={theme.colors.primary} />
                   <Text style={styles.costSummaryTitle}>Custo por Unidade Base ({baseUnit})</Text>
                 </View>
                 <Text style={styles.costSummaryValue}>
@@ -611,11 +595,7 @@ export default function RegisterStockScreen() {
           {previewItem && (
             <View style={styles.previewSection}>
               <View style={styles.previewHeaderRow}>
-                <MaterialCommunityIcons
-                  name="eye-outline"
-                  size={18}
-                  color={theme.colors.espressoDark}
-                />
+                <MaterialSymbol name="visibility" size={18} color={theme.colors.espressoDark} />
                 <Text style={styles.previewSectionTitle}>Prévia no Estoque</Text>
               </View>
               <Text style={styles.previewSubtitle}>

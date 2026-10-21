@@ -18,9 +18,7 @@
         "backgroundColor": "#F6EDDC",
         "monochromeImage": "./assets/images/adaptive-icon-monochrome.png"
       },
-      "permissions": [
-        "INTERNET"
-      ],
+      "permissions": ["INTERNET"],
       "predictiveBackGestureEnabled": false,
       "package": "com.cti.meuconfeitoapp",
       "softwareKeyboardLayoutMode": "pan"

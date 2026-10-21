@@ -1,8 +1,7 @@
 import { memo, useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { RecipeInstructionStep } from '@/src/types/recipe';
@@ -20,7 +19,7 @@ export const RecipeInstructionsSection = memo(function RecipeInstructionsSection
   return (
     <View style={styles.cardBox}>
       <View style={styles.cardHeader}>
-        <MaterialCommunityIcons name="pot-steam-outline" size={22} color={theme.colors.primary} />
+        <MaterialSymbol name="skillet" size={22} color={theme.colors.primary} />
         <Text style={styles.cardTitle}>Modo de Preparo</Text>
       </View>
 

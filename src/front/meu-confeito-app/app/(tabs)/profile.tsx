@@ -12,9 +12,13 @@ import {
 
 import { router, useFocusEffect } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
-import { CustomButton, MenuOptionButton, OfflineBanner, UserAvatar } from '@/src/components';
+import {
+  CustomButton,
+  MaterialSymbol,
+  MenuOptionButton,
+  OfflineBanner,
+  UserAvatar,
+} from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useMyBakerProfile } from '@/src/hooks/useBakerProfile';
@@ -127,7 +131,7 @@ export default function ProfileScreen() {
                 name={user?.name}
                 size={110}
                 fallbackType="icon"
-                fallbackIcon="account"
+                fallbackIcon="person"
                 fallbackIconColor={theme.colors.placeholder}
                 fallbackBackgroundColor={theme.colors.surfaceContainerLow}
                 borderColor={theme.colors.primary}
@@ -144,11 +148,7 @@ export default function ProfileScreen() {
                   </View>
                 ) : (
                   <View style={styles.privateBadge}>
-                    <MaterialCommunityIcons
-                      name="lock-outline"
-                      size={12}
-                      color={theme.colors.onSurfaceVariant}
-                    />
+                    <MaterialSymbol name="lock" size={12} color={theme.colors.onSurfaceVariant} />
                     <Text style={styles.privateBadgeText}>Perfil Privado</Text>
                   </View>
                 ))}
@@ -169,22 +169,14 @@ export default function ProfileScreen() {
 
             {user?.email ? (
               <View style={styles.emailRow}>
-                <MaterialCommunityIcons
-                  name="email-outline"
-                  size={14}
-                  color={theme.colors.placeholder}
-                />
+                <MaterialSymbol name="mail" size={14} color={theme.colors.placeholder} />
                 <Text style={styles.email}>{user.email}</Text>
               </View>
             ) : null}
 
             {isBakerRole && locationSummary ? (
               <View style={styles.locationRow}>
-                <MaterialCommunityIcons
-                  name="map-marker-outline"
-                  size={14}
-                  color={theme.colors.secondary}
-                />
+                <MaterialSymbol name="place" size={14} color={theme.colors.secondary} />
                 <Text style={styles.locationText}>{locationSummary}</Text>
               </View>
             ) : null}
@@ -237,7 +229,7 @@ export default function ProfileScreen() {
               <MenuOptionButton
                 title="Buscar Confeitarias"
                 subtitle="Encontre confeitarias e artesãos de doces próximos a você"
-                icon="store-search-outline"
+                icon="storefront"
                 onPress={() => router.push('/search-bakers')}
               />
             )}
@@ -247,7 +239,7 @@ export default function ProfileScreen() {
               <MenuOptionButton
                 title="Receitas Salvas"
                 subtitle="Suas receitas favoritas guardadas da comunidade"
-                icon="bookmark-multiple-outline"
+                icon="bookmarks"
                 onPress={() => router.push('/saved-recipes')}
               />
             )}
@@ -257,7 +249,7 @@ export default function ProfileScreen() {
               <MenuOptionButton
                 title="Receitas Arquivadas"
                 subtitle="Consulte e gerencie suas receitas arquivadas"
-                icon="archive-outline"
+                icon="inventory_2"
                 onPress={() => router.push('/archived-recipes')}
               />
             )}
@@ -267,7 +259,7 @@ export default function ProfileScreen() {
               <MenuOptionButton
                 title="Minhas Avaliações"
                 subtitle="Receitas da comunidade que você avaliou"
-                icon="star-outline"
+                icon="star"
                 onPress={() => router.push('/my-reviews')}
               />
             )}
@@ -277,7 +269,7 @@ export default function ProfileScreen() {
               <MenuOptionButton
                 title="Prévia do Perfil Comercial"
                 subtitle="Veja exatamente como os clientes visualizam sua página"
-                icon="eye-outline"
+                icon="visibility"
                 onPress={() =>
                   router.push({
                     pathname: '/public-profile',
@@ -296,7 +288,7 @@ export default function ProfileScreen() {
                     ? 'Recursos exclusivos de administração e controle da plataforma'
                     : 'Recursos exclusivos de moderação da plataforma'
                 }
-                icon="shield-crown-outline"
+                icon="security"
                 onPress={() => router.push('/management')}
               />
             )}
@@ -305,7 +297,7 @@ export default function ProfileScreen() {
             <MenuOptionButton
               title="Configurações"
               subtitle="Aparência, tema e preferências do aplicativo"
-              icon="cog-outline"
+              icon="settings"
               onPress={() => router.push('/settings')}
             />
 

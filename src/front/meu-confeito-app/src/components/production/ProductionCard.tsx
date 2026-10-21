@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { ProductionItem } from '@/src/types/production';
@@ -45,8 +44,8 @@ export function ProductionCard({
             hasCanceled ? styles.statusBadgeCanceled : styles.statusBadgeActive,
           ]}
         >
-          <MaterialCommunityIcons
-            name={hasCanceled ? 'close-circle-outline' : 'check-circle-outline'}
+          <MaterialSymbol
+            name={hasCanceled ? 'cancel' : 'check_circle'}
             size={13}
             color={hasCanceled ? theme.colors.error : theme.colors.tertiary}
           />
@@ -83,11 +82,7 @@ export function ProductionCard({
 
       {Boolean(production.expirationDate) && (
         <View style={styles.expirationRow}>
-          <MaterialCommunityIcons
-            name="calendar-clock"
-            size={14}
-            color={theme.colors.onSurfaceVariant}
-          />
+          <MaterialSymbol name="event_upcoming" size={14} color={theme.colors.onSurfaceVariant} />
           <Text style={styles.expirationText}>
             Validade: {formatDate(production.expirationDate)}
           </Text>
@@ -103,11 +98,7 @@ export function ProductionCard({
           accessibilityRole="button"
           accessibilityLabel="Ver detalhes de custos e insumos"
         >
-          <MaterialCommunityIcons
-            name="format-list-bulleted"
-            size={16}
-            color={theme.colors.primary}
-          />
+          <MaterialSymbol name="format_list_bulleted" size={16} color={theme.colors.primary} />
           <Text style={styles.detailsBtnText}>Ver Detalhes</Text>
         </TouchableOpacity>
 
@@ -120,7 +111,7 @@ export function ProductionCard({
             accessibilityRole="button"
             accessibilityLabel="Cancelar produção"
           >
-            <MaterialCommunityIcons name="undo-variant" size={16} color={theme.colors.error} />
+            <MaterialSymbol name="undo" size={16} color={theme.colors.error} />
             <Text style={styles.cancelBtnText}>Cancelar</Text>
           </TouchableOpacity>
         )}

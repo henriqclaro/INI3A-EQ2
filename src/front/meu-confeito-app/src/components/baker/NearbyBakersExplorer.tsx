@@ -14,11 +14,10 @@ import {
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { BakerCard } from '@/src/components/baker/BakerCard';
-import { CustomButton, OfflineBanner } from '@/src/components/common';
+import { CustomButton, MaterialSymbol, OfflineBanner } from '@/src/components/common';
 import { DEFAULT_POPULAR_TAGS } from '@/src/constants/bakerTags';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useNearbyBakers } from '@/src/hooks/useBakerProfile';
@@ -300,11 +299,7 @@ export function NearbyBakersExplorer({
         {hasIntroHeader && (
           <>
             <View style={styles.heroHeader}>
-              <MaterialCommunityIcons
-                name="store-search-outline"
-                size={32}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="storefront" size={32} color={theme.colors.primary} />
               <View style={styles.heroTextCol}>
                 <Text style={styles.heroTitle}>Buscar Confeitarias</Text>
                 <Text style={styles.heroSubtitle}>
@@ -326,8 +321,8 @@ export function NearbyBakersExplorer({
             accessibilityState={{ selected: isLocationMode }}
             accessibilityLabel="Buscar por proximidade e raio GPS"
           >
-            <MaterialCommunityIcons
-              name="crosshairs-gps"
+            <MaterialSymbol
+              name="my_location"
               size={18}
               color={isLocationMode ? theme.colors.onPrimary : theme.colors.espressoDark}
             />
@@ -349,8 +344,8 @@ export function NearbyBakersExplorer({
             accessibilityState={{ selected: isNeighborhoodMode }}
             accessibilityLabel="Buscar por bairro, cidade ou estado"
           >
-            <MaterialCommunityIcons
-              name="city-variant-outline"
+            <MaterialSymbol
+              name="location_city"
               size={18}
               color={isNeighborhoodMode ? theme.colors.onPrimary : theme.colors.espressoDark}
             />
@@ -376,11 +371,7 @@ export function NearbyBakersExplorer({
               {isLoadingLocation ? (
                 <ActivityIndicator size="small" color={theme.colors.primary} />
               ) : (
-                <MaterialCommunityIcons
-                  name="crosshairs-gps"
-                  size={20}
-                  color={theme.colors.primary}
-                />
+                <MaterialSymbol name="my_location" size={20} color={theme.colors.primary} />
               )}
               <Text style={styles.gpsButtonText}>
                 {isLoadingLocation ? 'Detectando GPS...' : 'Usar Minha Localização Atual'}
@@ -390,11 +381,7 @@ export function NearbyBakersExplorer({
             {/* Active Location Indicator */}
             {hasLocation && (
               <View style={styles.activeLocationBadge}>
-                <MaterialCommunityIcons
-                  name="map-marker-check"
-                  size={16}
-                  color={theme.colors.chips.success.text}
-                />
+                <MaterialSymbol name="pin_drop" size={16} color={theme.colors.chips.success.text} />
                 <Text style={styles.activeLocationText} numberOfLines={1}>
                   Localização ativa: {locationLabel || 'Coordenadas GPS registradas'}
                 </Text>
@@ -424,8 +411,8 @@ export function NearbyBakersExplorer({
                     accessibilityRole="button"
                     accessibilityLabel={`Raio de ${option.label}`}
                   >
-                    <MaterialCommunityIcons
-                      name="map-marker-radius"
+                    <MaterialSymbol
+                      name="location_searching"
                       size={16}
                       color={isSelected ? theme.colors.onPrimary : theme.colors.espressoDark}
                     />
@@ -453,8 +440,8 @@ export function NearbyBakersExplorer({
 
             <View style={styles.manualAddressRow}>
               <View style={styles.manualInputWrapper}>
-                <MaterialCommunityIcons
-                  name="city-variant-outline"
+                <MaterialSymbol
+                  name="location_city"
                   size={18}
                   color={theme.colors.placeholder}
                   style={styles.manualInputIcon}
@@ -478,11 +465,7 @@ export function NearbyBakersExplorer({
                     accessibilityRole="button"
                     accessibilityLabel="Limpar texto de busca"
                   >
-                    <MaterialCommunityIcons
-                      name="close-circle"
-                      size={18}
-                      color={theme.colors.placeholder}
-                    />
+                    <MaterialSymbol name="cancel" size={18} color={theme.colors.placeholder} />
                   </TouchableOpacity>
                 )}
               </View>
@@ -497,15 +480,15 @@ export function NearbyBakersExplorer({
                 {isLoadingBakers ? (
                   <ActivityIndicator size="small" color={theme.colors.onPrimary} />
                 ) : (
-                  <MaterialCommunityIcons name="magnify" size={20} color={theme.colors.onPrimary} />
+                  <MaterialSymbol name="search" size={20} color={theme.colors.onPrimary} />
                 )}
               </TouchableOpacity>
             </View>
 
             {activeNeighborhoodQuery ? (
               <View style={styles.activeLocationBadge}>
-                <MaterialCommunityIcons
-                  name="city-variant"
+                <MaterialSymbol
+                  name="location_city"
                   size={16}
                   color={theme.colors.chips.success.text}
                 />
@@ -542,7 +525,7 @@ export function NearbyBakersExplorer({
                 accessibilityLabel={`Filtrar por ${tag}`}
               >
                 {isSelected && (
-                  <MaterialCommunityIcons name="check" size={14} color={theme.colors.onPrimary} />
+                  <MaterialSymbol name="check" size={14} color={theme.colors.onPrimary} />
                 )}
                 <Text
                   style={[
@@ -575,7 +558,7 @@ export function NearbyBakersExplorer({
             accessibilityRole="button"
             accessibilityLabel="Adicionar tag"
           >
-            <MaterialCommunityIcons name="plus" size={20} color={theme.colors.primary} />
+            <MaterialSymbol name="add" size={20} color={theme.colors.primary} />
           </TouchableOpacity>
         </View>
 
@@ -641,11 +624,7 @@ export function NearbyBakersExplorer({
         </View>
       ) : hasError ? (
         <View style={styles.errorCard}>
-          <MaterialCommunityIcons
-            name="alert-circle-outline"
-            size={36}
-            color={theme.colors.error}
-          />
+          <MaterialSymbol name="error" size={36} color={theme.colors.error} />
           <Text style={styles.errorTitle}>Erro na busca</Text>
           <Text style={styles.errorMessage}>{errorMessage}</Text>
           <CustomButton
@@ -691,11 +670,7 @@ export function NearbyBakersExplorer({
         </View>
       ) : isLocationMode && hasSearched ? (
         <View style={styles.emptyCard}>
-          <MaterialCommunityIcons
-            name="store-off-outline"
-            size={48}
-            color={theme.colors.placeholder}
-          />
+          <MaterialSymbol name="storefront" size={48} color={theme.colors.placeholder} />
           <Text style={styles.emptyTitle}>Nenhuma confeitaria encontrada</Text>
           <Text style={styles.emptyDescription}>
             Não encontramos nenhuma confeitaria num raio de {(selectedRadius / 1000).toFixed(0)} km
@@ -725,11 +700,7 @@ export function NearbyBakersExplorer({
         </View>
       ) : isNeighborhoodMode && hasNeighborhoodSearched ? (
         <View style={styles.emptyCard}>
-          <MaterialCommunityIcons
-            name="store-off-outline"
-            size={48}
-            color={theme.colors.placeholder}
-          />
+          <MaterialSymbol name="storefront" size={48} color={theme.colors.placeholder} />
           <Text style={styles.emptyTitle}>Nenhuma confeitaria encontrada</Text>
           <Text style={styles.emptyDescription}>
             {`Não encontramos confeitarias em "${activeNeighborhoodQuery || 'região informada'}"${selectedTags.length > 0 ? ' com as tags selecionadas' : ''}.`}
@@ -759,11 +730,7 @@ export function NearbyBakersExplorer({
         </View>
       ) : isNeighborhoodMode && !hasNeighborhoodSearched ? (
         <View style={styles.emptyCard}>
-          <MaterialCommunityIcons
-            name="city-variant-outline"
-            size={48}
-            color={theme.colors.primary}
-          />
+          <MaterialSymbol name="location_city" size={48} color={theme.colors.primary} />
           <Text style={styles.emptyTitle}>Buscar por Bairro ou Cidade</Text>
           <Text style={styles.emptyDescription}>
             Digite um bairro, cidade ou estado acima para listar as confeitarias cadastradas.
@@ -777,11 +744,7 @@ export function NearbyBakersExplorer({
         </View>
       ) : !hasLocation ? (
         <View style={styles.emptyCard}>
-          <MaterialCommunityIcons
-            name="map-marker-question-outline"
-            size={48}
-            color={theme.colors.primary}
-          />
+          <MaterialSymbol name="wrong_location" size={48} color={theme.colors.primary} />
           <Text style={styles.emptyTitle}>Defina sua localização</Text>
           <Text style={styles.emptyDescription}>
             Ative o GPS para listar as confeitarias mais próximas ou alterne para a busca por Bairro

@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AnalyticsPeriodPreset } from '@/src/hooks/useAnalytics';
 import { AppTheme } from '@/src/theme/themes';
@@ -108,7 +107,7 @@ export function ProfitSummarySection({
             {isLoading ? (
               <ActivityIndicator size="small" color={theme.colors.primary} />
             ) : (
-              <MaterialCommunityIcons name="refresh" size={20} color={theme.colors.primary} />
+              <MaterialSymbol name="refresh" size={20} color={theme.colors.primary} />
             )}
           </TouchableOpacity>
         </View>
@@ -137,11 +136,7 @@ export function ProfitSummarySection({
       {/* Error Banner */}
       {hasError && (
         <View style={styles.errorBanner}>
-          <MaterialCommunityIcons
-            name="alert-circle-outline"
-            size={20}
-            color={theme.colors.error}
-          />
+          <MaterialSymbol name="error" size={20} color={theme.colors.error} />
           <Text style={styles.errorText}>
             {errorMessage || 'Não foi possível carregar os dados do relatório.'}
           </Text>
@@ -166,11 +161,7 @@ export function ProfitSummarySection({
               <View style={styles.kpiTopRow}>
                 <Text style={styles.kpiLabel}>Faturamento Estimado</Text>
                 <View style={styles.kpiIconBox}>
-                  <MaterialCommunityIcons
-                    name="cash-multiple"
-                    size={20}
-                    color={theme.colors.primary}
-                  />
+                  <MaterialSymbol name="payments" size={20} color={theme.colors.primary} />
                 </View>
               </View>
               <Text style={styles.kpiValue}>{formatCurrency(summary.projectedRevenue)}</Text>
@@ -182,11 +173,7 @@ export function ProfitSummarySection({
               <View style={styles.kpiTopRow}>
                 <Text style={styles.kpiLabel}>Custos de Produção</Text>
                 <View style={styles.kpiIconBox}>
-                  <MaterialCommunityIcons
-                    name="chart-pie"
-                    size={20}
-                    color={theme.colors.secondary}
-                  />
+                  <MaterialSymbol name="pie_chart" size={20} color={theme.colors.secondary} />
                 </View>
               </View>
               <Text style={styles.kpiValue}>{formatCurrency(summary.totalProductionCost)}</Text>
@@ -200,11 +187,7 @@ export function ProfitSummarySection({
               <View style={styles.kpiTopRow}>
                 <Text style={styles.kpiLabel}>Desperdício / Perdas</Text>
                 <View style={styles.kpiIconBox}>
-                  <MaterialCommunityIcons
-                    name="trash-can-outline"
-                    size={20}
-                    color={theme.colors.error}
-                  />
+                  <MaterialSymbol name="delete" size={20} color={theme.colors.error} />
                 </View>
               </View>
               <Text style={[styles.kpiValue, styles.kpiValueWarning]}>
@@ -393,11 +376,7 @@ export function ProfitSummarySection({
           {/* Empty state when 0 productions */}
           {!hasProductions && (
             <View style={styles.emptyStateCard}>
-              <MaterialCommunityIcons
-                name="clipboard-text-search-outline"
-                size={36}
-                color={theme.colors.outline}
-              />
+              <MaterialSymbol name="assignment_turned_in" size={36} color={theme.colors.outline} />
               <Text style={styles.emptyStateTitle}>Nenhuma produção no período</Text>
               <Text style={styles.emptyStateDescription}>
                 Não encontramos lotes fabricados entre {formatDate(dateRange.startDate)} e{' '}

@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { formatDate } from '@/src/utils/formatters';
+
+import { MaterialSymbol } from './MaterialSymbol';
 
 export interface DraftRecoveryBannerProps {
   isVisible: boolean;
@@ -53,7 +53,7 @@ export function DraftRecoveryBanner({
     <View style={[styles.container, isMobile && styles.containerMobile]}>
       <View style={styles.headerRow}>
         <View style={styles.iconWrapper}>
-          <MaterialCommunityIcons name="history" size={24} color={theme.colors.primary} />
+          <MaterialSymbol name="history" size={24} color={theme.colors.primary} />
         </View>
 
         <View style={styles.textColumn}>
@@ -70,8 +70,8 @@ export function DraftRecoveryBanner({
           accessibilityRole="button"
           accessibilityLabel="Restaurar rascunho salvo"
         >
-          <MaterialCommunityIcons
-            name="restore"
+          <MaterialSymbol
+            name="settings_backup_restore"
             size={18}
             color={theme.colors.onPrimary}
             style={styles.btnIcon}
@@ -88,8 +88,8 @@ export function DraftRecoveryBanner({
           accessibilityRole="button"
           accessibilityLabel="Descartar rascunho salvo"
         >
-          <MaterialCommunityIcons
-            name="trash-can-outline"
+          <MaterialSymbol
+            name="delete"
             size={18}
             color={theme.colors.onSurfaceVariant}
             style={styles.btnIcon}

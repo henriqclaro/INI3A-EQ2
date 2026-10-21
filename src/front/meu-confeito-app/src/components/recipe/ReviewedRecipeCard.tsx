@@ -12,8 +12,7 @@ import {
 
 import { Image } from 'expo-image';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { UserReviewItem } from '@/src/types/review';
@@ -104,11 +103,7 @@ export const ReviewedRecipeCard = memo(function ReviewedRecipeCard({
             />
           ) : (
             <View style={styles.placeholder}>
-              <MaterialCommunityIcons
-                name="cake-variant-outline"
-                size={34}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="cake" size={34} color={theme.colors.primary} />
             </View>
           )}
         </View>
@@ -121,11 +116,7 @@ export const ReviewedRecipeCard = memo(function ReviewedRecipeCard({
             </Text>
             {item.recipe.status === 'SUSPENDED' && (
               <View style={styles.suspendedBadge}>
-                <MaterialCommunityIcons
-                  name="alert-octagon-outline"
-                  size={12}
-                  color={theme.colors.error}
-                />
+                <MaterialSymbol name="report" size={12} color={theme.colors.error} />
                 <Text style={styles.suspendedBadgeText}>Suspensa</Text>
               </View>
             )}
@@ -134,20 +125,12 @@ export const ReviewedRecipeCard = memo(function ReviewedRecipeCard({
           {/* Slot 2: Middle / Rating Badges (fixed height: 22) */}
           <View style={styles.ratingRow}>
             <View style={styles.userRatingBadge}>
-              <MaterialCommunityIcons
-                name="star"
-                size={13}
-                color={theme.colors.onPrimaryContainer}
-              />
+              <MaterialSymbol name="star" size={13} color={theme.colors.onPrimaryContainer} />
               <Text style={styles.userRatingText}>Sua nota: {item.rating} / 5</Text>
             </View>
 
             <View style={styles.communityRatingBadge}>
-              <MaterialCommunityIcons
-                name="star-outline"
-                size={12}
-                color={theme.colors.onSurfaceVariant}
-              />
+              <MaterialSymbol name="star" size={12} color={theme.colors.onSurfaceVariant} />
               <Text style={styles.communityRatingText} numberOfLines={1}>
                 Média {formattedAverage} ({item.recipe.totalReviews || 0})
               </Text>
@@ -159,11 +142,7 @@ export const ReviewedRecipeCard = memo(function ReviewedRecipeCard({
             <View style={styles.metaContainer}>
               {Boolean(formattedDate) && (
                 <View style={styles.dateBadge}>
-                  <MaterialCommunityIcons
-                    name="calendar-check-outline"
-                    size={13}
-                    color={theme.colors.primary}
-                  />
+                  <MaterialSymbol name="event_available" size={13} color={theme.colors.primary} />
                   <Text style={styles.dateText} numberOfLines={1}>
                     Avaliada em {formattedDate}
                   </Text>
@@ -188,7 +167,7 @@ export const ReviewedRecipeCard = memo(function ReviewedRecipeCard({
           <ActivityIndicator size="small" color={theme.colors.error} />
         ) : (
           <>
-            <MaterialCommunityIcons name="trash-can-outline" size={15} color={theme.colors.error} />
+            <MaterialSymbol name="delete" size={15} color={theme.colors.error} />
             <Text style={styles.removeBtnText}>Remover</Text>
           </>
         )}

@@ -13,9 +13,7 @@ import {
 
 import { Stack, router } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
-import { Input, OfflineBanner, RecipeView } from '@/src/components';
+import { Input, MaterialSymbol, OfflineBanner, RecipeView } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useUserRecipes } from '@/src/hooks/useRecipes';
@@ -91,7 +89,7 @@ export default function ArchivedRecipesScreen() {
       return (
         <View style={styles.feedbackContainer}>
           <View style={styles.emptyIconWrapper}>
-            <MaterialCommunityIcons name="archive-outline" size={48} color={theme.colors.primary} />
+            <MaterialSymbol name="inventory_2" size={48} color={theme.colors.primary} />
           </View>
           <Text style={styles.emptyTitle}>Nenhuma receita arquivada</Text>
           <Text style={styles.emptySubtitle}>
@@ -105,11 +103,7 @@ export default function ArchivedRecipesScreen() {
             accessibilityRole="button"
             accessibilityLabel="Voltar para Suas Receitas"
           >
-            <MaterialCommunityIcons
-              name="book-open-outline"
-              size={18}
-              color={theme.colors.onPrimary}
-            />
+            <MaterialSymbol name="menu_book" size={18} color={theme.colors.onPrimary} />
             <Text style={styles.emptyActionBtnText}>Ver Suas Receitas</Text>
           </TouchableOpacity>
         </View>
@@ -119,11 +113,7 @@ export default function ArchivedRecipesScreen() {
     return (
       <View style={styles.feedbackContainer}>
         <View style={styles.emptyIconWrapper}>
-          <MaterialCommunityIcons
-            name="magnify-remove-outline"
-            size={48}
-            color={theme.colors.primary}
-          />
+          <MaterialSymbol name="search_off" size={48} color={theme.colors.primary} />
         </View>
         <Text style={styles.emptyTitle}>Nenhuma receita encontrada</Text>
         <Text style={styles.emptySubtitle}>
@@ -136,11 +126,7 @@ export default function ArchivedRecipesScreen() {
           accessibilityRole="button"
           accessibilityLabel="Limpar busca"
         >
-          <MaterialCommunityIcons
-            name="close-circle-outline"
-            size={18}
-            color={theme.colors.primary}
-          />
+          <MaterialSymbol name="cancel" size={18} color={theme.colors.primary} />
           <Text style={styles.clearSearchText}>Limpar busca</Text>
         </TouchableOpacity>
       </View>
@@ -169,11 +155,7 @@ export default function ArchivedRecipesScreen() {
             onChangeText={setSearch}
             containerStyle={styles.searchInput}
             leftIcon={
-              <MaterialCommunityIcons
-                name="magnify"
-                size={22}
-                color={theme.colors.onSurfaceVariant}
-              />
+              <MaterialSymbol name="search" size={22} color={theme.colors.onSurfaceVariant} />
             }
             isClearable={true}
             onClear={() => setSearch('')}
@@ -182,11 +164,7 @@ export default function ArchivedRecipesScreen() {
           {!isLoading && archivedRecipes.length > 0 && (
             <View style={styles.metaRow}>
               <View style={styles.badge}>
-                <MaterialCommunityIcons
-                  name="archive-check-outline"
-                  size={14}
-                  color={theme.colors.primary}
-                />
+                <MaterialSymbol name="inventory" size={14} color={theme.colors.primary} />
                 <Text style={styles.badgeText}>
                   {hasActiveSearch
                     ? `${archivedRecipes.length} de ${recipes.length} arquivadas`

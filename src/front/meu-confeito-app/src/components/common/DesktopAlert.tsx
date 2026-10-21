@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Modal, Platform, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
+import { MaterialSymbolName } from '@/src/types/materialSymbols';
 import { DesktopAlertState, desktopAlertManager, initDesktopAlert } from '@/src/utils/desktopAlert';
+
+import { MaterialSymbol } from './MaterialSymbol';
 
 export function DesktopAlert() {
   const { theme } = useThemeMode();
@@ -38,7 +39,7 @@ export function DesktopAlert() {
   const isCancelable = options?.cancelable ?? true;
 
   // Determine modal icon
-  let iconName: keyof typeof MaterialCommunityIcons.glyphMap = 'information-outline';
+  let iconName: MaterialSymbolName = 'info';
   let iconColor = theme.colors.primary;
   let iconBgColor = theme.colors.secondaryContainer;
 
@@ -49,19 +50,19 @@ export function DesktopAlert() {
     lowerTitle.includes('cancelar') ||
     lowerTitle.includes('excluir')
   ) {
-    iconName = lowerTitle.includes('sair') ? 'logout' : 'alert-circle-outline';
+    iconName = lowerTitle.includes('sair') ? 'logout' : 'error';
     iconColor = theme.colors.error;
     iconBgColor = theme.colors.errorContainer;
   } else if (lowerTitle.includes('sucesso') || lowerTitle.includes('salvo')) {
-    iconName = 'check-circle-outline';
+    iconName = 'check_circle';
     iconColor = theme.colors.tertiary;
     iconBgColor = theme.colors.chips.success.background;
   } else if (lowerTitle.includes('erro') || lowerTitle.includes('falha')) {
-    iconName = 'alert-outline';
+    iconName = 'warning';
     iconColor = theme.colors.error;
     iconBgColor = theme.colors.errorContainer;
   } else if (lowerTitle.includes('limite')) {
-    iconName = 'clock-alert-outline';
+    iconName = 'schedule';
     iconColor = theme.colors.error;
     iconBgColor = theme.colors.errorContainer;
   }
@@ -95,7 +96,7 @@ export function DesktopAlert() {
 
         <View style={styles.card} accessibilityRole="alert">
           <View style={[styles.iconCircle, { backgroundColor: iconBgColor }]}>
-            <MaterialCommunityIcons name={iconName} size={28} color={iconColor} />
+            <MaterialSymbol name={iconName} size={28} color={iconColor} />
           </View>
 
           <View style={styles.textBlock}>

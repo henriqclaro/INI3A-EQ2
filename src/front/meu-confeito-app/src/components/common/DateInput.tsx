@@ -9,12 +9,13 @@ import {
   ViewStyle,
 } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { DatePickerModal, pt, registerTranslation } from 'react-native-paper-dates';
 
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { formatDateForDisplay, parseDateSafely } from '@/src/utils/formatters';
+
+import { MaterialSymbol } from './MaterialSymbol';
 
 // Initialize Portuguese translation once
 registerTranslation('pt', pt);
@@ -218,11 +219,7 @@ export const DateInput = ({
             accessibilityRole="button"
             accessibilityLabel="Limpar data selecionada"
           >
-            <MaterialCommunityIcons
-              name="close-circle-outline"
-              size={18}
-              color={theme.colors.onSurfaceVariant}
-            />
+            <MaterialSymbol name="cancel" size={18} color={theme.colors.onSurfaceVariant} />
           </TouchableOpacity>
         )}
 
@@ -234,8 +231,8 @@ export const DateInput = ({
           accessibilityRole="button"
           accessibilityLabel="Abrir calendário para selecionar data"
         >
-          <MaterialCommunityIcons
-            name="calendar-month-outline"
+          <MaterialSymbol
+            name="calendar_month"
             size={22}
             color={isDisabled ? theme.colors.placeholder : theme.colors.primary}
           />

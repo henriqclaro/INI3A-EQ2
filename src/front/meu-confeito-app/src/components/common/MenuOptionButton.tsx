@@ -1,16 +1,17 @@
 import { ReactNode, useMemo } from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
+import { MaterialSymbolName } from '@/src/types/materialSymbols';
+
+import { MaterialSymbol } from './MaterialSymbol';
 
 export interface MenuOptionButtonProps {
   title: string;
   subtitle?: string;
-  icon?: keyof typeof MaterialCommunityIcons.glyphMap;
-  rightIcon?: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon?: MaterialSymbolName;
+  rightIcon?: MaterialSymbolName;
   badge?: ReactNode | string;
   onPress: () => void | Promise<void>;
   style?: StyleProp<ViewStyle>;
@@ -23,7 +24,7 @@ export const MenuOptionButton = ({
   title,
   subtitle,
   icon,
-  rightIcon = 'chevron-right',
+  rightIcon = 'chevron_right',
   badge,
   onPress,
   style,
@@ -47,7 +48,7 @@ export const MenuOptionButton = ({
       <View style={styles.leftContent}>
         {icon ? (
           <View style={styles.iconContainer}>
-            <MaterialCommunityIcons
+            <MaterialSymbol
               name={icon}
               size={22}
               color={isDestructive ? theme.colors.error : theme.colors.primary}
@@ -78,7 +79,7 @@ export const MenuOptionButton = ({
           )
         ) : null}
 
-        <MaterialCommunityIcons
+        <MaterialSymbol
           name={rightIcon}
           size={20}
           color={isDestructive ? theme.colors.error : theme.colors.placeholder}

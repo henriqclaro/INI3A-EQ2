@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'react';
 import { StyleProp, StyleSheet, TextInput, TouchableOpacity, View, ViewStyle } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
@@ -47,8 +46,8 @@ export function SettingsSearchBar({
         style,
       ]}
     >
-      <MaterialCommunityIcons
-        name="magnify"
+      <MaterialSymbol
+        name="search"
         size={isDense ? 18 : 20}
         color={isInputFocused ? theme.colors.primary : theme.colors.onSurfaceVariant}
         style={styles.searchIcon}
@@ -79,11 +78,7 @@ export function SettingsSearchBar({
           accessibilityLabel="Limpar campo de pesquisa"
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <MaterialCommunityIcons
-            name="close-circle"
-            size={isDense ? 16 : 18}
-            color={theme.colors.placeholder}
-          />
+          <MaterialSymbol name="cancel" size={isDense ? 16 : 18} color={theme.colors.placeholder} />
         </TouchableOpacity>
       )}
     </View>

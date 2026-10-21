@@ -1,8 +1,7 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { RecipeItem } from '@/src/types/recipe';
@@ -28,7 +27,7 @@ export const RecipeIngredientsSection = memo(function RecipeIngredientsSection({
   return (
     <View style={styles.cardBox}>
       <View style={styles.cardHeader}>
-        <MaterialCommunityIcons name="format-list-checks" size={22} color={theme.colors.primary} />
+        <MaterialSymbol name="checklist" size={22} color={theme.colors.primary} />
         <Text style={styles.cardTitle}>Itens da Receita</Text>
       </View>
 
@@ -58,7 +57,7 @@ export const RecipeIngredientsSection = memo(function RecipeIngredientsSection({
               <View style={styles.ingredientLeft}>
                 <View style={[styles.checkbox, isIngredientChecked && styles.checkedCheckbox]}>
                   {isIngredientChecked && (
-                    <MaterialCommunityIcons name="check" size={14} color={theme.colors.onPrimary} />
+                    <MaterialSymbol name="check" size={14} color={theme.colors.onPrimary} />
                   )}
                 </View>
                 <View style={styles.ingredientTextGroup}>

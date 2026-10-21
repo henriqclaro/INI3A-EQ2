@@ -1,15 +1,15 @@
 import { memo, useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
+import { MaterialSymbolName } from '@/src/types/materialSymbols';
 
 export interface RecipeFilterChipProps {
   label: string;
-  icon?: keyof typeof MaterialCommunityIcons.glyphMap;
-  trailingIcon?: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon?: MaterialSymbolName;
+  trailingIcon?: MaterialSymbolName;
   isSelected: boolean;
   onPress: () => void;
   accessibilityLabel?: string;
@@ -42,7 +42,7 @@ export const RecipeFilterChip = memo(function RecipeFilterChip({
       hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
     >
       {icon ? (
-        <MaterialCommunityIcons
+        <MaterialSymbol
           name={icon}
           size={16}
           color={isSelected ? theme.colors.onPrimary : theme.colors.primary}
@@ -59,7 +59,7 @@ export const RecipeFilterChip = memo(function RecipeFilterChip({
       ) : null}
 
       {trailingIcon ? (
-        <MaterialCommunityIcons
+        <MaterialSymbol
           name={trailingIcon}
           size={16}
           color={isSelected ? theme.colors.onPrimary : theme.colors.espressoDark}

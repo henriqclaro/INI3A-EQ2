@@ -10,8 +10,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
@@ -49,7 +48,7 @@ export function CustomizeRecipeModal({
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.iconCircle}>
-              <MaterialCommunityIcons name="source-fork" size={26} color={theme.colors.primary} />
+              <MaterialSymbol name="fork_right" size={26} color={theme.colors.primary} />
             </View>
             <View style={styles.headerTextGroup}>
               <Text style={styles.title}>Personalizar Receita</Text>
@@ -62,11 +61,7 @@ export function CustomizeRecipeModal({
               accessibilityLabel="Fechar"
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
-              <MaterialCommunityIcons
-                name="close"
-                size={22}
-                color={theme.colors.onSurfaceVariant}
-              />
+              <MaterialSymbol name="close" size={22} color={theme.colors.onSurfaceVariant} />
             </TouchableOpacity>
           </View>
 
@@ -78,11 +73,7 @@ export function CustomizeRecipeModal({
             {/* Source Recipe Highlight Card */}
             <View style={styles.sourceCard}>
               <View style={styles.sourceBadge}>
-                <MaterialCommunityIcons
-                  name="earth"
-                  size={13}
-                  color={theme.colors.onPrimaryFixed}
-                />
+                <MaterialSymbol name="public" size={13} color={theme.colors.onPrimaryFixed} />
                 <Text style={styles.sourceBadgeText}>Receita Pública da Comunidade</Text>
               </View>
               <Text style={styles.sourceTitle} numberOfLines={2}>
@@ -94,11 +85,7 @@ export function CustomizeRecipeModal({
             <View style={styles.explanationList}>
               <View style={styles.explanationItem}>
                 <View style={styles.itemIconContainer}>
-                  <MaterialCommunityIcons
-                    name="tray-arrow-down"
-                    size={20}
-                    color={theme.colors.primary}
-                  />
+                  <MaterialSymbol name="move_to_inbox" size={20} color={theme.colors.primary} />
                 </View>
                 <View style={styles.itemTextCol}>
                   <Text style={styles.itemHeading}>Importação automática</Text>
@@ -111,11 +98,7 @@ export function CustomizeRecipeModal({
 
               <View style={styles.explanationItem}>
                 <View style={styles.itemIconContainer}>
-                  <MaterialCommunityIcons
-                    name="pencil-ruler"
-                    size={20}
-                    color={theme.colors.primary}
-                  />
+                  <MaterialSymbol name="design_services" size={20} color={theme.colors.primary} />
                 </View>
                 <View style={styles.itemTextCol}>
                   <Text style={styles.itemHeading}>Liberdade total de edição</Text>
@@ -128,11 +111,7 @@ export function CustomizeRecipeModal({
 
               <View style={styles.explanationItem}>
                 <View style={styles.itemIconContainer}>
-                  <MaterialCommunityIcons
-                    name="link-variant"
-                    size={20}
-                    color={theme.colors.primary}
-                  />
+                  <MaterialSymbol name="link" size={20} color={theme.colors.primary} />
                 </View>
                 <View style={styles.itemTextCol}>
                   <Text style={styles.itemHeading}>Vínculo com a original preservado</Text>
@@ -164,11 +143,7 @@ export function CustomizeRecipeModal({
               accessibilityRole="button"
               accessibilityLabel="Confirmar e abrir editor de receita"
             >
-              <MaterialCommunityIcons
-                name="pencil-outline"
-                size={18}
-                color={theme.colors.onPrimary}
-              />
+              <MaterialSymbol name="edit" size={18} color={theme.colors.onPrimary} />
               <Text style={styles.confirmBtnText}>Personalizar e Editar</Text>
             </TouchableOpacity>
           </View>

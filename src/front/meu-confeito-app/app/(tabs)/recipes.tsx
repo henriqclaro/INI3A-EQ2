@@ -14,11 +14,10 @@ import {
 
 import { router } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
 import {
   FloatingActionItem,
   FloatingButton,
+  MaterialSymbol,
   OfflineBanner,
   RecipeFilterChip,
   RecipeView,
@@ -179,7 +178,7 @@ export default function RecipesScreen() {
       {
         id: 'create-recipe',
         label: 'Criar Nova Receita',
-        icon: 'notebook-plus-outline',
+        icon: 'post_add',
         variant: 'primary',
         onPress: () => router.push('/create-recipe'),
         accessibilityLabel: 'Criar nova receita',
@@ -187,7 +186,7 @@ export default function RecipesScreen() {
       {
         id: 'saved-recipes',
         label: 'Receitas Salvas',
-        icon: 'bookmark-multiple-outline',
+        icon: 'bookmarks',
         variant: 'secondary',
         onPress: () => router.push('/saved-recipes'),
         accessibilityLabel: 'Ver receitas salvas',
@@ -195,7 +194,7 @@ export default function RecipesScreen() {
       {
         id: 'public-recipes',
         label: 'Buscar Receitas Públicas',
-        icon: 'book-search-outline',
+        icon: 'find_in_page',
         variant: 'secondary',
         onPress: () => router.push('/public-recipes'),
         accessibilityLabel: 'Buscar receitas públicas',
@@ -265,11 +264,7 @@ export default function RecipesScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Buscar receitas públicas"
               >
-                <MaterialCommunityIcons
-                  name="book-search-outline"
-                  size={18}
-                  color={theme.colors.onSurface}
-                />
+                <MaterialSymbol name="find_in_page" size={18} color={theme.colors.onSurface} />
                 <Text style={styles.desktopHeaderSecondaryBtnText}>Públicas</Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -279,11 +274,7 @@ export default function RecipesScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Criar nova receita"
               >
-                <MaterialCommunityIcons
-                  name="notebook-plus-outline"
-                  size={18}
-                  color={theme.colors.onPrimary}
-                />
+                <MaterialSymbol name="post_add" size={18} color={theme.colors.onPrimary} />
                 <Text style={styles.desktopHeaderPrimaryBtnText}>Nova Receita</Text>
               </TouchableOpacity>
             </View>
@@ -293,31 +284,31 @@ export default function RecipesScreen() {
         <View style={styles.filterChipsRow}>
           <RecipeFilterChip
             label="Todas"
-            icon="book-open-outline"
+            icon="menu_book"
             isSelected={activeFilter === 'ALL'}
             onPress={() => setActiveFilter('ALL')}
           />
           <RecipeFilterChip
             label="Publicadas"
-            icon="earth"
+            icon="public"
             isSelected={activeFilter === 'PUBLISHED'}
             onPress={() => setActiveFilter('PUBLISHED')}
           />
           <RecipeFilterChip
             label="Rascunhos"
-            icon="file-document-edit-outline"
+            icon="edit_document"
             isSelected={activeFilter === 'DRAFT'}
             onPress={() => setActiveFilter('DRAFT')}
           />
           <RecipeFilterChip
             label="Salvas"
-            icon="bookmark-multiple-outline"
+            icon="bookmarks"
             isSelected={activeFilter === 'SAVED'}
             onPress={() => setActiveFilter('SAVED')}
           />
           <RecipeFilterChip
             label="Baixadas"
-            icon="cloud-check-outline"
+            icon="cloud_done"
             isSelected={activeFilter === 'DOWNLOADED'}
             onPress={() => setActiveFilter('DOWNLOADED')}
           />
@@ -354,11 +345,7 @@ export default function RecipesScreen() {
               accessibilityRole="button"
               accessibilityLabel="Carregar mais receitas"
             >
-              <MaterialCommunityIcons
-                name="chevron-down-circle-outline"
-                size={18}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="expand_circle_down" size={18} color={theme.colors.primary} />
               <Text style={styles.loadMoreBtnText}>Carregar mais receitas</Text>
             </TouchableOpacity>
           </View>
@@ -367,11 +354,7 @@ export default function RecipesScreen() {
         <View style={styles.bottomSuggestionCard}>
           <View style={styles.suggestionHeader}>
             <View style={styles.suggestionIconWrapper}>
-              <MaterialCommunityIcons
-                name="cake-variant-outline"
-                size={26}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="cake" size={26} color={theme.colors.primary} />
             </View>
             <View style={styles.suggestionHeaderText}>
               <Text style={styles.suggestionTitle}>Quer expandir seu cardápio?</Text>
@@ -387,11 +370,7 @@ export default function RecipesScreen() {
               onPress={() => router.push('/create-recipe')}
               activeOpacity={0.85}
             >
-              <MaterialCommunityIcons
-                name="notebook-plus-outline"
-                size={18}
-                color={theme.colors.onPrimary}
-              />
+              <MaterialSymbol name="post_add" size={18} color={theme.colors.onPrimary} />
               <Text style={styles.suggestionPrimaryBtnText}>Criar Nova Receita</Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -399,11 +378,7 @@ export default function RecipesScreen() {
               onPress={() => router.push('/public-recipes')}
               activeOpacity={0.85}
             >
-              <MaterialCommunityIcons
-                name="book-search-outline"
-                size={18}
-                color={theme.colors.onSurface}
-              />
+              <MaterialSymbol name="find_in_page" size={18} color={theme.colors.onSurface} />
               <Text style={styles.suggestionSecondaryBtnText}>Explorar Públicas</Text>
             </TouchableOpacity>
           </View>
@@ -457,13 +432,13 @@ export default function RecipesScreen() {
       <View style={styles.emptyWrapper}>
         <View style={styles.emptyContainer}>
           <View style={styles.emptyIconCircle}>
-            <MaterialCommunityIcons
+            <MaterialSymbol
               name={
                 activeFilter === 'DOWNLOADED'
-                  ? 'cloud-download-outline'
+                  ? 'cloud_download'
                   : activeFilter === 'SAVED'
-                    ? 'bookmark-multiple-outline'
-                    : 'cake-variant-outline'
+                    ? 'bookmarks'
+                    : 'cake'
               }
               size={44}
               color={theme.colors.primary}
@@ -478,11 +453,7 @@ export default function RecipesScreen() {
                 onPress={() => router.push('/create-recipe')}
                 activeOpacity={0.85}
               >
-                <MaterialCommunityIcons
-                  name="notebook-plus-outline"
-                  size={18}
-                  color={theme.colors.onPrimary}
-                />
+                <MaterialSymbol name="post_add" size={18} color={theme.colors.onPrimary} />
                 <Text style={styles.emptyPrimaryBtnText}>Criar Primeira Receita</Text>
               </TouchableOpacity>
             ) : null}
@@ -495,8 +466,8 @@ export default function RecipesScreen() {
               onPress={() => router.push('/public-recipes')}
               activeOpacity={0.85}
             >
-              <MaterialCommunityIcons
-                name="book-search-outline"
+              <MaterialSymbol
+                name="find_in_page"
                 size={18}
                 color={
                   activeFilter === 'SAVED' || activeFilter === 'DOWNLOADED'

@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
@@ -35,28 +34,28 @@ export function BakerOverviewBanner({
       id: 'recipes',
       label: 'Receitas',
       value: recipesCount,
-      icon: 'book-open-variant-outline' as const,
+      icon: 'menu_book' as const,
       onPress: onRecipesPress,
     },
     {
       id: 'stock',
       label: 'Insumos',
       value: stockCount,
-      icon: 'package-variant-closed' as const,
+      icon: 'inventory_2' as const,
       onPress: onStockPress,
     },
     {
       id: 'productions',
       label: 'Lotes',
       value: productionsCount,
-      icon: 'pot-steam-outline' as const,
+      icon: 'skillet' as const,
       onPress: onProductionsPress,
     },
     {
       id: 'saved',
       label: 'Salvas',
       value: savedCount,
-      icon: 'bookmark-outline' as const,
+      icon: 'bookmark' as const,
       onPress: onSavedPress,
     },
   ];
@@ -76,7 +75,7 @@ export function BakerOverviewBanner({
             accessibilityLabel={`${item.label}: ${item.value}`}
           >
             <View style={styles.topRow}>
-              <MaterialCommunityIcons name={item.icon} size={16} color={theme.colors.primary} />
+              <MaterialSymbol name={item.icon} size={16} color={theme.colors.primary} />
               <Text style={styles.statValue}>{item.value}</Text>
             </View>
             <Text style={styles.statLabel} numberOfLines={1}>

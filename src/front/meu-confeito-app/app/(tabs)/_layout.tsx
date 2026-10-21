@@ -4,10 +4,9 @@ import { StyleSheet, View } from 'react-native';
 import { Tabs, useSegments } from 'expo-router';
 import { CommonActions } from 'expo-router/react-navigation';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { BottomNavigation } from 'react-native-paper';
 
-import { CustomHeader } from '@/src/components';
+import { CustomHeader, MaterialSymbol } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
@@ -110,8 +109,8 @@ export default function TabsLayout() {
           options={{
             title: isCustomerRole ? 'Confeitarias' : 'Início',
             tabBarIcon: ({ color }) => (
-              <MaterialCommunityIcons
-                name={isCustomerRole ? 'store-search-outline' : 'home-outline'}
+              <MaterialSymbol
+                name={isCustomerRole ? 'storefront' : 'home'}
                 color={color}
                 size={24}
               />
@@ -124,9 +123,7 @@ export default function TabsLayout() {
             title: 'Suas Receitas',
             href: isCustomerRole ? null : undefined,
             tabBarItemStyle: isCustomerRole ? { display: 'none' } : undefined,
-            tabBarIcon: ({ color }) => (
-              <MaterialCommunityIcons name="book-open-page-variant-outline" color={color} size={24} />
-            ),
+            tabBarIcon: ({ color }) => <MaterialSymbol name="menu_book" color={color} size={24} />,
           }}
         />
         <Tabs.Screen
@@ -135,18 +132,14 @@ export default function TabsLayout() {
             title: 'Relatórios',
             href: isCustomerRole ? null : undefined,
             tabBarItemStyle: isCustomerRole ? { display: 'none' } : undefined,
-            tabBarIcon: ({ color }) => (
-              <MaterialCommunityIcons name="chart-timeline-variant" color={color} size={24} />
-            ),
+            tabBarIcon: ({ color }) => <MaterialSymbol name="insights" color={color} size={24} />,
           }}
         />
         <Tabs.Screen
           name="profile"
           options={{
             title: 'Perfil',
-            tabBarIcon: ({ color }) => (
-              <MaterialCommunityIcons name="account-outline" color={color} size={24} />
-            ),
+            tabBarIcon: ({ color }) => <MaterialSymbol name="person" color={color} size={24} />,
           }}
         />
       </Tabs>

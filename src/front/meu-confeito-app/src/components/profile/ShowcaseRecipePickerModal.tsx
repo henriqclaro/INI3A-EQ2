@@ -12,8 +12,7 @@ import {
 
 import { Image } from 'expo-image';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useUserRecipes } from '@/src/hooks/useRecipes';
 import { AppTheme } from '@/src/theme/themes';
@@ -65,11 +64,7 @@ export function ShowcaseRecipePickerModal({
           {/* Modal Header */}
           <View style={styles.modalHeader}>
             <View style={styles.headerTitleRow}>
-              <MaterialCommunityIcons
-                name="store-plus-outline"
-                size={22}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="add_business" size={22} color={theme.colors.primary} />
               <Text style={styles.modalTitle}>Adicionar à Vitrine</Text>
             </View>
             <TouchableOpacity
@@ -79,11 +74,7 @@ export function ShowcaseRecipePickerModal({
               accessibilityLabel="Fechar seletor de receitas"
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <MaterialCommunityIcons
-                name="close"
-                size={22}
-                color={theme.colors.onSurfaceVariant}
-              />
+              <MaterialSymbol name="close" size={22} color={theme.colors.onSurfaceVariant} />
             </TouchableOpacity>
           </View>
 
@@ -94,8 +85,8 @@ export function ShowcaseRecipePickerModal({
 
           {/* Search input */}
           <View style={styles.searchBar}>
-            <MaterialCommunityIcons
-              name="magnify"
+            <MaterialSymbol
+              name="search"
               size={20}
               color={theme.colors.placeholder}
               style={styles.searchIcon}
@@ -115,11 +106,7 @@ export function ShowcaseRecipePickerModal({
                 accessibilityRole="button"
                 accessibilityLabel="Limpar busca"
               >
-                <MaterialCommunityIcons
-                  name="close-circle"
-                  size={18}
-                  color={theme.colors.outline}
-                />
+                <MaterialSymbol name="cancel" size={18} color={theme.colors.outline} />
               </TouchableOpacity>
             )}
           </View>
@@ -132,11 +119,7 @@ export function ShowcaseRecipePickerModal({
             </View>
           ) : filteredRecipes.length === 0 ? (
             <View style={styles.emptyContainer}>
-              <MaterialCommunityIcons
-                name="book-open-outline"
-                size={40}
-                color={theme.colors.placeholder}
-              />
+              <MaterialSymbol name="menu_book" size={40} color={theme.colors.placeholder} />
               <Text style={styles.emptyTitle}>Nenhuma receita encontrada</Text>
               <Text style={styles.emptySubtitle}>
                 {searchQuery.trim().length > 0
@@ -175,11 +158,7 @@ export function ShowcaseRecipePickerModal({
                       />
                     ) : (
                       <View style={[styles.recipeImage, styles.recipePlaceholder]}>
-                        <MaterialCommunityIcons
-                          name="cake-variant-outline"
-                          size={24}
-                          color={theme.colors.primary}
-                        />
+                        <MaterialSymbol name="cake" size={24} color={theme.colors.primary} />
                       </View>
                     )}
 
@@ -196,8 +175,8 @@ export function ShowcaseRecipePickerModal({
 
                     {isAlreadyInShowcase ? (
                       <View style={styles.inShowcaseBadge}>
-                        <MaterialCommunityIcons
-                          name="check-circle"
+                        <MaterialSymbol
+                          name="check_circle"
                           size={14}
                           color={theme.colors.chips.success.text}
                         />
@@ -205,11 +184,7 @@ export function ShowcaseRecipePickerModal({
                       </View>
                     ) : (
                       <View style={styles.addBadge}>
-                        <MaterialCommunityIcons
-                          name="plus"
-                          size={16}
-                          color={theme.colors.primary}
-                        />
+                        <MaterialSymbol name="add" size={16} color={theme.colors.primary} />
                         <Text style={styles.addBadgeText}>Adicionar</Text>
                       </View>
                     )}

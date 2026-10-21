@@ -12,7 +12,6 @@ import {
 
 import { Image } from 'expo-image';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Picker } from '@react-native-picker/picker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { ActivityIndicator } from 'react-native-paper';
@@ -21,6 +20,7 @@ import {
   CustomButton,
   DraftRecoveryBanner,
   IngredientSelector,
+  MaterialSymbol,
   TagSelector,
 } from '@/src/components/common';
 import { STANDARD_UNITS } from '@/src/constants/common-units';
@@ -770,11 +770,7 @@ export function RecipeForm({
                     <ActivityIndicator size="small" color={theme.colors.primary} />
                   ) : (
                     <>
-                      <MaterialCommunityIcons
-                        name="image-edit-outline"
-                        size={18}
-                        color={theme.colors.primary}
-                      />
+                      <MaterialSymbol name="edit_note" size={18} color={theme.colors.primary} />
                       <Text style={styles.coverActionBtnText}>Trocar Capa</Text>
                     </>
                   )}
@@ -787,11 +783,7 @@ export function RecipeForm({
                   accessibilityRole="button"
                   accessibilityLabel="Remover foto de capa da receita"
                 >
-                  <MaterialCommunityIcons
-                    name="trash-can-outline"
-                    size={18}
-                    color={theme.colors.error}
-                  />
+                  <MaterialSymbol name="delete" size={18} color={theme.colors.error} />
                   <Text style={[styles.coverActionBtnText, styles.coverRemoveBtnText]}>
                     Remover Capa
                   </Text>
@@ -811,8 +803,8 @@ export function RecipeForm({
               ) : (
                 <>
                   <View style={styles.coverUploadIconWrap}>
-                    <MaterialCommunityIcons
-                      name="image-plus"
+                    <MaterialSymbol
+                      name="add_photo_alternate"
                       size={28}
                       color={theme.colors.primary}
                     />
@@ -982,11 +974,7 @@ export function RecipeForm({
                   accessibilityRole="button"
                   accessibilityLabel={`Remover item ${index + 1}`}
                 >
-                  <MaterialCommunityIcons
-                    name="trash-can-outline"
-                    size={20}
-                    color={theme.colors.error}
-                  />
+                  <MaterialSymbol name="delete" size={20} color={theme.colors.error} />
                 </TouchableOpacity>
               )}
             </View>
@@ -1001,8 +989,8 @@ export function RecipeForm({
                 onPress={() => handleItemChange(index, 'itemType', 'INGREDIENT')}
                 activeOpacity={0.8}
               >
-                <MaterialCommunityIcons
-                  name="food-apple-outline"
+                <MaterialSymbol
+                  name="nutrition"
                   size={16}
                   color={
                     item.itemType === 'INGREDIENT'
@@ -1028,8 +1016,8 @@ export function RecipeForm({
                 onPress={() => handleItemChange(index, 'itemType', 'SUB_RECIPE')}
                 activeOpacity={0.8}
               >
-                <MaterialCommunityIcons
-                  name="cake-variant-outline"
+                <MaterialSymbol
+                  name="cake"
                   size={16}
                   color={
                     item.itemType === 'SUB_RECIPE'
@@ -1172,7 +1160,7 @@ export function RecipeForm({
         ))}
 
         <CustomButton variant="dashed" style={styles.addBtn} onPress={handleAddItem}>
-          <MaterialCommunityIcons name="plus" size={20} color={theme.colors.primary} />
+          <MaterialSymbol name="add" size={20} color={theme.colors.primary} />
           <Text style={styles.addBtnText}>Adicionar Item</Text>
         </CustomButton>
       </View>
@@ -1198,11 +1186,7 @@ export function RecipeForm({
                   accessibilityRole="button"
                   accessibilityLabel={`Remover etapa ${index + 1}`}
                 >
-                  <MaterialCommunityIcons
-                    name="trash-can-outline"
-                    size={20}
-                    color={theme.colors.error}
-                  />
+                  <MaterialSymbol name="delete" size={20} color={theme.colors.error} />
                 </TouchableOpacity>
               )}
             </View>
@@ -1234,7 +1218,7 @@ export function RecipeForm({
         ))}
 
         <CustomButton variant="dashed" style={styles.addBtn} onPress={handleAddStep}>
-          <MaterialCommunityIcons name="plus" size={20} color={theme.colors.primary} />
+          <MaterialSymbol name="add" size={20} color={theme.colors.primary} />
           <Text style={styles.addBtnText}>Adicionar Etapa</Text>
         </CustomButton>
       </View>

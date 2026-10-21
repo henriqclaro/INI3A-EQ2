@@ -1,15 +1,15 @@
 import { ReactNode, useMemo } from 'react';
 import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
+import { MaterialSymbolName } from '@/src/types/materialSymbols';
 
 export interface SettingsSectionProps {
   title: string;
   description?: string;
-  icon?: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon?: MaterialSymbolName;
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
 }
@@ -29,7 +29,7 @@ export function SettingsSection({
       <View style={styles.sectionHeader}>
         {icon ? (
           <View style={styles.iconCircle}>
-            <MaterialCommunityIcons name={icon} size={18} color={theme.colors.primary} />
+            <MaterialSymbol name={icon} size={18} color={theme.colors.primary} />
           </View>
         ) : null}
         <View style={styles.headerTextWrapper}>

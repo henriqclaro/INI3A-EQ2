@@ -238,7 +238,7 @@ The shape system balances organic confection curves with crisp digital alignment
 - **Standard Cards, Comparison Columns, and Panels:** `16px` (`rounded.lg`).
 - **Showcase Wrappers (Hero Card, Calculator Panel, Map Showcase, CTA):** `24px` (`rounded.xl`).
 - **Pills, Chips, Avatars, and Map Pins:** Full pill `9999px` (`rounded.full`).
-- **Icons:** Use `MaterialCommunityIcons` from `@expo/vector-icons` (or Lucide/SVG equivalents). Use thin-to-medium strokes (2px) to match the editorial typography.
+- **Icons:** Use `MaterialSymbol` from Material Symbols (`MaterialSymbolsOutlined`). Use clean strokes to match the editorial typography.
 
 ## Components
 

@@ -1,10 +1,9 @@
 import { memo, useMemo, useState } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { ActivityIndicator } from 'react-native-paper';
 
-import { CustomButton } from '@/src/components/common';
+import { CustomButton, MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
@@ -43,21 +42,13 @@ export const DeleteAccountModal = memo(function DeleteAccountModal({
       <View style={styles.modalBackdrop}>
         <View style={styles.modalCard}>
           <View style={styles.modalIconBadge}>
-            <MaterialCommunityIcons
-              name="delete-alert-outline"
-              size={36}
-              color={theme.colors.error}
-            />
+            <MaterialSymbol name="delete_forever" size={36} color={theme.colors.error} />
           </View>
 
           <Text style={styles.modalTitle}>Excluir Conta Permanentemente?</Text>
 
           <View style={styles.modalWarningBox}>
-            <MaterialCommunityIcons
-              name="alert-outline"
-              size={18}
-              color={theme.colors.onErrorContainer}
-            />
+            <MaterialSymbol name="warning" size={18} color={theme.colors.onErrorContainer} />
             <Text style={styles.modalWarningText}>ATENÇÃO: ESTA AÇÃO NÃO PODE SER DESFEITA!</Text>
           </View>
 
@@ -67,41 +58,25 @@ export const DeleteAccountModal = memo(function DeleteAccountModal({
 
           <View style={styles.consequencesList}>
             <View style={styles.consequenceItem}>
-              <MaterialCommunityIcons
-                name="close-circle-outline"
-                size={16}
-                color={theme.colors.error}
-              />
+              <MaterialSymbol name="cancel" size={16} color={theme.colors.error} />
               <Text style={styles.consequenceText}>
                 Receitas e fichas técnicas não vinculadas excluídas definitivamente
               </Text>
             </View>
             <View style={styles.consequenceItem}>
-              <MaterialCommunityIcons
-                name="close-circle-outline"
-                size={16}
-                color={theme.colors.error}
-              />
+              <MaterialSymbol name="cancel" size={16} color={theme.colors.error} />
               <Text style={styles.consequenceText}>
                 Foto de perfil apagada do armazenamento e dados pessoais anonimizados
               </Text>
             </View>
             <View style={styles.consequenceItem}>
-              <MaterialCommunityIcons
-                name="close-circle-outline"
-                size={16}
-                color={theme.colors.error}
-              />
+              <MaterialSymbol name="cancel" size={16} color={theme.colors.error} />
               <Text style={styles.consequenceText}>
                 Perfil público de confeitaria e vitrine de destaques excluídos
               </Text>
             </View>
             <View style={styles.consequenceItem}>
-              <MaterialCommunityIcons
-                name="close-circle-outline"
-                size={16}
-                color={theme.colors.error}
-              />
+              <MaterialSymbol name="cancel" size={16} color={theme.colors.error} />
               <Text style={styles.consequenceText}>
                 Todas as sessões ativas e tokens revogados imediatamente
               </Text>
@@ -117,8 +92,8 @@ export const DeleteAccountModal = memo(function DeleteAccountModal({
             accessibilityState={{ checked: isAcknowledgeChecked }}
             accessibilityLabel="Confirmo que estou ciente da perda definitiva de todos os meus dados"
           >
-            <MaterialCommunityIcons
-              name={isAcknowledgeChecked ? 'checkbox-marked' : 'checkbox-blank-outline'}
+            <MaterialSymbol
+              name={isAcknowledgeChecked ? 'check_box' : 'check_box_outline_blank'}
               size={24}
               color={isAcknowledgeChecked ? theme.colors.error : theme.colors.placeholder}
             />

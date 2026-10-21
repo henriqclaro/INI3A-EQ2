@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { RateLimitNoticeState, formatRemainingTime, rateLimitManager } from '@/src/utils/rateLimit';
+
+import { MaterialSymbol } from './MaterialSymbol';
 
 export function RateLimitBanner() {
   const { theme } = useThemeMode();
@@ -62,8 +63,8 @@ export function RateLimitBanner() {
     <View style={styles.floatingContainer} accessibilityRole="alert">
       <View style={styles.card}>
         <View style={styles.iconCircle}>
-          <MaterialCommunityIcons
-            name={isAuthLimit ? 'shield-alert-outline' : 'clock-alert-outline'}
+          <MaterialSymbol
+            name={isAuthLimit ? 'security' : 'schedule'}
             size={24}
             color={theme.colors.primary}
           />
@@ -75,8 +76,8 @@ export function RateLimitBanner() {
 
           {isTimeAvailable && (
             <View style={styles.timerBadge}>
-              <MaterialCommunityIcons
-                name="timer-sand"
+              <MaterialSymbol
+                name="hourglass_empty"
                 size={14}
                 color={theme.colors.onPrimaryFixed}
               />
@@ -93,7 +94,7 @@ export function RateLimitBanner() {
           accessibilityLabel="Fechar aviso de limite"
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <MaterialCommunityIcons name="close" size={20} color={theme.colors.onSurfaceVariant} />
+          <MaterialSymbol name="close" size={20} color={theme.colors.onSurfaceVariant} />
         </TouchableOpacity>
       </View>
     </View>

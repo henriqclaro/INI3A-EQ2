@@ -13,9 +13,7 @@ import {
 
 import { Stack, router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
-import { OfflineBanner } from '@/src/components';
+import { MaterialSymbol, OfflineBanner } from '@/src/components';
 import { ProductionCard, ProductionDetailsModal } from '@/src/components/production';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useProductions } from '@/src/hooks/useProductions';
@@ -141,8 +139,8 @@ export default function ProductionsScreen() {
               accessibilityRole="button"
               accessibilityLabel="Filtrar produções ativas"
             >
-              <MaterialCommunityIcons
-                name="check-circle-outline"
+              <MaterialSymbol
+                name="check_circle"
                 size={18}
                 color={
                   activeFilter === 'active' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant
@@ -165,8 +163,8 @@ export default function ProductionsScreen() {
               accessibilityRole="button"
               accessibilityLabel="Filtrar todas as produções incluindo canceladas"
             >
-              <MaterialCommunityIcons
-                name="format-list-bulleted"
+              <MaterialSymbol
+                name="format_list_bulleted"
                 size={18}
                 color={
                   activeFilter === 'all' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant
@@ -201,11 +199,7 @@ export default function ProductionsScreen() {
             </View>
           ) : error && productions.length === 0 ? (
             <View style={styles.centerContainer}>
-              <MaterialCommunityIcons
-                name="alert-circle-outline"
-                size={56}
-                color={theme.colors.error}
-              />
+              <MaterialSymbol name="error" size={56} color={theme.colors.error} />
               <Text style={styles.emptyTitle}>Erro ao carregar produções</Text>
               <Text style={styles.emptySubtitle}>{error}</Text>
               <TouchableOpacity
@@ -241,11 +235,7 @@ export default function ProductionsScreen() {
               )}
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
-                  <MaterialCommunityIcons
-                    name="pot-steam-outline"
-                    size={56}
-                    color={theme.colors.outline}
-                  />
+                  <MaterialSymbol name="skillet" size={56} color={theme.colors.outline} />
                   <Text style={styles.emptyTitle}>Nenhuma produção encontrada</Text>
                   <Text style={styles.emptySubtitle}>
                     Quando você registrar a produção de uma receita, os lotes aparecerão listados
@@ -257,11 +247,7 @@ export default function ProductionsScreen() {
                     accessibilityRole="button"
                     accessibilityLabel="Ir para Receitas"
                   >
-                    <MaterialCommunityIcons
-                      name="book-open-outline"
-                      size={18}
-                      color={theme.colors.onPrimary}
-                    />
+                    <MaterialSymbol name="menu_book" size={18} color={theme.colors.onPrimary} />
                     <Text style={styles.actionBtnText}>Ver Minhas Receitas</Text>
                   </TouchableOpacity>
                 </View>

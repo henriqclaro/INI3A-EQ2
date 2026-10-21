@@ -13,13 +13,12 @@ import {
 
 import { router } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
 import {
   BakerOverviewBanner,
   BakerQuickActionsGrid,
   BakerRecentProductionsCard,
   BakerStockAlertCard,
+  MaterialSymbol,
   NearbyBakersExplorer,
   OfflineBanner,
   OnboardingCard,
@@ -62,7 +61,7 @@ function CustomerHomeScreen() {
               <OnboardingCard
                 id="home_welcome"
                 isHero={true}
-                icon="cake-variant-outline"
+                icon="cake"
                 title="Bem-vindo ao Meu Confeito!"
                 description="Conecte-se com os melhores confeiteiros da sua região, descubra delícias artesanais e encontre receitas exclusivas para qualquer ocasião."
                 actionText="Explorar Confeitarias"
@@ -220,11 +219,7 @@ function BakerHomeScreen() {
                   accessibilityRole="button"
                   accessibilityLabel="Cadastrar novo insumo no estoque"
                 >
-                  <MaterialCommunityIcons
-                    name="package-variant-plus"
-                    size={18}
-                    color={theme.colors.espressoDark}
-                  />
+                  <MaterialSymbol name="add_box" size={18} color={theme.colors.espressoDark} />
                   <Text style={styles.headerSecondaryBtnText}>Novo Insumo</Text>
                 </TouchableOpacity>
 
@@ -235,7 +230,7 @@ function BakerHomeScreen() {
                   accessibilityRole="button"
                   accessibilityLabel="Cadastrar nova receita"
                 >
-                  <MaterialCommunityIcons name="plus" size={18} color={theme.colors.onPrimary} />
+                  <MaterialSymbol name="add" size={18} color={theme.colors.onPrimary} />
                   <Text style={styles.headerPrimaryBtnText}>Nova Receita</Text>
                 </TouchableOpacity>
               </View>
@@ -246,7 +241,7 @@ function BakerHomeScreen() {
           <OnboardingCard
             id="home_welcome"
             isHero={true}
-            icon="cake-variant-outline"
+            icon="cake"
             title="Bem-vindo ao Meu Confeito!"
             description="Sua confeitaria digital para calcular custos precisos de receitas, monitorar estoque em tempo real e organizar produções artesanais com foco no lucro real."
             actionText="Explorar Meu Confeito"
@@ -291,11 +286,7 @@ function BakerHomeScreen() {
                 <View style={styles.recipesSection}>
                   <View style={styles.sectionHeaderRow}>
                     <View style={styles.sectionTitleGroup}>
-                      <MaterialCommunityIcons
-                        name="book-open-page-variant-outline"
-                        size={20}
-                        color={theme.colors.primary}
-                      />
+                      <MaterialSymbol name="menu_book" size={20} color={theme.colors.primary} />
                       <Text style={styles.sectionTitle}>Suas Criações Recentes</Text>
                     </View>
 
@@ -332,11 +323,7 @@ function BakerHomeScreen() {
                     </View>
                   ) : (
                     <View style={styles.emptyRecipesCard}>
-                      <MaterialCommunityIcons
-                        name="notebook-plus-outline"
-                        size={36}
-                        color={theme.colors.primary}
-                      />
+                      <MaterialSymbol name="post_add" size={36} color={theme.colors.primary} />
                       <Text style={styles.emptyRecipesTitle}>Seu caderno está vazio</Text>
                       <Text style={styles.emptyRecipesSubtitle}>
                         Comece registrando sua primeira receita autoral para calcular custos e
@@ -349,11 +336,7 @@ function BakerHomeScreen() {
                         accessibilityRole="button"
                         accessibilityLabel="Criar primeira receita"
                       >
-                        <MaterialCommunityIcons
-                          name="plus"
-                          size={18}
-                          color={theme.colors.onPrimary}
-                        />
+                        <MaterialSymbol name="add" size={18} color={theme.colors.onPrimary} />
                         <Text style={styles.createRecipeBtnText}>Criar Primeira Receita</Text>
                       </TouchableOpacity>
                     </View>
@@ -380,11 +363,7 @@ function BakerHomeScreen() {
                 <View style={styles.managementTipCard}>
                   <View style={styles.tipCardTop}>
                     <View style={styles.tipIconBox}>
-                      <MaterialCommunityIcons
-                        name="calculator-variant-outline"
-                        size={20}
-                        color={theme.colors.primary}
-                      />
+                      <MaterialSymbol name="calculate" size={20} color={theme.colors.primary} />
                     </View>
                     <Text style={styles.tipCardTitle}>Gestão de Custos</Text>
                   </View>
@@ -400,11 +379,7 @@ function BakerHomeScreen() {
                     accessibilityLabel="Acessar estoque de insumos"
                   >
                     <Text style={styles.tipActionText}>Conferir Estoque</Text>
-                    <MaterialCommunityIcons
-                      name="arrow-right"
-                      size={16}
-                      color={theme.colors.primary}
-                    />
+                    <MaterialSymbol name="arrow_forward" size={16} color={theme.colors.primary} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -440,11 +415,7 @@ function BakerHomeScreen() {
               <View style={styles.recipesSection}>
                 <View style={styles.sectionHeaderRow}>
                   <View style={styles.sectionTitleGroup}>
-                    <MaterialCommunityIcons
-                      name="book-open-page-variant-outline"
-                      size={20}
-                      color={theme.colors.primary}
-                    />
+                    <MaterialSymbol name="menu_book" size={20} color={theme.colors.primary} />
                     <Text style={styles.sectionTitle}>Suas Criações Recentes</Text>
                   </View>
 
@@ -480,11 +451,7 @@ function BakerHomeScreen() {
                   </View>
                 ) : (
                   <View style={styles.emptyRecipesCard}>
-                    <MaterialCommunityIcons
-                      name="notebook-plus-outline"
-                      size={36}
-                      color={theme.colors.primary}
-                    />
+                    <MaterialSymbol name="post_add" size={36} color={theme.colors.primary} />
                     <Text style={styles.emptyRecipesTitle}>Seu caderno está vazio</Text>
                     <Text style={styles.emptyRecipesSubtitle}>
                       Comece registrando sua primeira receita autoral para calcular custos e
@@ -497,11 +464,7 @@ function BakerHomeScreen() {
                       accessibilityRole="button"
                       accessibilityLabel="Criar primeira receita"
                     >
-                      <MaterialCommunityIcons
-                        name="plus"
-                        size={18}
-                        color={theme.colors.onPrimary}
-                      />
+                      <MaterialSymbol name="add" size={18} color={theme.colors.onPrimary} />
                       <Text style={styles.createRecipeBtnText}>Criar Primeira Receita</Text>
                     </TouchableOpacity>
                   </View>

@@ -14,9 +14,7 @@ import {
 
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
-import { OfflineBanner, RecipeSmallView, UserAvatar } from '@/src/components';
+import { MaterialSymbol, OfflineBanner, RecipeSmallView, UserAvatar } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { usePublicBakerProfile, usePublicShowcase } from '@/src/hooks/useBakerProfile';
@@ -133,11 +131,7 @@ export default function PublicProfileScreen() {
         {isOwnProfile && (
           <View style={styles.previewBanner}>
             <View style={styles.previewIconWrapper}>
-              <MaterialCommunityIcons
-                name="eye-check-outline"
-                size={22}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="visibility" size={22} color={theme.colors.primary} />
             </View>
             <View style={styles.previewTextContainer}>
               <Text style={styles.previewTitle}>Visualização Pública Ativa</Text>
@@ -153,11 +147,7 @@ export default function PublicProfileScreen() {
               accessibilityLabel="Editar Perfil"
               activeOpacity={0.8}
             >
-              <MaterialCommunityIcons
-                name="pencil-outline"
-                size={16}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="edit" size={16} color={theme.colors.primary} />
               <Text style={styles.previewEditText}>Editar</Text>
             </TouchableOpacity>
           </View>
@@ -170,11 +160,7 @@ export default function PublicProfileScreen() {
         ) : hasError || !publicProfile ? (
           <View style={styles.errorContainer}>
             <View style={styles.errorIconWrapper}>
-              <MaterialCommunityIcons
-                name="account-off-outline"
-                size={48}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="person_off" size={48} color={theme.colors.primary} />
             </View>
             <Text style={styles.errorTitle}>Perfil Indisponível</Text>
             <Text style={styles.errorSubtitle}>
@@ -202,7 +188,7 @@ export default function PublicProfileScreen() {
                   name={publicProfile.publicName || publicProfile.name}
                   size={110}
                   fallbackType="icon"
-                  fallbackIcon="account"
+                  fallbackIcon="person"
                   fallbackIconColor={theme.colors.outline}
                   fallbackBackgroundColor={theme.colors.surfaceContainerLow}
                   borderColor={theme.colors.primary}
@@ -210,8 +196,8 @@ export default function PublicProfileScreen() {
                 />
 
                 <View style={styles.publicBadge}>
-                  <MaterialCommunityIcons
-                    name="storefront-outline"
+                  <MaterialSymbol
+                    name="storefront"
                     size={14}
                     color={theme.colors.chips.success.text}
                   />
@@ -226,11 +212,7 @@ export default function PublicProfileScreen() {
               {publicProfile.publicName?.trim() &&
               publicProfile.publicName.trim() !== publicProfile.name ? (
                 <View style={styles.accountAttributionRow}>
-                  <MaterialCommunityIcons
-                    name="account-outline"
-                    size={14}
-                    color={theme.colors.onSurfaceVariant}
-                  />
+                  <MaterialSymbol name="person" size={14} color={theme.colors.onSurfaceVariant} />
                   <Text style={styles.accountAttributionText}>
                     Conta pública: {publicProfile.name}
                   </Text>
@@ -239,11 +221,7 @@ export default function PublicProfileScreen() {
 
               {locationText ? (
                 <View style={styles.locationContainer}>
-                  <MaterialCommunityIcons
-                    name="map-marker-outline"
-                    size={16}
-                    color={theme.colors.primary}
-                  />
+                  <MaterialSymbol name="place" size={16} color={theme.colors.primary} />
                   <Text style={styles.locationText}>{locationText}</Text>
                 </View>
               ) : null}
@@ -259,11 +237,7 @@ export default function PublicProfileScreen() {
                 <View style={styles.tagsContainer}>
                   {publicProfile.tags.map((tag) => (
                     <View key={tag.id} style={styles.tagChip}>
-                      <MaterialCommunityIcons
-                        name="tag-outline"
-                        size={12}
-                        color={theme.colors.secondary}
-                      />
+                      <MaterialSymbol name="tag" size={12} color={theme.colors.secondary} />
                       <Text style={styles.tagChipText}>{tag.name}</Text>
                     </View>
                   ))}
@@ -280,11 +254,7 @@ export default function PublicProfileScreen() {
                     accessibilityRole="button"
                     accessibilityLabel="Entrar em contato pelo WhatsApp"
                   >
-                    <MaterialCommunityIcons
-                      name="whatsapp"
-                      size={20}
-                      color={theme.colors.onPrimary}
-                    />
+                    <MaterialSymbol name="chat" size={20} color={theme.colors.onPrimary} />
                     <Text style={styles.actionBtnPrimaryText}>WhatsApp</Text>
                   </TouchableOpacity>
                 ) : null}
@@ -297,11 +267,7 @@ export default function PublicProfileScreen() {
                     accessibilityRole="button"
                     accessibilityLabel="Visitar perfil no Instagram"
                   >
-                    <MaterialCommunityIcons
-                      name="instagram"
-                      size={20}
-                      color={theme.colors.onSurface}
-                    />
+                    <MaterialSymbol name="photo_camera" size={20} color={theme.colors.onSurface} />
                     <Text style={styles.actionBtnSecondaryText}>
                       {publicProfile.instagram.startsWith('@')
                         ? publicProfile.instagram
@@ -316,11 +282,7 @@ export default function PublicProfileScreen() {
             <View style={styles.recipesSection}>
               <View style={styles.sectionHeader}>
                 <View style={styles.sectionTitleGroup}>
-                  <MaterialCommunityIcons
-                    name="storefront-outline"
-                    size={20}
-                    color={theme.colors.primary}
-                  />
+                  <MaterialSymbol name="storefront" size={20} color={theme.colors.primary} />
                   <Text style={styles.sectionTitle}>Vitrine de Destaques</Text>
                 </View>
 
@@ -337,11 +299,7 @@ export default function PublicProfileScreen() {
                       accessibilityRole="button"
                       accessibilityLabel="Gerenciar vitrine de receitas"
                     >
-                      <MaterialCommunityIcons
-                        name="pencil-outline"
-                        size={14}
-                        color={theme.colors.primary}
-                      />
+                      <MaterialSymbol name="edit" size={14} color={theme.colors.primary} />
                       <Text style={styles.manageShowcaseBtnText}>Gerenciar</Text>
                     </TouchableOpacity>
                   ) : null}
@@ -354,8 +312,8 @@ export default function PublicProfileScreen() {
                 </View>
               ) : showcase.length === 0 ? (
                 <View style={styles.emptyRecipesCard}>
-                  <MaterialCommunityIcons
-                    name="storefront-outline"
+                  <MaterialSymbol
+                    name="storefront"
                     size={36}
                     color={theme.colors.onSurfaceVariant}
                   />
@@ -373,11 +331,7 @@ export default function PublicProfileScreen() {
                       accessibilityRole="button"
                       accessibilityLabel="Configurar vitrine de produtos"
                     >
-                      <MaterialCommunityIcons
-                        name="plus"
-                        size={16}
-                        color={theme.colors.onPrimary}
-                      />
+                      <MaterialSymbol name="add" size={16} color={theme.colors.onPrimary} />
                       <Text style={styles.addShowcaseEmptyBtnText}>Configurar Vitrine</Text>
                     </TouchableOpacity>
                   ) : null}

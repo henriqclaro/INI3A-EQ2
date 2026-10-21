@@ -9,8 +9,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useAllDownloadedRecipes } from '@/src/hooks/useDownloadedRecipes';
@@ -257,14 +256,14 @@ export function StorageSettingsTopic() {
       <View style={styles.actionRow}>
         <View style={styles.infoWrapper}>
           <View style={styles.iconCircle}>
-            <MaterialCommunityIcons name="cached" size={22} color={theme.colors.primary} />
+            <MaterialSymbol name="refresh" size={22} color={theme.colors.primary} />
           </View>
           <View style={styles.textColumn}>
             <View style={styles.titleRow}>
               <Text style={styles.title}>Limpar Cache da Aplicação</Text>
               {hasClearedCache && (
                 <View style={styles.successBadge}>
-                  <MaterialCommunityIcons name="check" size={12} color={theme.colors.onTertiary} />
+                  <MaterialSymbol name="check" size={12} color={theme.colors.onTertiary} />
                   <Text style={styles.successBadgeText}>Limpo</Text>
                 </View>
               )}
@@ -287,7 +286,7 @@ export function StorageSettingsTopic() {
           {isClearingCache ? (
             <ActivityIndicator size="small" color={theme.colors.primary} />
           ) : (
-            <MaterialCommunityIcons name="broom" size={18} color={theme.colors.primary} />
+            <MaterialSymbol name="cleaning_services" size={18} color={theme.colors.primary} />
           )}
           <Text style={styles.clearButtonText}>{isClearingCache ? 'Limpando...' : 'Limpar'}</Text>
         </TouchableOpacity>
@@ -300,18 +299,14 @@ export function StorageSettingsTopic() {
       <View style={styles.actionRow}>
         <View style={styles.infoWrapper}>
           <View style={styles.iconCircle}>
-            <MaterialCommunityIcons
-              name="file-document-remove-outline"
-              size={22}
-              color={theme.colors.primary}
-            />
+            <MaterialSymbol name="delete" size={22} color={theme.colors.primary} />
           </View>
           <View style={styles.textColumn}>
             <View style={styles.titleRow}>
               <Text style={styles.title}>Remover Rascunhos Salvos</Text>
               {hasClearedDrafts && (
                 <View style={styles.successBadge}>
-                  <MaterialCommunityIcons name="check" size={12} color={theme.colors.onTertiary} />
+                  <MaterialSymbol name="check" size={12} color={theme.colors.onTertiary} />
                   <Text style={styles.successBadgeText}>Removidos</Text>
                 </View>
               )}
@@ -334,11 +329,7 @@ export function StorageSettingsTopic() {
           {isClearingDrafts ? (
             <ActivityIndicator size="small" color={theme.colors.primary} />
           ) : (
-            <MaterialCommunityIcons
-              name="delete-sweep-outline"
-              size={18}
-              color={theme.colors.primary}
-            />
+            <MaterialSymbol name="delete_sweep" size={18} color={theme.colors.primary} />
           )}
           <Text style={styles.clearButtonText}>
             {isClearingDrafts ? 'Removendo...' : 'Remover'}
@@ -353,18 +344,14 @@ export function StorageSettingsTopic() {
       <View style={styles.actionRow}>
         <View style={styles.infoWrapper}>
           <View style={styles.iconCircle}>
-            <MaterialCommunityIcons
-              name="cloud-remove-outline"
-              size={22}
-              color={theme.colors.primary}
-            />
+            <MaterialSymbol name="cloud_sync" size={22} color={theme.colors.primary} />
           </View>
           <View style={styles.textColumn}>
             <View style={styles.titleRow}>
               <Text style={styles.title}>Remover Receitas Baixadas</Text>
               {hasClearedDownloads && (
                 <View style={styles.successBadge}>
-                  <MaterialCommunityIcons name="check" size={12} color={theme.colors.onTertiary} />
+                  <MaterialSymbol name="check" size={12} color={theme.colors.onTertiary} />
                   <Text style={styles.successBadgeText}>Removidas</Text>
                 </View>
               )}
@@ -388,11 +375,7 @@ export function StorageSettingsTopic() {
           {isClearingDownloads ? (
             <ActivityIndicator size="small" color={theme.colors.primary} />
           ) : (
-            <MaterialCommunityIcons
-              name="delete-sweep-outline"
-              size={18}
-              color={theme.colors.primary}
-            />
+            <MaterialSymbol name="delete_sweep" size={18} color={theme.colors.primary} />
           )}
           <Text style={styles.clearButtonText}>
             {isClearingDownloads ? 'Removendo...' : 'Remover'}
@@ -407,18 +390,14 @@ export function StorageSettingsTopic() {
       <View style={styles.actionRow}>
         <View style={styles.infoWrapper}>
           <View style={styles.iconCircle}>
-            <MaterialCommunityIcons
-              name="database-remove-outline"
-              size={22}
-              color={theme.colors.primary}
-            />
+            <MaterialSymbol name="database" size={22} color={theme.colors.primary} />
           </View>
           <View style={styles.textColumn}>
             <View style={styles.titleRow}>
               <Text style={styles.title}>Limpar Dados Offline de Operações</Text>
               {hasClearedOperations && (
                 <View style={styles.successBadge}>
-                  <MaterialCommunityIcons name="check" size={12} color={theme.colors.onTertiary} />
+                  <MaterialSymbol name="check" size={12} color={theme.colors.onTertiary} />
                   <Text style={styles.successBadgeText}>Limpo</Text>
                 </View>
               )}
@@ -442,11 +421,7 @@ export function StorageSettingsTopic() {
           {isClearingOperations ? (
             <ActivityIndicator size="small" color={theme.colors.primary} />
           ) : (
-            <MaterialCommunityIcons
-              name="delete-sweep-outline"
-              size={18}
-              color={theme.colors.primary}
-            />
+            <MaterialSymbol name="delete_sweep" size={18} color={theme.colors.primary} />
           )}
           <Text style={styles.clearButtonText}>
             {isClearingOperations ? 'Limpando...' : 'Limpar'}
@@ -459,8 +434,8 @@ export function StorageSettingsTopic() {
 
       {/* Info Callout */}
       <View style={styles.calloutContainer}>
-        <MaterialCommunityIcons
-          name="information-outline"
+        <MaterialSymbol
+          name="info"
           size={18}
           color={theme.colors.onSurfaceVariant}
           style={styles.calloutIcon}

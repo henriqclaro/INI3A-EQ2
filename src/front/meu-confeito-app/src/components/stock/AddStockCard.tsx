@@ -10,8 +10,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
@@ -43,11 +42,7 @@ export const AddStockCard = memo(function AddStockCard({
     >
       <View style={styles.contentRow}>
         <View style={styles.iconWrapper}>
-          <MaterialCommunityIcons
-            name="package-variant-plus"
-            size={isMobile ? 26 : 28}
-            color={theme.colors.primary}
-          />
+          <MaterialSymbol name="add_box" size={isMobile ? 26 : 28} color={theme.colors.primary} />
         </View>
 
         <View style={styles.textContainer}>
@@ -60,7 +55,7 @@ export const AddStockCard = memo(function AddStockCard({
       </View>
 
       <View style={styles.button}>
-        <MaterialCommunityIcons name="plus" size={18} color={theme.colors.onPrimary} />
+        <MaterialSymbol name="add" size={18} color={theme.colors.onPrimary} />
         <Text style={styles.buttonText}>Novo Insumo</Text>
       </View>
     </TouchableOpacity>

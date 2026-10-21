@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
@@ -58,16 +57,12 @@ export function BakerQuickActionsGrid({
         >
           <View style={styles.cardTopRow}>
             <View style={[styles.iconCircle, styles.stockIconBg]}>
-              <MaterialCommunityIcons
-                name="package-variant-closed"
-                size={24}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="inventory_2" size={24} color={theme.colors.primary} />
             </View>
 
             {hasStockAlert ? (
               <View style={styles.alertBadge}>
-                <MaterialCommunityIcons name="alert-circle" size={14} color={theme.colors.error} />
+                <MaterialSymbol name="error" size={14} color={theme.colors.error} />
                 <Text style={styles.alertBadgeText}>Alerta</Text>
               </View>
             ) : (
@@ -100,11 +95,7 @@ export function BakerQuickActionsGrid({
         >
           <View style={styles.cardTopRow}>
             <View style={[styles.iconCircle, styles.savedIconBg]}>
-              <MaterialCommunityIcons
-                name="bookmark-multiple-outline"
-                size={24}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="bookmarks" size={24} color={theme.colors.primary} />
             </View>
 
             <View style={styles.countBadge}>
@@ -135,11 +126,7 @@ export function BakerQuickActionsGrid({
         >
           <View style={styles.cardTopRow}>
             <View style={[styles.iconCircle, styles.publicIconBg]}>
-              <MaterialCommunityIcons
-                name="book-search-outline"
-                size={24}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="find_in_page" size={24} color={theme.colors.primary} />
             </View>
 
             <View style={styles.exploreBadge}>
@@ -167,11 +154,7 @@ export function BakerQuickActionsGrid({
         >
           <View style={styles.cardTopRow}>
             <View style={[styles.iconCircle, styles.productionIconBg]}>
-              <MaterialCommunityIcons
-                name="pot-steam-outline"
-                size={24}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="skillet" size={24} color={theme.colors.primary} />
             </View>
 
             <View style={styles.countBadge}>

@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { SettingsTopicId, SettingsTopicItem } from '@/src/types/settings';
@@ -47,7 +46,7 @@ export function SettingsTopicList({ topics, onSelectTopic }: SettingsTopicListPr
                   topic.isDestructive && styles.destructiveIconContainer,
                 ]}
               >
-                <MaterialCommunityIcons
+                <MaterialSymbol
                   name={topic.icon}
                   size={22}
                   color={topic.isDestructive ? theme.colors.error : theme.colors.primary}
@@ -69,8 +68,8 @@ export function SettingsTopicList({ topics, onSelectTopic }: SettingsTopicListPr
                 </Text>
               </View>
 
-              <MaterialCommunityIcons
-                name="chevron-right"
+              <MaterialSymbol
+                name="chevron_right"
                 size={22}
                 color={topic.isDestructive ? theme.colors.error : theme.colors.placeholder}
                 style={styles.chevronIcon}

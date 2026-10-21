@@ -8,16 +8,15 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
-import { ThemeSwitch } from '@/src/components/common';
+import { MaterialSymbol, ThemeSwitch } from '@/src/components/common';
 import { PriceDecimalPlaces, useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
+import { MaterialSymbolName } from '@/src/types/materialSymbols';
 
 interface PreferenceItemConfig {
   id: string;
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon: MaterialSymbolName;
   title: string;
   subtitle: string;
   unit: string;
@@ -102,7 +101,7 @@ export function OperationalPreferencesTopic({
     () => [
       {
         id: 'overhead',
-        icon: 'calculator-variant-outline',
+        icon: 'calculate',
         title: 'Custos Fixos (Overhead)',
         subtitle: 'Percentual para cobrir despesas indiretas (água, luz, gás, aluguel)',
         unit: '%',
@@ -121,7 +120,7 @@ export function OperationalPreferencesTopic({
       },
       {
         id: 'profitMargin',
-        icon: 'trending-up',
+        icon: 'trending_up',
         title: 'Margem de Lucro',
         subtitle: 'Percentual de lucro pretendido sobre os custos totais da receita',
         unit: '%',
@@ -140,7 +139,7 @@ export function OperationalPreferencesTopic({
       },
       {
         id: 'hourlyLabor',
-        icon: 'account-clock-outline',
+        icon: 'manage_accounts',
         title: 'Mão de Obra por Hora',
         subtitle: 'Valor da hora de trabalho para precificar o tempo de preparo',
         unit: 'R$',
@@ -159,7 +158,7 @@ export function OperationalPreferencesTopic({
       },
       {
         id: 'packagingCost',
-        icon: 'package-variant-closed',
+        icon: 'inventory_2',
         title: 'Custo de Embalagem',
         subtitle: 'Valor estimado gasto com caixas, fitas, sacolas e forminhas por receita',
         unit: 'R$',
@@ -255,11 +254,7 @@ export function OperationalPreferencesTopic({
               <View style={styles.settingRow}>
                 <View style={styles.settingInfo}>
                   <View style={styles.iconCircle}>
-                    <MaterialCommunityIcons
-                      name={pref.icon}
-                      size={22}
-                      color={theme.colors.primary}
-                    />
+                    <MaterialSymbol name={pref.icon} size={22} color={theme.colors.primary} />
                   </View>
                   <View style={styles.textColumn}>
                     <View style={styles.titleWithBadge}>
@@ -314,8 +309,8 @@ export function OperationalPreferencesTopic({
 
       {/* Info Callout */}
       <View style={styles.infoCallout}>
-        <MaterialCommunityIcons
-          name="information-outline"
+        <MaterialSymbol
+          name="info"
           size={18}
           color={theme.colors.primary}
           style={styles.infoIcon}
@@ -339,11 +334,7 @@ export function OperationalPreferencesTopic({
         <View style={styles.settingRow}>
           <View style={styles.settingInfo}>
             <View style={styles.iconCircle}>
-              <MaterialCommunityIcons
-                name="decimal-increase"
-                size={22}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="decimal_increase" size={22} color={theme.colors.primary} />
             </View>
             <View style={styles.textColumn}>
               <View style={styles.titleWithBadge}>
@@ -382,8 +373,8 @@ export function OperationalPreferencesTopic({
               >
                 <View style={styles.precisionTileHeader}>
                   <View style={styles.precisionTileTitleRow}>
-                    <MaterialCommunityIcons
-                      name={isSelected ? 'radiobox-marked' : 'radiobox-blank'}
+                    <MaterialSymbol
+                      name={isSelected ? 'radio_button_checked' : 'radio_button_unchecked'}
                       size={20}
                       color={isSelected ? theme.colors.primary : theme.colors.placeholder}
                     />
@@ -433,8 +424,8 @@ export function OperationalPreferencesTopic({
 
         {/* Visual-only reassurance callout */}
         <View style={styles.precisionCallout}>
-          <MaterialCommunityIcons
-            name="shield-check-outline"
+          <MaterialSymbol
+            name="verified_user"
             size={18}
             color={theme.colors.primary}
             style={styles.infoIcon}

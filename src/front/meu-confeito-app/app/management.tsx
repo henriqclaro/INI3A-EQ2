@@ -12,11 +12,10 @@ import {
 
 import { Stack, router } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
 import {
   CustomButton,
   Input,
+  MaterialSymbol,
   OfflineBanner,
   RecipeCompactCard,
   UserAvatar,
@@ -72,11 +71,7 @@ export default function ManagementScreen() {
       <View style={styles.unauthorizedContainer}>
         <Stack.Screen options={{ title: 'Acesso Restrito' }} />
         <View style={styles.unauthorizedCard}>
-          <MaterialCommunityIcons
-            name="shield-alert-outline"
-            size={48}
-            color={theme.colors.error}
-          />
+          <MaterialSymbol name="security" size={48} color={theme.colors.error} />
           <Text style={styles.unauthorizedTitle}>Acesso Restrito</Text>
           <Text style={styles.unauthorizedSubtitle}>
             Esta área é reservada exclusivamente para moderadores e administradores da plataforma.
@@ -356,8 +351,8 @@ export default function ManagementScreen() {
             <View style={styles.headerTitleRow}>
               <Text style={styles.headerTitle}>Painel de Gestão</Text>
               <View style={styles.roleBadge}>
-                <MaterialCommunityIcons
-                  name={isAdminUser ? 'shield-crown' : 'shield-account'}
+                <MaterialSymbol
+                  name={isAdminUser ? 'security' : 'admin_panel_settings'}
                   size={14}
                   color={isAdminUser ? theme.colors.tertiary : theme.colors.primary}
                 />
@@ -377,11 +372,7 @@ export default function ManagementScreen() {
           <View style={styles.card}>
             <View style={styles.cardHeader}>
               <View style={styles.cardIconCircle}>
-                <MaterialCommunityIcons
-                  name="account-search-outline"
-                  size={22}
-                  color={theme.colors.primary}
-                />
+                <MaterialSymbol name="person_search" size={22} color={theme.colors.primary} />
               </View>
               <View style={styles.cardHeaderTextCol}>
                 <View style={styles.cardTitleRow}>
@@ -411,8 +402,8 @@ export default function ManagementScreen() {
                   isClearable={true}
                   onClear={handleClear}
                   leftIcon={
-                    <MaterialCommunityIcons
-                      name="email-search-outline"
+                    <MaterialSymbol
+                      name="mark_email_read"
                       size={20}
                       color={theme.colors.onSurfaceVariant}
                     />
@@ -431,11 +422,7 @@ export default function ManagementScreen() {
                     <ActivityIndicator size="small" color={theme.colors.primary} />
                   ) : (
                     <>
-                      <MaterialCommunityIcons
-                        name="magnify"
-                        size={20}
-                        color={theme.colors.primary}
-                      />
+                      <MaterialSymbol name="search" size={20} color={theme.colors.primary} />
                       {isDesktop && <Text style={styles.searchButtonText}>Buscar</Text>}
                     </>
                   )}
@@ -444,11 +431,7 @@ export default function ManagementScreen() {
 
               {searchError ? (
                 <View style={styles.errorBanner}>
-                  <MaterialCommunityIcons
-                    name="alert-circle-outline"
-                    size={16}
-                    color={theme.colors.error}
-                  />
+                  <MaterialSymbol name="error" size={16} color={theme.colors.error} />
                   <Text style={styles.errorBannerText}>{searchError}</Text>
                 </View>
               ) : null}
@@ -461,8 +444,8 @@ export default function ManagementScreen() {
                 </View>
               ) : !hasSearchedUsers ? (
                 <View style={styles.emptyContainer}>
-                  <MaterialCommunityIcons
-                    name="account-search-outline"
+                  <MaterialSymbol
+                    name="person_search"
                     size={36}
                     color={theme.colors.onSurfaceVariant}
                   />
@@ -474,8 +457,8 @@ export default function ManagementScreen() {
                 </View>
               ) : users.length === 0 ? (
                 <View style={styles.emptyContainer}>
-                  <MaterialCommunityIcons
-                    name="account-question-outline"
+                  <MaterialSymbol
+                    name="contact_support"
                     size={36}
                     color={theme.colors.onSurfaceVariant}
                   />
@@ -553,8 +536,8 @@ export default function ManagementScreen() {
 
                               {hasPublicRecipes ? (
                                 <View style={styles.recipesCountBadge}>
-                                  <MaterialCommunityIcons
-                                    name="book-open-outline"
+                                  <MaterialSymbol
+                                    name="menu_book"
                                     size={12}
                                     color={theme.colors.onSurfaceVariant}
                                   />
@@ -567,8 +550,8 @@ export default function ManagementScreen() {
                             </View>
                           </View>
 
-                          <MaterialCommunityIcons
-                            name={isExpanded ? 'chevron-up' : 'chevron-down'}
+                          <MaterialSymbol
+                            name={isExpanded ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
                             size={24}
                             color={theme.colors.onSurfaceVariant}
                           />
@@ -620,8 +603,8 @@ export default function ManagementScreen() {
                                     accessibilityRole="button"
                                     accessibilityLabel={`Ver perfil público de ${targetUser.name}`}
                                   >
-                                    <MaterialCommunityIcons
-                                      name="storefront-outline"
+                                    <MaterialSymbol
+                                      name="storefront"
                                       size={18}
                                       color={theme.colors.primary}
                                     />
@@ -648,8 +631,8 @@ export default function ManagementScreen() {
                                     accessibilityRole="button"
                                     accessibilityLabel={`Ver receitas públicas de ${targetUser.name}`}
                                   >
-                                    <MaterialCommunityIcons
-                                      name="book-open-page-variant"
+                                    <MaterialSymbol
+                                      name="menu_book"
                                       size={18}
                                       color={theme.colors.primary}
                                     />
@@ -675,8 +658,8 @@ export default function ManagementScreen() {
                                         color={theme.colors.onError}
                                       />
                                     ) : (
-                                      <MaterialCommunityIcons
-                                        name="account-cancel-outline"
+                                      <MaterialSymbol
+                                        name="person_cancel"
                                         size={18}
                                         color={theme.colors.onError}
                                       />
@@ -689,8 +672,8 @@ export default function ManagementScreen() {
                               </View>
                             ) : (
                               <View style={styles.noActionBox}>
-                                <MaterialCommunityIcons
-                                  name="information-outline"
+                                <MaterialSymbol
+                                  name="info"
                                   size={16}
                                   color={theme.colors.onSurfaceVariant}
                                 />
@@ -713,11 +696,7 @@ export default function ManagementScreen() {
           <View style={styles.card}>
             <View style={styles.cardHeader}>
               <View style={styles.cardIconCircle}>
-                <MaterialCommunityIcons
-                  name="shield-alert-outline"
-                  size={22}
-                  color={theme.colors.primary}
-                />
+                <MaterialSymbol name="security" size={22} color={theme.colors.primary} />
               </View>
               <View style={styles.cardHeaderTextCol}>
                 <View style={styles.cardTitleRow}>
@@ -746,8 +725,8 @@ export default function ManagementScreen() {
                   isClearable={true}
                   onClear={handleClearRecipeSearch}
                   leftIcon={
-                    <MaterialCommunityIcons
-                      name="book-search-outline"
+                    <MaterialSymbol
+                      name="find_in_page"
                       size={20}
                       color={theme.colors.onSurfaceVariant}
                     />
@@ -766,11 +745,7 @@ export default function ManagementScreen() {
                     <ActivityIndicator size="small" color={theme.colors.primary} />
                   ) : (
                     <>
-                      <MaterialCommunityIcons
-                        name="magnify"
-                        size={20}
-                        color={theme.colors.primary}
-                      />
+                      <MaterialSymbol name="search" size={20} color={theme.colors.primary} />
                       {isDesktop && <Text style={styles.searchButtonText}>Buscar</Text>}
                     </>
                   )}
@@ -779,11 +754,7 @@ export default function ManagementScreen() {
 
               {recipeSearchError ? (
                 <View style={styles.errorBanner}>
-                  <MaterialCommunityIcons
-                    name="alert-circle-outline"
-                    size={16}
-                    color={theme.colors.error}
-                  />
+                  <MaterialSymbol name="error" size={16} color={theme.colors.error} />
                   <Text style={styles.errorBannerText}>{recipeSearchError}</Text>
                 </View>
               ) : null}
@@ -796,8 +767,8 @@ export default function ManagementScreen() {
                 </View>
               ) : !hasSearchedRecipes ? (
                 <View style={styles.emptyContainer}>
-                  <MaterialCommunityIcons
-                    name="book-search-outline"
+                  <MaterialSymbol
+                    name="find_in_page"
                     size={36}
                     color={theme.colors.onSurfaceVariant}
                   />
@@ -809,8 +780,8 @@ export default function ManagementScreen() {
                 </View>
               ) : recipeResults.length === 0 ? (
                 <View style={styles.emptyContainer}>
-                  <MaterialCommunityIcons
-                    name="book-remove-outline"
+                  <MaterialSymbol
+                    name="menu_book"
                     size={36}
                     color={theme.colors.onSurfaceVariant}
                   />
@@ -886,8 +857,8 @@ export default function ManagementScreen() {
                             accessibilityRole="button"
                             accessibilityLabel={`Acessar receita ${targetRecipe.title}`}
                           >
-                            <MaterialCommunityIcons
-                              name="book-open-page-variant"
+                            <MaterialSymbol
+                              name="menu_book"
                               size={18}
                               color={theme.colors.primary}
                             />
@@ -909,8 +880,8 @@ export default function ManagementScreen() {
                               {isSuspendingCurrent ? (
                                 <ActivityIndicator size="small" color={theme.colors.onTertiary} />
                               ) : (
-                                <MaterialCommunityIcons
-                                  name="check-circle-outline"
+                                <MaterialSymbol
+                                  name="check_circle"
                                   size={18}
                                   color={theme.colors.onTertiary}
                                 />
@@ -931,8 +902,8 @@ export default function ManagementScreen() {
                               {isSuspendingCurrent ? (
                                 <ActivityIndicator size="small" color={theme.colors.onError} />
                               ) : (
-                                <MaterialCommunityIcons
-                                  name="alert-octagon-outline"
+                                <MaterialSymbol
+                                  name="report"
                                   size={18}
                                   color={theme.colors.onError}
                                 />

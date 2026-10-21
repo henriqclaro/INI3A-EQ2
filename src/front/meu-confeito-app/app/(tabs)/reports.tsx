@@ -11,9 +11,7 @@ import {
 
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
-import { OfflineBanner, OnboardingCard } from '@/src/components';
+import { MaterialSymbol, OfflineBanner, OnboardingCard } from '@/src/components';
 import {
   ProductionShortcutCard,
   ProfitSummarySection,
@@ -182,8 +180,8 @@ export default function ReportsScreen() {
           {/* Header Banner */}
           <View style={styles.headerSection}>
             <View style={styles.iconCircle}>
-              <MaterialCommunityIcons
-                name="chart-timeline-variant"
+              <MaterialSymbol
+                name="insights"
                 size={isDesktop ? 36 : 30}
                 color={theme.colors.primary}
               />
@@ -196,7 +194,7 @@ export default function ReportsScreen() {
           {/* Onboarding Cards: Resumo Transformed into Card + Previsão de Compras Card */}
           <OnboardingCard
             id="reports_profit_summary"
-            icon="chart-timeline-variant"
+            icon="insights"
             title="Demonstrativo de Rentabilidade"
             description="Monitore o lucro líquido real, analise custos de produção e acompanhe a margem de contribuição de cada receita."
             actionText="Visualizar Rentabilidade"
@@ -207,7 +205,7 @@ export default function ReportsScreen() {
 
           <OnboardingCard
             id="reports_purchase_projection"
-            icon="cart-outline"
+            icon="shopping_cart"
             title="Previsão Inteligente de Compras"
             description="Simule e planeje compras de insumos para encomendas futuras sem sobras ou falta de matéria-prima."
             actionText="Abrir Previsão de Compras"
@@ -240,8 +238,8 @@ export default function ReportsScreen() {
               accessibilityRole="button"
               accessibilityLabel="Ver resumo de rentabilidade e custos"
             >
-              <MaterialCommunityIcons
-                name="finance"
+              <MaterialSymbol
+                name="trending_up"
                 size={18}
                 color={
                   activeTab === 'profit' ? theme.colors.onPrimary : theme.colors.onSurfaceVariant
@@ -261,8 +259,8 @@ export default function ReportsScreen() {
               accessibilityRole="button"
               accessibilityLabel="Ver projeção e demanda de compras"
             >
-              <MaterialCommunityIcons
-                name="cart-outline"
+              <MaterialSymbol
+                name="shopping_cart"
                 size={18}
                 color={
                   activeTab === 'projection'
@@ -312,8 +310,8 @@ export default function ReportsScreen() {
 
           {/* Operational Advisory Banner (Commented out per request) */}
           {/* <View style={styles.advisoryBanner}>
-            <MaterialCommunityIcons
-              name="lightbulb-outline"
+            <MaterialSymbol
+              name="lightbulb"
               size={24}
               color={theme.colors.primary}
               style={styles.advisoryIcon}

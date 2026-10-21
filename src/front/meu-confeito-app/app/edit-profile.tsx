@@ -12,7 +12,6 @@ import {
 import * as Location from 'expo-location';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import {
   KeyboardAwareScrollView,
   KeyboardAwareScrollViewRef,
@@ -24,6 +23,7 @@ import {
   BakerTagSelector,
   CustomButton,
   Input,
+  MaterialSymbol,
   OfflineBanner,
   ProfileLocationMenu,
   ShowcaseManager,
@@ -967,7 +967,7 @@ export default function EditProfileScreen() {
                         name={name}
                         size={110}
                         fallbackType="icon"
-                        fallbackIcon="account"
+                        fallbackIcon="person"
                         fallbackIconColor={theme.colors.onSurfaceVariant}
                         fallbackBackgroundColor={theme.colors.surfaceContainerLow}
                         borderColor={theme.colors.primary}
@@ -979,8 +979,8 @@ export default function EditProfileScreen() {
                         {isPickingAvatar ? (
                           <ActivityIndicator size={16} color={theme.colors.onPrimary} />
                         ) : (
-                          <MaterialCommunityIcons
-                            name="camera"
+                          <MaterialSymbol
+                            name="photo_camera"
                             size={16}
                             color={theme.colors.onPrimary}
                           />
@@ -1022,8 +1022,8 @@ export default function EditProfileScreen() {
                         </View>
                       </View>
                       {isNameSuccess && (
-                        <MaterialCommunityIcons
-                          name="check-circle-outline"
+                        <MaterialSymbol
+                          name="check_circle"
                           size={16}
                           color={theme.colors.success}
                         />
@@ -1047,8 +1047,8 @@ export default function EditProfileScreen() {
                     <View style={styles.helperRow}>
                       {nameError ? (
                         <>
-                          <MaterialCommunityIcons
-                            name="alert-circle-outline"
+                          <MaterialSymbol
+                            name="error"
                             size={14}
                             color={theme.colors.error}
                             style={styles.helperIcon}
@@ -1067,8 +1067,8 @@ export default function EditProfileScreen() {
                       <View style={styles.labelGroup}>
                         <View style={styles.labelWithIcon}>
                           <Text style={styles.label}>E-mail</Text>
-                          <MaterialCommunityIcons
-                            name="lock-outline"
+                          <MaterialSymbol
+                            name="lock"
                             size={14}
                             color={theme.colors.onSurfaceVariant}
                           />
@@ -1078,8 +1078,8 @@ export default function EditProfileScreen() {
                         </View>
                       </View>
                       {isEmailSuccess && (
-                        <MaterialCommunityIcons
-                          name="check-circle-outline"
+                        <MaterialSymbol
+                          name="check_circle"
                           size={16}
                           color={theme.colors.success}
                         />
@@ -1104,8 +1104,8 @@ export default function EditProfileScreen() {
                     <View style={styles.helperRow}>
                       {emailError ? (
                         <>
-                          <MaterialCommunityIcons
-                            name="alert-circle-outline"
+                          <MaterialSymbol
+                            name="error"
                             size={14}
                             color={theme.colors.error}
                             style={styles.helperIcon}
@@ -1126,8 +1126,8 @@ export default function EditProfileScreen() {
                       <View style={styles.labelGroup}>
                         <View style={styles.labelWithIcon}>
                           <Text style={styles.label}>Telefone Pessoal</Text>
-                          <MaterialCommunityIcons
-                            name="lock-outline"
+                          <MaterialSymbol
+                            name="lock"
                             size={14}
                             color={theme.colors.onSurfaceVariant}
                           />
@@ -1143,8 +1143,8 @@ export default function EditProfileScreen() {
                         </View>
                       </View>
                       {isPhoneSuccess && (
-                        <MaterialCommunityIcons
-                          name="check-circle-outline"
+                        <MaterialSymbol
+                          name="check_circle"
                           size={16}
                           color={theme.colors.success}
                         />
@@ -1167,8 +1167,8 @@ export default function EditProfileScreen() {
                     <View style={styles.helperRow}>
                       {phoneError ? (
                         <>
-                          <MaterialCommunityIcons
-                            name="alert-circle-outline"
+                          <MaterialSymbol
+                            name="error"
                             size={14}
                             color={theme.colors.error}
                             style={styles.helperIcon}
@@ -1230,8 +1230,8 @@ export default function EditProfileScreen() {
                     {/* Status Alert Banner */}
                     {isPublicProfile ? (
                       <View style={styles.alertBannerPublic}>
-                        <MaterialCommunityIcons
-                          name="earth"
+                        <MaterialSymbol
+                          name="public"
                           size={20}
                           color={theme.colors.primary}
                           style={styles.alertBannerIcon}
@@ -1248,8 +1248,8 @@ export default function EditProfileScreen() {
                       </View>
                     ) : (
                       <View style={styles.alertBannerPrivate}>
-                        <MaterialCommunityIcons
-                          name="lock-outline"
+                        <MaterialSymbol
+                          name="lock"
                           size={20}
                           color={theme.colors.onSurfaceVariant}
                           style={styles.alertBannerIcon}
@@ -1279,14 +1279,10 @@ export default function EditProfileScreen() {
                         accessibilityRole="button"
                         accessibilityLabel="Visualizar perfil público"
                       >
-                        <MaterialCommunityIcons
-                          name="eye-outline"
-                          size={18}
-                          color={theme.colors.primary}
-                        />
+                        <MaterialSymbol name="visibility" size={18} color={theme.colors.primary} />
                         <Text style={styles.previewBtnText}>Visualizar como os clientes veem</Text>
-                        <MaterialCommunityIcons
-                          name="chevron-right"
+                        <MaterialSymbol
+                          name="chevron_right"
                           size={18}
                           color={theme.colors.primary}
                         />
@@ -1316,8 +1312,8 @@ export default function EditProfileScreen() {
                             style={styles.inputText}
                             placeholderTextColor={theme.colors.placeholder}
                             leftIcon={
-                              <MaterialCommunityIcons
-                                name="storefront-outline"
+                              <MaterialSymbol
+                                name="storefront"
                                 size={20}
                                 color={theme.colors.onSurfaceVariant}
                               />
@@ -1339,8 +1335,8 @@ export default function EditProfileScreen() {
                               </View>
                             </View>
                             {isWhatsAppSuccess && (
-                              <MaterialCommunityIcons
-                                name="check-circle-outline"
+                              <MaterialSymbol
+                                name="check_circle"
                                 size={16}
                                 color={theme.colors.success}
                               />
@@ -1356,11 +1352,11 @@ export default function EditProfileScreen() {
                             accessibilityState={{ checked: isUsingPersonalPhoneAsWhatsApp }}
                             accessibilityLabel="Utilizar telefone pessoal como WhatsApp"
                           >
-                            <MaterialCommunityIcons
+                            <MaterialSymbol
                               name={
                                 isUsingPersonalPhoneAsWhatsApp
-                                  ? 'checkbox-marked'
-                                  : 'checkbox-blank-outline'
+                                  ? 'check_box'
+                                  : 'check_box_outline_blank'
                               }
                               size={20}
                               color={
@@ -1393,16 +1389,16 @@ export default function EditProfileScreen() {
                             ]}
                             placeholderTextColor={theme.colors.placeholder}
                             leftIcon={
-                              <MaterialCommunityIcons
-                                name="whatsapp"
+                              <MaterialSymbol
+                                name="chat"
                                 size={20}
                                 color={theme.colors.onSurfaceVariant}
                               />
                             }
                             rightIcon={
                               isUsingPersonalPhoneAsWhatsApp ? (
-                                <MaterialCommunityIcons
-                                  name="link-variant"
+                                <MaterialSymbol
+                                  name="link"
                                   size={18}
                                   color={theme.colors.primary}
                                 />
@@ -1412,8 +1408,8 @@ export default function EditProfileScreen() {
                           <View style={styles.helperRow}>
                             {whatsAppError ? (
                               <>
-                                <MaterialCommunityIcons
-                                  name="alert-circle-outline"
+                                <MaterialSymbol
+                                  name="error"
                                   size={14}
                                   color={theme.colors.error}
                                   style={styles.helperIcon}
@@ -1453,8 +1449,8 @@ export default function EditProfileScreen() {
                             style={styles.inputText}
                             placeholderTextColor={theme.colors.placeholder}
                             leftIcon={
-                              <MaterialCommunityIcons
-                                name="instagram"
+                              <MaterialSymbol
+                                name="photo_camera"
                                 size={20}
                                 color={theme.colors.onSurfaceVariant}
                               />
@@ -1493,8 +1489,8 @@ export default function EditProfileScreen() {
                         {/* Section Divider: Localização & Endereço */}
                         <View style={styles.sectionDivider} />
                         <View style={styles.sectionSubheaderRow}>
-                          <MaterialCommunityIcons
-                            name="map-marker-radius-outline"
+                          <MaterialSymbol
+                            name="my_location"
                             size={18}
                             color={theme.colors.primary}
                           />
@@ -1534,8 +1530,8 @@ export default function EditProfileScreen() {
                               style={styles.inputText}
                               placeholderTextColor={theme.colors.placeholder}
                               leftIcon={
-                                <MaterialCommunityIcons
-                                  name="city-variant-outline"
+                                <MaterialSymbol
+                                  name="location_city"
                                   size={20}
                                   color={theme.colors.onSurfaceVariant}
                                 />
@@ -1562,8 +1558,8 @@ export default function EditProfileScreen() {
                               style={styles.inputText}
                               placeholderTextColor={theme.colors.placeholder}
                               leftIcon={
-                                <MaterialCommunityIcons
-                                  name="map-marker-outline"
+                                <MaterialSymbol
+                                  name="place"
                                   size={20}
                                   color={theme.colors.onSurfaceVariant}
                                 />
@@ -1575,11 +1571,7 @@ export default function EditProfileScreen() {
                         {/* Section Divider: Especialidades & Tags */}
                         <View style={styles.sectionDivider} />
                         <View style={styles.sectionSubheaderRow}>
-                          <MaterialCommunityIcons
-                            name="tag-multiple-outline"
-                            size={18}
-                            color={theme.colors.primary}
-                          />
+                          <MaterialSymbol name="sell" size={18} color={theme.colors.primary} />
                           <Text style={styles.sectionSubheaderText}>
                             Especialidades da Confeitaria
                           </Text>
@@ -1597,8 +1589,8 @@ export default function EditProfileScreen() {
                           <>
                             <View style={styles.sectionDivider} />
                             <View style={styles.sectionSubheaderRow}>
-                              <MaterialCommunityIcons
-                                name="storefront-outline"
+                              <MaterialSymbol
+                                name="storefront"
                                 size={18}
                                 color={theme.colors.primary}
                               />
@@ -1617,11 +1609,7 @@ export default function EditProfileScreen() {
             {/* Bottom spacing & Status info */}
             {!hasUnsavedChanges && (
               <View style={styles.savedStatusContainer}>
-                <MaterialCommunityIcons
-                  name="check-circle-outline"
-                  size={16}
-                  color={theme.colors.outline}
-                />
+                <MaterialSymbol name="check_circle" size={16} color={theme.colors.outline} />
                 <Text style={styles.savedStatusText}>Todas as alterações estão salvas</Text>
               </View>
             )}

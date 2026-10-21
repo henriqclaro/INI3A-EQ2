@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
@@ -41,8 +40,8 @@ export const StockSummaryBanner = ({
         {/* Metric 1: Total Items */}
         <View style={styles.metricCard}>
           <View style={styles.iconWrapper}>
-            <MaterialCommunityIcons
-              name="package-variant-closed"
+            <MaterialSymbol
+              name="inventory_2"
               size={isWideScreen ? 20 : 18}
               color={theme.colors.primary}
             />
@@ -60,8 +59,8 @@ export const StockSummaryBanner = ({
         {/* Metric 2: Total Value */}
         <View style={[styles.metricCard, styles.metricCardValue]}>
           <View style={styles.iconWrapper}>
-            <MaterialCommunityIcons
-              name="cash-multiple"
+            <MaterialSymbol
+              name="payments"
               size={isWideScreen ? 20 : 18}
               color={theme.colors.tertiary}
             />
@@ -79,8 +78,8 @@ export const StockSummaryBanner = ({
         {/* Metric 3: Out of stock */}
         <View style={[styles.metricCard, outOfStockCount > 0 && styles.metricCardAlert]}>
           <View style={[styles.iconWrapper, outOfStockCount > 0 && styles.iconWrapperCritical]}>
-            <MaterialCommunityIcons
-              name="alert-circle-outline"
+            <MaterialSymbol
+              name="error"
               size={isWideScreen ? 20 : 18}
               color={outOfStockCount > 0 ? theme.colors.error : theme.colors.outline}
             />
@@ -104,8 +103,8 @@ export const StockSummaryBanner = ({
         {/* Metric 4: Expiring soon */}
         <View style={[styles.metricCard, expiringSoonCount > 0 && styles.metricCardWarning]}>
           <View style={[styles.iconWrapper, expiringSoonCount > 0 && styles.iconWrapperWarning]}>
-            <MaterialCommunityIcons
-              name="clock-alert-outline"
+            <MaterialSymbol
+              name="schedule"
               size={isWideScreen ? 20 : 18}
               color={expiringSoonCount > 0 ? theme.colors.warning : theme.colors.outline}
             />
@@ -130,8 +129,8 @@ export const StockSummaryBanner = ({
         {expiredCount > 0 && (
           <View style={[styles.metricCard, styles.metricCardAlert]}>
             <View style={[styles.iconWrapper, styles.iconWrapperCritical]}>
-              <MaterialCommunityIcons
-                name="alert-decagram"
+              <MaterialSymbol
+                name="warning"
                 size={isWideScreen ? 20 : 18}
                 color={theme.colors.error}
               />

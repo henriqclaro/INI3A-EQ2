@@ -6,13 +6,12 @@ import { Image } from 'expo-image';
 import { Tabs, router } from 'expo-router';
 import { CommonActions } from 'expo-router/react-navigation';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { getRoleLabel, isStaff } from '@/src/utils/roles';
 
+import { MaterialSymbol } from './MaterialSymbol';
 import { UserAvatar } from './UserAvatar';
 
 type TabsProps = ComponentProps<typeof Tabs>;
@@ -43,25 +42,25 @@ export function DesktopSidebar({
       {
         id: 'stock',
         label: 'Estoque',
-        icon: 'package-variant-closed' as const,
+        icon: 'inventory_2' as const,
         path: '/stock' as const,
       },
       {
         id: 'productions',
         label: 'Produções',
-        icon: 'pot-steam-outline' as const,
+        icon: 'skillet' as const,
         path: '/productions' as const,
       },
       {
         id: 'saved-recipes',
         label: 'Receitas Salvas',
-        icon: 'bookmark-multiple-outline' as const,
+        icon: 'bookmarks' as const,
         path: '/saved-recipes' as const,
       },
       {
         id: 'public-recipes',
         label: 'Receitas Públicas',
-        icon: 'book-search-outline' as const,
+        icon: 'find_in_page' as const,
         path: '/public-recipes' as const,
       },
       ...(isCustomerRole || isStaffRole
@@ -69,7 +68,7 @@ export function DesktopSidebar({
             {
               id: 'search-bakers',
               label: 'Buscar Confeitarias',
-              icon: 'store-search-outline' as const,
+              icon: 'storefront' as const,
               path: '/search-bakers' as const,
             },
           ]
@@ -79,7 +78,7 @@ export function DesktopSidebar({
             {
               id: 'management',
               label: 'Painel de Gestão',
-              icon: 'shield-crown-outline' as const,
+              icon: 'security' as const,
               path: '/management' as const,
             },
           ]
@@ -177,8 +176,8 @@ export function DesktopSidebar({
                       size: 22,
                     })
                   ) : (
-                    <MaterialCommunityIcons
-                      name="circle-outline"
+                    <MaterialSymbol
+                      name="radio_button_unchecked"
                       size={20}
                       color={isFocused ? theme.colors.primary : theme.colors.onSurfaceVariant}
                     />
@@ -209,7 +208,7 @@ export function DesktopSidebar({
                 accessibilityLabel={item.label}
               >
                 <View style={styles.iconSlot}>
-                  <MaterialCommunityIcons
+                  <MaterialSymbol
                     name={item.icon}
                     size={22}
                     color={theme.colors.onSurfaceVariant}
@@ -228,7 +227,7 @@ export function DesktopSidebar({
               accessibilityRole="button"
               accessibilityLabel="Criar nova receita"
             >
-              <MaterialCommunityIcons name="plus" size={18} color={theme.colors.onPrimary} />
+              <MaterialSymbol name="add" size={18} color={theme.colors.onPrimary} />
               <Text style={styles.createButtonText}>Nova Receita</Text>
             </TouchableOpacity>
           </View>
@@ -272,8 +271,8 @@ export function DesktopSidebar({
             accessibilityRole="button"
             accessibilityLabel={isDarkMode ? 'Ativar modo claro' : 'Ativar modo escuro'}
           >
-            <MaterialCommunityIcons
-              name={isDarkMode ? 'weather-sunny' : 'weather-night'}
+            <MaterialSymbol
+              name={isDarkMode ? 'light_mode' : 'dark_mode'}
               size={20}
               color={theme.colors.onSurfaceVariant}
             />
@@ -286,11 +285,7 @@ export function DesktopSidebar({
             accessibilityRole="button"
             accessibilityLabel="Abrir configurações"
           >
-            <MaterialCommunityIcons
-              name="cog-outline"
-              size={20}
-              color={theme.colors.onSurfaceVariant}
-            />
+            <MaterialSymbol name="settings" size={20} color={theme.colors.onSurfaceVariant} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -300,7 +295,7 @@ export function DesktopSidebar({
             accessibilityRole="button"
             accessibilityLabel="Sair da conta"
           >
-            <MaterialCommunityIcons name="logout" size={20} color={theme.colors.error} />
+            <MaterialSymbol name="logout" size={20} color={theme.colors.error} />
           </TouchableOpacity>
         </View>
       </View>

@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { MaterialSymbol } from '@/src/components/common';
 
 import { useThemeMode } from '../../contexts/ThemeContext';
 import { AppTheme } from '../../theme/themes';
@@ -62,8 +62,8 @@ export const StarRatingInput = memo(function StarRatingInput({
               accessibilityLabel={`${starValue} de 5 estrelas`}
               hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
             >
-              <MaterialCommunityIcons
-                name={isFilled ? 'star' : 'star-outline'}
+              <MaterialSymbol
+                name={isFilled ? 'star' : 'star'}
                 size={size}
                 color={isFilled ? filledColor : emptyColor}
               />

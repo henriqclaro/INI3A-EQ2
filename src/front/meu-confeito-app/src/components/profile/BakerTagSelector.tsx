@@ -9,8 +9,7 @@ import {
   View,
 } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { DEFAULT_POPULAR_TAGS } from '@/src/constants/bakerTags';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { TagService } from '@/src/services/tag';
@@ -229,11 +228,7 @@ export function BakerTagSelector({
       {/* Header and Counter */}
       <View style={styles.headerRow}>
         <View style={styles.headerTitleContainer}>
-          <MaterialCommunityIcons
-            name="tag-multiple-outline"
-            size={18}
-            color={theme.colors.primary}
-          />
+          <MaterialSymbol name="sell" size={18} color={theme.colors.primary} />
           <Text style={styles.sectionTitle}>Especialidades & Tags</Text>
           <View style={styles.badgeOptional}>
             <Text style={styles.badgeOptionalText}>opcional</Text>
@@ -277,7 +272,7 @@ export function BakerTagSelector({
                   accessibilityLabel={`Remover tag ${tag.name}`}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <MaterialCommunityIcons name="close" size={14} color={theme.colors.onPrimary} />
+                  <MaterialSymbol name="close" size={14} color={theme.colors.onPrimary} />
                 </TouchableOpacity>
               </View>
             ))}
@@ -288,8 +283,8 @@ export function BakerTagSelector({
       {/* Search and custom input */}
       <View style={styles.searchWrapper}>
         <View style={styles.searchInputContainer}>
-          <MaterialCommunityIcons
-            name="magnify"
+          <MaterialSymbol
+            name="search"
             size={20}
             color={theme.colors.placeholder}
             style={styles.searchIcon}
@@ -312,7 +307,7 @@ export function BakerTagSelector({
               accessibilityRole="button"
               accessibilityLabel="Limpar busca"
             >
-              <MaterialCommunityIcons name="close-circle" size={18} color={theme.colors.outline} />
+              <MaterialSymbol name="cancel" size={18} color={theme.colors.outline} />
             </TouchableOpacity>
           ) : null}
         </View>
@@ -332,8 +327,8 @@ export function BakerTagSelector({
                     accessibilityRole="button"
                     accessibilityLabel={`Tag ${item.name}`}
                   >
-                    <MaterialCommunityIcons
-                      name={isItemAlreadySelected ? 'check-circle' : 'tag-outline'}
+                    <MaterialSymbol
+                      name={isItemAlreadySelected ? 'check_circle' : 'tag'}
                       size={18}
                       color={
                         isItemAlreadySelected ? theme.colors.primary : theme.colors.onSurfaceVariant
@@ -368,11 +363,7 @@ export function BakerTagSelector({
                 accessibilityRole="button"
                 accessibilityLabel={`Criar nova tag ${searchQuery.trim()}`}
               >
-                <MaterialCommunityIcons
-                  name="plus-circle-outline"
-                  size={18}
-                  color={theme.colors.primary}
-                />
+                <MaterialSymbol name="add_circle" size={18} color={theme.colors.primary} />
                 <Text style={styles.createTagActionText}>
                   {`Adicionar nova tag "${searchQuery.trim()}"`}
                 </Text>
@@ -401,9 +392,9 @@ export function BakerTagSelector({
                 accessibilityLabel={`Sugestão ${popularName}`}
               >
                 {isSelected ? (
-                  <MaterialCommunityIcons name="check" size={13} color={theme.colors.onPrimary} />
+                  <MaterialSymbol name="check" size={13} color={theme.colors.onPrimary} />
                 ) : (
-                  <MaterialCommunityIcons name="plus" size={13} color={theme.colors.primary} />
+                  <MaterialSymbol name="add" size={13} color={theme.colors.primary} />
                 )}
                 <Text
                   style={[styles.suggestedChipText, isSelected && styles.suggestedChipTextSelected]}

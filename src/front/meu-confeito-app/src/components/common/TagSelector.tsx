@@ -9,13 +9,13 @@ import {
   View,
 } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { TagService } from '@/src/services/tag';
 import { AppTheme } from '@/src/theme/themes';
 import { Tag } from '@/src/types/tag';
 import { getTagColors, getTagTypeLabel } from '@/src/utils/tag';
+
+import { MaterialSymbol } from './MaterialSymbol';
 
 export interface TagSelectorProps {
   selectedTags: Tag[];
@@ -184,7 +184,7 @@ export function TagSelector({
                     accessibilityLabel={`Remover tag ${tag.name}`}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   >
-                    <MaterialCommunityIcons name="close" size={14} color={tagStyle.textColor} />
+                    <MaterialSymbol name="close" size={14} color={tagStyle.textColor} />
                   </TouchableOpacity>
                 )}
               </View>
@@ -199,8 +199,8 @@ export function TagSelector({
       {!hasMaxTags && !isDisabled ? (
         <View style={styles.searchSection}>
           <View style={styles.inputWrapper}>
-            <MaterialCommunityIcons
-              name="magnify"
+            <MaterialSymbol
+              name="search"
               size={20}
               color={theme.colors.placeholder}
               style={styles.searchIcon}
@@ -232,11 +232,7 @@ export function TagSelector({
                 accessibilityLabel="Limpar busca"
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <MaterialCommunityIcons
-                  name="close-circle"
-                  size={18}
-                  color={theme.colors.placeholder}
-                />
+                <MaterialSymbol name="cancel" size={18} color={theme.colors.placeholder} />
               </TouchableOpacity>
             )}
           </View>
@@ -276,11 +272,7 @@ export function TagSelector({
                             ({getTagTypeLabel(item.type)})
                           </Text>
                         </View>
-                        <MaterialCommunityIcons
-                          name="plus-circle-outline"
-                          size={22}
-                          color={theme.colors.primary}
-                        />
+                        <MaterialSymbol name="add_circle" size={22} color={theme.colors.primary} />
                       </TouchableOpacity>
                     );
                   })}
@@ -292,7 +284,7 @@ export function TagSelector({
               ) : query.trim().length > 0 ? (
                 <View style={styles.dropdownEmptyState}>
                   <Text style={styles.dropdownEmptyText}>
-                    Nenhuma tag encontrada para &quot;{query}&quot;
+                    Nenhum tag encontrada para &quot;{query}&quot;
                   </Text>
                 </View>
               ) : null}
@@ -301,11 +293,7 @@ export function TagSelector({
         </View>
       ) : hasMaxTags ? (
         <View style={styles.limitBanner}>
-          <MaterialCommunityIcons
-            name="information-outline"
-            size={18}
-            color={theme.colors.primary}
-          />
+          <MaterialSymbol name="info" size={18} color={theme.colors.primary} />
           <Text style={styles.limitBannerText}>Limite máximo de {maxTags} tags atingido.</Text>
         </View>
       ) : null}

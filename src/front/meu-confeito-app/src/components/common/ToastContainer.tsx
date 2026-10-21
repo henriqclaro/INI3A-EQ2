@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Animated, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useToast } from '@/src/contexts/ToastContext';
 import { AppTheme } from '@/src/theme/themes';
+
+import { MaterialSymbol } from './MaterialSymbol';
 
 export function ToastContainer() {
   const { activeToast, hideToast } = useToast();
@@ -56,22 +57,22 @@ export function ToastContainer() {
 
   const typeConfig = {
     success: {
-      icon: 'check-circle-outline' as const,
+      icon: 'check_circle' as const,
       color: theme.colors.tertiary,
       bg: theme.colors.tertiaryFixed,
     },
     error: {
-      icon: 'alert-circle-outline' as const,
+      icon: 'error' as const,
       color: theme.colors.error,
       bg: theme.colors.errorContainer,
     },
     warning: {
-      icon: 'alert-outline' as const,
+      icon: 'warning' as const,
       color: theme.colors.warning,
       bg: theme.colors.surfaceContainerHigh,
     },
     info: {
-      icon: 'information-outline' as const,
+      icon: 'info' as const,
       color: theme.colors.primary,
       bg: theme.colors.primaryFixed,
     },
@@ -93,7 +94,7 @@ export function ToastContainer() {
     >
       <View style={styles.card}>
         <View style={[styles.iconCircle, { backgroundColor: typeConfig.bg }]}>
-          <MaterialCommunityIcons name={typeConfig.icon} size={20} color={typeConfig.color} />
+          <MaterialSymbol name={typeConfig.icon} size={20} color={typeConfig.color} />
         </View>
 
         <View style={styles.textCol}>
@@ -126,7 +127,7 @@ export function ToastContainer() {
           accessibilityRole="button"
           accessibilityLabel="Fechar aviso"
         >
-          <MaterialCommunityIcons name="close" size={18} color={theme.colors.onSurfaceVariant} />
+          <MaterialSymbol name="close" size={18} color={theme.colors.onSurfaceVariant} />
         </TouchableOpacity>
       </View>
     </Animated.View>

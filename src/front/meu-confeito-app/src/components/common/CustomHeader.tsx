@@ -8,6 +8,8 @@ import { Appbar } from 'react-native-paper';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 
+import { MaterialSymbol } from './MaterialSymbol';
+
 export interface CustomHeaderOptions {
   title?: string;
   headerTitle?: string | ((props: { children: string; tintColor?: string }) => ReactNode);
@@ -76,11 +78,14 @@ export const CustomHeader = ({
   return (
     <Appbar.Header mode="small" elevated={false} style={[styles.header, options.headerStyle]}>
       {shouldShowBackAction && (
-        <Appbar.BackAction
+        <Appbar.Action
+          isLeading
+          icon={({ size, color }) => <MaterialSymbol name="arrow_back" size={size} color={color} />}
           color={backColor}
           size={24}
           onPress={handleBack}
           style={styles.backAction}
+          accessibilityLabel="Voltar para a tela anterior"
         />
       )}
       <Appbar.Content

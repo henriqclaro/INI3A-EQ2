@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { SettingShortcutItem } from '@/src/types/settings';
@@ -29,11 +28,7 @@ export function SettingsSearchResults({
     return (
       <View style={styles.emptyContainer}>
         <View style={styles.emptyIconCircle}>
-          <MaterialCommunityIcons
-            name="file-search-outline"
-            size={36}
-            color={theme.colors.onSurfaceVariant}
-          />
+          <MaterialSymbol name="find_in_page" size={36} color={theme.colors.onSurfaceVariant} />
         </View>
 
         <Text style={styles.emptyTitle}>Nenhuma configuração encontrada</Text>
@@ -51,7 +46,7 @@ export function SettingsSearchResults({
           accessibilityRole="button"
           accessibilityLabel="Limpar busca"
         >
-          <MaterialCommunityIcons name="close" size={16} color={theme.colors.primary} />
+          <MaterialSymbol name="close" size={16} color={theme.colors.primary} />
           <Text style={styles.clearSearchBtnText}>Limpar busca</Text>
         </TouchableOpacity>
       </View>
@@ -83,11 +78,7 @@ export function SettingsSearchResults({
                 accessibilityHint={shortcut.description}
               >
                 <View style={styles.iconContainer}>
-                  <MaterialCommunityIcons
-                    name={shortcut.icon}
-                    size={22}
-                    color={theme.colors.primary}
-                  />
+                  <MaterialSymbol name={shortcut.icon} size={22} color={theme.colors.primary} />
                 </View>
 
                 <View style={styles.textContainer}>
@@ -105,8 +96,8 @@ export function SettingsSearchResults({
                   </Text>
                 </View>
 
-                <MaterialCommunityIcons
-                  name="chevron-right"
+                <MaterialSymbol
+                  name="chevron_right"
                   size={22}
                   color={theme.colors.placeholder}
                   style={styles.chevronIcon}

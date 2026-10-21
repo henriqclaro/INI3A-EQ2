@@ -3,8 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { router } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { UserAvatar } from '@/src/components/common/UserAvatar';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
@@ -63,7 +62,7 @@ export const BakerCard = memo(function BakerCard({ baker, onPress }: BakerCardPr
         name={displayName}
         size={52}
         fallbackType="icon"
-        fallbackIcon="cake-variant-outline"
+        fallbackIcon="cake"
         fallbackIconColor={theme.colors.primary}
         fallbackBackgroundColor={theme.colors.surfaceContainerLow}
         borderColor={theme.colors.outlineVariant}
@@ -77,11 +76,7 @@ export const BakerCard = memo(function BakerCard({ baker, onPress }: BakerCardPr
           </Text>
           {formattedDistance ? (
             <View style={styles.distanceBadge}>
-              <MaterialCommunityIcons
-                name="map-marker-distance"
-                size={12}
-                color={theme.colors.chips.success.text}
-              />
+              <MaterialSymbol name="near_me" size={12} color={theme.colors.chips.success.text} />
               <Text style={styles.distanceText}>{formattedDistance}</Text>
             </View>
           ) : null}
@@ -94,11 +89,7 @@ export const BakerCard = memo(function BakerCard({ baker, onPress }: BakerCardPr
         ) : null}
 
         <View style={styles.locationRow}>
-          <MaterialCommunityIcons
-            name="map-marker-outline"
-            size={14}
-            color={theme.colors.onSurfaceVariant}
-          />
+          <MaterialSymbol name="place" size={14} color={theme.colors.onSurfaceVariant} />
           <Text style={styles.locationText} numberOfLines={1}>
             {locationText}
           </Text>
@@ -106,7 +97,7 @@ export const BakerCard = memo(function BakerCard({ baker, onPress }: BakerCardPr
       </View>
 
       <View style={styles.arrowCol}>
-        <MaterialCommunityIcons name="chevron-right" size={22} color={theme.colors.placeholder} />
+        <MaterialSymbol name="chevron_right" size={22} color={theme.colors.placeholder} />
       </View>
     </TouchableOpacity>
   );

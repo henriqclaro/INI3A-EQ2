@@ -14,9 +14,7 @@ import {
 
 import { Stack, router } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
-import { Input, OfflineBanner, ReviewedRecipeCard } from '@/src/components';
+import { Input, MaterialSymbol, OfflineBanner, ReviewedRecipeCard } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useDebounce } from '@/src/hooks/useDebounce';
@@ -116,7 +114,7 @@ export default function MyReviewsScreen() {
       return (
         <View style={styles.feedbackContainer}>
           <View style={styles.emptyIconWrapper}>
-            <MaterialCommunityIcons name="star-outline" size={48} color={theme.colors.primary} />
+            <MaterialSymbol name="star" size={48} color={theme.colors.primary} />
           </View>
           <Text style={styles.emptyTitle}>Nenhuma avaliação feita ainda</Text>
           <Text style={styles.emptySubtitle}>
@@ -129,11 +127,7 @@ export default function MyReviewsScreen() {
             accessibilityRole="button"
             accessibilityLabel="Explorar receitas públicas"
           >
-            <MaterialCommunityIcons
-              name="book-search-outline"
-              size={18}
-              color={theme.colors.onPrimary}
-            />
+            <MaterialSymbol name="find_in_page" size={18} color={theme.colors.onPrimary} />
             <Text style={styles.emptyActionBtnText}>Explorar Receitas</Text>
           </TouchableOpacity>
         </View>
@@ -142,11 +136,7 @@ export default function MyReviewsScreen() {
     return (
       <View style={styles.feedbackContainer}>
         <View style={styles.emptyIconWrapper}>
-          <MaterialCommunityIcons
-            name="magnify-remove-outline"
-            size={48}
-            color={theme.colors.primary}
-          />
+          <MaterialSymbol name="search_off" size={48} color={theme.colors.primary} />
         </View>
         <Text style={styles.emptyTitle}>Nenhuma avaliação encontrada</Text>
         <Text style={styles.emptySubtitle}>
@@ -186,11 +176,7 @@ export default function MyReviewsScreen() {
             onChangeText={setSearch}
             containerStyle={styles.searchInput}
             leftIcon={
-              <MaterialCommunityIcons
-                name="magnify"
-                size={22}
-                color={theme.colors.onSurfaceVariant}
-              />
+              <MaterialSymbol name="search" size={22} color={theme.colors.onSurfaceVariant} />
             }
             isClearable={true}
             onClear={() => setSearch('')}
@@ -199,7 +185,7 @@ export default function MyReviewsScreen() {
           {!isLoading && userReviews.length > 0 && (
             <View style={styles.metaRow}>
               <View style={styles.badge}>
-                <MaterialCommunityIcons name="star-check" size={14} color={theme.colors.primary} />
+                <MaterialSymbol name="rate_review" size={14} color={theme.colors.primary} />
                 <Text style={styles.badgeText}>
                   {hasActiveSearch
                     ? `${filteredReviews.length} de ${userReviews.length} avaliadas`

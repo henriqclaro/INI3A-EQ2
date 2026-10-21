@@ -18,7 +18,13 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { ActivityIndicator, PaperProvider } from 'react-native-paper';
 import { pt, registerTranslation } from 'react-native-paper-dates';
 
-import { CustomHeader, DesktopAlert, RateLimitBanner, ToastContainer } from '@/src/components';
+import {
+  CustomHeader,
+  DesktopAlert,
+  MaterialSymbol,
+  RateLimitBanner,
+  ToastContainer,
+} from '@/src/components';
 import { AuthProvider, useAuth } from '@/src/contexts/AuthContext';
 import { OnboardingProvider } from '@/src/contexts/OnboardingContext';
 import { SettingsProvider } from '@/src/contexts/SettingsContext';
@@ -26,8 +32,28 @@ import { ThemeProvider, useThemeMode } from '@/src/contexts/ThemeContext';
 import { ToastProvider } from '@/src/contexts/ToastContext';
 import { useRoutePersistence } from '@/src/hooks/useRoutePersistence';
 import { AppTheme } from '@/src/theme/themes';
+import { MaterialSymbolName } from '@/src/types/materialSymbols';
 
 registerTranslation('pt', pt);
+
+const PAPER_ICON_MAP: Record<string, MaterialSymbolName> = {
+  'arrow-left': 'arrow_back',
+  'arrow-right': 'arrow_forward',
+  'close': 'close',
+  'check': 'check',
+  'calendar': 'calendar_today',
+  'calendar-month': 'calendar_month',
+  'magnify': 'search',
+  'eye': 'visibility',
+  'eye-off': 'visibility_off',
+};
+
+const paperSettings = {
+  icon: (props: { name: string; color?: string; size: number }) => {
+    const symbol = PAPER_ICON_MAP[props.name] || (props.name as MaterialSymbolName);
+    return <MaterialSymbol name={symbol} size={props.size} color={props.color} />;
+  },
+};
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -88,7 +114,7 @@ function RootLayoutContent() {
 
   if (isLoadingStorage) {
     return (
-      <PaperProvider theme={theme}>
+      <PaperProvider theme={theme} settings={paperSettings}>
         <NavigationThemeProvider value={navigationTheme}>
           <StatusBar style={isDarkMode ? 'light' : 'dark'} />
           <View style={styles.loadingContainer}>
@@ -100,7 +126,7 @@ function RootLayoutContent() {
   }
 
   return (
-    <PaperProvider theme={theme}>
+    <PaperProvider theme={theme} settings={paperSettings}>
       <NavigationThemeProvider value={navigationTheme}>
         <StatusBar style={isDarkMode ? 'light' : 'dark'} />
         <View style={styles.rootContainer}>
@@ -162,6 +188,7 @@ export default function RootLayout() {
     'Inter-Regular': require('../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
     'Inter-Medium': require('../assets/fonts/Inter/Inter_18pt-Medium.ttf'),
     'Inter-SemiBold': require('../assets/fonts/Inter/Inter_18pt-SemiBold.ttf'),
+    'MaterialSymbolsOutlined': require('../assets/fonts/MaterialSymbols/MaterialSymbolsOutlined_28pt-Regular.ttf'),
   });
 
   useEffect(() => {

@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAvoidingView, KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
+import { MaterialSymbol } from '@/src/components/common';
 import { RecipeSelector, RecipeWithOrigin } from '@/src/components/recipe';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
@@ -82,7 +82,7 @@ export function AddPlannedRecipeModal({
           {/* Header */}
           <View style={styles.modalHeader}>
             <View style={styles.modalHeaderTitleGroup}>
-              <MaterialCommunityIcons name="cart-plus" size={22} color={theme.colors.primary} />
+              <MaterialSymbol name="add_shopping_cart" size={22} color={theme.colors.primary} />
               <Text style={styles.modalTitle}>Planejar Produção</Text>
             </View>
             <TouchableOpacity
@@ -92,11 +92,7 @@ export function AddPlannedRecipeModal({
               accessibilityLabel="Fechar modal de planejar produção"
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <MaterialCommunityIcons
-                name="close"
-                size={22}
-                color={theme.colors.onSurfaceVariant}
-              />
+              <MaterialSymbol name="close" size={22} color={theme.colors.onSurfaceVariant} />
             </TouchableOpacity>
           </View>
 
@@ -149,11 +145,7 @@ export function AddPlannedRecipeModal({
                     accessibilityRole="button"
                     accessibilityLabel="Diminuir rendimento planejado"
                   >
-                    <MaterialCommunityIcons
-                      name="minus"
-                      size={20}
-                      color={theme.colors.espressoDark}
-                    />
+                    <MaterialSymbol name="remove" size={20} color={theme.colors.espressoDark} />
                   </TouchableOpacity>
 
                   <TextInput
@@ -173,11 +165,7 @@ export function AddPlannedRecipeModal({
                     accessibilityRole="button"
                     accessibilityLabel="Aumentar rendimento planejado"
                   >
-                    <MaterialCommunityIcons
-                      name="plus"
-                      size={20}
-                      color={theme.colors.espressoDark}
-                    />
+                    <MaterialSymbol name="add" size={20} color={theme.colors.espressoDark} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -204,7 +192,7 @@ export function AddPlannedRecipeModal({
               accessibilityRole="button"
               accessibilityLabel="Adicionar receita ao plano"
             >
-              <MaterialCommunityIcons name="plus" size={18} color={theme.colors.onPrimary} />
+              <MaterialSymbol name="add" size={18} color={theme.colors.onPrimary} />
               <Text style={styles.primaryBtnText}>Adicionar ao Plano</Text>
             </TouchableOpacity>
           </View>

@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { ProductionItem } from '@/src/types/production';
@@ -39,11 +38,7 @@ export function ProductionDetailsModal({
           {/* Header */}
           <View style={styles.modalHeader}>
             <View style={styles.modalHeaderTitleGroup}>
-              <MaterialCommunityIcons
-                name="clipboard-text-outline"
-                size={22}
-                color={theme.colors.primary}
-              />
+              <MaterialSymbol name="assignment" size={22} color={theme.colors.primary} />
               <Text style={styles.modalTitle} numberOfLines={1}>
                 Detalhes da Produção
               </Text>
@@ -54,7 +49,7 @@ export function ProductionDetailsModal({
               accessibilityRole="button"
               accessibilityLabel="Fechar modal"
             >
-              <MaterialCommunityIcons name="close" size={20} color={theme.colors.onSurface} />
+              <MaterialSymbol name="close" size={20} color={theme.colors.onSurface} />
             </TouchableOpacity>
           </View>
 
@@ -72,8 +67,8 @@ export function ProductionDetailsModal({
                     hasCanceled ? styles.statusBadgeCanceled : styles.statusBadgeActive,
                   ]}
                 >
-                  <MaterialCommunityIcons
-                    name={hasCanceled ? 'close-circle-outline' : 'check-circle-outline'}
+                  <MaterialSymbol
+                    name={hasCanceled ? 'cancel' : 'check_circle'}
                     size={14}
                     color={hasCanceled ? theme.colors.error : theme.colors.tertiary}
                   />
@@ -117,11 +112,7 @@ export function ProductionDetailsModal({
             {/* Costs Breakdown Card */}
             <View style={styles.sectionCard}>
               <View style={styles.sectionHeader}>
-                <MaterialCommunityIcons
-                  name="calculator-variant-outline"
-                  size={18}
-                  color={theme.colors.primary}
-                />
+                <MaterialSymbol name="calculate" size={18} color={theme.colors.primary} />
                 <Text style={styles.sectionTitle}>Custos Operacionais</Text>
               </View>
 
@@ -166,11 +157,7 @@ export function ProductionDetailsModal({
             {production.transactions && production.transactions.length > 0 && (
               <View style={styles.sectionCard}>
                 <View style={styles.sectionHeader}>
-                  <MaterialCommunityIcons
-                    name="tray-arrow-down"
-                    size={18}
-                    color={theme.colors.primary}
-                  />
+                  <MaterialSymbol name="move_to_inbox" size={18} color={theme.colors.primary} />
                   <Text style={styles.sectionTitle}>Insumos Utilizados no Estoque</Text>
                 </View>
 
@@ -204,11 +191,7 @@ export function ProductionDetailsModal({
                 accessibilityRole="button"
                 accessibilityLabel="Cancelar esta produção e devolver insumos ao estoque"
               >
-                <MaterialCommunityIcons
-                  name="archive-arrow-up-outline"
-                  size={18}
-                  color={theme.colors.error}
-                />
+                <MaterialSymbol name="unarchive" size={18} color={theme.colors.error} />
                 <Text style={styles.cancelProductionBtnText}>Cancelar Produção</Text>
               </TouchableOpacity>
             )}

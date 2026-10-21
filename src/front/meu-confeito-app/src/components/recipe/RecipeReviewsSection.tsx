@@ -11,7 +11,7 @@ import {
 
 import { router } from 'expo-router';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { MaterialSymbol } from '@/src/components/common';
 
 import { useAuth } from '../../contexts/AuthContext';
 import { useThemeMode } from '../../contexts/ThemeContext';
@@ -139,7 +139,7 @@ export const RecipeReviewsSection = memo(function RecipeReviewsSection({
       {/* Section Header */}
       <View style={styles.sectionHeader}>
         <View style={styles.sectionTitleRow}>
-          <MaterialCommunityIcons name="star-outline" size={24} color={theme.colors.primary} />
+          <MaterialSymbol name="star" size={24} color={theme.colors.primary} />
           <Text style={styles.sectionTitle}>Avaliações da Receita</Text>
         </View>
         <Text style={styles.sectionSubtitle}>
@@ -159,9 +159,9 @@ export const RecipeReviewsSection = memo(function RecipeReviewsSection({
                   const numAvg = Number(averageRating) || 0;
                   const isFilled = star <= Math.round(numAvg);
                   return (
-                    <MaterialCommunityIcons
+                    <MaterialSymbol
                       key={star}
-                      name={isFilled ? 'star' : 'star-outline'}
+                      name={isFilled ? 'star' : 'star'}
                       size={18}
                       color={isFilled ? theme.colors.primary : theme.colors.outlineVariant}
                     />
@@ -198,11 +198,7 @@ export const RecipeReviewsSection = memo(function RecipeReviewsSection({
           <View style={styles.interactionContainer}>
             {!isPublished ? (
               <View style={styles.noticeCard}>
-                <MaterialCommunityIcons
-                  name="lock-outline"
-                  size={20}
-                  color={theme.colors.onSurfaceVariant}
-                />
+                <MaterialSymbol name="lock" size={20} color={theme.colors.onSurfaceVariant} />
                 <Text style={styles.noticeText}>
                   Esta receita está como rascunho. Apenas receitas publicadas podem receber
                   avaliações.
@@ -210,22 +206,14 @@ export const RecipeReviewsSection = memo(function RecipeReviewsSection({
               </View>
             ) : isOwner ? (
               <View style={styles.noticeCard}>
-                <MaterialCommunityIcons
-                  name="account-check-outline"
-                  size={20}
-                  color={theme.colors.onSurfaceVariant}
-                />
+                <MaterialSymbol name="how_to_reg" size={20} color={theme.colors.onSurfaceVariant} />
                 <Text style={styles.noticeText}>
                   Você é o autor desta receita. Criadores não podem avaliar suas próprias receitas.
                 </Text>
               </View>
             ) : !user ? (
               <View style={styles.loginPromptCard}>
-                <MaterialCommunityIcons
-                  name="star-circle-outline"
-                  size={32}
-                  color={theme.colors.primary}
-                />
+                <MaterialSymbol name="stars" size={32} color={theme.colors.primary} />
                 <Text style={styles.loginPromptTitle}>Gostou desta receita?</Text>
                 <Text style={styles.loginPromptSubtitle}>
                   Faça login para deixar sua nota de 1 a 5 estrelas e ajudar outros confeiteiros.
@@ -249,8 +237,8 @@ export const RecipeReviewsSection = memo(function RecipeReviewsSection({
               <View style={styles.userReviewBox}>
                 <View style={styles.userReviewHeader}>
                   <View style={styles.userReviewTitleGroup}>
-                    <MaterialCommunityIcons
-                      name={hasUserReviewed ? 'star-check' : 'star-plus-outline'}
+                    <MaterialSymbol
+                      name={hasUserReviewed ? 'rate_review' : 'star_rate'}
                       size={20}
                       color={theme.colors.primary}
                     />
@@ -301,7 +289,7 @@ export const RecipeReviewsSection = memo(function RecipeReviewsSection({
                         <ActivityIndicator size="small" color={theme.colors.onPrimary} />
                       ) : (
                         <>
-                          <MaterialCommunityIcons
+                          <MaterialSymbol
                             name={hasUserReviewed ? 'check' : 'star'}
                             size={18}
                             color={theme.colors.onPrimary}
@@ -328,11 +316,7 @@ export const RecipeReviewsSection = memo(function RecipeReviewsSection({
                         <ActivityIndicator size="small" color={theme.colors.error} />
                       ) : (
                         <>
-                          <MaterialCommunityIcons
-                            name="trash-can-outline"
-                            size={18}
-                            color={theme.colors.error}
-                          />
+                          <MaterialSymbol name="delete" size={18} color={theme.colors.error} />
                           <Text style={styles.deleteReviewBtnText}>Remover Avaliação</Text>
                         </>
                       )}
@@ -356,11 +340,7 @@ export const RecipeReviewsSection = memo(function RecipeReviewsSection({
               </View>
             ) : reviews.length === 0 ? (
               <View style={styles.emptyReviewsCard}>
-                <MaterialCommunityIcons
-                  name="message-draw"
-                  size={32}
-                  color={theme.colors.placeholder}
-                />
+                <MaterialSymbol name="draw" size={32} color={theme.colors.placeholder} />
                 <Text style={styles.emptyReviewsText}>
                   Nenhuma avaliação registrada ainda. Seja a primeira pessoa a avaliar!
                 </Text>
@@ -409,9 +389,9 @@ export const RecipeReviewsSection = memo(function RecipeReviewsSection({
 
                         <View style={styles.reviewItemStars}>
                           {[1, 2, 3, 4, 5].map((s) => (
-                            <MaterialCommunityIcons
+                            <MaterialSymbol
                               key={s}
-                              name={s <= rev.rating ? 'star' : 'star-outline'}
+                              name={s <= rev.rating ? 'star' : 'star'}
                               size={14}
                               color={
                                 s <= rev.rating ? theme.colors.primary : theme.colors.outlineVariant

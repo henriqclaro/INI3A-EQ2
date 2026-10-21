@@ -3,8 +3,7 @@ import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from '
 
 import { Image } from 'expo-image';
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import { MaterialSymbol } from '@/src/components/common';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { PartialTag, RecipeStatus } from '@/src/types';
@@ -113,11 +112,7 @@ export const RecipeView = memo(function RecipeView({
       ) : (
         <View style={[styles.image, styles.placeholder]}>
           <View style={styles.placeholderIconBadge}>
-            <MaterialCommunityIcons
-              name="cake-variant-outline"
-              size={36}
-              color={theme.colors.primary}
-            />
+            <MaterialSymbol name="cake" size={36} color={theme.colors.primary} />
           </View>
           <Text style={styles.placeholderText}>Sem foto de capa</Text>
         </View>
@@ -128,28 +123,20 @@ export const RecipeView = memo(function RecipeView({
           <View style={styles.topBadgesRow}>
             {isDownloaded && (
               <View style={styles.downloadedBadge}>
-                <MaterialCommunityIcons
-                  name="cloud-check-outline"
-                  size={12}
-                  color={theme.colors.primary}
-                />
+                <MaterialSymbol name="cloud_done" size={12} color={theme.colors.primary} />
                 <Text style={styles.downloadedBadgeText}>Baixada</Text>
               </View>
             )}
             {(isCustomized || hasParent) && (
               <View style={styles.customizedBadge}>
-                <MaterialCommunityIcons
-                  name="source-fork"
-                  size={12}
-                  color={theme.colors.secondary}
-                />
+                <MaterialSymbol name="fork_right" size={12} color={theme.colors.secondary} />
                 <Text style={styles.customizedBadgeText}>Adaptada</Text>
               </View>
             )}
             {status === 'DRAFT' && (
               <View style={styles.draftBadge}>
-                <MaterialCommunityIcons
-                  name="file-document-edit-outline"
+                <MaterialSymbol
+                  name="edit_document"
                   size={12}
                   color={theme.colors.onSurfaceVariant}
                 />
@@ -158,8 +145,8 @@ export const RecipeView = memo(function RecipeView({
             )}
             {status === 'ARCHIVED' && (
               <View style={styles.archivedBadge}>
-                <MaterialCommunityIcons
-                  name="archive-outline"
+                <MaterialSymbol
+                  name="inventory_2"
                   size={12}
                   color={theme.colors.onSurfaceVariant}
                 />
@@ -168,11 +155,7 @@ export const RecipeView = memo(function RecipeView({
             )}
             {status === 'SUSPENDED' && (
               <View style={styles.suspendedBadge}>
-                <MaterialCommunityIcons
-                  name="alert-octagon-outline"
-                  size={12}
-                  color={theme.colors.error}
-                />
+                <MaterialSymbol name="report" size={12} color={theme.colors.error} />
                 <Text style={styles.suspendedBadgeText}>Suspensa</Text>
               </View>
             )}
@@ -216,11 +199,7 @@ export const RecipeView = memo(function RecipeView({
           <View style={styles.metaRow}>
             {prepTimeMinutes > 0 ? (
               <View style={styles.timeBadge}>
-                <MaterialCommunityIcons
-                  name="timer-outline"
-                  size={15}
-                  color={theme.colors.onSurfaceVariant}
-                />
+                <MaterialSymbol name="timer" size={15} color={theme.colors.onSurfaceVariant} />
                 <Text style={styles.timeText}>{prepTimeMinutes} min</Text>
               </View>
             ) : (
@@ -230,7 +209,7 @@ export const RecipeView = memo(function RecipeView({
             {formattedRating !== null ? (
               <View style={styles.ratingSection}>
                 <View style={styles.ratingBadge}>
-                  <MaterialCommunityIcons name="star" size={13} color="#D97706" />
+                  <MaterialSymbol name="star" size={13} color="#D97706" />
                   <Text style={styles.ratingText}>{formattedRating}</Text>
                 </View>
                 <Text style={styles.reviewsLabel}>
