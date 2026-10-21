@@ -12,6 +12,7 @@ import { useColorScheme } from 'react-native';
 import {
   AppTheme,
   darkTheme,
+  deviceTypography,
   highContrastDarkTheme,
   highContrastLightTheme,
   lightTheme,
@@ -29,6 +30,7 @@ export interface ThemeContextType {
   isHighContrast: boolean;
   isPureBlack: boolean;
   isPureBlackAvailable: boolean;
+  isUseDeviceFont: boolean;
   setMode: (mode: ThemeMode) => void;
   toggleTheme: () => void;
   setIsFollowSystem: (isEnabled: boolean) => void;
@@ -37,12 +39,15 @@ export interface ThemeContextType {
   toggleHighContrast: () => void;
   setIsPureBlack: (isEnabled: boolean) => void;
   togglePureBlack: () => void;
+  setIsUseDeviceFont: (isEnabled: boolean) => void;
+  toggleUseDeviceFont: () => void;
 }
 
 const THEME_STORAGE_KEY = 'theme_mode';
 const HIGH_CONTRAST_STORAGE_KEY = 'theme_high_contrast';
 const PURE_BLACK_STORAGE_KEY = 'theme_pure_black';
 const FOLLOW_SYSTEM_STORAGE_KEY = 'theme_follow_system';
+const DEVICE_FONT_STORAGE_KEY = 'theme_use_device_font';
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
@@ -53,17 +58,24 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [isFollowSystem, setIsFollowSystemState] = useState<boolean>(true);
   const [isHighContrast, setIsHighContrastState] = useState<boolean>(false);
   const [isPureBlack, setIsPureBlackState] = useState<boolean>(false);
+  const [isUseDeviceFont, setIsUseDeviceFontState] = useState<boolean>(false);
 
   useEffect(() => {
     async function loadStoredTheme() {
       try {
-        const [storedTheme, storedHighContrast, storedPureBlack, storedFollowSystem] =
-          await Promise.all([
-            Storage.getItem(THEME_STORAGE_KEY),
-            Storage.getItem(HIGH_CONTRAST_STORAGE_KEY),
-            Storage.getItem(PURE_BLACK_STORAGE_KEY),
-            Storage.getItem(FOLLOW_SYSTEM_STORAGE_KEY),
-          ]);
+        const [
+          storedTheme,
+          storedHighContrast,
+          storedPureBlack,
+          storedFollowSystem,
+          storedUseDeviceFont,
+        ] = await Promise.all([
+          Storage.getItem(THEME_STORAGE_KEY),
+          Storage.getItem(HIGH_CONTRAST_STORAGE_KEY),
+          Storage.getItem(PURE_BLACK_STORAGE_KEY),
+          Storage.getItem(FOLLOW_SYSTEM_STORAGE_KEY),
+          Storage.getItem(DEVICE_FONT_STORAGE_KEY),
+        ]);
 
         if (storedTheme === 'dark' || storedTheme === 'light') {
           setThemeMode(storedTheme);
@@ -79,6 +91,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         } else {
           // Default is true when no preference is saved yet
           setIsFollowSystemState(true);
+        }
+        if (storedUseDeviceFont !== null) {
+          setIsUseDeviceFontState(storedUseDeviceFont === 'true');
         }
       } catch (error) {
         console.error('Error loading stored theme mode:', error);
@@ -173,6 +188,23 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const handleSetUseDeviceFont = useCallback((isEnabled: boolean) => {
+    setIsUseDeviceFontState(isEnabled);
+    Storage.setItem(DEVICE_FONT_STORAGE_KEY, String(isEnabled)).catch((error) => {
+      console.error('Error saving device font mode to storage:', error);
+    });
+  }, []);
+
+  const toggleUseDeviceFont = useCallback(() => {
+    setIsUseDeviceFontState((prev) => {
+      const isNextValue = !prev;
+      Storage.setItem(DEVICE_FONT_STORAGE_KEY, String(isNextValue)).catch((error) => {
+        console.error('Error saving device font mode to storage:', error);
+      });
+      return isNextValue;
+    });
+  }, []);
+
   const effectiveMode: ThemeMode = isFollowSystem
     ? systemColorScheme === 'dark'
       ? 'dark'
@@ -183,14 +215,25 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const isPureBlackAvailable = isDarkMode && !isHighContrast;
 
   const theme = useMemo(() => {
-    if (isHighContrast) {
-      return isDarkMode ? highContrastDarkTheme : highContrastLightTheme;
+    const baseTheme = isHighContrast
+      ? isDarkMode
+        ? highContrastDarkTheme
+        : highContrastLightTheme
+      : isDarkMode && isPureBlack
+        ? oledDarkTheme
+        : isDarkMode
+          ? darkTheme
+          : lightTheme;
+
+    if (!isUseDeviceFont) {
+      return baseTheme;
     }
-    if (isDarkMode && isPureBlack) {
-      return oledDarkTheme;
-    }
-    return isDarkMode ? darkTheme : lightTheme;
-  }, [isDarkMode, isHighContrast, isPureBlack]);
+
+    return {
+      ...baseTheme,
+      typography: deviceTypography,
+    };
+  }, [isDarkMode, isHighContrast, isPureBlack, isUseDeviceFont]);
 
   const contextValue = useMemo(
     () => ({
@@ -201,6 +244,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       isHighContrast,
       isPureBlack,
       isPureBlackAvailable,
+      isUseDeviceFont,
       setMode: handleSetMode,
       toggleTheme,
       setIsFollowSystem: handleSetFollowSystem,
@@ -209,6 +253,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       toggleHighContrast,
       setIsPureBlack: handleSetPureBlack,
       togglePureBlack,
+      setIsUseDeviceFont: handleSetUseDeviceFont,
+      toggleUseDeviceFont,
     }),
     [
       theme,
@@ -218,6 +264,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       isHighContrast,
       isPureBlack,
       isPureBlackAvailable,
+      isUseDeviceFont,
       handleSetMode,
       toggleTheme,
       handleSetFollowSystem,
@@ -226,6 +273,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       toggleHighContrast,
       handleSetPureBlack,
       togglePureBlack,
+      handleSetUseDeviceFont,
+      toggleUseDeviceFont,
     ],
   );
 

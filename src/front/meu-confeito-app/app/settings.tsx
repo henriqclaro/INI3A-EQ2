@@ -87,7 +87,8 @@ export default function SettingsScreen() {
       {
         id: 'appearance',
         title: 'Aparência',
-        description: 'Personalize cores, alto contraste e economia de bateria em telas OLED',
+        description:
+          'Personalize cores, alto contraste, fonte do dispositivo e economia de bateria OLED',
         icon: 'palette-outline',
       },
       {
@@ -389,7 +390,7 @@ export default function SettingsScreen() {
                         id="settings_appearance"
                         icon="palette-outline"
                         title="Personalize a Aparência"
-                        description="Alterne entre tema claro artesanal, modo escuro noturno, alto contraste e economia OLED."
+                        description="Alterne entre tema claro artesanal, modo escuro, alto contraste, fonte do dispositivo e economia OLED."
                         actionText="Ajustar Tema Visual"
                         onPress={() => handleSelectTopic('appearance')}
                       />

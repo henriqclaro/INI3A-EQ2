@@ -1,5 +1,12 @@
 import { useMemo } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import {
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 
 import { router } from 'expo-router';
 
@@ -19,14 +26,17 @@ export function AppearanceTopic() {
     isHighContrast,
     isPureBlack,
     isPureBlackAvailable,
+    isUseDeviceFont,
     setMode,
     toggleFollowSystem,
     toggleHighContrast,
     togglePureBlack,
+    toggleUseDeviceFont,
   } = useThemeMode();
   const { triggerHaptic } = useSettings();
   const { width } = useWindowDimensions();
   const isSmallScreen = width < theme.breakpoints.sm;
+  const isMobileDevice = Platform.OS !== 'web' || width < theme.breakpoints.md;
 
   const styles = useMemo(
     () => createStyles(theme, isSmallScreen, isPureBlack && isPureBlackAvailable),
@@ -54,6 +64,11 @@ export function AppearanceTopic() {
     if (isPureBlackAvailable) {
       togglePureBlack();
     }
+  };
+
+  const handleToggleUseDeviceFont = () => {
+    triggerHaptic('selection');
+    toggleUseDeviceFont();
   };
 
   return (
@@ -275,6 +290,40 @@ export function AppearanceTopic() {
           </Text>
         </View>
       </View>
+
+      {/* Device System Font Option (Mobile Only) */}
+      {isMobileDevice && (
+        <View style={styles.card}>
+          <View style={styles.toggleRow}>
+            <View style={styles.toggleInfo}>
+              <View style={styles.iconCircle}>
+                <MaterialCommunityIcons name="format-font" size={22} color={theme.colors.primary} />
+              </View>
+              <View style={styles.textColumn}>
+                <View style={styles.titleWithBadge}>
+                  <Text style={styles.title}>Fonte do Dispositivo</Text>
+                  <View style={isUseDeviceFont ? styles.activeBadge : styles.inactiveBadge}>
+                    <Text
+                      style={isUseDeviceFont ? styles.activeBadgeText : styles.inactiveBadgeText}
+                    >
+                      {isUseDeviceFont ? 'Ativado' : 'Desativado'}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={styles.subtitle}>
+                  Substitui as fontes customizadas pela tipografia padrão do seu dispositivo
+                </Text>
+              </View>
+            </View>
+
+            <ThemeSwitch
+              value={isUseDeviceFont}
+              onValueChange={handleToggleUseDeviceFont}
+              accessibilityLabel="Alternar uso da fonte padrão do dispositivo"
+            />
+          </View>
+        </View>
+      )}
 
       {/* Accessibility Shortcut (outside container, same as AboutAppTopic.tsx) */}
       <View style={styles.supportSection}>

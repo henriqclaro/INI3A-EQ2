@@ -103,6 +103,16 @@ export const SETTING_SHORTCUTS: SettingShortcutItem[] = [
     icon: 'power-sleep',
     synonyms: ['oled', 'amoled', 'bateria', 'preto', 'economia'],
   },
+  {
+    id: 'device-font',
+    topicId: 'appearance',
+    topicTitle: 'Aparência',
+    title: 'Fonte do Dispositivo',
+    description: 'Utilizar a fonte padrão do sistema operacional no lugar das fontes customizadas',
+    icon: 'format-font',
+    synonyms: ['fonte', 'font', 'tipografia', 'sistema', 'dispositivo', 'letras', 'texto'],
+    isMobileOnly: true,
+  },
 
   // Acessibilidade e Interação
   {

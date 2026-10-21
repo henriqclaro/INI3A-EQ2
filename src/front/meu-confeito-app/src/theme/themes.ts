@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+
 import { MD3DarkTheme, MD3LightTheme } from 'react-native-paper';
 
 export const colors = {
@@ -107,51 +109,88 @@ export const chips = {
   },
 };
 
-export const typography = {
+export const deviceFont = Platform.select({
+  web: 'Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif',
+  ios: 'System',
+  default: 'sans-serif',
+});
+
+export type TypographyVariant = {
+  fontFamily: string | undefined;
+  fontSize: number;
+  lineHeight: number;
+  letterSpacing?: number;
+  fontWeight?: '700' | '600' | '500' | '400';
+};
+
+export type AppTypography = {
+  headlineXl: TypographyVariant;
+  headlineLg: TypographyVariant;
+  headlineMd: TypographyVariant;
+  bodyLg: TypographyVariant;
+  bodyMd: TypographyVariant;
+  bodySm: TypographyVariant;
+  labelMd: TypographyVariant;
+  labelSm: TypographyVariant;
+};
+
+export const createTypography = (isUseDeviceFont = false): AppTypography => ({
   headlineXl: {
-    fontFamily: 'Playfair-Bold',
+    fontFamily: isUseDeviceFont ? deviceFont : 'Playfair-Bold',
     fontSize: 32,
     lineHeight: 38,
     letterSpacing: 0.6,
+    ...(isUseDeviceFont ? { fontWeight: '700' as const } : {}),
   },
   headlineLg: {
-    fontFamily: 'Playfair-Bold',
+    fontFamily: isUseDeviceFont ? deviceFont : 'Playfair-Bold',
     fontSize: 26,
     lineHeight: 32,
+    ...(isUseDeviceFont ? { fontWeight: '700' as const } : {}),
   },
   headlineMd: {
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: isUseDeviceFont ? deviceFont : 'Inter-SemiBold',
     fontSize: 20,
     lineHeight: 26,
+    ...(isUseDeviceFont ? { fontWeight: '600' as const } : {}),
   },
   bodyLg: {
-    fontFamily: 'Inter-Regular',
+    fontFamily: isUseDeviceFont ? deviceFont : 'Inter-Regular',
     fontSize: 18,
     lineHeight: 28,
+    ...(isUseDeviceFont ? { fontWeight: '400' as const } : {}),
   },
   bodyMd: {
-    fontFamily: 'Inter-Regular',
+    fontFamily: isUseDeviceFont ? deviceFont : 'Inter-Regular',
     fontSize: 16,
     lineHeight: 24,
+    ...(isUseDeviceFont ? { fontWeight: '400' as const } : {}),
   },
   bodySm: {
-    fontFamily: 'Inter-Regular',
+    fontFamily: isUseDeviceFont ? deviceFont : 'Inter-Regular',
     fontSize: 14,
     lineHeight: 20,
+    ...(isUseDeviceFont ? { fontWeight: '400' as const } : {}),
   },
   labelMd: {
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: isUseDeviceFont ? deviceFont : 'Inter-SemiBold',
     fontSize: 12,
     lineHeight: 16,
     letterSpacing: 0.5,
+    ...(isUseDeviceFont ? { fontWeight: '600' as const } : {}),
   },
   labelSm: {
-    fontFamily: 'Inter-Medium',
+    fontFamily: isUseDeviceFont ? deviceFont : 'Inter-Medium',
     fontSize: 11,
     lineHeight: 14,
     letterSpacing: 0.2,
+    ...(isUseDeviceFont ? { fontWeight: '500' as const } : {}),
   },
-};
+});
+
+export const customTypography = createTypography(false);
+export const deviceTypography = createTypography(true);
+export const typography = customTypography;
 
 export const rounded = {
   sm: 4,
