@@ -1,0 +1,59 @@
+name: 🚀 Deploy da Landing Page (Site)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/site/**"
+      - ".github/workflows/deploy-landing.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Landing Page para o Servidor via SSH
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Baixar código do repositório
+        uses: actions/checkout@v4
+
+      - name: 🔑 Configurar autenticação SSH
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          # Save private key and ensure proper permissions and trailing newline
+          echo "$SSH_KEY" | tr -d '\r' > ~/.ssh/deploy_key
+          echo "" >> ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          # Register host in known_hosts to prevent MITM warnings
+          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: 🚀 Transferir arquivos da Landing Page para o servidor
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          SERVER_PATH: ${{ secrets.SERVER_PATH || '/var/www/equipes/26-meuconfeito' }}
+        run: |
+          REMOTE_PATH="${SERVER_PATH%/}/landing"
+
+          # Ensure destination directory exists on the remote host without deleting existing files
+          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new "$SSH_USER@$SSH_HOST" \
+            "mkdir -p '$REMOTE_PATH'"
+
+          # Synchronize contents of src/site/ directly into the target landing directory
+          rsync -avz -e "ssh -i ~/.ssh/deploy_key -p $SSH_PORT -o StrictHostKeyChecking=accept-new" \
+            src/site/ "$SSH_USER@$SSH_HOST:$REMOTE_PATH/"
+
+      - name: 🧹 Limpar credenciais temporárias
+        if: always()
+        run: |
+          rm -f ~/.ssh/deploy_key
