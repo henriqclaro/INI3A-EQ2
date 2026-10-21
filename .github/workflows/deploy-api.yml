@@ -5,8 +5,8 @@ on:
     branches:
       - main
     paths:
-      - 'src/api/meu-confeito-api/**'
-      - '.github/workflows/deploy-api.yml'
+      - "src/api/meu-confeito-api/**"
+      - ".github/workflows/deploy-api.yml"
   workflow_dispatch:
 
 jobs:
@@ -68,8 +68,10 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
-          REMOTE_PATH: ${{ secrets.SERVER_PATH || '/var/www/equipes/26-meuconfeito/meu-confeito-api' }}
+          SERVER_PATH: ${{ secrets.SERVER_PATH || '/var/www/equipes/26-meuconfeito' }}
         run: |
+          REMOTE_PATH="${SERVER_PATH%/}/meu-confeito-api"
+
           # Ensure destination directory exists on the remote host without deleting existing files
           ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new "$SSH_USER@$SSH_HOST" \
             "mkdir -p '$REMOTE_PATH'"
@@ -83,8 +85,10 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
-          REMOTE_PATH: ${{ secrets.SERVER_PATH || '/var/www/equipes/26-meuconfeito/meu-confeito-api' }}
+          SERVER_PATH: ${{ secrets.SERVER_PATH || '/var/www/equipes/26-meuconfeito' }}
         run: |
+          REMOTE_PATH="${SERVER_PATH%/}/meu-confeito-api"
+
           ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new "$SSH_USER@$SSH_HOST" \
             "bash -l -s '$REMOTE_PATH'" << 'EOF'
             set -e
