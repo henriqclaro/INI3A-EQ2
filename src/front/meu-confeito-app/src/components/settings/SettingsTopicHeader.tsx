@@ -73,7 +73,6 @@ const createStyles = (theme: AppTheme) =>
     title: {
       fontFamily: theme.typography.headlineLg.fontFamily,
       fontSize: 24,
-      fontWeight: '600',
       color: theme.colors.espressoDark,
       letterSpacing: 0.5,
     },

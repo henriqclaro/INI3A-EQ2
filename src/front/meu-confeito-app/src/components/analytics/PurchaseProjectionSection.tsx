@@ -943,7 +943,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       letterSpacing: 0.5,
     },
     resultKpiValue: {
-      fontFamily: theme.typography.headlineLg.fontFamily,
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 22,
       fontWeight: '700',
       color: theme.colors.espressoDark,

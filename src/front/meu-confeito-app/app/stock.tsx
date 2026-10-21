@@ -656,7 +656,6 @@ const createStyles = (
     pageTitle: {
       fontFamily: theme.typography.headlineLg.fontFamily,
       fontSize: isMobile ? 24 : 30,
-      fontWeight: '700',
       color: theme.colors.espressoDark,
       marginBottom: 4,
     },

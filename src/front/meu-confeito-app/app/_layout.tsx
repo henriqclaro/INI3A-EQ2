@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { useFonts } from 'expo-font';
 import {
   DarkTheme,
   DefaultTheme,
@@ -9,6 +10,7 @@ import {
   useRouter,
   useSegments,
 } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
 
@@ -26,6 +28,8 @@ import { useRoutePersistence } from '@/src/hooks/useRoutePersistence';
 import { AppTheme } from '@/src/theme/themes';
 
 registerTranslation('pt', pt);
+
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function useProtectedRoute() {
   const { user, isLoadingStorage } = useAuth();
@@ -153,6 +157,23 @@ const createStyles = (theme: AppTheme) =>
   });
 
 export default function RootLayout() {
+  const [hasLoadedFonts, fontError] = useFonts({
+    'Playfair-Bold': require('../assets/fonts/Playfair/PlayfairDisplaySC-Bold.ttf'),
+    'Inter-Regular': require('../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
+    'Inter-Medium': require('../assets/fonts/Inter/Inter_18pt-Medium.ttf'),
+    'Inter-SemiBold': require('../assets/fonts/Inter/Inter_18pt-SemiBold.ttf'),
+  });
+
+  useEffect(() => {
+    if (hasLoadedFonts || fontError) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [hasLoadedFonts, fontError]);
+
+  if (!hasLoadedFonts && !fontError) {
+    return null;
+  }
+
   return (
     <ThemeProvider>
       <SettingsProvider>

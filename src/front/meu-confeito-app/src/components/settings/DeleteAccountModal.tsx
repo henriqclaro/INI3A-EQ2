@@ -193,7 +193,7 @@ const createStyles = (theme: AppTheme) =>
       marginBottom: theme.spacing.space1,
     },
     modalTitle: {
-      fontFamily: theme.typography.headlineLg.fontFamily,
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 20,
       fontWeight: '700',
       color: theme.colors.espressoDark,

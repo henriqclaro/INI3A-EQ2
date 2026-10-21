@@ -109,55 +109,47 @@ export const chips = {
 
 export const typography = {
   headlineXl: {
-    fontFamily: 'Playfair Display SC',
+    fontFamily: 'Playfair-Bold',
     fontSize: 32,
     lineHeight: 38,
     letterSpacing: 0.6,
-    fontWeight: '600' as const,
   },
   headlineLg: {
-    fontFamily: 'Playfair Display SC',
+    fontFamily: 'Playfair-Bold',
     fontSize: 26,
     lineHeight: 32,
-    fontWeight: '600' as const,
   },
   headlineMd: {
-    fontFamily: 'Playfair Display SC',
+    fontFamily: 'Inter-SemiBold',
     fontSize: 20,
     lineHeight: 26,
-    fontWeight: '600' as const,
   },
   bodyLg: {
-    fontFamily: 'Inter',
+    fontFamily: 'Inter-Regular',
     fontSize: 18,
     lineHeight: 28,
-    fontWeight: '400' as const,
   },
   bodyMd: {
-    fontFamily: 'Inter',
+    fontFamily: 'Inter-Regular',
     fontSize: 16,
     lineHeight: 24,
-    fontWeight: '400' as const,
   },
   bodySm: {
-    fontFamily: 'Inter',
+    fontFamily: 'Inter-Regular',
     fontSize: 14,
     lineHeight: 20,
-    fontWeight: '400' as const,
   },
   labelMd: {
-    fontFamily: 'Inter',
+    fontFamily: 'Inter-SemiBold',
     fontSize: 12,
     lineHeight: 16,
     letterSpacing: 0.5,
-    fontWeight: '600' as const,
   },
   labelSm: {
-    fontFamily: 'Inter',
+    fontFamily: 'Inter-Medium',
     fontSize: 11,
     lineHeight: 14,
     letterSpacing: 0.2,
-    fontWeight: '500' as const,
   },
 };
 

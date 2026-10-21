@@ -382,7 +382,6 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
     title: {
       fontFamily: theme.typography.headlineLg.fontFamily,
       fontSize: isDesktop ? 24 : 20,
-      fontWeight: '700',
       color: theme.colors.espressoDark,
       textAlign: isDesktop ? 'left' : 'center',
       marginBottom: 4,

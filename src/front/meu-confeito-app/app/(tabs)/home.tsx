@@ -548,9 +548,8 @@ const createCustomerStyles = (theme: AppTheme, isDesktop: boolean) =>
     },
     title: {
       color: theme.colors.espressoDark,
-      fontFamily: theme.typography.headlineXl.fontFamily,
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: isDesktop ? 32 : 28,
-      fontWeight: '600',
       marginBottom: 4,
     },
     subtitle: {
@@ -609,7 +608,6 @@ const createBakerStyles = (
     greetingTitle: {
       fontFamily: theme.typography.headlineXl.fontFamily,
       fontSize: isDesktop ? 32 : 28,
-      fontWeight: '700',
       color: theme.colors.espressoDark,
       letterSpacing: 0.3,
     },

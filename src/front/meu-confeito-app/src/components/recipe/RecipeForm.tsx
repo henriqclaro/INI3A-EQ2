@@ -1274,7 +1274,6 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       color: theme.colors.espressoDark,
       fontFamily: theme.typography.headlineLg.fontFamily,
       fontSize: 26,
-      fontWeight: '600',
       marginBottom: 6,
       marginTop: 4,
     },

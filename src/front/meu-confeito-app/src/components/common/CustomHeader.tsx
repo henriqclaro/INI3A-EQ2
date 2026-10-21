@@ -124,8 +124,7 @@ const createStyles = (theme: AppTheme) =>
     headerText: {
       fontSize: 22,
       lineHeight: 28,
-      fontFamily: theme.typography.headlineMd.fontFamily,
-      fontWeight: '600',
+      fontFamily: theme.typography.headlineLg.fontFamily,
       color: theme.colors.espressoDark,
       letterSpacing: 0.5,
       textAlign: 'left',

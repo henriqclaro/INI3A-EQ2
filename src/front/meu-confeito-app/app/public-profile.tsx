@@ -588,7 +588,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       textTransform: 'uppercase',
     },
     bakerName: {
-      fontFamily: theme.typography.headlineLg.fontFamily,
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 24,
       fontWeight: '600',
       color: theme.colors.espressoDark,

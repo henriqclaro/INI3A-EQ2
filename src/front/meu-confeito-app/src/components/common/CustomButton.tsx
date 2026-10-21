@@ -111,7 +111,6 @@ const createStyles = (
     btnText: {
       fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
-      fontWeight: theme.typography.labelMd.fontWeight,
       letterSpacing: theme.typography.labelMd.letterSpacing,
       textTransform: 'uppercase',
       color: textColor,

@@ -568,7 +568,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       justifyContent: 'center',
     },
     kpiValue: {
-      fontFamily: theme.typography.headlineLg.fontFamily,
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 22,
       fontWeight: '700',
       color: theme.colors.espressoDark,
@@ -577,7 +577,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       color: theme.colors.error,
     },
     kpiValueHero: {
-      fontFamily: theme.typography.headlineXl.fontFamily,
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 28,
       fontWeight: '700',
     },

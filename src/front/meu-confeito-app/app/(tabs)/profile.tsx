@@ -418,7 +418,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       letterSpacing: 0.5,
     },
     userName: {
-      fontFamily: theme.typography.headlineLg.fontFamily,
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 24,
       fontWeight: '600',
       color: theme.colors.espressoDark,

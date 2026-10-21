@@ -641,7 +641,6 @@ const createStyles = (
     desktopHeaderTitle: {
       fontFamily: theme.typography.headlineLg.fontFamily,
       fontSize: 28,
-      fontWeight: '700',
       color: theme.colors.espressoDark,
     },
     desktopHeaderSubtitle: {

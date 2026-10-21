@@ -502,7 +502,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean) =>
       minWidth: 110,
     },
     bigScoreText: {
-      fontFamily: theme.typography.headlineXl.fontFamily,
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 36,
       fontWeight: 'bold',
       color: theme.colors.espressoDark,

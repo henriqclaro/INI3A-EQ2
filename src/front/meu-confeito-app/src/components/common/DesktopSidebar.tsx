@@ -349,9 +349,8 @@ const createStyles = (theme: AppTheme) =>
       gap: 2,
     },
     brandTitle: {
-      fontFamily: theme.typography.headlineMd.fontFamily,
+      fontFamily: theme.typography.headlineLg.fontFamily,
       fontSize: 18,
-      fontWeight: '600',
       color: theme.colors.espressoDark,
       letterSpacing: 0.4,
     },

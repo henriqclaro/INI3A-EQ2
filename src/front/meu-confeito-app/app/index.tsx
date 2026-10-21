@@ -158,7 +158,6 @@ const createStyles = (theme: AppTheme, hasSideImage: boolean) =>
       paddingHorizontal: 15,
       paddingVertical: 10,
       fontSize: 26,
-      fontWeight: '600',
       fontFamily: theme.typography.headlineLg.fontFamily,
     },
     text: {

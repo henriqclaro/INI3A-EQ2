@@ -364,7 +364,6 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
     title: {
       fontFamily: theme.typography.headlineLg.fontFamily,
       fontSize: 22,
-      fontWeight: '600',
       color: theme.colors.espressoDark,
       textAlign: 'center',
       marginBottom: 6,

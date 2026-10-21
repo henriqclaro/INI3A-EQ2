@@ -1900,7 +1900,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
     primaryTitle: {
       width: '100%',
       color: theme.colors.espressoDark,
-      fontFamily: theme.typography.headlineLg.fontFamily,
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 26,
       lineHeight: 32,
       fontWeight: 'bold',
@@ -2969,7 +2969,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, isSmallScreen: boolea
       color: theme.colors.onSurfaceVariant,
     },
     priceValueText: {
-      fontFamily: theme.typography.headlineLg.fontFamily,
+      fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 28,
       fontWeight: 'bold',
       color: theme.colors.tertiary,
