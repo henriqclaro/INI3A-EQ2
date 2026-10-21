@@ -2,6 +2,10 @@ import { Router } from 'express';
 
 import { UserController } from '../controllers/user.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
+import {
+  createUserHourlyRateLimiter,
+  createUserMinuteRateLimiter,
+} from '../middlewares/rate-limit.middleware';
 import { uploadAvatarMiddleware } from '../middlewares/upload.middleware';
 import { validate } from '../middlewares/validate.middleware';
 import * as user from '../validation/user.schema';
@@ -13,6 +17,8 @@ const userController = new UserController();
 
 userRoutes.post(
   '/',
+  createUserMinuteRateLimiter,
+  createUserHourlyRateLimiter,
   validate({ body: user.registerSchema }),
   userController.register.bind(userController),
 );

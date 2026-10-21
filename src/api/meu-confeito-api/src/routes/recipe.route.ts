@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import { RecipeController } from '../controllers/recipe.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
+import { createRecipeHourlyRateLimiter } from '../middlewares/rate-limit.middleware';
 import { uploadCoverMiddleware } from '../middlewares/upload.middleware';
 import { validate } from '../middlewares/validate.middleware';
 import * as recipe from '../validation/recipe.schema';
@@ -13,6 +14,7 @@ recipeRoutes.use(authMiddleware);
 
 recipeRoutes.post(
   '/',
+  createRecipeHourlyRateLimiter,
   validate({ body: recipe.registerSchema }),
   recipeController.register.bind(recipeController),
 );
