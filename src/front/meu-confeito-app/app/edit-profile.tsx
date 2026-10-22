@@ -150,14 +150,18 @@ export default function EditProfileScreen() {
   useEffect(() => {
     let isMounted = true;
 
-    if (!isBakerRole) {
+    if (!isBakerRole || !user?.id) {
       return;
     }
 
+    const currentUserId = user.id;
+
     async function loadBakerData() {
-      // Preload fast cache
-      const fastCached = OfflineCacheService.getBakerProfileFast();
-      if (fastCached && isMounted) {
+      setIsLoadingInitialBaker(true);
+
+      // Preload fast cache only if it belongs to current user
+      const fastCached = OfflineCacheService.getBakerProfileFast(currentUserId);
+      if (fastCached && fastCached.userId === currentUserId && isMounted) {
         const initialFastData: InitialBakerData = {
           isPublicProfile: true,
           publicName: fastCached.publicName || '',
@@ -221,38 +225,12 @@ export default function EditProfileScreen() {
           setSelectedTags(initialData.selectedTags);
           OfflineCacheService.saveBakerProfile(profile).catch(() => {});
         }
-      } catch {
+      } catch (err: unknown) {
         if (isMounted) {
-          const cached = await OfflineCacheService.getBakerProfile();
-          if (cached) {
-            const initialCachedData: InitialBakerData = {
-              isPublicProfile: true,
-              publicName: cached.publicName || '',
-              whatsapp: cached.whatsapp ? formatPhoneInput(cached.whatsapp) : '',
-              bio: cached.bio || '',
-              instagram: cached.instagram || '',
-              city: cached.city || '',
-              neighborhood: cached.neighborhood || '',
-              locationCoords: cached.location
-                ? {
-                    latitude: cached.location.latitude,
-                    longitude: cached.location.longitude,
-                  }
-                : null,
-              selectedTags: Array.isArray(cached.tags) ? cached.tags : [],
-            };
-            setInitialBakerData(initialCachedData);
-            setIsPublicProfile(true);
-            setHasInitialBakerProfile(true);
-            setPublicName(initialCachedData.publicName);
-            setWhatsapp(initialCachedData.whatsapp);
-            setBio(initialCachedData.bio);
-            setInstagram(initialCachedData.instagram);
-            setCity(initialCachedData.city);
-            setNeighborhood(initialCachedData.neighborhood);
-            setLocationCoords(initialCachedData.locationCoords);
-            setSelectedTags(initialCachedData.selectedTags);
-          } else {
+          const apiErr = err as { response?: { status?: number } };
+          if (apiErr?.response?.status === 404) {
+            // 404 means the user has not created a baker profile yet (private profile)
+            OfflineCacheService.saveBakerProfile(null).catch(() => {});
             setInitialBakerData({
               isPublicProfile: false,
               publicName: '',
@@ -268,7 +246,66 @@ export default function EditProfileScreen() {
             setHasInitialBakerProfile(false);
             setPublicName('');
             setWhatsapp('');
+            setBio('');
+            setInstagram('');
+            setCity('');
+            setNeighborhood('');
+            setLocationCoords(null);
             setSelectedTags([]);
+          } else {
+            // Offline fallback: only restore cache if it belongs to current user
+            const cached = await OfflineCacheService.getBakerProfile(currentUserId);
+            if (cached && cached.userId === currentUserId) {
+              const initialCachedData: InitialBakerData = {
+                isPublicProfile: true,
+                publicName: cached.publicName || '',
+                whatsapp: cached.whatsapp ? formatPhoneInput(cached.whatsapp) : '',
+                bio: cached.bio || '',
+                instagram: cached.instagram || '',
+                city: cached.city || '',
+                neighborhood: cached.neighborhood || '',
+                locationCoords: cached.location
+                  ? {
+                      latitude: cached.location.latitude,
+                      longitude: cached.location.longitude,
+                    }
+                  : null,
+                selectedTags: Array.isArray(cached.tags) ? cached.tags : [],
+              };
+              setInitialBakerData(initialCachedData);
+              setIsPublicProfile(true);
+              setHasInitialBakerProfile(true);
+              setPublicName(initialCachedData.publicName);
+              setWhatsapp(initialCachedData.whatsapp);
+              setBio(initialCachedData.bio);
+              setInstagram(initialCachedData.instagram);
+              setCity(initialCachedData.city);
+              setNeighborhood(initialCachedData.neighborhood);
+              setLocationCoords(initialCachedData.locationCoords);
+              setSelectedTags(initialCachedData.selectedTags);
+            } else {
+              setInitialBakerData({
+                isPublicProfile: false,
+                publicName: '',
+                whatsapp: '',
+                bio: '',
+                instagram: '',
+                city: '',
+                neighborhood: '',
+                locationCoords: null,
+                selectedTags: [],
+              });
+              setIsPublicProfile(false);
+              setHasInitialBakerProfile(false);
+              setPublicName('');
+              setWhatsapp('');
+              setBio('');
+              setInstagram('');
+              setCity('');
+              setNeighborhood('');
+              setLocationCoords(null);
+              setSelectedTags([]);
+            }
           }
         }
       } finally {
@@ -283,7 +320,7 @@ export default function EditProfileScreen() {
     return () => {
       isMounted = false;
     };
-  }, [isBakerRole]);
+  }, [isBakerRole, user?.id]);
 
   useEffect(() => {
     if (!isFocusCommercial || isLoadingInitialBaker) {

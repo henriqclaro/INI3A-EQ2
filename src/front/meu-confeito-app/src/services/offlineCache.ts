@@ -182,18 +182,28 @@ export const OfflineCacheService = {
   // ---------------------------------------------------------------------------
   // BAKER PROFILE
   // ---------------------------------------------------------------------------
-  getBakerProfileFast(): BakerProfile | null {
+  getBakerProfileFast(expectedUserId?: string): BakerProfile | null {
+    if (expectedUserId && memoryBakerProfile && memoryBakerProfile.userId !== expectedUserId) {
+      return null;
+    }
     return memoryBakerProfile;
   },
 
-  async getBakerProfile(): Promise<BakerProfile | null> {
+  async getBakerProfile(expectedUserId?: string): Promise<BakerProfile | null> {
     if (memoryBakerProfile !== null) {
+      if (expectedUserId && memoryBakerProfile.userId !== expectedUserId) {
+        return null;
+      }
       return memoryBakerProfile;
     }
     try {
       const raw = await AsyncStorage.getItem(BAKER_PROFILE_KEY);
       if (!raw) return null;
-      memoryBakerProfile = JSON.parse(raw) as BakerProfile;
+      const parsed = JSON.parse(raw) as BakerProfile;
+      if (expectedUserId && parsed && parsed.userId !== expectedUserId) {
+        return null;
+      }
+      memoryBakerProfile = parsed;
       return memoryBakerProfile;
     } catch {
       return null;
@@ -282,6 +292,29 @@ export const OfflineCacheService = {
       await AsyncStorage.setItem(PUBLIC_RECIPES_KEY, JSON.stringify(compacted));
     } catch (err) {
       console.warn('Failed to cache public recipes offline:', err);
+    }
+  },
+
+  // ---------------------------------------------------------------------------
+  // SESSION / USER CACHE EVICTION
+  // ---------------------------------------------------------------------------
+  async clearUserCache(): Promise<void> {
+    memoryUserRecipes = null;
+    memorySavedRecipes = null;
+    memoryArchivedRecipes = null;
+    memoryBakerProfile = null;
+    memoryUserReviews = null;
+
+    try {
+      await AsyncStorage.multiRemove([
+        USER_RECIPES_KEY,
+        SAVED_RECIPES_KEY,
+        ARCHIVED_RECIPES_KEY,
+        BAKER_PROFILE_KEY,
+        USER_REVIEWS_KEY,
+      ]);
+    } catch (err) {
+      console.warn('Failed to clear user offline cache:', err);
     }
   },
 };

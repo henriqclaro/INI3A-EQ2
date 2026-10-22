@@ -16,7 +16,10 @@ import {
   setAuthFailureListener,
 } from '../services/api';
 import { AuthService, LogInData, LogInResponse } from '../services/auth';
+import { OfflineCacheService } from '../services/offlineCache';
+import { OfflineOperationsService } from '../services/offlineOperations';
 import { UserService } from '../services/user';
+import { clearAllFormDrafts } from '../utils/drafts';
 import { Storage } from '../utils/storage';
 
 export interface UserProfile {
@@ -47,6 +50,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setAuthFailureListener((reason) => {
       setUser(null);
+      OfflineCacheService.clearUserCache().catch(() => {});
+      OfflineOperationsService.clearAllOperationsData().catch(() => {});
+      clearAllFormDrafts();
       if (reason === 'USER_ACCOUNT_GONE') {
         Alert.alert(
           'Acesso Revogado',
@@ -180,6 +186,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = useCallback(async (data: LogInData) => {
+    // Clear any previous user stale cache on this device before setting new user session
+    await OfflineCacheService.clearUserCache().catch(() => {});
+    await OfflineOperationsService.clearAllOperationsData().catch(() => {});
+    clearAllFormDrafts();
+
     const res: LogInResponse = await AuthService.logIn(data);
 
     const { user: loggedUser, auth } = res.data;
@@ -209,6 +220,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await Storage.removeItem('access_token');
       await Storage.removeItem('refresh_token');
       await Storage.removeItem('user_profile');
+
+      await OfflineCacheService.clearUserCache().catch(() => {});
+      await OfflineOperationsService.clearAllOperationsData().catch(() => {});
+      clearAllFormDrafts();
 
       setUser(null);
     }

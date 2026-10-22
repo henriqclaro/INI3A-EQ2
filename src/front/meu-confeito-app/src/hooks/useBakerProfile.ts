@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useAuth } from '../contexts/AuthContext';
 import { BakerProfileService } from '../services/baker-profile';
 import { NetworkService } from '../services/network';
 import { OfflineCacheService } from '../services/offlineCache';
@@ -25,6 +26,9 @@ interface ApiError {
 }
 
 export function useMyBakerProfile(isEnabled: boolean = true) {
+  const { user } = useAuth();
+  const currentUserId = user?.id;
+
   const [bakerProfile, setBakerProfile] = useState<BakerProfile | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(isEnabled);
   const [hasBakerProfile, setHasBakerProfile] = useState<boolean>(false);
@@ -32,7 +36,7 @@ export function useMyBakerProfile(isEnabled: boolean = true) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchProfile = useCallback(async () => {
-    if (!isEnabled) {
+    if (!isEnabled || !currentUserId) {
       setIsLoading(false);
       return;
     }
@@ -58,9 +62,10 @@ export function useMyBakerProfile(isEnabled: boolean = true) {
       if (apiErr?.response?.status === 404) {
         setBakerProfile(null);
         setHasBakerProfile(false);
+        OfflineCacheService.saveBakerProfile(null).catch(() => {});
       } else {
-        const cached = await OfflineCacheService.getBakerProfile();
-        if (cached) {
+        const cached = await OfflineCacheService.getBakerProfile(currentUserId);
+        if (cached && cached.userId === currentUserId) {
           setBakerProfile(cached);
           setHasBakerProfile(true);
           setIsOffline(true);
@@ -75,19 +80,19 @@ export function useMyBakerProfile(isEnabled: boolean = true) {
     } finally {
       setIsLoading(false);
     }
-  }, [isEnabled]);
+  }, [isEnabled, currentUserId]);
 
   useEffect(() => {
     let isMounted = true;
 
-    if (!isEnabled) {
+    if (!isEnabled || !currentUserId) {
       return;
     }
 
     async function load() {
-      // Preload fast cache
-      const fastCached = OfflineCacheService.getBakerProfileFast();
-      if (fastCached && isMounted) {
+      // Preload fast cache only if it belongs to current user
+      const fastCached = OfflineCacheService.getBakerProfileFast(currentUserId);
+      if (fastCached && fastCached.userId === currentUserId && isMounted) {
         setBakerProfile(fastCached);
         setHasBakerProfile(true);
       }
@@ -113,9 +118,10 @@ export function useMyBakerProfile(isEnabled: boolean = true) {
           if (apiErr?.response?.status === 404) {
             setBakerProfile(null);
             setHasBakerProfile(false);
+            OfflineCacheService.saveBakerProfile(null).catch(() => {});
           } else {
-            const cached = await OfflineCacheService.getBakerProfile();
-            if (cached) {
+            const cached = await OfflineCacheService.getBakerProfile(currentUserId);
+            if (cached && cached.userId === currentUserId) {
               setBakerProfile(cached);
               setHasBakerProfile(true);
               setIsOffline(true);
@@ -140,7 +146,7 @@ export function useMyBakerProfile(isEnabled: boolean = true) {
     return () => {
       isMounted = false;
     };
-  }, [isEnabled]);
+  }, [isEnabled, currentUserId]);
 
   return {
     bakerProfile,
