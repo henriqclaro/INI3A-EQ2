@@ -84,20 +84,58 @@ export default function ReportsScreen() {
     setAndCalculatePlannedProductions,
   } = usePurchaseProjection();
 
+  const handleTabChange = useCallback(
+    (tab: AnalyticsTab) => {
+      setActiveTab(tab);
+      if (params.tab || params.recipeId) {
+        router.setParams({
+          tab: '',
+          recipeId: '',
+          targetYield: '',
+          recipeTitle: '',
+          yieldUnit: '',
+        });
+      }
+    },
+    [params.tab, params.recipeId],
+  );
+
+  const handleSelectTabWithScroll = useCallback(
+    (tab: AnalyticsTab) => {
+      handleTabChange(tab);
+      setTimeout(() => {
+        const totalY = contentYRef.current + tabSelectorYRef.current;
+        const targetY = Math.max(0, totalY - 16);
+        scrollViewRef.current?.scrollTo({
+          y: targetY,
+          animated: true,
+        });
+      }, 100);
+    },
+    [handleTabChange],
+  );
+
   useFocusEffect(
     useCallback(() => {
-      if (params.tab === 'projection' && activeTab !== 'projection') {
-        setActiveTab('projection');
+      const hasProjectionParam = params.tab === 'projection' || Boolean(params.recipeId);
+      const hasProfitParam = params.tab === 'profit';
+
+      if (!hasProjectionParam && !hasProfitParam) {
+        lastHandledParamsKeyRef.current = '';
+        return;
       }
 
-      if (params.recipeId && params.targetYield) {
-        const paramKey = `${params.recipeId}_${params.targetYield}`;
-        if (lastHandledParamsKeyRef.current !== paramKey) {
-          lastHandledParamsKeyRef.current = paramKey;
-          if (activeTab !== 'projection') {
-            setActiveTab('projection');
-          }
+      const paramKey = `${params.tab || ''}_${params.recipeId || ''}_${params.targetYield || ''}`;
+      if (paramKey && lastHandledParamsKeyRef.current !== paramKey) {
+        lastHandledParamsKeyRef.current = paramKey;
 
+        if (hasProjectionParam) {
+          setActiveTab('projection');
+        } else if (hasProfitParam) {
+          setActiveTab('profit');
+        }
+
+        if (params.recipeId && params.targetYield) {
           setAndCalculatePlannedProductions([
             {
               recipeId: String(params.recipeId),
@@ -115,6 +153,14 @@ export default function ReportsScreen() {
             });
           }, 150);
         }
+
+        router.setParams({
+          tab: '',
+          recipeId: '',
+          targetYield: '',
+          recipeTitle: '',
+          yieldUnit: '',
+        });
       }
     }, [
       params.tab,
@@ -122,7 +168,6 @@ export default function ReportsScreen() {
       params.targetYield,
       params.recipeTitle,
       params.yieldUnit,
-      activeTab,
       setAndCalculatePlannedProductions,
     ]),
   );
@@ -139,18 +184,6 @@ export default function ReportsScreen() {
       setIsRefreshing(false);
     }
   }, [activeTab, refetchProfit, plannedProductions.length, calculateProjection]);
-
-  const handleSelectTabWithScroll = useCallback((tab: AnalyticsTab) => {
-    setActiveTab(tab);
-    setTimeout(() => {
-      const totalY = contentYRef.current + tabSelectorYRef.current;
-      const targetY = Math.max(0, totalY - 16);
-      scrollViewRef.current?.scrollTo({
-        y: targetY,
-        animated: true,
-      });
-    }, 100);
-  }, []);
 
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
@@ -235,7 +268,7 @@ export default function ReportsScreen() {
           >
             <TouchableOpacity
               style={[styles.tabButton, activeTab === 'profit' && styles.tabButtonActive]}
-              onPress={() => setActiveTab('profit')}
+              onPress={() => handleTabChange('profit')}
               activeOpacity={0.8}
               accessibilityRole="button"
               accessibilityLabel="Ver resumo de rentabilidade e custos"
@@ -256,7 +289,7 @@ export default function ReportsScreen() {
 
             <TouchableOpacity
               style={[styles.tabButton, activeTab === 'projection' && styles.tabButtonActive]}
-              onPress={() => setActiveTab('projection')}
+              onPress={() => handleTabChange('projection')}
               activeOpacity={0.8}
               accessibilityRole="button"
               accessibilityLabel="Ver projeção e demanda de compras"
