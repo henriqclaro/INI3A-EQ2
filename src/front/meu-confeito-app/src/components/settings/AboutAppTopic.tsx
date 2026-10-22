@@ -37,6 +37,8 @@ export function AboutAppTopic() {
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
+  const appVersion = Constants.expoConfig?.version ?? '1.0.0';
+
   const commercialSystemVersion = useMemo(() => {
     if (Platform.OS === 'web') {
       return null;
@@ -131,7 +133,7 @@ export function AboutAppTopic() {
           </View>
           <View style={styles.brandTextWrapper}>
             <Text style={styles.brandName}>Meu Confeito</Text>
-            <Text style={styles.appVersion}>Versão 1.1.3 (Beta)</Text>
+            <Text style={styles.appVersion}>Versão {appVersion} (Beta)</Text>
           </View>
         </View>
 
