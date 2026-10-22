@@ -374,7 +374,8 @@ export default function RegisterStockScreen() {
             </View>
             <Text style={styles.headline}>Entrada no Estoque</Text>
             <Text style={styles.subheadline}>
-              Cadastre a compra ou o saldo inicial dos insumos que você utiliza na cozinha.
+              Cadastre compras ou ajustes de insumos da sua cozinha, sejam itens novos ou já
+              cadastrados no catálogo.
             </Text>
           </View>
 

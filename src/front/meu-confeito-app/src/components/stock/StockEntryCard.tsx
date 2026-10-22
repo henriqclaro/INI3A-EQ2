@@ -4,6 +4,7 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-nativ
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { DateInput, IngredientSelector } from '@/src/components/common';
+import { ExistingStockInfoCard } from '@/src/components/stock/ExistingStockInfoCard';
 import { StockCard } from '@/src/components/stock/StockCard';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
@@ -210,24 +211,17 @@ export function StockEntryCard({
           helperText="Busque e selecione o ingrediente do catálogo para dar entrada ou ajuste de estoque."
         />
 
-        {/* Existing Stock Alert */}
+        {/* Existing Stock Detailed Transparency Card */}
         {isAlreadyInStock && existingStockItem && (
-          <View style={styles.existingStockBanner}>
-            <MaterialCommunityIcons
-              name="information-outline"
-              size={18}
-              color={theme.colors.primary}
-            />
-            <View style={styles.existingStockTextContainer}>
-              <Text style={styles.existingStockTitle}>Item já possui estoque:</Text>
-              <Text style={styles.existingStockDetail}>
-                Saldo atual: {formatQuantity(existingStockItem.currentQuantity, baseUnit)} | Custo
-                médio:{' '}
-                {formatCurrency(Number(existingStockItem.costPerBaseUnit) || 0, priceDecimalPlaces)}{' '}
-                / {baseUnit}
-              </Text>
-            </View>
-          </View>
+          <ExistingStockInfoCard
+            existingItem={existingStockItem}
+            baseUnit={baseUnit}
+            entryMode={entryMode}
+            parsedQuantity={parsedQuantity}
+            parsedCost={parsedCost}
+            priceDecimalPlaces={priceDecimalPlaces}
+            isMobile={isMobile}
+          />
         )}
       </View>
 
@@ -321,8 +315,14 @@ export function StockEntryCard({
           </View>
           <Text style={styles.helperText}>
             {entryMode === 'purchase'
-              ? `Total de insumo adicionado ao estoque em ${baseUnit}.`
-              : `Contagem real de insumo disponível na cozinha em ${baseUnit}.`}
+              ? isAlreadyInStock && existingStockItem
+                ? Number(existingStockItem.currentQuantity) <= 0
+                  ? `Quantidade a ser adicionada para reabastecer o insumo (atualmente em falta) em ${baseUnit}.`
+                  : `Quantidade que será somada ao saldo existente de ${formatQuantity(existingStockItem.currentQuantity, baseUnit)}.`
+                : `Total de insumo adicionado ao estoque em ${baseUnit}.`
+              : isAlreadyInStock && existingStockItem
+                ? `Saldo atual registrado: ${formatQuantity(existingStockItem.currentQuantity, baseUnit)}. Digite a contagem física real após a conferência.`
+                : `Contagem real de insumo disponível na cozinha em ${baseUnit}.`}
           </Text>
         </View>
 
@@ -534,32 +534,6 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
     },
     required: {
       color: theme.colors.primary,
-    },
-    existingStockBanner: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      gap: 8,
-      backgroundColor: theme.colors.parchment,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      borderRadius: theme.rounded.default,
-      padding: 10,
-      marginTop: 8,
-    },
-    existingStockTextContainer: {
-      flex: 1,
-    },
-    existingStockTitle: {
-      fontFamily: theme.typography.labelMd.fontFamily,
-      fontSize: 12,
-      fontWeight: '700',
-      color: theme.colors.espressoDark,
-    },
-    existingStockDetail: {
-      fontFamily: theme.typography.bodySm.fontFamily,
-      fontSize: 11,
-      color: theme.colors.onSurfaceVariant,
-      marginTop: 2,
     },
     helperText: {
       fontFamily: theme.typography.bodySm.fontFamily,
