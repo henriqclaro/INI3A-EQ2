@@ -1,10 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   RefreshControl,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
   useWindowDimensions,
@@ -16,30 +15,27 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { ActivityIndicator } from 'react-native-paper';
 
-import {
-  CustomButton,
-  DateInput,
-  IngredientSelector,
-  OfflineBanner,
-  StockCard,
-} from '@/src/components';
+import { CustomButton, DraftRecoveryBanner, OfflineBanner } from '@/src/components/common';
+import { StockEntryCard } from '@/src/components/stock';
 import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
+import { useFormDraft } from '@/src/hooks/useFormDraft';
 import { useIngredients } from '@/src/hooks/useIngredients';
 import { useInventory } from '@/src/hooks/useInventory';
 import { useNetwork } from '@/src/hooks/useNetwork';
 import { useUnsavedChangesWarning } from '@/src/hooks/useUnsavedChangesWarning';
+import { InventoryService } from '@/src/services/inventory';
 import { AppTheme } from '@/src/theme/themes';
-import { PartialIngredient } from '@/src/types/ingredient';
-import { InventoryItem } from '@/src/types/inventory';
 import {
-  formatCurrency,
-  formatDateForApi,
-  formatQuantity,
-  getIngredientDisplayUnit,
-} from '@/src/utils/formatters';
-
-type EntryMode = 'purchase' | 'adjustment';
+  StockEntryItem,
+  StockEntryMode,
+  StockRegisterDraft,
+  createEmptyStockEntryItem,
+  deserializeStockEntryItem,
+  serializeStockEntryItem,
+} from '@/src/types/stockEntry';
+import { STOCK_REGISTER_DRAFT_KEY } from '@/src/utils/drafts';
+import { formatCurrency, formatDateForApi } from '@/src/utils/formatters';
 
 export default function RegisterStockScreen() {
   const { theme } = useThemeMode();
@@ -49,17 +45,78 @@ export default function RegisterStockScreen() {
   const isMobile = width < 768;
 
   const { ingredients: availableIngredients, refetch: refetchIngredients } = useIngredients();
-  const {
-    inventory,
-    registerPurchase,
-    registerAdjustment,
-    refetch: refetchInventory,
-  } = useInventory();
+  const { inventory, refetch: refetchInventory } = useInventory();
 
   // Mode: purchase (with cost & avg calculation) or initial adjustment (only balance)
-  const [entryMode, setEntryMode] = useState<EntryMode>('purchase');
+  const [entryMode, setEntryMode] = useState<StockEntryMode>('purchase');
+  const [items, setItems] = useState<StockEntryItem[]>([createEmptyStockEntryItem()]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [savingIndex, setSavingIndex] = useState(1);
+  const [savingTotal, setSavingTotal] = useState(1);
+  const [isSubmitSuccessful, setIsSubmitSuccessful] = useState(false);
+
+  // Form Draft Persistence via kvStorage (MMKV)
+  const {
+    hasDraft,
+    hasSavedDraftOnMount,
+    draftTimestamp,
+    saveDraft,
+    clearDraft,
+    discardDraft,
+    restoreDraft,
+  } = useFormDraft<StockRegisterDraft>(STOCK_REGISTER_DRAFT_KEY);
+
+  const [isDraftDismissed, setIsDraftDismissed] = useState(false);
+  const isDraftBannerVisible = hasSavedDraftOnMount && hasDraft && !isDraftDismissed;
+  const isInitialMount = useRef(true);
+
+  // Auto-save draft on form state changes
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    if (isSubmitting || isSubmitSuccessful) {
+      return;
+    }
+
+    const hasMeaningfulContent =
+      items.length > 1 ||
+      items.some(
+        (it) =>
+          it.selectedIngredientId ||
+          it.quantityInput.trim() ||
+          it.totalCostInput.trim() ||
+          it.notesInput.trim() ||
+          it.packageSize.trim() ||
+          it.expirationDate !== null,
+      );
+
+    if (hasMeaningfulContent) {
+      saveDraft({
+        entryMode,
+        items: items.map(serializeStockEntryItem),
+      });
+    }
+  }, [items, entryMode, isSubmitting, isSubmitSuccessful, saveDraft]);
+
+  const handleRestoreDraft = useCallback(() => {
+    const draft = restoreDraft();
+    if (draft && Array.isArray(draft.items) && draft.items.length > 0) {
+      setEntryMode(draft.entryMode || 'purchase');
+      setItems(draft.items.map(deserializeStockEntryItem));
+    }
+    setIsDraftDismissed(true);
+  }, [restoreDraft]);
+
+  const handleDiscardDraft = useCallback(() => {
+    discardDraft();
+    setItems([createEmptyStockEntryItem()]);
+    setIsDraftDismissed(true);
+  }, [discardDraft]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -70,42 +127,40 @@ export default function RegisterStockScreen() {
     }
   };
 
-  // Form Fields
-  const [selectedIngredient, setSelectedIngredient] = useState<PartialIngredient | null>(null);
-  const [selectedIngredientId, setSelectedIngredientId] = useState('');
-  const [quantityInput, setQuantityInput] = useState('');
-  const [totalCostInput, setTotalCostInput] = useState('');
-  const [expirationDate, setExpirationDate] = useState<Date | null>(null);
-  const [notesInput, setNotesInput] = useState('');
+  // Add a new empty ingredient entry form
+  const handleAddItem = useCallback(() => {
+    setItems((prev) => [...prev, createEmptyStockEntryItem()]);
+  }, []);
 
-  // Package calculation helper
-  const [isPackageHelperEnabled, setIsPackageHelperEnabled] = useState(false);
-  const [packageCount, setPackageCount] = useState('1');
-  const [packageSize, setPackageSize] = useState('');
+  // Remove an entry form by unique ID
+  const handleRemoveItem = useCallback((id: string) => {
+    setItems((prev) => {
+      if (prev.length <= 1) return prev;
+      return prev.filter((it) => it.id !== id);
+    });
+  }, []);
 
-  const [hasTouchedIngredient, setHasTouchedIngredient] = useState(false);
-  const [isSubmitSuccessful, setIsSubmitSuccessful] = useState(false);
+  // Update a specific item in the array
+  const handleUpdateItem = useCallback((updated: StockEntryItem) => {
+    setItems((prev) => prev.map((it) => (it.id === updated.id ? updated : it)));
+  }, []);
 
+  // Unsaved changes detector
   const hasUnsavedChanges = useMemo(() => {
     if (isSubmitting || isSubmitSuccessful) return false;
-    return Boolean(
-      selectedIngredientId ||
-      quantityInput.trim() ||
-      totalCostInput.trim() ||
-      expirationDate !== null ||
-      notesInput.trim() ||
-      packageSize.trim(),
+    return (
+      items.length > 1 ||
+      items.some(
+        (it) =>
+          it.selectedIngredientId ||
+          it.quantityInput.trim() ||
+          it.totalCostInput.trim() ||
+          it.notesInput.trim() ||
+          it.packageSize.trim() ||
+          it.expirationDate !== null,
+      )
     );
-  }, [
-    isSubmitting,
-    isSubmitSuccessful,
-    selectedIngredientId,
-    quantityInput,
-    totalCostInput,
-    expirationDate,
-    notesInput,
-    packageSize,
-  ]);
+  }, [isSubmitting, isSubmitSuccessful, items]);
 
   const { allowNextNavigation } = useUnsavedChangesWarning(hasUnsavedChanges, {
     title: 'Descartar entrada de estoque?',
@@ -115,102 +170,19 @@ export default function RegisterStockScreen() {
     cancelText: 'Continuar preenchendo',
   });
 
-  // Find the selected ingredient object
-  const currentIngredient = useMemo(() => {
-    if (selectedIngredient && String(selectedIngredient.id) === String(selectedIngredientId)) {
-      return selectedIngredient;
-    }
-    return (
-      availableIngredients.find((ing) => String(ing.id) === String(selectedIngredientId)) || null
-    );
-  }, [selectedIngredient, availableIngredients, selectedIngredientId]);
-
-  const baseUnit = getIngredientDisplayUnit(currentIngredient);
-
-  // Check if ingredient already exists in current user inventory
-  const existingStockItem = useMemo(() => {
-    if (!selectedIngredientId) return null;
-    return (
-      inventory.find((item) => String(item.ingredientId) === String(selectedIngredientId)) || null
-    );
-  }, [inventory, selectedIngredientId]);
-
-  const isAlreadyInStock = Boolean(existingStockItem);
-
-  // Sync package helper with quantityInput
-  const handlePackageValuesChange = (newCountStr: string, newSizeStr: string) => {
-    const count = parseFloat(newCountStr.replace(',', '.')) || 0;
-    const size = parseFloat(newSizeStr.replace(',', '.')) || 0;
-
-    if (count > 0 && size > 0) {
-      setQuantityInput(String(count * size));
-    }
-  };
-
-  // Parsed numerical values
-  const parsedQuantity = parseFloat(quantityInput.replace(',', '.')) || 0;
-  const parsedCost = parseFloat(totalCostInput.replace(',', '.')) || 0;
-
-  // Calculated unit cost preview
-  const calculatedUnitCost = parsedQuantity > 0 && parsedCost > 0 ? parsedCost / parsedQuantity : 0;
-
-  // Validation
-  const ingredientError = useMemo(() => {
-    if (!hasTouchedIngredient) return '';
-    if (!selectedIngredientId) return 'Selecione um ingrediente da lista.';
-    return '';
-  }, [hasTouchedIngredient, selectedIngredientId]);
-
-  // Mock item for live preview card
-  const previewItem: InventoryItem | null = useMemo(() => {
-    if (!currentIngredient) return null;
-
-    const currentQty = existingStockItem ? Number(existingStockItem.currentQuantity) : 0;
-    const currentCost = existingStockItem ? Number(existingStockItem.costPerBaseUnit) : 0;
-
-    let finalQty = parsedQuantity;
-    let finalCost = calculatedUnitCost;
-
-    if (entryMode === 'purchase') {
-      if (existingStockItem && currentQty > 0) {
-        finalQty = currentQty + parsedQuantity;
-        finalCost = (currentQty * currentCost + parsedCost) / (finalQty > 0 ? finalQty : 1);
-      } else {
-        finalQty = parsedQuantity;
-        finalCost = calculatedUnitCost;
+  // Calculate total batch cost for purchase mode
+  const totalBatchCost = useMemo(() => {
+    let costSum = 0;
+    for (const it of items) {
+      const parsed = parseFloat(it.totalCostInput.replace(',', '.')) || 0;
+      if (parsed > 0) {
+        costSum += parsed;
       }
-    } else {
-      finalQty = parsedQuantity;
-      finalCost = currentCost;
     }
+    return costSum;
+  }, [items]);
 
-    return {
-      ingredientId: Number(currentIngredient.id),
-      currentQuantity: finalQty,
-      costPerBaseUnit: finalCost,
-      expirationDate: expirationDate ? (formatDateForApi(expirationDate) ?? null) : null,
-      lastUpdated: new Date(),
-      ingredient: {
-        id: Number(currentIngredient.id),
-        name: currentIngredient.name,
-        slug: currentIngredient.slug || '',
-        category: currentIngredient.category,
-        baseDimension: currentIngredient.baseDimension || 'MASS',
-        baseUnit: currentIngredient.baseUnit || baseUnit,
-        description: currentIngredient.description || null,
-      },
-    };
-  }, [
-    currentIngredient,
-    existingStockItem,
-    parsedQuantity,
-    calculatedUnitCost,
-    entryMode,
-    parsedCost,
-    expirationDate,
-    baseUnit,
-  ]);
-
+  // Submit multiple entries sequentially with error isolation
   const handleSubmit = async () => {
     if (isOffline) {
       Alert.alert(
@@ -220,45 +192,100 @@ export default function RegisterStockScreen() {
       return;
     }
 
-    setHasTouchedIngredient(true);
+    // Mark all as touched for validation styling
+    setItems((prev) => prev.map((it) => ({ ...it, hasTouchedIngredient: true })));
 
-    if (!selectedIngredientId) {
-      Alert.alert('Campo Obrigatório', 'Selecione um ingrediente da lista para continuar.');
+    // Validate each item
+    const validationErrors: string[] = [];
+    items.forEach((it, idx) => {
+      const itemNum = idx + 1;
+      const qty = parseFloat(it.quantityInput.replace(',', '.')) || 0;
+      const cost = parseFloat(it.totalCostInput.replace(',', '.')) || 0;
+
+      if (!it.selectedIngredientId) {
+        validationErrors.push(`Insumo #${itemNum}: Selecione um insumo da lista.`);
+      } else if (isNaN(qty) || qty <= 0) {
+        validationErrors.push(`Insumo #${itemNum}: Informe uma quantidade válida maior que zero.`);
+      } else if (entryMode === 'purchase' && (isNaN(cost) || cost <= 0)) {
+        validationErrors.push(
+          `Insumo #${itemNum}: Informe o valor total pago para cálculo do custo unitário.`,
+        );
+      }
+    });
+
+    if (validationErrors.length > 0) {
+      Alert.alert(
+        'Campos Obrigatórios',
+        validationErrors.slice(0, 3).join('\n') +
+          (validationErrors.length > 3
+            ? `\n...e mais ${validationErrors.length - 3} aviso(s). Corrija os dados para continuar.`
+            : ''),
+      );
       return;
     }
-
-    if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
-      Alert.alert('Quantidade Inválida', 'A quantidade deve ser um valor numérico maior que zero.');
-      return;
-    }
-
-    // Format optional expiration date for API request format (YYYY-MM-DD)
-    const formattedExpDate = formatDateForApi(expirationDate);
 
     try {
       setIsSubmitting(true);
+      setSavingTotal(items.length);
 
-      if (entryMode === 'purchase') {
-        if (isNaN(parsedCost) || parsedCost <= 0) {
-          Alert.alert(
-            'Custo Inválido',
-            'Informe o custo total pago nesta compra para cálculo do custo unitário.',
-          );
-          setIsSubmitting(false);
-          return;
+      const succeededIds: string[] = [];
+      const failedMessages: string[] = [];
+
+      for (let i = 0; i < items.length; i++) {
+        const it = items[i];
+        setSavingIndex(i + 1);
+
+        const parsedQty = parseFloat(it.quantityInput.replace(',', '.')) || 0;
+        const parsedCost = parseFloat(it.totalCostInput.replace(',', '.')) || 0;
+        const formattedExpDate = formatDateForApi(it.expirationDate);
+
+        try {
+          if (entryMode === 'purchase') {
+            await InventoryService.registerPurchase({
+              ingredientId: Number(it.selectedIngredientId),
+              quantity: parsedQty,
+              totalCost: parsedCost,
+              expirationDate: formattedExpDate,
+            });
+          } else {
+            await InventoryService.registerAdjustment({
+              ingredientId: Number(it.selectedIngredientId),
+              realQuantity: parsedQty,
+              notes: it.notesInput.trim() || undefined,
+            });
+          }
+          succeededIds.push(it.id);
+        } catch (err: unknown) {
+          const apiErr = err as {
+            response?: { data?: { message?: string } };
+            message?: string;
+          };
+          const msg =
+            apiErr?.response?.data?.message ||
+            apiErr?.message ||
+            `Não foi possível registrar o insumo #${i + 1}.`;
+          failedMessages.push(`Insumo #${i + 1}: ${msg}`);
         }
+      }
 
-        await registerPurchase({
-          ingredientId: Number(selectedIngredientId),
-          quantity: parsedQuantity,
-          totalCost: parsedCost,
-          expirationDate: formattedExpDate,
-        });
+      // Re-fetch inventory once after batch execution
+      await refetchInventory();
 
+      if (failedMessages.length === 0) {
+        // All succeeded
+        clearDraft();
         setIsSubmitSuccessful(true);
         allowNextNavigation();
 
-        Alert.alert('Sucesso!', 'Entrada de compra registrada com sucesso!', [
+        const successTitle = entryMode === 'purchase' ? 'Compras Registradas!' : 'Ajustes Salvos!';
+        const successMessage =
+          items.length > 1
+            ? `${items.length} movimentações de estoque foram registradas com sucesso!`
+            : entryMode === 'purchase'
+              ? 'Entrada de compra registrada com sucesso!'
+              : 'Saldo de estoque ajustado com sucesso!';
+
+        Alert.alert(successTitle, successMessage, [
           {
             text: 'Ver Estoque',
             onPress: () => {
@@ -271,40 +298,48 @@ export default function RegisterStockScreen() {
           },
         ]);
       } else {
-        // Adjustment mode
-        await registerAdjustment({
-          ingredientId: Number(selectedIngredientId),
-          realQuantity: parsedQuantity,
-          notes: notesInput.trim() || undefined,
-        });
+        // Partial or complete failure: preserve failed items so user doesn't lose work
+        const remainingItems = items.filter((it) => !succeededIds.includes(it.id));
+        setItems(remainingItems.length > 0 ? remainingItems : [createEmptyStockEntryItem()]);
 
-        setIsSubmitSuccessful(true);
-        allowNextNavigation();
+        if (remainingItems.length > 0) {
+          saveDraft({
+            entryMode,
+            items: remainingItems.map(serializeStockEntryItem),
+          });
+        }
 
-        Alert.alert('Sucesso!', 'Saldo de estoque ajustado com sucesso!', [
-          {
-            text: 'Ver Estoque',
-            onPress: () => {
-              if (router.canGoBack()) {
-                router.back();
-              } else {
-                router.replace('/stock');
-              }
-            },
-          },
-        ]);
+        if (succeededIds.length > 0) {
+          Alert.alert(
+            'Sucesso Parcial',
+            `${succeededIds.length} insumo(s) salvo(s) com sucesso, porém ${failedMessages.length} apresentaram erro:\n\n${failedMessages.join('\n')}\n\nOs itens com erro foram mantidos na tela para que você possa corrigir e tentar novamente.`,
+          );
+        } else {
+          Alert.alert(
+            'Erro ao Registrar',
+            `Não foi possível salvar os registros no estoque:\n\n${failedMessages.join('\n')}`,
+          );
+        }
       }
-    } catch (err: unknown) {
-      const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
-      const msg =
-        apiErr?.response?.data?.message ||
-        apiErr?.message ||
-        'Não foi possível registrar o item no estoque. Tente novamente.';
-      Alert.alert('Erro ao registrar', msg);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const submitButtonTitle = useMemo(() => {
+    const count = items.length;
+    if (entryMode === 'purchase') {
+      return count > 1 ? `Salvar ${count} Compras no Estoque` : 'Salvar Compra no Estoque';
+    }
+    return count > 1 ? `Salvar ${count} Ajustes de Estoque` : 'Salvar Ajuste de Estoque';
+  }, [entryMode, items.length]);
+
+  const submittingStatusText = useMemo(() => {
+    if (savingTotal > 1) {
+      return `Salvando insumo ${savingIndex} de ${savingTotal}...`;
+    }
+    return 'Salvando no estoque...';
+  }, [savingIndex, savingTotal]);
 
   const styles = useMemo(() => createStyles(theme, isMobile), [theme, isMobile]);
 
@@ -348,6 +383,16 @@ export default function RegisterStockScreen() {
             message="Você está offline. Operações de compra e ajuste de estoque requerem conexão com a internet."
           />
 
+          {/* Draft Recovery Banner */}
+          <DraftRecoveryBanner
+            isVisible={isDraftBannerVisible}
+            draftTimestamp={draftTimestamp}
+            onRestore={handleRestoreDraft}
+            onDiscard={handleDiscardDraft}
+            title="Rascunho de entrada em estoque encontrado"
+            subtitle="Você possui registros não salvos da última sessão. Deseja restaurar a lista de insumos?"
+          />
+
           {/* Entry Mode Selector */}
           <View style={styles.modeTabs}>
             <TouchableOpacity
@@ -385,261 +430,62 @@ export default function RegisterStockScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Section 1: Insumo / Ingrediente */}
-          <View style={styles.fieldset}>
-            <View style={styles.fieldsetHeader}>
-              <MaterialCommunityIcons
-                name="food-apple-outline"
-                size={20}
-                color={theme.colors.primary}
+          {/* List of Stock Entry Cards (spacious, uncompressed fieldsets) */}
+          <View style={styles.entriesList}>
+            {items.map((entryItem, index) => (
+              <StockEntryCard
+                key={entryItem.id}
+                item={entryItem}
+                index={index}
+                totalItems={items.length}
+                entryMode={entryMode}
+                availableIngredients={availableIngredients}
+                inventory={inventory}
+                priceDecimalPlaces={priceDecimalPlaces}
+                isMobile={isMobile}
+                onChange={handleUpdateItem}
+                onRemove={handleRemoveItem}
               />
-              <Text style={styles.fieldsetSectionTitle}>1. Seleção do Insumo</Text>
-            </View>
+            ))}
+          </View>
 
-            <IngredientSelector
-              selectedIngredientId={selectedIngredientId}
-              selectedIngredient={currentIngredient}
-              onSelectIngredient={(ing) => {
-                setSelectedIngredient(ing);
-                setSelectedIngredientId(ing ? String(ing.id) : '');
-                setHasTouchedIngredient(true);
-              }}
-              initialIngredients={availableIngredients}
-              error={ingredientError}
-              isRequired
-              label="Insumo"
-              placeholder="Buscar insumo (ex: Farinha)..."
-              helperText="Busque e selecione o ingrediente do catálogo para dar entrada ou ajuste de estoque."
+          {/* Button to expand a new ingredient form in the same screen */}
+          <TouchableOpacity
+            style={styles.btnAddItem}
+            onPress={handleAddItem}
+            disabled={isSubmitting}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Adicionar outro insumo"
+          >
+            <MaterialCommunityIcons
+              name="plus-circle-outline"
+              size={22}
+              color={theme.colors.primary}
             />
+            <Text style={styles.btnAddItemText}>Adicionar Outro Insumo</Text>
+          </TouchableOpacity>
 
-            {/* Existing Stock Alert */}
-            {isAlreadyInStock && existingStockItem && (
-              <View style={styles.existingStockBanner}>
-                <MaterialCommunityIcons
-                  name="information-outline"
-                  size={18}
-                  color={theme.colors.primary}
-                />
-                <View style={styles.existingStockTextContainer}>
-                  <Text style={styles.existingStockTitle}>Item já possui estoque:</Text>
-                  <Text style={styles.existingStockDetail}>
-                    Saldo atual: {formatQuantity(existingStockItem.currentQuantity, baseUnit)} |
-                    Custo médio:{' '}
-                    {formatCurrency(
-                      Number(existingStockItem.costPerBaseUnit) || 0,
-                      priceDecimalPlaces,
-                    )}{' '}
-                    / {baseUnit}
-                  </Text>
-                </View>
-              </View>
-            )}
-          </View>
-
-          {/* Section 2: Quantidade e Custo */}
-          <View style={styles.fieldset}>
-            <View style={styles.fieldsetHeader}>
-              <MaterialCommunityIcons name="scale-balance" size={20} color={theme.colors.primary} />
-              <Text style={styles.fieldsetSectionTitle}>
-                {entryMode === 'purchase' ? '2. Dados da Compra' : '2. Quantidade Física Real'}
+          {/* Batch total highlight for multi-item purchases */}
+          {items.length > 1 && entryMode === 'purchase' && totalBatchCost > 0 && (
+            <View style={styles.batchTotalBox}>
+              <Text style={styles.batchTotalLabel}>Total da Compra ({items.length} insumos):</Text>
+              <Text style={styles.batchTotalValue}>
+                {formatCurrency(totalBatchCost, priceDecimalPlaces)}
               </Text>
-            </View>
-
-            {/* Package Helper Toggle */}
-            {entryMode === 'purchase' && (
-              <TouchableOpacity
-                style={styles.packageHelperToggle}
-                onPress={() => setIsPackageHelperEnabled(!isPackageHelperEnabled)}
-                activeOpacity={0.8}
-              >
-                <MaterialCommunityIcons
-                  name={isPackageHelperEnabled ? 'checkbox-marked' : 'checkbox-blank-outline'}
-                  size={20}
-                  color={theme.colors.primary}
-                />
-                <Text style={styles.packageHelperToggleText}>
-                  Calcular quantidade por pacotes / fardos
-                </Text>
-              </TouchableOpacity>
-            )}
-
-            {/* Package Helper Inputs */}
-            {entryMode === 'purchase' && isPackageHelperEnabled && (
-              <View style={styles.rowTwoCols}>
-                <View style={[styles.fieldWrapper, styles.colFlex]}>
-                  <Text style={styles.label}>Nº de Pacotes</Text>
-                  <TextInput
-                    style={styles.singleInput}
-                    value={packageCount}
-                    onChangeText={(val) => {
-                      setPackageCount(val);
-                      handlePackageValuesChange(val, packageSize);
-                    }}
-                    placeholder="Ex: 2"
-                    placeholderTextColor={theme.colors.placeholder}
-                    keyboardType="numeric"
-                  />
-                </View>
-
-                <View style={[styles.fieldWrapper, styles.colFlex]}>
-                  <Text style={styles.label}>Tamanho por Pacote ({baseUnit})</Text>
-                  <View style={styles.inputWithSuffix}>
-                    <TextInput
-                      style={styles.textInputFlex}
-                      value={packageSize}
-                      onChangeText={(val) => {
-                        setPackageSize(val);
-                        handlePackageValuesChange(packageCount, val);
-                      }}
-                      placeholder="Ex: 500"
-                      placeholderTextColor={theme.colors.placeholder}
-                      keyboardType="numeric"
-                    />
-                    <View style={styles.suffixBadge}>
-                      <Text style={styles.suffixText}>{baseUnit}</Text>
-                    </View>
-                  </View>
-                </View>
-              </View>
-            )}
-
-            {/* Quantity Input */}
-            <View style={styles.fieldWrapper}>
-              <Text style={styles.label}>
-                {entryMode === 'purchase'
-                  ? `Quantidade Comprada (${baseUnit}) *`
-                  : `Saldo Físico Real (${baseUnit}) *`}
-              </Text>
-              <View style={styles.inputWithSuffix}>
-                <TextInput
-                  style={styles.textInputFlex}
-                  value={quantityInput}
-                  onChangeText={setQuantityInput}
-                  placeholder="0"
-                  placeholderTextColor={theme.colors.placeholder}
-                  keyboardType="numeric"
-                />
-                <View style={styles.suffixBadge}>
-                  <Text style={styles.suffixText}>{baseUnit}</Text>
-                </View>
-              </View>
-              <Text style={styles.helperText}>
-                {entryMode === 'purchase'
-                  ? `Total de insumo adicionado ao estoque em ${baseUnit}.`
-                  : `Contagem real de insumo disponível na cozinha em ${baseUnit}.`}
-              </Text>
-            </View>
-
-            {/* Cost Input (Purchase Mode) */}
-            {entryMode === 'purchase' && (
-              <View style={styles.fieldWrapper}>
-                <Text style={styles.label}>
-                  Valor Total Pago (R$) <Text style={styles.required}>*</Text>
-                </Text>
-                <View style={styles.inputWithPrefix}>
-                  <Text style={styles.prefixText}>R$</Text>
-                  <TextInput
-                    style={styles.textInputFlex}
-                    value={totalCostInput}
-                    onChangeText={setTotalCostInput}
-                    placeholder="0,00"
-                    placeholderTextColor={theme.colors.placeholder}
-                    keyboardType="numeric"
-                  />
-                </View>
-                <Text style={styles.helperText}>
-                  Valor total pago nesta compra (utilizado para calcular o custo unitário médio
-                  ponderado).
-                </Text>
-              </View>
-            )}
-
-            {/* Unit Cost Preview Box */}
-            {entryMode === 'purchase' && (
-              <View style={styles.costSummaryBox}>
-                <View style={styles.costSummaryHeader}>
-                  <MaterialCommunityIcons
-                    name="calculator-variant-outline"
-                    size={18}
-                    color={theme.colors.primary}
-                  />
-                  <Text style={styles.costSummaryTitle}>Custo por Unidade Base ({baseUnit})</Text>
-                </View>
-                <Text style={styles.costSummaryValue}>
-                  {calculatedUnitCost > 0
-                    ? `${formatCurrency(calculatedUnitCost, priceDecimalPlaces)} / ${baseUnit}`
-                    : 'R$ 0,00'}
-                </Text>
-                <Text style={styles.costSummaryExplainer}>
-                  {calculatedUnitCost > 0
-                    ? `Calculado a partir de ${formatCurrency(parsedCost, priceDecimalPlaces)} para ${formatQuantity(parsedQuantity, baseUnit)}.`
-                    : 'Preencha a quantidade e o valor total para visualizar o custo unitário.'}
-                </Text>
-              </View>
-            )}
-
-            {/* Expiration Date (Purchase Mode) */}
-            {entryMode === 'purchase' && (
-              <DateInput
-                label="Data de Validade (Opcional)"
-                value={expirationDate}
-                onChangeDate={setExpirationDate}
-                placeholder="DD/MM/AAAA"
-                helperText="Se informada, você receberá avisos automáticos na tela de Estoque antes do vencimento."
-                isClearable
-              />
-            )}
-
-            {/* Notes (Adjustment Mode) */}
-            {entryMode === 'adjustment' && (
-              <View style={styles.fieldWrapper}>
-                <Text style={styles.label}>Observações / Motivo (Opcional)</Text>
-                <TextInput
-                  style={styles.textArea}
-                  value={notesInput}
-                  onChangeText={setNotesInput}
-                  placeholder="Ex: Contagem inicial de estoque..."
-                  placeholderTextColor={theme.colors.placeholder}
-                  maxLength={255}
-                  multiline
-                />
-              </View>
-            )}
-          </View>
-
-          {/* Live Preview Section */}
-          {previewItem && (
-            <View style={styles.previewSection}>
-              <View style={styles.previewHeaderRow}>
-                <MaterialCommunityIcons
-                  name="eye-outline"
-                  size={18}
-                  color={theme.colors.espressoDark}
-                />
-                <Text style={styles.previewSectionTitle}>Prévia no Estoque</Text>
-              </View>
-              <Text style={styles.previewSubtitle}>
-                Como o insumo será apresentado no seu painel:
-              </Text>
-
-              <StockCard
-                item={previewItem}
-                onAdjust={() => {}}
-                onPurchase={() => {}}
-                onWaste={() => {}}
-              />
             </View>
           )}
 
           {/* Action Buttons */}
           <View style={styles.actionButtonsContainer}>
             {isSubmitting ? (
-              <ActivityIndicator size="large" color={theme.colors.primary} />
+              <View style={styles.submittingContainer}>
+                <ActivityIndicator size="small" color={theme.colors.primary} />
+                <Text style={styles.submittingText}>{submittingStatusText}</Text>
+              </View>
             ) : (
               <CustomButton
-                title={
-                  entryMode === 'purchase' ? 'Salvar Compra no Estoque' : 'Salvar Ajuste de Estoque'
-                }
+                title={submitButtonTitle}
                 variant="primary"
                 onPress={handleSubmit}
                 style={styles.btnSubmit}
@@ -651,6 +497,7 @@ export default function RegisterStockScreen() {
               variant="secondary"
               onPress={() => router.back()}
               style={styles.btnCancel}
+              isDisabled={isSubmitting}
             />
           </View>
         </View>
@@ -674,7 +521,7 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
     },
     card: {
       width: '100%',
-      maxWidth: 620,
+      maxWidth: 640,
       backgroundColor: theme.colors.surfaceContainerLowest,
       borderRadius: theme.rounded.lg,
       padding: isMobile ? 16 : 24,
@@ -748,251 +595,75 @@ const createStyles = (theme: AppTheme, isMobile: boolean) =>
       color: theme.colors.primary,
       fontWeight: '700',
     },
-    fieldset: {
+    entriesList: {
       width: '100%',
-      backgroundColor: theme.colors.surfaceContainerLowest,
-      borderRadius: theme.rounded.md,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      padding: 16,
-      gap: 14,
+      gap: 20,
     },
-    fieldsetHeader: {
+    btnAddItem: {
+      width: '100%',
+      minHeight: 50,
+      height: 50,
       flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: theme.rounded.default,
+      borderWidth: 1.5,
+      borderStyle: 'dashed',
+      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.surfaceContainerLow,
       gap: 8,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.outlineVariant,
-      paddingBottom: 8,
+      marginVertical: 4,
     },
-    fieldsetSectionTitle: {
-      fontFamily: theme.typography.headlineMd.fontFamily,
-      fontSize: 15,
+    btnAddItemText: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 14,
       fontWeight: '700',
-      color: theme.colors.espressoDark,
+      color: theme.colors.primary,
     },
-    fieldWrapper: {
-      width: '100%',
-    },
-    labelRow: {
+    batchTotalBox: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginBottom: 4,
-    },
-    label: {
-      fontFamily: theme.typography.labelMd.fontFamily,
-      fontSize: 13,
-      fontWeight: '600',
-      color: theme.colors.espressoDark,
-      marginBottom: 4,
-    },
-    required: {
-      color: theme.colors.primary,
-    },
-    existingStockBanner: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      gap: 8,
       backgroundColor: theme.colors.parchment,
+      borderRadius: theme.rounded.default,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
-      borderRadius: theme.rounded.default,
-      padding: 10,
-      marginTop: 8,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
     },
-    existingStockTextContainer: {
-      flex: 1,
-    },
-    existingStockTitle: {
-      fontFamily: theme.typography.labelMd.fontFamily,
-      fontSize: 12,
-      fontWeight: '700',
-      color: theme.colors.espressoDark,
-    },
-    existingStockDetail: {
-      fontFamily: theme.typography.bodySm.fontFamily,
-      fontSize: 11,
-      color: theme.colors.onSurfaceVariant,
-      marginTop: 2,
-    },
-    helperText: {
-      fontFamily: theme.typography.bodySm.fontFamily,
-      fontSize: 11,
-      color: theme.colors.onSurfaceVariant,
-      marginTop: 4,
-      lineHeight: 15,
-    },
-    errorText: {
-      fontFamily: theme.typography.bodySm.fontFamily,
-      fontSize: 11,
-      color: theme.colors.error,
-      fontWeight: '500',
-    },
-    packageHelperToggle: {
-      minHeight: 48,
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-      paddingVertical: 4,
-    },
-    packageHelperToggleText: {
+    batchTotalLabel: {
       fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
       fontWeight: '600',
       color: theme.colors.espressoDark,
     },
-    rowTwoCols: {
-      flexDirection: isMobile ? 'column' : 'row',
-      gap: 12,
-      width: '100%',
-    },
-    colFlex: {
-      flex: 1,
-    },
-    inputWithSuffix: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      height: 48,
-      minHeight: 48,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      borderRadius: theme.rounded.default,
-      backgroundColor: theme.colors.surfaceContainerLowest,
-      overflow: 'hidden',
-    },
-    inputWithPrefix: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      height: 48,
-      minHeight: 48,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      borderRadius: theme.rounded.default,
-      backgroundColor: theme.colors.surfaceContainerLowest,
-      paddingLeft: 12,
-      overflow: 'hidden',
-    },
-    singleInput: {
-      height: 48,
-      minHeight: 48,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      borderRadius: theme.rounded.default,
-      backgroundColor: theme.colors.surfaceContainerLowest,
-      paddingHorizontal: 12,
-      fontSize: 15,
-      color: theme.colors.text,
-      fontFamily: theme.typography.bodyMd.fontFamily,
-    },
-    prefixText: {
-      fontFamily: theme.typography.bodyMd.fontFamily,
-      fontSize: 14,
-      fontWeight: '600',
-      color: theme.colors.onSurfaceVariant,
-      marginRight: 4,
-    },
-    textInputFlex: {
-      flex: 1,
-      height: '100%',
-      paddingHorizontal: 12,
-      fontSize: 15,
-      color: theme.colors.text,
-      fontFamily: theme.typography.bodyMd.fontFamily,
-    },
-    suffixBadge: {
-      backgroundColor: theme.colors.surfaceContainerLow,
-      height: '100%',
-      paddingHorizontal: 12,
-      justifyContent: 'center',
-      alignItems: 'center',
-      borderLeftWidth: 1,
-      borderLeftColor: theme.colors.outlineVariant,
-    },
-    suffixText: {
-      fontFamily: theme.typography.labelSm.fontFamily,
-      fontSize: 12,
-      fontWeight: '700',
-      color: theme.colors.espressoDark,
-    },
-    textArea: {
-      minHeight: 70,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      borderRadius: theme.rounded.default,
-      backgroundColor: theme.colors.surfaceContainerLowest,
-      padding: 10,
-      fontSize: 14,
-      color: theme.colors.text,
-      fontFamily: theme.typography.bodyMd.fontFamily,
-      textAlignVertical: 'top',
-    },
-    costSummaryBox: {
-      backgroundColor: theme.colors.parchment,
-      borderRadius: theme.rounded.default,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      padding: 12,
-      gap: 4,
-    },
-    costSummaryHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-    },
-    costSummaryTitle: {
-      fontFamily: theme.typography.labelSm.fontFamily,
-      fontSize: 12,
-      fontWeight: '700',
-      color: theme.colors.espressoDark,
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
-    },
-    costSummaryValue: {
+    batchTotalValue: {
       fontFamily: theme.typography.headlineMd.fontFamily,
       fontSize: 18,
       fontWeight: 'bold',
       color: theme.colors.tertiary,
-      marginVertical: 2,
-    },
-    costSummaryExplainer: {
-      fontFamily: theme.typography.bodySm.fontFamily,
-      fontSize: 11,
-      color: theme.colors.onSurfaceVariant,
-      lineHeight: 15,
-    },
-    previewSection: {
-      width: '100%',
-      backgroundColor: theme.colors.surfaceContainerLow,
-      borderRadius: theme.rounded.md,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      padding: 14,
-      gap: 10,
-    },
-    previewHeaderRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-    },
-    previewSectionTitle: {
-      fontFamily: theme.typography.headlineMd.fontFamily,
-      fontSize: 14,
-      fontWeight: 'bold',
-      color: theme.colors.espressoDark,
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
-    },
-    previewSubtitle: {
-      fontFamily: theme.typography.bodySm.fontFamily,
-      fontSize: 12,
-      color: theme.colors.onSurfaceVariant,
-      marginBottom: 4,
     },
     actionButtonsContainer: {
       width: '100%',
       gap: 10,
       marginTop: 4,
+    },
+    submittingContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 50,
+      gap: 10,
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderRadius: theme.rounded.default,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+    },
+    submittingText: {
+      fontFamily: theme.typography.labelMd.fontFamily,
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.colors.espressoDark,
     },
     btnSubmit: {
       width: '100%',

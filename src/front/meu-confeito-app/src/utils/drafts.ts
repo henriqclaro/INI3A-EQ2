@@ -1,5 +1,8 @@
 import { kvStorage } from '@/src/utils/kvStorage';
 
+export const RECIPE_CREATE_DRAFT_KEY = 'draft_recipe_create';
+export const STOCK_REGISTER_DRAFT_KEY = 'draft_stock_register';
+
 export interface ClearDraftsResult {
   isSuccess: boolean;
   clearedCount: number;
@@ -41,9 +44,12 @@ export function clearAllFormDrafts(): ClearDraftsResult {
   try {
     const draftKeys = getSavedDraftKeys();
 
-    // Include standard draft key explicitly as safeguard
-    if (!draftKeys.includes('draft_recipe_create')) {
-      draftKeys.push('draft_recipe_create');
+    // Include standard draft keys explicitly as safeguard
+    if (!draftKeys.includes(RECIPE_CREATE_DRAFT_KEY)) {
+      draftKeys.push(RECIPE_CREATE_DRAFT_KEY);
+    }
+    if (!draftKeys.includes(STOCK_REGISTER_DRAFT_KEY)) {
+      draftKeys.push(STOCK_REGISTER_DRAFT_KEY);
     }
 
     let count = 0;

@@ -96,3 +96,12 @@ export {
 } from './review';
 export { DownloadedRecipe, ClearDownloadedRecipesResult } from './downloaded-recipe';
 export { SettingShortcutItem, SettingsTopicId, SettingsTopicItem } from './settings';
+export {
+  StockEntryDraftItem,
+  StockEntryItem,
+  StockEntryMode,
+  StockRegisterDraft,
+  createEmptyStockEntryItem,
+  deserializeStockEntryItem,
+  serializeStockEntryItem,
+} from './stockEntry';
