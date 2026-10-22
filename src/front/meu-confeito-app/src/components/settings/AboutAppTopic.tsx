@@ -110,7 +110,7 @@ export function AboutAppTopic() {
           </View>
           <View style={styles.brandTextWrapper}>
             <Text style={styles.brandName}>Meu Confeito</Text>
-            <Text style={styles.appVersion}>Versão 1.1.2 (Beta)</Text>
+            <Text style={styles.appVersion}>Versão 1.1.3 (Beta)</Text>
           </View>
         </View>
 
