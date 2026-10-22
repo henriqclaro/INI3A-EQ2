@@ -67,37 +67,37 @@ colors:
 
 typography:
   headline-xl:
-    fontFamily: PlayfairDisplaySC_600SemiBold
+    fontFamily: Playfair-Bold
     fontSize: 32
     lineHeight: 38
     letterSpacing: 0.6
   headline-lg:
-    fontFamily: PlayfairDisplaySC_600SemiBold
+    fontFamily: Playfair-Bold
     fontSize: 26
     lineHeight: 32
   headline-md:
-    fontFamily: PlayfairDisplaySC_600SemiBold
+    fontFamily: Inter-SemiBold
     fontSize: 20
     lineHeight: 26
   body-lg:
-    fontFamily: Inter_400Regular
+    fontFamily: Inter-Regular
     fontSize: 18
     lineHeight: 28
   body-md:
-    fontFamily: Inter_400Regular
+    fontFamily: Inter-Regular
     fontSize: 16
     lineHeight: 24
   body-sm:
-    fontFamily: Inter_400Regular
+    fontFamily: Inter-Regular
     fontSize: 14
     lineHeight: 20
   label-md:
-    fontFamily: Inter_600SemiBold
+    fontFamily: Inter-SemiBold
     fontSize: 12
     lineHeight: 16
     letterSpacing: 0.5
   label-sm:
-    fontFamily: Inter_500Medium
+    fontFamily: Inter-Medium
     fontSize: 11
     lineHeight: 14
     letterSpacing: 0.2
@@ -172,21 +172,21 @@ The palette is inspired by confectionery ingredients, warm baking ovens, and fin
 
 This design system utilizes a high-contrast typographic pairing bridging the gap between "artisanal warmth" and "operational precision":
 
-**Playfair Display SC** is used for brand headlines and major section titles. The Small Caps (SC) variant adds a prestigious, stamped quality—reminiscent of a classic baker’s seal.
+**Playfair Display SC** is used for brand headlines and major section titles (`headline-xl`, `headline-lg`). The Small Caps (SC) variant adds a prestigious, stamped quality—reminiscent of a classic baker’s seal.
 
-- `headline-xl`: 32px (fluid clamp up to 40px on large viewports), weight 600, letter spacing `0.6` (0.02em).
-- `headline-lg`: 26px (fluid clamp up to 32px), weight 600, line height 32px.
-- `headline-md`: 20px (fluid clamp up to 24px), weight 600, line height 26px.
+- `headline-xl`: 32px (fluid clamp up to 40px on large viewports), weight 700 / Bold (`Playfair-Bold`), line height 38px, letter spacing `0.6` (0.02em).
+- `headline-lg`: 26px (fluid clamp up to 32px), weight 700 / Bold (`Playfair-Bold`), line height 32px.
 
-**Inter** handles all utilitarian content, forms, recipe grids, and data-dense tables:
+**Inter** handles medium headlines, utilitarian content, forms, recipe grids, and data-dense tables:
 
-- `body-lg`: 18px / 28px line height.
-- `body-md`: 16px / 24px line height.
-- `body-sm`: 14px / 20px line height (supporting labels, ingredient quantities, and helper copy).
-- `label-md`: 12px / 16px, weight 600, uppercase with letter spacing `0.5` (0.04em–0.05em) for category badges, table headers, and button text.
-- `label-sm`: 11px / 14px, weight 500.
+- `headline-md`: 20px (fluid clamp up to 24px), weight 600 / SemiBold (`Inter-SemiBold`), line height 26px.
+- `body-lg`: 18px / 28px line height, weight 400 (`Inter-Regular`).
+- `body-md`: 16px / 24px line height, weight 400 (`Inter-Regular`).
+- `body-sm`: 14px / 20px line height, weight 400 (`Inter-Regular`) (supporting labels, ingredient quantities, and helper copy).
+- `label-md`: 12px / 16px, weight 600 / SemiBold (`Inter-SemiBold`), uppercase with letter spacing `0.5` (0.04em–0.05em) for category badges, table headers, and button text.
+- `label-sm`: 11px / 14px, weight 500 / Medium (`Inter-Medium`), letter spacing `0.2`.
 
-> **Tech Note (Expo Fonts):** Fonts must be loaded using the Expo Google Fonts packages (`@expo-google-fonts/playfair-display-sc` and `@expo-google-fonts/inter`). Use the `useFonts` hook at the root of the application (e.g., in `_layout.tsx` or `App.tsx`) to ensure both families are loaded before rendering text.
+> **Tech Note (Expo Fonts):** Fonts are loaded locally using `expo-font` (`useFonts`) in `app/_layout.tsx` from `assets/fonts/` (`Playfair-Bold`, `Inter-Regular`, `Inter-Medium`, and `Inter-SemiBold`). When custom fonts are disabled or running fallback, system device fonts are applied via `createTypography(true)` (`deviceFont`). Centralized typography tokens are exposed through `typography` in `src/theme/themes.ts`.
 
 ## Responsive Layout & Grid
 
