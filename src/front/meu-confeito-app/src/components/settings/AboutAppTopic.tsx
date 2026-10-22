@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Alert, Linking, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import * as Clipboard from 'expo-clipboard';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Image } from 'expo-image';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -48,6 +49,26 @@ export function AboutAppTopic() {
       return `iOS ${Platform.Version}`;
     }
     return `${Platform.OS} ${Platform.Version}`;
+  }, []);
+
+  const executionEnvironmentInfo = useMemo(() => {
+    let envName = 'Produção';
+
+    if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
+      envName = 'Expo Go';
+    } else if (Platform.OS === 'web') {
+      envName = __DEV__ ? 'Web (Dev)' : 'Web';
+    } else if (Constants.executionEnvironment === ExecutionEnvironment.Standalone) {
+      envName = 'Produção';
+    } else if (__DEV__) {
+      envName = 'Desenvolvimento';
+    }
+
+    const rawSdkVersion = Constants.expoConfig?.sdkVersion ?? Constants.expoVersion;
+    const sdkMajor = rawSdkVersion ? rawSdkVersion.replace(/^[^\d]*/, '').split('.')[0] : '57';
+    const sdkLabel = sdkMajor ? `SDK ${sdkMajor}` : 'SDK 57';
+
+    return `${envName} • ${sdkLabel}`;
   }, []);
 
   const handleCopyInfo = (value?: string | null) => {
@@ -165,6 +186,26 @@ export function AboutAppTopic() {
             </TouchableOpacity>
           </>
         )}
+
+        <View style={styles.detailDivider} />
+
+        <TouchableOpacity
+          style={styles.detailRow}
+          activeOpacity={0.7}
+          onPress={() => handleCopyInfo(executionEnvironmentInfo)}
+          accessibilityRole="button"
+          accessibilityLabel={`Copiar ambiente de execução e versão do SDK: ${executionEnvironmentInfo}`}
+        >
+          <View style={styles.detailLabelGroup}>
+            <MaterialCommunityIcons
+              name="application-cog-outline"
+              size={18}
+              color={theme.colors.onSurfaceVariant}
+            />
+            <Text style={styles.detailLabel}>Ambiente de Execução</Text>
+          </View>
+          <Text style={styles.detailValue}>{executionEnvironmentInfo}</Text>
+        </TouchableOpacity>
 
         <View style={styles.detailDivider} />
 
