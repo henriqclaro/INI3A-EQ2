@@ -1,14 +1,16 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { ProfitSummaryData } from '../types/analytics';
-import { InventoryItem } from '../types/inventory';
+import { InventoryItem, TransactionItem, TransactionQueryRequest } from '../types/inventory';
 import { ProductionItem, ProductionQueryParams, ProductionTransaction } from '../types/production';
 
 const INVENTORY_STORAGE_KEY = '@meu_confeito_cached_inventory';
 const PRODUCTIONS_STORAGE_KEY = '@meu_confeito_cached_productions';
 const PROFIT_SUMMARIES_STORAGE_KEY = '@meu_confeito_cached_profit_summaries';
+const TRANSACTIONS_STORAGE_KEY = '@meu_confeito_cached_transactions';
 
 const MAX_CACHED_PRODUCTIONS = 50;
+const MAX_CACHED_TRANSACTIONS = 100;
 const MAX_CACHED_SUMMARIES = 6;
 const CANCELED_PRODUCTIONS_MAX_AGE_DAYS = 14;
 const SUMMARY_MAX_AGE_DAYS = 30;
@@ -23,6 +25,12 @@ interface CachedProductionsWrapper {
   version: number;
   updatedAt: string;
   items: ProductionItem[];
+}
+
+interface CachedTransactionsWrapper {
+  version: number;
+  updatedAt: string;
+  items: TransactionItem[];
 }
 
 interface CachedSummaryEntry {
@@ -49,6 +57,9 @@ let isInventoryLoaded = false;
 
 let memoryProductions: ProductionItem[] | null = null;
 let isProductionsLoaded = false;
+
+let memoryTransactions: TransactionItem[] | null = null;
+let isTransactionsLoaded = false;
 
 let memorySummaries: Map<string, CachedSummaryEntry> | null = null;
 let isSummariesLoaded = false;
@@ -107,6 +118,41 @@ function compactProductionTransaction(tx: ProductionTransaction): ProductionTran
           baseUnit: tx.ingredient.baseUnit,
         }
       : undefined,
+  };
+}
+
+function compactTransactionItem(tx: TransactionItem): TransactionItem {
+  return {
+    id: tx.id,
+    userId: tx.userId,
+    ingredientId: tx.ingredientId,
+    productionId: tx.productionId,
+    transactionType: tx.transactionType,
+    quantityChanged: Number(tx.quantityChanged) || 0,
+    measurementUnit: tx.measurementUnit,
+    unitCost: Number(tx.unitCost) || 0,
+    totalCost: Number(tx.totalCost) || 0,
+    expirationDate: tx.expirationDate ? new Date(tx.expirationDate).toISOString() : null,
+    createdAt: tx.createdAt ? new Date(tx.createdAt).toISOString() : new Date().toISOString(),
+    ingredient: tx.ingredient
+      ? {
+          id: tx.ingredient.id,
+          name: tx.ingredient.name,
+          slug: tx.ingredient.slug,
+          baseUnit: tx.ingredient.baseUnit,
+        }
+      : undefined,
+    production: tx.production
+      ? {
+          id: tx.production.id,
+          yieldProduced: Number(tx.production.yieldProduced) || 0,
+          recipe: {
+            id: tx.production.recipe.id,
+            title: tx.production.recipe.title,
+            yieldUnit: tx.production.recipe.yieldUnit,
+          },
+        }
+      : null,
   };
 }
 
@@ -339,6 +385,94 @@ export const OfflineOperationsService = {
   },
 
   // ---------------------------------------------------------------------------
+  // INVENTORY TRANSACTIONS
+  // ---------------------------------------------------------------------------
+
+  async getTransactions(query?: TransactionQueryRequest): Promise<TransactionItem[]> {
+    let allTransactions: TransactionItem[] = [];
+
+    if (isTransactionsLoaded && memoryTransactions !== null) {
+      allTransactions = memoryTransactions;
+    } else {
+      try {
+        const raw = await AsyncStorage.getItem(TRANSACTIONS_STORAGE_KEY);
+        if (!raw) {
+          memoryTransactions = [];
+          isTransactionsLoaded = true;
+          allTransactions = [];
+        } else {
+          const parsed = JSON.parse(raw) as CachedTransactionsWrapper;
+          memoryTransactions = Array.isArray(parsed.items) ? parsed.items : [];
+          isTransactionsLoaded = true;
+          allTransactions = memoryTransactions;
+        }
+      } catch (err) {
+        console.warn('Failed to load cached transactions from storage:', err);
+        memoryTransactions = [];
+        isTransactionsLoaded = true;
+        allTransactions = [];
+      }
+    }
+
+    let filtered = allTransactions;
+    if (query?.transactionType) {
+      filtered = filtered.filter((item) => item.transactionType === query.transactionType);
+    }
+    if (query?.ingredientId) {
+      filtered = filtered.filter((item) => item.ingredientId === query.ingredientId);
+    }
+    return filtered;
+  },
+
+  getTransactionsFast(query?: TransactionQueryRequest): TransactionItem[] | null {
+    if (!isTransactionsLoaded || memoryTransactions === null) return null;
+
+    let filtered = memoryTransactions;
+    if (query?.transactionType) {
+      filtered = filtered.filter((item) => item.transactionType === query.transactionType);
+    }
+    if (query?.ingredientId) {
+      filtered = filtered.filter((item) => item.ingredientId === query.ingredientId);
+    }
+    return filtered;
+  },
+
+  async saveTransactions(items: TransactionItem[]): Promise<void> {
+    if (!Array.isArray(items)) return;
+
+    const compacted = items
+      .map(compactTransactionItem)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, MAX_CACHED_TRANSACTIONS);
+
+    memoryTransactions = compacted;
+    isTransactionsLoaded = true;
+
+    try {
+      const payload: CachedTransactionsWrapper = {
+        version: 1,
+        updatedAt: new Date().toISOString(),
+        items: compacted,
+      };
+      await AsyncStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify(payload));
+      notifyListeners();
+    } catch (err) {
+      console.error('Failed to persist transactions to storage:', err);
+    }
+  },
+
+  async clearTransactions(): Promise<void> {
+    memoryTransactions = [];
+    isTransactionsLoaded = true;
+    try {
+      await AsyncStorage.removeItem(TRANSACTIONS_STORAGE_KEY);
+      notifyListeners();
+    } catch (err) {
+      console.error('Failed to clear transactions from storage:', err);
+    }
+  },
+
+  // ---------------------------------------------------------------------------
   // PROFIT SUMMARIES / REPORTS (With Expiration Pruning)
   // ---------------------------------------------------------------------------
 
@@ -453,12 +587,16 @@ export const OfflineOperationsService = {
       memoryProductions = [];
       isProductionsLoaded = true;
 
+      memoryTransactions = [];
+      isTransactionsLoaded = true;
+
       memorySummaries = new Map();
       isSummariesLoaded = true;
 
       await AsyncStorage.multiRemove([
         INVENTORY_STORAGE_KEY,
         PRODUCTIONS_STORAGE_KEY,
+        TRANSACTIONS_STORAGE_KEY,
         PROFIT_SUMMARIES_STORAGE_KEY,
       ]);
 

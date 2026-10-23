@@ -257,6 +257,27 @@ export default function StockScreen() {
           </View>
 
           <View style={styles.headerActions}>
+            <CustomButton
+              variant="outline"
+              onPress={() =>
+                router.push({
+                  pathname: '/operations-history',
+                  params: { tab: 'movements' },
+                })
+              }
+              style={styles.shareButton}
+              accessibilityLabel="Ver histórico de movimentações do estoque"
+            >
+              <View style={styles.shareBtnContent}>
+                <MaterialCommunityIcons
+                  name="clipboard-text-clock-outline"
+                  size={18}
+                  color={theme.colors.primary}
+                />
+                <Text style={styles.shareBtnText}>Histórico</Text>
+              </View>
+            </CustomButton>
+
             {!isMobile && summaryMetrics.outOfStockCount > 0 && (
               <CustomButton
                 variant="outline"

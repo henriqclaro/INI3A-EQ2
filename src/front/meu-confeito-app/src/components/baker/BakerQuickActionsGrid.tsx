@@ -157,18 +157,18 @@ export function BakerQuickActionsGrid({
           </View>
         </TouchableOpacity>
 
-        {/* Button 4: Histórico de Produções */}
+        {/* Button 4: Histórico Operacional */}
         <TouchableOpacity
           style={styles.actionCard}
           onPress={onProductionsPress}
           activeOpacity={0.82}
           accessibilityRole="button"
-          accessibilityLabel={`Histórico de Produções, ${productionsSubtitle}`}
+          accessibilityLabel={`Histórico Operacional, ${productionsSubtitle}`}
         >
           <View style={styles.cardTopRow}>
             <View style={[styles.iconCircle, styles.productionIconBg]}>
               <MaterialCommunityIcons
-                name="pot-steam-outline"
+                name="clipboard-text-clock-outline"
                 size={24}
                 color={theme.colors.primary}
               />
@@ -181,7 +181,7 @@ export function BakerQuickActionsGrid({
 
           <View style={styles.cardBottom}>
             <Text style={styles.cardTitle} numberOfLines={1}>
-              Produções
+              Operações
             </Text>
             <Text style={styles.cardSubtitle} numberOfLines={1}>
               {productionsSubtitle}

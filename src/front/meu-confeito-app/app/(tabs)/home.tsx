@@ -268,7 +268,12 @@ function BakerHomeScreen() {
             savedCount={savedCount}
             onRecipesPress={() => router.push('/recipes')}
             onStockPress={() => router.push('/stock')}
-            onProductionsPress={() => router.push('/productions')}
+            onProductionsPress={() =>
+              router.push({
+                pathname: '/operations-history',
+                params: { tab: 'productions' },
+              })
+            }
             onSavedPress={() => router.push('/saved-recipes')}
           />
 
@@ -285,7 +290,12 @@ function BakerHomeScreen() {
                   onStockPress={() => router.push('/stock')}
                   onSavedRecipesPress={() => router.push('/saved-recipes')}
                   onPublicRecipesPress={() => router.push('/public-recipes')}
-                  onProductionsPress={() => router.push('/productions')}
+                  onProductionsPress={() =>
+                    router.push({
+                      pathname: '/operations-history',
+                      params: { tab: 'productions' },
+                    })
+                  }
                 />
 
                 <View style={styles.recipesSection}>
@@ -374,7 +384,12 @@ function BakerHomeScreen() {
                 <BakerRecentProductionsCard
                   productions={productions}
                   isLoading={isLoadingProductions}
-                  onViewAllPress={() => router.push('/productions')}
+                  onViewAllPress={() =>
+                    router.push({
+                      pathname: '/operations-history',
+                      params: { tab: 'productions' },
+                    })
+                  }
                 />
 
                 <View style={styles.managementTipCard}>
@@ -420,7 +435,12 @@ function BakerHomeScreen() {
                 onStockPress={() => router.push('/stock')}
                 onSavedRecipesPress={() => router.push('/saved-recipes')}
                 onPublicRecipesPress={() => router.push('/public-recipes')}
-                onProductionsPress={() => router.push('/productions')}
+                onProductionsPress={() =>
+                  router.push({
+                    pathname: '/operations-history',
+                    params: { tab: 'productions' },
+                  })
+                }
               />
 
               <BakerStockAlertCard
@@ -434,7 +454,12 @@ function BakerHomeScreen() {
               <BakerRecentProductionsCard
                 productions={productions}
                 isLoading={isLoadingProductions}
-                onViewAllPress={() => router.push('/productions')}
+                onViewAllPress={() =>
+                  router.push({
+                    pathname: '/operations-history',
+                    params: { tab: 'productions' },
+                  })
+                }
               />
 
               <View style={styles.recipesSection}>

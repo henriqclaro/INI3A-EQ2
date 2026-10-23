@@ -47,10 +47,10 @@ export function DesktopSidebar({
         path: '/stock' as const,
       },
       {
-        id: 'productions',
-        label: 'Produções',
-        icon: 'pot-steam-outline' as const,
-        path: '/productions' as const,
+        id: 'operations-history',
+        label: 'Histórico Operacional',
+        icon: 'clipboard-text-clock-outline' as const,
+        path: '/operations-history' as const,
       },
       {
         id: 'saved-recipes',

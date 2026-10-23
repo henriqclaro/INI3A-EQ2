@@ -1154,8 +1154,8 @@ export default function RecipeScreen() {
                           style={styles.historyLinkBtn}
                           onPress={() =>
                             router.push({
-                              pathname: '/productions',
-                              params: { recipeId: recipe.id },
+                              pathname: '/operations-history',
+                              params: { recipeId: recipe.id, tab: 'productions' },
                             })
                           }
                           activeOpacity={0.7}
@@ -1697,7 +1697,11 @@ export default function RecipeScreen() {
                   { text: 'OK', style: 'cancel' },
                   {
                     text: 'Ver Produções',
-                    onPress: () => router.push('/productions'),
+                    onPress: () =>
+                      router.push({
+                        pathname: '/operations-history',
+                        params: { tab: 'productions' },
+                      }),
                   },
                 ],
               );

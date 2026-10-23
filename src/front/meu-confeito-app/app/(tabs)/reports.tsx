@@ -249,7 +249,7 @@ export default function ReportsScreen() {
             }}
           />
 
-          {/* Quick Production History Card (Kept per request) */}
+          {/* Quick Operational History Card */}
           <ProductionShortcutCard isDesktop={isDesktop} />
 
           {/* Offline Mode Banner */}

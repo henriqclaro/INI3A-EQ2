@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
@@ -13,6 +13,7 @@ export interface ProductionCardProps {
   onViewDetails: (production: ProductionItem) => void;
   onCancel: (productionId: string) => void;
   isCanceling?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
 export function ProductionCard({
@@ -20,6 +21,7 @@ export function ProductionCard({
   onViewDetails,
   onCancel,
   isCanceling = false,
+  style,
 }: ProductionCardProps) {
   const { theme } = useThemeMode();
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -29,7 +31,7 @@ export function ProductionCard({
   const unit = production.recipe?.yieldUnit || 'UN';
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, style]}>
       {/* Top row: Recipe title and status badge */}
       <View style={styles.headerRow}>
         <View style={styles.titleContainer}>
@@ -137,8 +139,8 @@ const createStyles = (theme: AppTheme) =>
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
       padding: 16,
-      marginBottom: 12,
       gap: 12,
+      minHeight: 48,
       ...theme.shadows.soft,
     },
     headerRow: {

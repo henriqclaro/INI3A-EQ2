@@ -14,6 +14,7 @@ import {
   WasteResponse,
 } from '../types/inventory';
 import { Storage } from '../utils/storage';
+import { useNetwork } from './useNetwork';
 
 export function useInventory(isEnabled: boolean = true) {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
@@ -202,35 +203,66 @@ export function useInventoryTransactions(
   query?: TransactionQueryRequest,
   isEnabled: boolean = true,
 ) {
-  const [transactions, setTransactions] = useState<TransactionItem[]>([]);
+  const { isOffline: isNetworkOffline } = useNetwork();
+  const [transactions, setTransactions] = useState<TransactionItem[]>(() => {
+    return OfflineOperationsService.getTransactionsFast(query) ?? [];
+  });
   const [isLoading, setIsLoading] = useState(isEnabled);
+  const [isOffline, setIsOffline] = useState(isNetworkOffline);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTransactions = useCallback(async () => {
-    if (!isEnabled) {
-      setIsLoading(false);
-      return;
-    }
+  const fetchTransactions = useCallback(
+    async (overrideQuery?: TransactionQueryRequest) => {
+      if (!isEnabled) {
+        setIsLoading(false);
+        return;
+      }
 
-    const token = Storage.getFastItem('access_token') || (await Storage.getItem('access_token'));
-    if (!token) {
-      setIsLoading(false);
-      return;
-    }
+      const activeQuery = overrideQuery ?? query;
+      const token = Storage.getFastItem('access_token') || (await Storage.getItem('access_token'));
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
 
-    try {
-      setIsLoading(true);
-      setError(null);
-      const res = await InventoryService.listTransactions(query);
-      setTransactions(res.data?.transactions ?? []);
-    } catch (err: unknown) {
-      console.error('Error fetching transactions:', err);
-      const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
-      setError(apiErr.response?.data?.message || apiErr.message || 'Erro ao carregar transações.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [query, isEnabled]);
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        if (isNetworkOffline) {
+          const cached = await OfflineOperationsService.getTransactions(activeQuery);
+          setTransactions(cached);
+          setIsOffline(true);
+          return;
+        }
+
+        const res = await InventoryService.listTransactions(activeQuery);
+        const fetched = res.data?.transactions ?? [];
+        setTransactions(fetched);
+        setIsOffline(false);
+
+        OfflineOperationsService.saveTransactions(fetched).catch((err) =>
+          console.warn('Failed to auto-save transactions offline:', err),
+        );
+      } catch (err: unknown) {
+        console.error('Error fetching transactions:', err);
+        const cached = await OfflineOperationsService.getTransactions(activeQuery);
+        if (cached && cached.length > 0) {
+          setTransactions(cached);
+          setIsOffline(true);
+          setError(null);
+        } else {
+          const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
+          setError(
+            apiErr.response?.data?.message || apiErr.message || 'Erro ao carregar transações.',
+          );
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [query, isEnabled, isNetworkOffline],
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -254,17 +286,39 @@ export function useInventoryTransactions(
       try {
         setIsLoading(true);
         setError(null);
-        const res = await InventoryService.listTransactions(query);
-        if (isMounted) {
-          setTransactions(res.data?.transactions ?? []);
+
+        if (isNetworkOffline) {
+          const cached = await OfflineOperationsService.getTransactions(query);
+          if (isMounted) {
+            setTransactions(cached);
+            setIsOffline(true);
+          }
+          return;
         }
+
+        const res = await InventoryService.listTransactions(query);
+        const fetched = res.data?.transactions ?? [];
+        if (isMounted) {
+          setTransactions(fetched);
+          setIsOffline(false);
+        }
+        OfflineOperationsService.saveTransactions(fetched).catch((err) =>
+          console.warn('Failed to auto-save transactions offline:', err),
+        );
       } catch (err: unknown) {
         if (isMounted) {
           console.error('Error fetching transactions:', err);
-          const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
-          setError(
-            apiErr.response?.data?.message || apiErr.message || 'Erro ao carregar transações.',
-          );
+          const cached = await OfflineOperationsService.getTransactions(query);
+          if (cached && cached.length > 0) {
+            setTransactions(cached);
+            setIsOffline(true);
+            setError(null);
+          } else {
+            const apiErr = err as { response?: { data?: { message?: string } }; message?: string };
+            setError(
+              apiErr.response?.data?.message || apiErr.message || 'Erro ao carregar transações.',
+            );
+          }
         }
       } finally {
         if (isMounted) {
@@ -278,11 +332,12 @@ export function useInventoryTransactions(
     return () => {
       isMounted = false;
     };
-  }, [query, isEnabled]);
+  }, [query, isEnabled, isNetworkOffline]);
 
   return {
     transactions,
     isLoading,
+    isOffline,
     error,
     refetch: fetchTransactions,
   };

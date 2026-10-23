@@ -45,6 +45,15 @@ export interface TransactionItem {
     slug: string;
     baseUnit: string;
   };
+  production?: {
+    id: string;
+    yieldProduced: number | string;
+    recipe: {
+      id: string;
+      title: string;
+      yieldUnit: string;
+    };
+  } | null;
 }
 
 export interface PurchaseRequest {

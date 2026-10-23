@@ -19,30 +19,34 @@ export function ProductionShortcutCard({ isDesktop = false }: ProductionShortcut
   return (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => router.push('/productions')}
+      onPress={() => router.push('/operations-history')}
       activeOpacity={0.8}
       accessibilityRole="button"
-      accessibilityLabel="Abrir histórico de produções de receitas"
+      accessibilityLabel="Abrir histórico operacional do ateliê"
     >
       <View style={styles.topRow}>
         <View style={styles.iconContainer}>
-          <MaterialCommunityIcons name="pot-steam" size={24} color={theme.colors.primary} />
+          <MaterialCommunityIcons
+            name="clipboard-text-clock-outline"
+            size={24}
+            color={theme.colors.primary}
+          />
         </View>
         <View style={styles.badge}>
-          <Text style={styles.badgeText}>Lotes & Histórico</Text>
+          <Text style={styles.badgeText}>Operações & Estoque</Text>
         </View>
       </View>
 
       <View style={styles.textBox}>
-        <Text style={styles.title}>Histórico de Produções</Text>
+        <Text style={styles.title}>Histórico Operacional</Text>
         <Text style={styles.subtitle}>
-          Consulte os lotes fabricados, custos operacionais e baixas de estoque registradas em cada
-          preparo.
+          Consulte os lotes fabricados, custos operacionais, compras, descartes e movimentações de
+          estoque.
         </Text>
       </View>
 
       <View style={styles.footerRow}>
-        <Text style={styles.actionText}>Acessar produções</Text>
+        <Text style={styles.actionText}>Acessar histórico operacional</Text>
         <MaterialCommunityIcons name="arrow-right" size={20} color={theme.colors.primary} />
       </View>
     </TouchableOpacity>
