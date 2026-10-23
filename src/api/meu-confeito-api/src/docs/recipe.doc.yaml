@@ -36,7 +36,7 @@ paths:
             type: integer
         - in: query
           name: search
-          description: Termo de busca textual. As palavras são separadas por espaço para buscar individualmente e em conjunto no título e nas tags da receita.
+          description: Termo de busca textual. Realiza primeiro a pesquisa pela expressão completa no título e tags das receitas; caso nenhum resultado seja encontrado, a pesquisa por palavras individuais separadas por espaço entra em vigor como alternativa.
           schema:
             type: string
         - in: query

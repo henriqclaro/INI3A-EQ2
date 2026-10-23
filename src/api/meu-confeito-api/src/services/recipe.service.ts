@@ -485,42 +485,6 @@ export class RecipeService {
       },
     ];
 
-    if (search) {
-      const trimmedSearch = search.trim();
-      if (trimmedSearch.length > 0) {
-        const words = trimmedSearch
-          .split(/\s+/)
-          .map((word) => word.trim())
-          .filter((word) => word.length > 0);
-
-        const normalizedSearch = trimmedSearch.replace(/\s+/g, ' ');
-        const searchTerms = Array.from(new Set([trimmedSearch, normalizedSearch, ...words]));
-
-        conditions.push({
-          OR: searchTerms.flatMap((term) => [
-            {
-              title: {
-                contains: term,
-                mode: 'insensitive',
-              },
-            },
-            {
-              tags: {
-                some: {
-                  tag: {
-                    name: {
-                      contains: term,
-                      mode: 'insensitive',
-                    },
-                  },
-                },
-              },
-            },
-          ]),
-        });
-      }
-    }
-
     if (dateLimit !== undefined && dateLimit > 0) {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - dateLimit);
@@ -530,11 +494,6 @@ export class RecipeService {
         },
       });
     }
-
-    const baseFilter: Prisma.RecipeWhereInput = {
-      status: 'PUBLISHED',
-      AND: conditions,
-    };
 
     const safePage = Number(page);
     const skipValue = !isNaN(safePage) && safePage > 0 ? safePage * 10 : 0;
@@ -592,48 +551,119 @@ export class RecipeService {
       orderBy.push({ createdAt: 'desc' });
     }
 
-    const recipes = await prisma.recipe.findMany({
-      where: baseFilter,
-      take: 10,
-      skip: skipValue,
-      orderBy,
-      select: {
-        id: true,
-        parent: {
-          select: {
-            id: true,
-            title: true,
+    const buildSearchFilter = (terms: string[]): Prisma.RecipeWhereInput => ({
+      OR: terms.flatMap((term) => [
+        {
+          title: {
+            contains: term,
+            mode: 'insensitive',
           },
         },
-        title: true,
-        coverUrl: true,
-
-        profitMargin: true,
-        overhead: true,
-        hourlyLabor: true,
-        packagingCost: true,
-        prepTimeMinutes: true,
-
-        totalSaves: true,
-        totalReviews: true,
-        averageRating: true,
-
-        createdAt: true,
-        updatedAt: true,
-
-        tags: {
-          select: {
-            tag: {
-              select: {
-                id: true,
-                name: true,
-                type: true,
+        {
+          tags: {
+            some: {
+              tag: {
+                name: {
+                  contains: term,
+                  mode: 'insensitive',
+                },
               },
             },
           },
         },
-      },
+      ]),
     });
+
+    const executeFind = (searchFilter?: Prisma.RecipeWhereInput) => {
+      const whereConditions = [...conditions];
+      if (searchFilter) {
+        whereConditions.push(searchFilter);
+      }
+
+      return prisma.recipe.findMany({
+        where: {
+          status: 'PUBLISHED',
+          AND: whereConditions,
+        },
+        take: 10,
+        skip: skipValue,
+        orderBy,
+        select: {
+          id: true,
+          parent: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+          title: true,
+          coverUrl: true,
+
+          profitMargin: true,
+          overhead: true,
+          hourlyLabor: true,
+          packagingCost: true,
+          prepTimeMinutes: true,
+
+          totalSaves: true,
+          totalReviews: true,
+          averageRating: true,
+
+          createdAt: true,
+          updatedAt: true,
+
+          tags: {
+            select: {
+              tag: {
+                select: {
+                  id: true,
+                  name: true,
+                  type: true,
+                },
+              },
+            },
+          },
+        },
+      });
+    };
+
+    const trimmedSearch = typeof search === 'string' ? search.trim() : undefined;
+
+    let recipes;
+
+    if (!trimmedSearch) {
+      recipes = await executeFind();
+    } else {
+      const words = trimmedSearch
+        .split(/\s+/)
+        .map((word) => word.trim())
+        .filter((word) => word.length > 0);
+
+      const normalizedSearch = trimmedSearch.replace(/\s+/g, ' ');
+      const fullSearchTerms = Array.from(new Set([trimmedSearch, normalizedSearch]));
+
+      const fullSearchFilter = buildSearchFilter(fullSearchTerms);
+      recipes = await executeFind(fullSearchFilter);
+
+      if (recipes.length === 0 && words.length > 1) {
+        if (safePage > 0) {
+          const totalFullMatches = await prisma.recipe.count({
+            where: {
+              status: 'PUBLISHED',
+              AND: [...conditions, fullSearchFilter],
+            },
+          });
+
+          if (totalFullMatches === 0) {
+            const wordsSearchFilter = buildSearchFilter(words);
+            recipes = await executeFind(wordsSearchFilter);
+          }
+        } else {
+          const wordsSearchFilter = buildSearchFilter(words);
+          recipes = await executeFind(wordsSearchFilter);
+        }
+      }
+    }
 
     return { recipes };
   }
