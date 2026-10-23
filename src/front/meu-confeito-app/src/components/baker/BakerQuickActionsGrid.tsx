@@ -14,7 +14,8 @@ export interface BakerQuickActionsGridProps {
   onStockPress: () => void;
   onSavedRecipesPress: () => void;
   onPublicRecipesPress: () => void;
-  onProductionsPress: () => void;
+  onProductionsPress?: () => void;
+  onOperationsPress?: () => void;
 }
 
 export function BakerQuickActionsGrid({
@@ -26,9 +27,11 @@ export function BakerQuickActionsGrid({
   onSavedRecipesPress,
   onPublicRecipesPress,
   onProductionsPress,
+  onOperationsPress,
 }: BakerQuickActionsGridProps) {
   const { theme } = useThemeMode();
   const styles = useMemo(() => createStyles(theme), [theme]);
+  const handleOperationsPress = onOperationsPress ?? onProductionsPress ?? (() => {});
 
   const stockSubtitle = hasStockAlert
     ? 'Atenção necessária'
@@ -160,7 +163,7 @@ export function BakerQuickActionsGrid({
         {/* Button 4: Histórico Operacional */}
         <TouchableOpacity
           style={styles.actionCard}
-          onPress={onProductionsPress}
+          onPress={handleOperationsPress}
           activeOpacity={0.82}
           accessibilityRole="button"
           accessibilityLabel={`Histórico Operacional, ${productionsSubtitle}`}

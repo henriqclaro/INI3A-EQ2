@@ -105,6 +105,7 @@ export default function PublicRecipesScreen() {
           prepTimeMinutes={item.prepTimeMinutes}
           rating={item.averageRating}
           totalReviews={item.totalReviews}
+          shouldShowNoReviewsBadge={true}
           maxTagRows={2}
           isCustomized={Boolean(item.parent)}
           hasParent={Boolean(item.parent)}

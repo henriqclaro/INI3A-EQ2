@@ -30,6 +30,7 @@ interface RecipeViewProps {
   totalReviews?: number;
   status?: RecipeStatus | string;
   isDownloaded?: boolean;
+  shouldShowNoReviewsBadge?: boolean;
 }
 
 export const RecipeView = memo(function RecipeView({
@@ -47,6 +48,7 @@ export const RecipeView = memo(function RecipeView({
   totalReviews,
   status,
   isDownloaded = false,
+  shouldShowNoReviewsBadge = false,
 }: RecipeViewProps) {
   const { theme } = useThemeMode();
   const [hasImageError, setHasImageError] = useState(false);
@@ -74,6 +76,8 @@ export const RecipeView = memo(function RecipeView({
   }, [rating]);
 
   const totalReviewsCount = typeof totalReviews === 'number' ? totalReviews : 0;
+  const hasReviews =
+    totalReviewsCount > 0 && formattedRating !== null && parseFloat(formattedRating) > 0;
   const resolvedCoverUrl = useMemo(() => getStorageUrl(coverUrl, updatedAt), [coverUrl, updatedAt]);
 
   useEffect(() => {
@@ -227,7 +231,7 @@ export const RecipeView = memo(function RecipeView({
               <View />
             )}
 
-            {formattedRating !== null ? (
+            {hasReviews ? (
               <View style={styles.ratingSection}>
                 <View style={styles.ratingBadge}>
                   <MaterialCommunityIcons name="star" size={13} color="#D97706" />
@@ -236,6 +240,15 @@ export const RecipeView = memo(function RecipeView({
                 <Text style={styles.reviewsLabel}>
                   {totalReviewsCount} {totalReviewsCount === 1 ? 'avaliação' : 'avaliações'}
                 </Text>
+              </View>
+            ) : shouldShowNoReviewsBadge ? (
+              <View style={styles.noReviewsBadge}>
+                <MaterialCommunityIcons
+                  name="star-outline"
+                  size={13}
+                  color={theme.colors.onSurfaceVariant}
+                />
+                <Text style={styles.noReviewsText}>Sem avaliações</Text>
               </View>
             ) : null}
           </View>
@@ -496,6 +509,24 @@ const createStyles = (theme: AppTheme, maxTagRows: 1 | 2) =>
     reviewsLabel: {
       fontSize: 11,
       fontFamily: theme.typography.bodySm.fontFamily,
+      color: theme.colors.onSurfaceVariant,
+    },
+    noReviewsBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+      paddingVertical: 4,
+      paddingHorizontal: 8,
+      borderRadius: theme.rounded.full,
+      gap: 4,
+      minHeight: 28,
+    },
+    noReviewsText: {
+      fontSize: 11,
+      fontFamily: theme.typography.labelSm.fontFamily,
+      fontWeight: '500',
       color: theme.colors.onSurfaceVariant,
     },
   });

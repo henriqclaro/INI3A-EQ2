@@ -537,7 +537,8 @@ export default function RecipeScreen() {
     <>
       <Stack.Screen
         options={{
-          title: recipe?.title || 'Receita',
+          title: isDesktop ? recipe?.title || 'Receita' : '',
+          headerTitle: isDesktop ? recipe?.title || 'Receita' : '',
           headerRight: () => (
             <View style={styles.headerRightRow}>
               {recipe && (

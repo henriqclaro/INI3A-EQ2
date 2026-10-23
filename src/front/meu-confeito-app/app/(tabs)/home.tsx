@@ -290,10 +290,10 @@ function BakerHomeScreen() {
                   onStockPress={() => router.push('/stock')}
                   onSavedRecipesPress={() => router.push('/saved-recipes')}
                   onPublicRecipesPress={() => router.push('/public-recipes')}
-                  onProductionsPress={() =>
+                  onOperationsPress={() =>
                     router.push({
                       pathname: '/operations-history',
-                      params: { tab: 'productions' },
+                      params: { tab: 'movements' },
                     })
                   }
                 />
@@ -435,10 +435,10 @@ function BakerHomeScreen() {
                 onStockPress={() => router.push('/stock')}
                 onSavedRecipesPress={() => router.push('/saved-recipes')}
                 onPublicRecipesPress={() => router.push('/public-recipes')}
-                onProductionsPress={() =>
+                onOperationsPress={() =>
                   router.push({
                     pathname: '/operations-history',
-                    params: { tab: 'productions' },
+                    params: { tab: 'movements' },
                   })
                 }
               />
