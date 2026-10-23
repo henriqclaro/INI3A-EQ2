@@ -48,6 +48,15 @@ export namespace InventoryDTO {
       slug: string;
       baseUnit: string;
     };
+    production?: {
+      id: string;
+      yieldProduced: Decimal;
+      recipe: {
+        id: string;
+        title: string;
+        yieldUnit: StandardUnit;
+      };
+    } | null;
   }
 
   // Response DTOs

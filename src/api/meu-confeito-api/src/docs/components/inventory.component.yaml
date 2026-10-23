@@ -111,6 +111,25 @@ components:
                 - ML
                 - L
                 - UN
+        production:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            yieldProduced:
+              type: number
+            recipe:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                title:
+                  type: string
+                yieldUnit:
+                  type: string
     InventoryListResponse:
       type: object
       properties:

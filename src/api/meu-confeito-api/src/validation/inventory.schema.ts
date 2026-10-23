@@ -38,7 +38,7 @@ export const transactionQuerySchema = z.object({
   limit: z
     .string()
     .optional()
-    .transform((val) => (val ? parseInt(val, 10) : 10))
+    .transform((val) => (val ? parseInt(val, 10) : 50))
     .pipe(z.number().int().positive()),
   ingredientId: z
     .string()

@@ -326,7 +326,7 @@ export class InventoryService {
     query?: InventoryDTO.TransactionQueryRequest,
   ): Promise<InventoryDTO.TransactionListResponse> {
     const page = query?.page ?? 0;
-    const limit = query?.limit ?? 10;
+    const limit = query?.limit ?? 50;
     const skip = page > 0 ? page * limit : 0;
 
     const where: Prisma.InventoryTransactionWhereInput = {
@@ -366,6 +366,19 @@ export class InventoryService {
             name: true,
             slug: true,
             baseUnit: true,
+          },
+        },
+        production: {
+          select: {
+            id: true,
+            yieldProduced: true,
+            recipe: {
+              select: {
+                id: true,
+                title: true,
+                yieldUnit: true,
+              },
+            },
           },
         },
       },
