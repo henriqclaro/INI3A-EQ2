@@ -29,9 +29,21 @@ export class RecipeService {
     if (data.parentId) {
       const parentExists = await prisma.recipe.findUnique({
         where: { id: data.parentId },
+        select: {
+          id: true,
+          status: true,
+          title: true,
+        },
       });
       if (!parentExists || parentExists.status === 'SUSPENDED') {
         throw new NotFoundError('Parent recipe not found', 'RESOURCE_NOT_FOUND');
+      }
+
+      if (parentExists.title.trim().toLowerCase() === data.title.trim().toLowerCase()) {
+        throw new ConflictError(
+          'Recipe title cannot be the same as the parent recipe title',
+          'RESOURCE_ALREADY_EXISTS',
+        );
       }
     }
 
@@ -474,28 +486,39 @@ export class RecipeService {
     ];
 
     if (search) {
-      conditions.push({
-        OR: [
-          {
-            title: {
-              contains: search,
-              mode: 'insensitive',
+      const trimmedSearch = search.trim();
+      if (trimmedSearch.length > 0) {
+        const words = trimmedSearch
+          .split(/\s+/)
+          .map((word) => word.trim())
+          .filter((word) => word.length > 0);
+
+        const normalizedSearch = trimmedSearch.replace(/\s+/g, ' ');
+        const searchTerms = Array.from(new Set([trimmedSearch, normalizedSearch, ...words]));
+
+        conditions.push({
+          OR: searchTerms.flatMap((term) => [
+            {
+              title: {
+                contains: term,
+                mode: 'insensitive',
+              },
             },
-          },
-          {
-            tags: {
-              some: {
-                tag: {
-                  name: {
-                    contains: search,
-                    mode: 'insensitive',
+            {
+              tags: {
+                some: {
+                  tag: {
+                    name: {
+                      contains: term,
+                      mode: 'insensitive',
+                    },
                   },
                 },
               },
             },
-          },
-        ],
-      });
+          ]),
+        });
+      }
     }
 
     if (dateLimit !== undefined && dateLimit > 0) {

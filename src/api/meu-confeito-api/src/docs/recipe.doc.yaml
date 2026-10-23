@@ -21,6 +21,10 @@ paths:
           description: Erro na validação dos dados
         '403':
           description: Ação negada por falta de privilégios
+        '404':
+          description: Receita pai, ingrediente ou sub-receita não encontrada
+        '409':
+          description: Conflito de dados (ex. título idêntico ao da receita pai)
     get:
       summary: Busca e lista receitas
       tags:
@@ -32,6 +36,7 @@ paths:
             type: integer
         - in: query
           name: search
+          description: Termo de busca textual. As palavras são separadas por espaço para buscar individualmente e em conjunto no título e nas tags da receita.
           schema:
             type: string
         - in: query
