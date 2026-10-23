@@ -24,6 +24,11 @@ import {
   RecipeView,
 } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
+import {
+  SIDEBAR_COLLAPSED_WIDTH,
+  SIDEBAR_EXPANDED_WIDTH,
+  useSettings,
+} from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useAllDownloadedRecipes } from '@/src/hooks/useDownloadedRecipes';
 import { useNetwork } from '@/src/hooks/useNetwork';
@@ -77,6 +82,7 @@ export default function RecipesScreen() {
   );
 
   const { width } = useWindowDimensions();
+  const { isSidebarCollapsed } = useSettings();
   const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
 
   useEffect(() => {
@@ -161,7 +167,8 @@ export default function RecipesScreen() {
   }, [activeFilter, refetchSavedRecipes, refetchDownloadedRecipes, refetchUserRecipes]);
 
   const isWebSidebarPresent = Platform.OS === 'web' && width >= theme.breakpoints.lg;
-  const effectiveWidth = isWebSidebarPresent ? width - 260 : width;
+  const sidebarWidth = isSidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH;
+  const effectiveWidth = isWebSidebarPresent ? width - sidebarWidth : width;
 
   const isMobile = effectiveWidth < 768;
   const isTablet = effectiveWidth >= 768 && effectiveWidth < 1024;

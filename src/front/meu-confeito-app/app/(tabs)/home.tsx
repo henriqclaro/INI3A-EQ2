@@ -26,6 +26,11 @@ import {
   RecipeSmallView,
 } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
+import {
+  SIDEBAR_COLLAPSED_WIDTH,
+  SIDEBAR_EXPANDED_WIDTH,
+  useSettings,
+} from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { useInventory } from '@/src/hooks/useInventory';
 import { useNetwork } from '@/src/hooks/useNetwork';
@@ -39,9 +44,11 @@ import { isBaker, isCustomer } from '@/src/utils/roles';
 function CustomerHomeScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
+  const { isSidebarCollapsed } = useSettings();
   const { width } = useWindowDimensions();
   const isWebSidebarPresent = Platform.OS === 'web' && width >= theme.breakpoints.lg;
-  const effectiveWidth = isWebSidebarPresent ? width - 260 : width;
+  const sidebarWidth = isSidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH;
+  const effectiveWidth = isWebSidebarPresent ? width - sidebarWidth : width;
   const isDesktop = effectiveWidth >= theme.breakpoints.md;
   const styles = useMemo(() => createCustomerStyles(theme, isDesktop), [theme, isDesktop]);
 
@@ -79,9 +86,11 @@ function CustomerHomeScreen() {
 function BakerHomeScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
+  const { isSidebarCollapsed } = useSettings();
   const { width } = useWindowDimensions();
   const isWebSidebarPresent = Platform.OS === 'web' && width >= theme.breakpoints.lg;
-  const effectiveWidth = isWebSidebarPresent ? width - 260 : width;
+  const sidebarWidth = isSidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH;
+  const effectiveWidth = isWebSidebarPresent ? width - sidebarWidth : width;
 
   const isSmallScreen = effectiveWidth < theme.breakpoints.sm;
   const isDesktop = effectiveWidth >= theme.breakpoints.md;

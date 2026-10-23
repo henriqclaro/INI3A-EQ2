@@ -13,7 +13,7 @@ import { router } from 'expo-router';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { MenuOptionButton, ThemeSwitch } from '@/src/components/common';
-import { useSettings } from '@/src/contexts/SettingsContext';
+import { SidebarPosition, useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme, colors, darkColors } from '@/src/theme/themes';
 
@@ -33,7 +33,7 @@ export function AppearanceTopic() {
     togglePureBlack,
     toggleUseDeviceFont,
   } = useThemeMode();
-  const { triggerHaptic } = useSettings();
+  const { triggerHaptic, sidebarPosition, setSidebarPosition } = useSettings();
   const { width } = useWindowDimensions();
   const isSmallScreen = width < theme.breakpoints.sm;
   const isMobileDevice = Platform.OS !== 'web' || width < theme.breakpoints.md;
@@ -45,6 +45,8 @@ export function AppearanceTopic() {
 
   const isLightSelected = currentMode === 'light';
   const isDarkSelected = currentMode === 'dark';
+  const isLeftSidebarSelected = sidebarPosition === 'left';
+  const isRightSidebarSelected = sidebarPosition === 'right';
 
   const handleToggleFollowSystem = () => {
     triggerHaptic('selection');
@@ -54,6 +56,11 @@ export function AppearanceTopic() {
   const handleSetMode = (mode: 'light' | 'dark') => {
     triggerHaptic('selection');
     setMode(mode);
+  };
+
+  const handleSetSidebarPosition = (position: SidebarPosition) => {
+    triggerHaptic('selection');
+    setSidebarPosition(position);
   };
 
   const handleToggleHighContrast = () => {
@@ -321,6 +328,104 @@ export function AppearanceTopic() {
               onValueChange={handleToggleUseDeviceFont}
               accessibilityLabel="Alternar uso da fonte padrão do dispositivo"
             />
+          </View>
+        </View>
+      )}
+
+      {/* Desktop Navigation Sidebar Position Option (Desktop Only) */}
+      {!isMobileDevice && (
+        <View style={styles.card}>
+          <View style={styles.toggleRow}>
+            <View style={styles.toggleInfo}>
+              <View style={styles.iconCircle}>
+                <MaterialCommunityIcons name="dock-window" size={22} color={theme.colors.primary} />
+              </View>
+              <View style={styles.textColumn}>
+                <View style={styles.titleWithBadge}>
+                  <Text style={styles.title}>Posição da Barra Lateral</Text>
+                  <View style={styles.activeBadge}>
+                    <Text style={styles.activeBadgeText}>
+                      {sidebarPosition === 'left' ? 'Esquerda' : 'Direita'}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={styles.subtitle}>
+                  Escolha em qual lado da tela a barra de navegação desktop será fixada
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.divider} />
+
+          <Text style={styles.selectorLabel}>Lado da tela preferido:</Text>
+
+          <View style={styles.tilesContainer}>
+            {/* Left Side Tile */}
+            <TouchableOpacity
+              style={[styles.themeTile, isLeftSidebarSelected && styles.themeTileActive]}
+              onPress={() => handleSetSidebarPosition('left')}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: isLeftSidebarSelected }}
+              accessibilityLabel="Fixar barra lateral no lado esquerdo"
+              activeOpacity={0.8}
+            >
+              <View style={styles.tileHeader}>
+                <View
+                  style={[
+                    styles.tileIconCircle,
+                    isLeftSidebarSelected && styles.tileIconCircleActive,
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    name="dock-left"
+                    size={20}
+                    color={isLeftSidebarSelected ? theme.colors.onPrimary : theme.colors.primary}
+                  />
+                </View>
+                <MaterialCommunityIcons
+                  name={isLeftSidebarSelected ? 'radiobox-marked' : 'radiobox-blank'}
+                  size={20}
+                  color={isLeftSidebarSelected ? theme.colors.primary : theme.colors.placeholder}
+                />
+              </View>
+
+              <Text style={styles.tileTitle}>Lado Esquerdo</Text>
+              <Text style={styles.tileDescription}>Barra fixada à esquerda da tela</Text>
+            </TouchableOpacity>
+
+            {/* Right Side Tile */}
+            <TouchableOpacity
+              style={[styles.themeTile, isRightSidebarSelected && styles.themeTileActive]}
+              onPress={() => handleSetSidebarPosition('right')}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: isRightSidebarSelected }}
+              accessibilityLabel="Fixar barra lateral no lado direito"
+              activeOpacity={0.8}
+            >
+              <View style={styles.tileHeader}>
+                <View
+                  style={[
+                    styles.tileIconCircle,
+                    isRightSidebarSelected && styles.tileIconCircleActive,
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    name="dock-right"
+                    size={20}
+                    color={isRightSidebarSelected ? theme.colors.onPrimary : theme.colors.primary}
+                  />
+                </View>
+                <MaterialCommunityIcons
+                  name={isRightSidebarSelected ? 'radiobox-marked' : 'radiobox-blank'}
+                  size={20}
+                  color={isRightSidebarSelected ? theme.colors.primary : theme.colors.placeholder}
+                />
+              </View>
+
+              <Text style={styles.tileTitle}>Lado Direito</Text>
+              <Text style={styles.tileDescription}>Barra fixada à direita da tela</Text>
+            </TouchableOpacity>
           </View>
         </View>
       )}

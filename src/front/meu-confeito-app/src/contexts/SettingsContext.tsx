@@ -15,6 +15,10 @@ import { Storage } from '../utils/storage';
 export type PriceDecimalPlaces = 2 | 3 | 4;
 export const DEFAULT_PRICE_DECIMAL_PLACES: PriceDecimalPlaces = 4;
 
+export type SidebarPosition = 'left' | 'right';
+export const SIDEBAR_EXPANDED_WIDTH = 260;
+export const SIDEBAR_COLLAPSED_WIDTH = 76;
+
 export interface SettingsContextData {
   isSwipeNavigationEnabled: boolean;
   isHapticsEnabled: boolean;
@@ -27,6 +31,13 @@ export interface SettingsContextData {
   setIsRoutePersistenceEnabled: (isEnabled: boolean) => void;
   toggleRoutePersistence: () => void;
   triggerHaptic: (type?: HapticFeedbackType) => void;
+
+  // Web/Desktop Sidebar Preferences
+  sidebarPosition: SidebarPosition;
+  setSidebarPosition: (position: SidebarPosition) => void;
+  isSidebarCollapsed: boolean;
+  setIsSidebarCollapsed: (isCollapsed: boolean) => void;
+  toggleSidebarCollapsed: () => void;
 
   // Operational Preferences (Recipe default values & display precision)
   priceDecimalPlaces: PriceDecimalPlaces;
@@ -75,6 +86,9 @@ const DEFAULT_HOURLY_LABOR_VALUE_KEY = 'settings_default_hourly_labor_value';
 const DEFAULT_PACKAGING_COST_ENABLED_KEY = 'settings_default_packaging_cost_enabled';
 const DEFAULT_PACKAGING_COST_VALUE_KEY = 'settings_default_packaging_cost_value';
 
+const SIDEBAR_POSITION_STORAGE_KEY = 'settings_sidebar_position';
+const SIDEBAR_COLLAPSED_STORAGE_KEY = 'settings_sidebar_collapsed';
+
 const SettingsContext = createContext<SettingsContextData>({} as SettingsContextData);
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
@@ -82,6 +96,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [isHapticsEnabled, setIsHapticsEnabledState] = useState(true);
   const [isRoutePersistenceEnabled, setIsRoutePersistenceEnabledState] = useState(true);
   const [isLoadingSettings, setIsLoadingSettings] = useState(true);
+
+  // Web/Desktop Sidebar Preferences
+  const [sidebarPosition, setSidebarPositionState] = useState<SidebarPosition>('left');
+  const [isSidebarCollapsed, setIsSidebarCollapsedState] = useState(false);
 
   // Operational Preferences States
   const [priceDecimalPlaces, setPriceDecimalPlacesState] = useState<PriceDecimalPlaces>(
@@ -116,6 +134,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           storedPackagingCostEnabled,
           storedPackagingCostValue,
           storedPriceDecimalPlaces,
+          storedSidebarPosition,
+          storedSidebarCollapsed,
         ] = await Promise.all([
           Storage.getItem(SWIPE_NAV_STORAGE_KEY),
           Storage.getItem(HAPTICS_STORAGE_KEY),
@@ -129,6 +149,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           Storage.getItem(DEFAULT_PACKAGING_COST_ENABLED_KEY),
           Storage.getItem(DEFAULT_PACKAGING_COST_VALUE_KEY),
           Storage.getItem(PRICE_DECIMAL_PLACES_STORAGE_KEY),
+          Storage.getItem(SIDEBAR_POSITION_STORAGE_KEY),
+          Storage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY),
         ]);
 
         if (storedSwipe !== null) {
@@ -179,6 +201,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         }
         if (storedPackagingCostValue !== null) {
           setDefaultPackagingCostState(storedPackagingCostValue);
+        }
+
+        if (storedSidebarPosition === 'left' || storedSidebarPosition === 'right') {
+          setSidebarPositionState(storedSidebarPosition);
+        }
+
+        if (storedSidebarCollapsed !== null) {
+          setIsSidebarCollapsedState(storedSidebarCollapsed === 'true');
         }
       } catch (error) {
         console.error('Error loading stored interaction settings:', error);
@@ -323,6 +353,30 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     handleSetDefaultPackagingCostEnabled(!isDefaultPackagingCostEnabled);
   }, [handleSetDefaultPackagingCostEnabled, isDefaultPackagingCostEnabled]);
 
+  const handleSetSidebarPosition = useCallback((position: SidebarPosition) => {
+    setSidebarPositionState(position);
+    Storage.setItem(SIDEBAR_POSITION_STORAGE_KEY, position).catch((error) => {
+      console.error('Error saving sidebar position setting:', error);
+    });
+  }, []);
+
+  const handleSetSidebarCollapsed = useCallback((isCollapsed: boolean) => {
+    setIsSidebarCollapsedState(isCollapsed);
+    Storage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, String(isCollapsed)).catch((error) => {
+      console.error('Error saving sidebar collapsed setting:', error);
+    });
+  }, []);
+
+  const toggleSidebarCollapsed = useCallback(() => {
+    setIsSidebarCollapsedState((prev) => {
+      const isNextCollapsed = !prev;
+      Storage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, String(isNextCollapsed)).catch((error) => {
+        console.error('Error saving sidebar collapsed setting:', error);
+      });
+      return isNextCollapsed;
+    });
+  }, []);
+
   const contextValue = useMemo(
     () => ({
       isSwipeNavigationEnabled,
@@ -336,6 +390,13 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       setIsRoutePersistenceEnabled: handleSetRoutePersistenceEnabled,
       toggleRoutePersistence,
       triggerHaptic,
+
+      // Web/Desktop Sidebar Preferences
+      sidebarPosition,
+      setSidebarPosition: handleSetSidebarPosition,
+      isSidebarCollapsed,
+      setIsSidebarCollapsed: handleSetSidebarCollapsed,
+      toggleSidebarCollapsed,
 
       // Operational Preferences
       priceDecimalPlaces,
@@ -404,6 +465,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       handleSetDefaultPackagingCostEnabled,
       handleSetDefaultPackagingCost,
       toggleDefaultPackagingCost,
+
+      sidebarPosition,
+      handleSetSidebarPosition,
+      isSidebarCollapsed,
+      handleSetSidebarCollapsed,
+      toggleSidebarCollapsed,
     ],
   );
 

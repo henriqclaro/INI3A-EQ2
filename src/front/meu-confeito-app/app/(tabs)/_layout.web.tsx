@@ -9,6 +9,7 @@ import { BottomNavigation } from 'react-native-paper';
 
 import { CustomHeader, DesktopSidebar } from '@/src/components';
 import { useAuth } from '@/src/contexts/AuthContext';
+import { useSettings } from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { isCustomer } from '@/src/utils/roles';
@@ -16,6 +17,7 @@ import { isCustomer } from '@/src/utils/roles';
 export default function TabsWebLayout() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
+  const { sidebarPosition } = useSettings();
   const { width } = useWindowDimensions();
   const isDesktop = width >= theme.breakpoints.lg;
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -31,7 +33,7 @@ export default function TabsWebLayout() {
       <Tabs
         screenOptions={{
           headerShown: true,
-          tabBarPosition: isDesktop ? 'left' : 'bottom',
+          tabBarPosition: isDesktop ? sidebarPosition : 'bottom',
           header: (props) => <CustomHeader {...props} />,
         }}
         tabBar={(tabBarProps) => {
@@ -121,7 +123,11 @@ export default function TabsWebLayout() {
             href: isCustomerRole ? null : undefined,
             tabBarItemStyle: isCustomerRole ? { display: 'none' } : undefined,
             tabBarIcon: ({ color }) => (
-              <MaterialCommunityIcons name="book-open-page-variant-outline" color={color} size={24} />
+              <MaterialCommunityIcons
+                name="book-open-page-variant-outline"
+                color={color}
+                size={24}
+              />
             ),
           }}
         />

@@ -2,13 +2,18 @@ import type { ComponentProps } from 'react';
 import { useMemo } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { Image } from 'expo-image';
 import { Tabs, router } from 'expo-router';
 import { CommonActions } from 'expo-router/react-navigation';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { useAuth } from '@/src/contexts/AuthContext';
+import {
+  SIDEBAR_COLLAPSED_WIDTH,
+  SIDEBAR_EXPANDED_WIDTH,
+  SidebarPosition,
+  useSettings,
+} from '@/src/contexts/SettingsContext';
 import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { getRoleLabel, isStaff } from '@/src/utils/roles';
@@ -28,9 +33,15 @@ export function DesktopSidebar({
   navigation,
   isCustomerRole,
 }: DesktopSidebarProps) {
-  const { theme, isDarkMode, toggleTheme } = useThemeMode();
+  const { theme, isDarkMode, isHighContrast, toggleTheme } = useThemeMode();
   const { user, signOut } = useAuth();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const { sidebarPosition, isSidebarCollapsed, toggleSidebarCollapsed, setIsSidebarCollapsed } =
+    useSettings();
+
+  const styles = useMemo(
+    () => createStyles(theme, isSidebarCollapsed, sidebarPosition, isHighContrast),
+    [theme, isSidebarCollapsed, sidebarPosition, isHighContrast],
+  );
 
   const isStaffRole = isStaff(user?.role);
   const hiddenTabNames = isCustomerRole ? ['recipes', 'reports'] : [];
@@ -106,28 +117,61 @@ export function DesktopSidebar({
     ]);
   };
 
+  const collapseIconName =
+    sidebarPosition === 'left'
+      ? isSidebarCollapsed
+        ? 'chevron-right'
+        : 'chevron-left'
+      : isSidebarCollapsed
+        ? 'chevron-left'
+        : 'chevron-right';
+
   return (
     <View style={styles.sidebar}>
       {/* Brand Header */}
-      <View style={styles.brandHeader}>
-        <View style={styles.brandLogoBox}>
-          <Image
-            source={
-              isDarkMode
-                ? require('@/assets/images/logo-dark.png')
-                : require('@/assets/images/logo-light.png')
-            }
-            style={styles.brandLogoImage}
-            contentFit="contain"
-          />
+      {isSidebarCollapsed ? (
+        <View style={styles.brandHeaderCollapsed}>
+          <TouchableOpacity
+            style={styles.collapseButtonBox}
+            onPress={toggleSidebarCollapsed}
+            activeOpacity={0.75}
+            accessibilityRole="button"
+            accessibilityLabel="Expandir barra lateral"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <MaterialCommunityIcons
+              name={collapseIconName}
+              size={22}
+              color={theme.colors.onSurfaceVariant}
+            />
+          </TouchableOpacity>
         </View>
-        <View style={styles.brandTitleContainer}>
-          <Text style={styles.brandTitle}>Meu Confeito</Text>
-          <Text style={styles.brandSubtitle}>
-            {isCustomerRole ? 'DOCERIAS & AFETOS' : 'ATELIÊ DO CONFEITEIRO'}
-          </Text>
+      ) : (
+        <View style={[styles.brandHeader, sidebarPosition === 'right' && styles.brandHeaderRight]}>
+          <TouchableOpacity
+            style={styles.collapseButtonBox}
+            onPress={toggleSidebarCollapsed}
+            activeOpacity={0.75}
+            accessibilityRole="button"
+            accessibilityLabel="Recolher barra lateral"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <MaterialCommunityIcons
+              name={collapseIconName}
+              size={20}
+              color={theme.colors.onSurfaceVariant}
+            />
+          </TouchableOpacity>
+          <View style={styles.brandTitleContainer}>
+            <Text style={styles.brandTitle} numberOfLines={1}>
+              Meu Confeito
+            </Text>
+            <Text style={styles.brandSubtitle} numberOfLines={1}>
+              {isCustomerRole ? 'DOCERIAS & AFETOS' : 'ATELIÊ DO CONFEITEIRO'}
+            </Text>
+          </View>
         </View>
-      </View>
+      )}
 
       {/* Main Navigation Scroll Area */}
       <ScrollView
@@ -137,7 +181,7 @@ export function DesktopSidebar({
       >
         {/* Primary Tabs */}
         <View style={styles.navGroup}>
-          <Text style={styles.groupLabel}>MENU PRINCIPAL</Text>
+          {!isSidebarCollapsed && <Text style={styles.groupLabel}>MENU PRINCIPAL</Text>}
           {visibleRoutes.map((route) => {
             const { options } = descriptors[route.key];
             const isFocused = state.index === state.routes.findIndex((r) => r.key === route.key);
@@ -161,14 +205,27 @@ export function DesktopSidebar({
             return (
               <TouchableOpacity
                 key={route.key}
-                style={[styles.navItem, isFocused && styles.navItemActive]}
+                style={[
+                  styles.navItem,
+                  isFocused && styles.navItemActive,
+                  isSidebarCollapsed && styles.navItemCollapsed,
+                ]}
                 onPress={handlePress}
                 activeOpacity={0.75}
                 accessibilityRole="button"
                 accessibilityState={{ selected: isFocused }}
                 accessibilityLabel={label}
               >
-                {isFocused && <View style={styles.activeIndicator} />}
+                {isFocused && (
+                  <View
+                    style={[
+                      styles.activeIndicator,
+                      sidebarPosition === 'right'
+                        ? styles.activeIndicatorRight
+                        : styles.activeIndicatorLeft,
+                    ]}
+                  />
+                )}
                 <View style={styles.iconSlot}>
                   {options.tabBarIcon ? (
                     options.tabBarIcon({
@@ -184,25 +241,34 @@ export function DesktopSidebar({
                     />
                   )}
                 </View>
-                <Text
-                  style={[styles.navLabel, isFocused && styles.navLabelActive]}
-                  numberOfLines={1}
-                >
-                  {label}
-                </Text>
+                {!isSidebarCollapsed && (
+                  <Text
+                    style={[styles.navLabel, isFocused && styles.navLabelActive]}
+                    numberOfLines={1}
+                  >
+                    {label}
+                  </Text>
+                )}
               </TouchableOpacity>
             );
           })}
         </View>
 
+        {/* Collapsed Internal Minimalist Divider between Menu Principal and Gestão do Ateliê */}
+        {isSidebarCollapsed && !isCustomerRole && (
+          <View style={styles.collapsedDividerContainer}>
+            <View style={styles.collapsedDivider} />
+          </View>
+        )}
+
         {/* Baker Workspace Shortcuts */}
         {!isCustomerRole && (
           <View style={styles.navGroup}>
-            <Text style={styles.groupLabel}>GESTÃO DO ATELIÊ</Text>
+            {!isSidebarCollapsed && <Text style={styles.groupLabel}>GESTÃO DO ATELIÊ</Text>}
             {quickLinks.map((item) => (
               <TouchableOpacity
                 key={item.id}
-                style={styles.navItem}
+                style={[styles.navItem, isSidebarCollapsed && styles.navItemCollapsed]}
                 onPress={() => router.push(item.path)}
                 activeOpacity={0.75}
                 accessibilityRole="button"
@@ -215,107 +281,166 @@ export function DesktopSidebar({
                     color={theme.colors.onSurfaceVariant}
                   />
                 </View>
-                <Text style={styles.navLabel} numberOfLines={1}>
-                  {item.label}
-                </Text>
+                {!isSidebarCollapsed && (
+                  <Text style={styles.navLabel} numberOfLines={1}>
+                    {item.label}
+                  </Text>
+                )}
               </TouchableOpacity>
             ))}
 
-            <TouchableOpacity
-              style={styles.createButton}
-              onPress={() => router.push('/create-recipe')}
-              activeOpacity={0.85}
-              accessibilityRole="button"
-              accessibilityLabel="Criar nova receita"
-            >
-              <MaterialCommunityIcons name="plus" size={18} color={theme.colors.onPrimary} />
-              <Text style={styles.createButtonText}>Nova Receita</Text>
-            </TouchableOpacity>
+            {isSidebarCollapsed ? (
+              <TouchableOpacity
+                style={styles.createButtonCollapsed}
+                onPress={() => router.push('/create-recipe')}
+                activeOpacity={0.85}
+                accessibilityRole="button"
+                accessibilityLabel="Criar nova receita"
+              >
+                <MaterialCommunityIcons name="plus" size={22} color={theme.colors.onPrimary} />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.createButton}
+                onPress={() => router.push('/create-recipe')}
+                activeOpacity={0.85}
+                accessibilityRole="button"
+                accessibilityLabel="Criar nova receita"
+              >
+                <MaterialCommunityIcons name="plus" size={18} color={theme.colors.onPrimary} />
+                <Text style={styles.createButtonText}>Nova Receita</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
       </ScrollView>
 
       {/* User Footer with Theme Toggle & Settings */}
-      <View style={styles.userFooter}>
-        <TouchableOpacity
-          style={styles.userInfoButton}
-          onPress={() => router.navigate('/(tabs)/profile')}
-          activeOpacity={0.75}
-          accessibilityRole="button"
-          accessibilityLabel="Acessar perfil de usuário"
-        >
-          <UserAvatar
-            url={user?.pfpUrl}
-            updatedAt={user?.updatedAt}
-            name={user?.name || (isCustomerRole ? 'Cliente' : 'Confeiteira')}
-            size={38}
-            fallbackType="initial"
-            fallbackBackgroundColor={theme.colors.primaryFixed}
-            borderColor={theme.colors.outlineVariant}
-            borderWidth={1}
-          />
-          <View style={styles.userNameCol}>
-            <Text style={styles.userName} numberOfLines={1}>
-              {user?.name || (isCustomerRole ? 'Cliente' : 'Confeiteira')}
-            </Text>
-            <View style={styles.roleChip}>
-              <Text style={styles.roleChipText}>{roleLabel}</Text>
-            </View>
-          </View>
-        </TouchableOpacity>
-
-        <View style={styles.footerActionsRow}>
+      {isSidebarCollapsed ? (
+        <View style={styles.userFooterCollapsed}>
           <TouchableOpacity
-            style={styles.footerIconButton}
-            onPress={toggleTheme}
+            style={styles.avatarButtonCollapsed}
+            onPress={() => router.navigate('/(tabs)/profile')}
             activeOpacity={0.75}
             accessibilityRole="button"
-            accessibilityLabel={isDarkMode ? 'Ativar modo claro' : 'Ativar modo escuro'}
+            accessibilityLabel="Acessar perfil de usuário"
           >
-            <MaterialCommunityIcons
-              name={isDarkMode ? 'weather-sunny' : 'weather-night'}
-              size={20}
-              color={theme.colors.onSurfaceVariant}
+            <UserAvatar
+              url={user?.pfpUrl}
+              updatedAt={user?.updatedAt}
+              name={user?.name || (isCustomerRole ? 'Cliente' : 'Confeiteira')}
+              size={40}
+              fallbackType="initial"
+              fallbackBackgroundColor={theme.colors.primaryFixed}
+              borderColor={theme.colors.outlineVariant}
+              borderWidth={1}
             />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.footerIconButton}
-            onPress={() => router.push('/settings')}
+            style={styles.collapsedMoreOptionsButton}
+            onPress={() => setIsSidebarCollapsed(false)}
             activeOpacity={0.75}
             accessibilityRole="button"
-            accessibilityLabel="Abrir configurações"
+            accessibilityLabel="Expandir opções da barra lateral"
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <MaterialCommunityIcons
-              name="cog-outline"
+              name="dots-horizontal"
               size={20}
               color={theme.colors.onSurfaceVariant}
             />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.footerIconButton, styles.footerLogoutButton]}
-            onPress={handleQuickLogOut}
-            activeOpacity={0.75}
-            accessibilityRole="button"
-            accessibilityLabel="Sair da conta"
-          >
-            <MaterialCommunityIcons name="logout" size={20} color={theme.colors.error} />
           </TouchableOpacity>
         </View>
-      </View>
+      ) : (
+        <View style={styles.userFooter}>
+          <TouchableOpacity
+            style={styles.userInfoButton}
+            onPress={() => router.navigate('/(tabs)/profile')}
+            activeOpacity={0.75}
+            accessibilityRole="button"
+            accessibilityLabel="Acessar perfil de usuário"
+          >
+            <UserAvatar
+              url={user?.pfpUrl}
+              updatedAt={user?.updatedAt}
+              name={user?.name || (isCustomerRole ? 'Cliente' : 'Confeiteira')}
+              size={38}
+              fallbackType="initial"
+              fallbackBackgroundColor={theme.colors.primaryFixed}
+              borderColor={theme.colors.outlineVariant}
+              borderWidth={1}
+            />
+            <View style={styles.userNameCol}>
+              <Text style={styles.userName} numberOfLines={1}>
+                {user?.name || (isCustomerRole ? 'Cliente' : 'Confeiteira')}
+              </Text>
+              <View style={styles.roleChip}>
+                <Text style={styles.roleChipText}>{roleLabel}</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+
+          <View style={styles.footerActionsRow}>
+            <TouchableOpacity
+              style={styles.footerIconButton}
+              onPress={toggleTheme}
+              activeOpacity={0.75}
+              accessibilityRole="button"
+              accessibilityLabel={isDarkMode ? 'Ativar modo claro' : 'Ativar modo escuro'}
+            >
+              <MaterialCommunityIcons
+                name={isDarkMode ? 'weather-sunny' : 'weather-night'}
+                size={20}
+                color={theme.colors.onSurfaceVariant}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.footerIconButton}
+              onPress={() => router.push('/settings')}
+              activeOpacity={0.75}
+              accessibilityRole="button"
+              accessibilityLabel="Abrir configurações"
+            >
+              <MaterialCommunityIcons
+                name="cog-outline"
+                size={20}
+                color={theme.colors.onSurfaceVariant}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.footerIconButton, styles.footerLogoutButton]}
+              onPress={handleQuickLogOut}
+              activeOpacity={0.75}
+              accessibilityRole="button"
+              accessibilityLabel="Sair da conta"
+            >
+              <MaterialCommunityIcons name="logout" size={20} color={theme.colors.error} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = (
+  theme: AppTheme,
+  isSidebarCollapsed: boolean,
+  sidebarPosition: SidebarPosition,
+  isHighContrast: boolean,
+) =>
   StyleSheet.create({
     sidebar: {
-      width: 260,
+      width: isSidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH,
       height: '100%',
       backgroundColor: theme.colors.surfaceContainerLowest,
-      borderRightWidth: 1,
+      borderRightWidth: sidebarPosition === 'left' ? 1 : 0,
       borderRightColor: theme.colors.outlineVariant,
+      borderLeftWidth: sidebarPosition === 'right' ? 1 : 0,
+      borderLeftColor: theme.colors.outlineVariant,
       justifyContent: 'space-between',
       ...theme.shadows.soft,
     },
@@ -329,20 +454,27 @@ const createStyles = (theme: AppTheme) =>
       borderBottomColor: theme.colors.outlineVariant,
       gap: theme.spacing.space3,
     },
-    brandLogoBox: {
-      width: 44,
-      height: 44,
+    brandHeaderRight: {
+      flexDirection: 'row-reverse',
+    },
+    brandHeaderCollapsed: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingTop: theme.spacing.space5,
+      paddingBottom: theme.spacing.space4,
+      paddingHorizontal: theme.spacing.space2,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.outlineVariant,
+    },
+    collapseButtonBox: {
+      width: 40,
+      height: 40,
       borderRadius: theme.rounded.md,
       backgroundColor: theme.colors.surfaceContainerLow,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
       alignItems: 'center',
       justifyContent: 'center',
-      overflow: 'hidden',
-    },
-    brandLogoImage: {
-      width: 34,
-      height: 34,
     },
     brandTitleContainer: {
       flex: 1,
@@ -366,12 +498,27 @@ const createStyles = (theme: AppTheme) =>
       flex: 1,
     },
     scrollContent: {
-      paddingHorizontal: theme.spacing.space3,
+      paddingHorizontal: isSidebarCollapsed ? theme.spacing.space2 : theme.spacing.space3,
       paddingVertical: theme.spacing.space4,
-      gap: theme.spacing.space5,
+      gap: isSidebarCollapsed ? theme.spacing.space2 : theme.spacing.space5,
+      alignItems: isSidebarCollapsed ? 'center' : 'stretch',
     },
     navGroup: {
       gap: theme.spacing.space1,
+      width: '100%',
+    },
+    collapsedDividerContainer: {
+      width: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 2,
+      marginVertical: theme.spacing.space1,
+    },
+    collapsedDivider: {
+      width: 28,
+      height: isHighContrast ? 1.5 : 1,
+      backgroundColor: isHighContrast ? theme.colors.outline : theme.colors.outlineVariant,
+      borderRadius: theme.rounded.full,
     },
     groupLabel: {
       fontFamily: theme.typography.labelSm.fontFamily,
@@ -392,6 +539,16 @@ const createStyles = (theme: AppTheme) =>
       gap: theme.spacing.space3,
       position: 'relative',
     },
+    navItemCollapsed: {
+      width: 48,
+      height: 48,
+      minHeight: 48,
+      paddingHorizontal: 0,
+      justifyContent: 'center',
+      alignItems: 'center',
+      alignSelf: 'center',
+      borderRadius: theme.rounded.md,
+    },
     navItemActive: {
       backgroundColor: theme.colors.surfaceContainerHigh,
       borderWidth: 1,
@@ -399,12 +556,17 @@ const createStyles = (theme: AppTheme) =>
     },
     activeIndicator: {
       position: 'absolute',
-      left: 0,
       top: 10,
       bottom: 10,
       width: 3.5,
       borderRadius: theme.rounded.full,
       backgroundColor: theme.colors.primary,
+    },
+    activeIndicatorLeft: {
+      left: 0,
+    },
+    activeIndicatorRight: {
+      right: 0,
     },
     iconSlot: {
       width: 24,
@@ -435,6 +597,18 @@ const createStyles = (theme: AppTheme) =>
       paddingHorizontal: theme.spacing.space4,
       ...theme.shadows.glow,
     },
+    createButtonCollapsed: {
+      width: 44,
+      height: 44,
+      minHeight: 44,
+      borderRadius: theme.rounded.full,
+      backgroundColor: theme.colors.primary,
+      alignSelf: 'center',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: theme.spacing.space3,
+      ...theme.shadows.glow,
+    },
     createButtonText: {
       fontFamily: theme.typography.labelMd.fontFamily,
       fontSize: 13,
@@ -449,6 +623,26 @@ const createStyles = (theme: AppTheme) =>
       paddingVertical: theme.spacing.space3,
       backgroundColor: theme.colors.surfaceContainerLowest,
       gap: theme.spacing.space2,
+    },
+    userFooterCollapsed: {
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.outlineVariant,
+      paddingVertical: theme.spacing.space3,
+      backgroundColor: theme.colors.surfaceContainerLowest,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: theme.spacing.space2,
+    },
+    avatarButtonCollapsed: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    collapsedMoreOptionsButton: {
+      width: 36,
+      height: 24,
+      borderRadius: theme.rounded.sm,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     userInfoButton: {
       flexDirection: 'row',
