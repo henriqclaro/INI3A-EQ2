@@ -36,7 +36,7 @@ paths:
             type: integer
         - in: query
           name: search
-          description: Termo de busca textual. Realiza primeiro a pesquisa pela expressão completa no título e tags das receitas; caso nenhum resultado seja encontrado, a pesquisa por palavras individuais separadas por espaço entra em vigor como alternativa.
+          description: Termo de busca textual. Preposições comuns (stop words como "de", "do", "com", etc.) são ignoradas na pesquisa, e cada palavra individual confere +1 ponto de relevância (score) se encontrada no título ou nas tags da receita (case-insensitive), com os resultados ordenados pela pontuação (score decrescente) e pelos critérios de ordenação da busca.
           schema:
             type: string
         - in: query

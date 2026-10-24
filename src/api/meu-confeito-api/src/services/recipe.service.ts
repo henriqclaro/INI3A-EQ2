@@ -12,6 +12,52 @@ import type { RequestContext } from '../types/context.interface';
 import type { RecipeDTO } from '../types/dtos/recipe.dto';
 import { deleteRecipeCover, deleteRecipeCoverSafely, saveRecipeCover } from '../utils/storage.util';
 
+const RECIPE_SEARCH_STOP_WORDS = new Set([
+  'a',
+  'ao',
+  'aos',
+  'as',
+  'ate',
+  'até',
+  'com',
+  'da',
+  'das',
+  'de',
+  'do',
+  'dos',
+  'dum',
+  'duma',
+  'duns',
+  'dumas',
+  'e',
+  'em',
+  'na',
+  'nas',
+  'no',
+  'nos',
+  'num',
+  'numa',
+  'nuns',
+  'numas',
+  'o',
+  'os',
+  'ou',
+  'para',
+  'pela',
+  'pelas',
+  'pelo',
+  'pelos',
+  'por',
+  'pra',
+  'pras',
+  'pro',
+  'pros',
+  'sob',
+  'sobre',
+  'à',
+  'às',
+]);
+
 export class RecipeService {
   private checkPermission(context: RequestContext, id: string | null) {
     if (context.userRole === 'ADMIN') {
@@ -498,6 +544,167 @@ export class RecipeService {
     const safePage = Number(page);
     const skipValue = !isNaN(safePage) && safePage > 0 ? safePage * 10 : 0;
 
+    const trimmedSearch = typeof search === 'string' ? search.trim() : undefined;
+    const words = trimmedSearch
+      ? Array.from(
+          new Set(
+            trimmedSearch
+              .split(/\s+/)
+              .map((word) => word.trim())
+              .filter(
+                (word) => word.length > 0 && !RECIPE_SEARCH_STOP_WORDS.has(word.toLowerCase()),
+              ),
+          ),
+        )
+      : [];
+
+    if (trimmedSearch && words.length === 0) {
+      return { recipes: [] };
+    }
+
+    const recipeSelect = {
+      id: true,
+      parent: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
+      title: true,
+      coverUrl: true,
+
+      profitMargin: true,
+      overhead: true,
+      hourlyLabor: true,
+      packagingCost: true,
+      prepTimeMinutes: true,
+
+      totalSaves: true,
+      totalReviews: true,
+      averageRating: true,
+
+      createdAt: true,
+      updatedAt: true,
+
+      tags: {
+        select: {
+          tag: {
+            select: {
+              id: true,
+              name: true,
+              type: true,
+            },
+          },
+        },
+      },
+    };
+
+    if (words.length > 0) {
+      // Build word scoring conditions: +1 point if word is present in recipe title or recipe tag names
+      const wordConditions = words.map((word) => {
+        const pattern = `%${word.replace(/([%_\\])/g, '\\$1')}%`;
+        return Prisma.sql`(CASE WHEN r.title ILIKE ${pattern} OR EXISTS (
+          SELECT 1 FROM recipe_tag rt
+          JOIN tag t ON t.id = rt.tag_id
+          WHERE rt.recipe_id = r.id AND t.name ILIKE ${pattern}
+        ) THEN 1 ELSE 0 END)`;
+      });
+      const scoreSql = Prisma.join(wordConditions, ' + ');
+
+      let dateLimitSql = Prisma.empty;
+      if (dateLimit !== undefined && dateLimit > 0) {
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - dateLimit);
+        dateLimitSql = Prisma.sql`AND r.created_at >= ${cutoffDate}`;
+      }
+
+      const rawOrderBy: Prisma.Sql[] = [];
+      const seenFields = new Set<string>();
+
+      if (rawSort) {
+        const rawList = Array.isArray(rawSort) ? rawSort : [rawSort];
+        const tokens = rawList
+          .flatMap((item) => item.split(','))
+          .map((item) => item.trim())
+          .filter(Boolean);
+
+        for (const token of tokens) {
+          const parts = token.split(':');
+          const rawField = parts[0];
+          const rawDir = parts[1];
+
+          if (!rawField) continue;
+
+          const field = rawField.trim().toLowerCase();
+          const isAsc = rawDir?.trim().toLowerCase() === 'asc';
+
+          if (
+            ['rating', 'ratings', 'average_rating', 'stars', 'highest_rating'].includes(field) &&
+            !seenFields.has('average_rating')
+          ) {
+            rawOrderBy.push(
+              isAsc ? Prisma.sql`r.average_rating ASC` : Prisma.sql`r.average_rating DESC`,
+            );
+            seenFields.add('average_rating');
+          } else if (
+            ['reviews', 'review', 'most_reviews', 'ratings_count'].includes(field) &&
+            !seenFields.has('total_reviews')
+          ) {
+            rawOrderBy.push(
+              isAsc ? Prisma.sql`r.total_reviews ASC` : Prisma.sql`r.total_reviews DESC`,
+            );
+            seenFields.add('total_reviews');
+          } else if (
+            ['saves', 'saved', 'favorites', 'most_saves'].includes(field) &&
+            !seenFields.has('total_saves')
+          ) {
+            rawOrderBy.push(isAsc ? Prisma.sql`r.total_saves ASC` : Prisma.sql`r.total_saves DESC`);
+            seenFields.add('total_saves');
+          } else if (
+            ['newest', 'recent', 'created_at', 'createdat', 'date'].includes(field) &&
+            !seenFields.has('created_at')
+          ) {
+            rawOrderBy.push(isAsc ? Prisma.sql`r.created_at ASC` : Prisma.sql`r.created_at DESC`);
+            seenFields.add('created_at');
+          }
+        }
+      }
+
+      if (!seenFields.has('created_at')) {
+        rawOrderBy.push(Prisma.sql`r.created_at DESC`);
+      }
+
+      /* eslint-disable @ts-safeql/check-sql */
+      const scoredRecipeRows = await prisma.$queryRaw<Array<{ id: string; score: number }>>`
+        SELECT r.id, (${scoreSql}) AS score
+        FROM recipe r
+        LEFT JOIN "user" u ON u.id = r.user_id
+        WHERE r.status = 'PUBLISHED'
+          AND (r.user_id IS NULL OR u.is_active = true)
+          ${dateLimitSql}
+          AND (${scoreSql}) > 0
+        ORDER BY score DESC, ${Prisma.join(rawOrderBy, ', ')}
+        LIMIT 10 OFFSET ${skipValue}
+      `;
+      /* eslint-enable @ts-safeql/check-sql */
+
+      if (scoredRecipeRows.length === 0) {
+        return { recipes: [] };
+      }
+
+      const ids = scoredRecipeRows.map((row) => row.id);
+      const recipes = await prisma.recipe.findMany({
+        where: { id: { in: ids } },
+        select: recipeSelect,
+      });
+
+      // Preserve exact ordering by score DESC then search filters
+      const idOrder = new Map(ids.map((id, index) => [id, index]));
+      recipes.sort((a, b) => (idOrder.get(a.id) ?? 0) - (idOrder.get(b.id) ?? 0));
+
+      return { recipes };
+    }
+
     const orderBy: Prisma.RecipeOrderByWithRelationInput[] = [];
 
     if (rawSort) {
@@ -551,119 +758,16 @@ export class RecipeService {
       orderBy.push({ createdAt: 'desc' });
     }
 
-    const buildSearchFilter = (terms: string[]): Prisma.RecipeWhereInput => ({
-      OR: terms.flatMap((term) => [
-        {
-          title: {
-            contains: term,
-            mode: 'insensitive',
-          },
-        },
-        {
-          tags: {
-            some: {
-              tag: {
-                name: {
-                  contains: term,
-                  mode: 'insensitive',
-                },
-              },
-            },
-          },
-        },
-      ]),
+    const recipes = await prisma.recipe.findMany({
+      where: {
+        status: 'PUBLISHED',
+        AND: conditions,
+      },
+      take: 10,
+      skip: skipValue,
+      orderBy,
+      select: recipeSelect,
     });
-
-    const executeFind = (searchFilter?: Prisma.RecipeWhereInput) => {
-      const whereConditions = [...conditions];
-      if (searchFilter) {
-        whereConditions.push(searchFilter);
-      }
-
-      return prisma.recipe.findMany({
-        where: {
-          status: 'PUBLISHED',
-          AND: whereConditions,
-        },
-        take: 10,
-        skip: skipValue,
-        orderBy,
-        select: {
-          id: true,
-          parent: {
-            select: {
-              id: true,
-              title: true,
-            },
-          },
-          title: true,
-          coverUrl: true,
-
-          profitMargin: true,
-          overhead: true,
-          hourlyLabor: true,
-          packagingCost: true,
-          prepTimeMinutes: true,
-
-          totalSaves: true,
-          totalReviews: true,
-          averageRating: true,
-
-          createdAt: true,
-          updatedAt: true,
-
-          tags: {
-            select: {
-              tag: {
-                select: {
-                  id: true,
-                  name: true,
-                  type: true,
-                },
-              },
-            },
-          },
-        },
-      });
-    };
-
-    const trimmedSearch = typeof search === 'string' ? search.trim() : undefined;
-
-    let recipes;
-
-    if (!trimmedSearch) {
-      recipes = await executeFind();
-    } else {
-      const words = trimmedSearch
-        .split(/\s+/)
-        .map((word) => word.trim())
-        .filter((word) => word.length > 0);
-
-      const normalizedSearch = trimmedSearch.replace(/\s+/g, ' ');
-      const fullSearchTerms = Array.from(new Set([trimmedSearch, normalizedSearch]));
-
-      const fullSearchFilter = buildSearchFilter(fullSearchTerms);
-      recipes = await executeFind(fullSearchFilter);
-
-      if (recipes.length === 0 && words.length > 1) {
-        if (safePage > 0) {
-          const totalFullMatches = await prisma.recipe.count({
-            where: {
-              status: 'PUBLISHED',
-              AND: [...conditions, fullSearchFilter],
-            },
-          });
-
-          if (totalFullMatches === 0) {
-            const wordsSearchFilter = buildSearchFilter(words);
-            recipes = await executeFind(wordsSearchFilter);
-          }
-        } else {
-          const wordsSearchFilter = buildSearchFilter(words);
-          recipes = await executeFind(wordsSearchFilter);
-        }
-      }
-    }
 
     return { recipes };
   }
