@@ -95,27 +95,30 @@ export default function PublicRecipesScreen() {
   );
 
   const renderRecipeItem = useCallback(
-    ({ item }: { item: PartialRecipe }) => (
-      <View style={styles.cardWrapper}>
-        <RecipeView
-          title={item.title}
-          coverUrl={item.coverUrl}
-          updatedAt={item.updatedAt}
-          tags={item.tags}
-          prepTimeMinutes={item.prepTimeMinutes}
-          rating={item.averageRating}
-          totalReviews={item.totalReviews}
-          shouldShowNoReviewsBadge={true}
-          maxTagRows={2}
-          isCustomized={Boolean(item.parent)}
-          hasParent={Boolean(item.parent)}
-          style={isDesktop ? styles.desktopCard : undefined}
-          onPress={() => {
-            router.push({ pathname: '/single-recipe', params: { recipeId: item.id } });
-          }}
-        />
-      </View>
-    ),
+    ({ item }: { item: PartialRecipe }) => {
+      const isAdaptedRecipe = Boolean(item.parent);
+      return (
+        <View style={styles.cardWrapper}>
+          <RecipeView
+            title={item.title}
+            coverUrl={item.coverUrl}
+            updatedAt={item.updatedAt}
+            tags={item.tags}
+            prepTimeMinutes={item.prepTimeMinutes}
+            rating={item.averageRating}
+            totalReviews={item.totalReviews}
+            shouldShowNoReviewsBadge={true}
+            maxTagRows={isAdaptedRecipe ? 1 : 2}
+            isCustomized={isAdaptedRecipe}
+            hasParent={isAdaptedRecipe}
+            style={isDesktop ? styles.desktopCard : undefined}
+            onPress={() => {
+              router.push({ pathname: '/single-recipe', params: { recipeId: item.id } });
+            }}
+          />
+        </View>
+      );
+    },
     [isDesktop, styles.cardWrapper, styles.desktopCard],
   );
 

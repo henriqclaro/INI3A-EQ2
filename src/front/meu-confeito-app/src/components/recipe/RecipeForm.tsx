@@ -67,6 +67,8 @@ export interface RecipeFormSubmitData {
 export interface RecipeFormProps {
   initialRecipe?: FullRecipe;
   isEditMode?: boolean;
+  isCustomizing?: boolean;
+  parentRecipeTitle?: string;
   isSubmitting?: boolean;
   onSubmit: (data: RecipeFormSubmitData) => Promise<void>;
   submitButtonText?: string;
@@ -101,6 +103,8 @@ export interface RecipeDraftData {
 export function RecipeForm({
   initialRecipe,
   isEditMode = false,
+  isCustomizing = false,
+  parentRecipeTitle,
   isSubmitting = false,
   onSubmit,
   submitButtonText,
@@ -182,7 +186,19 @@ export function RecipeForm({
   }, [initialRecipe]);
 
   // Form States
-  const [title, setTitle] = useState(initialRecipe?.title || '');
+  const [title, setTitle] = useState(() => {
+    if (isCustomizing) {
+      return '';
+    }
+    return initialRecipe?.title || '';
+  });
+
+  const hasTitleConflict = useMemo(() => {
+    if (!isCustomizing || !parentRecipeTitle || !title.trim()) {
+      return false;
+    }
+    return title.trim().toLowerCase() === parentRecipeTitle.trim().toLowerCase();
+  }, [isCustomizing, parentRecipeTitle, title]);
   const [coverUrl, setCoverUrl] = useState(
     initialRecipe?.coverUrl
       ? getStorageUrl(
@@ -597,6 +613,14 @@ export function RecipeForm({
       return;
     }
 
+    if (hasTitleConflict) {
+      Alert.alert(
+        'Título Inválido',
+        'A receita adaptada não pode ter o mesmo título da receita original. Por favor, escolha um novo título exclusivo.',
+      );
+      return;
+    }
+
     const parsedYield = parseFloat(baseYield.replace(',', '.'));
     if (!baseYield || isNaN(parsedYield) || parsedYield <= 0) {
       Alert.alert(
@@ -736,12 +760,22 @@ export function RecipeForm({
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Título da Receita *</Text>
           <TextInput
-            style={styles.textInput}
-            placeholder="Ex: Bolo de Cenoura"
+            style={[styles.textInput, hasTitleConflict && styles.textInputError]}
+            placeholder={
+              isCustomizing
+                ? 'Dê um novo nome para sua versão (obrigatório)'
+                : 'Ex: Bolo de Cenoura'
+            }
             placeholderTextColor={theme.colors.placeholder}
             value={title}
             onChangeText={setTitle}
           />
+          {hasTitleConflict && (
+            <Text style={styles.titleConflictError}>
+              O título da versão adaptada não pode ser idêntico à receita original (
+              {parentRecipeTitle}).
+            </Text>
+          )}
         </View>
 
         {/* Foto de Capa da Receita com upload via ImagePicker e restrições */}
@@ -1445,6 +1479,15 @@ const createStyles = (theme: AppTheme, isSmallScreen: boolean) =>
       textAlignVertical: 'center',
       paddingVertical: 0,
       width: '100%',
+    },
+    textInputError: {
+      borderColor: theme.colors.error,
+    },
+    titleConflictError: {
+      fontFamily: theme.typography.bodySm.fontFamily,
+      fontSize: 12,
+      color: theme.colors.error,
+      marginTop: 4,
     },
     pickerWrapper: {
       backgroundColor: theme.colors.surfaceContainerLowest,

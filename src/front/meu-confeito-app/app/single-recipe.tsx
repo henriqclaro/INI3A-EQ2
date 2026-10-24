@@ -433,6 +433,35 @@ export default function RecipeScreen() {
     }
   };
 
+  const handlePublishRecipe = () => {
+    Alert.alert(
+      'Publicar Receita',
+      'Deseja publicar esta receita na comunidade? Ela ficará visível publicamente para outros confeiteiros e clientes.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Publicar',
+          onPress: () => handleToggleVisibility('PUBLISHED'),
+        },
+      ],
+    );
+  };
+
+  const handleUnpublishRecipe = () => {
+    Alert.alert(
+      'Despublicar Receita',
+      'Deseja despublicar esta receita? Ela voltará para o status de Rascunho e não ficará mais visível publicamente na comunidade.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Despublicar',
+          style: 'destructive',
+          onPress: () => handleToggleVisibility('DRAFT'),
+        },
+      ],
+    );
+  };
+
   const handleArchiveRecipe = () => {
     Alert.alert(
       'Arquivar Receita',
@@ -950,7 +979,7 @@ export default function RecipeScreen() {
                             (recipe.status === 'PUBLISHED' ? (
                               <TouchableOpacity
                                 style={styles.btnActionDraft}
-                                onPress={() => handleToggleVisibility('DRAFT')}
+                                onPress={handleUnpublishRecipe}
                                 disabled={isUpdatingVisibility}
                                 activeOpacity={0.8}
                                 accessibilityRole="button"
@@ -966,7 +995,7 @@ export default function RecipeScreen() {
                             ) : (
                               <TouchableOpacity
                                 style={styles.btnActionPublish}
-                                onPress={() => handleToggleVisibility('PUBLISHED')}
+                                onPress={handlePublishRecipe}
                                 disabled={isUpdatingVisibility}
                                 activeOpacity={0.8}
                                 accessibilityRole="button"

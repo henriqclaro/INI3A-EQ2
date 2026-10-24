@@ -114,6 +114,18 @@ export default function CreateRecipeScreen() {
           },
         ]);
       } else {
+        if (
+          isCustomizing &&
+          recipe?.title &&
+          formData.title.trim().toLowerCase() === recipe.title.trim().toLowerCase()
+        ) {
+          Alert.alert(
+            'Título Inválido',
+            'A receita adaptada não pode ter o mesmo título da receita original. Por favor, escolha um novo título exclusivo.',
+          );
+          return;
+        }
+
         const hasCoverImage = Boolean(formData.coverImageFile);
         const payload: RecipeRegisterInput = {
           userId: user.id,
@@ -306,6 +318,8 @@ export default function CreateRecipeScreen() {
               key={isCustomizing ? `fork-${recipe?.id}` : isEditMode ? `edit-${recipe?.id}` : 'new'}
               initialRecipe={isCustomizing || isEditMode ? recipe : undefined}
               isEditMode={isEditMode}
+              isCustomizing={isCustomizing}
+              parentRecipeTitle={isCustomizing ? recipe?.title : undefined}
               isSubmitting={isSubmitting}
               onSubmit={handleSubmit}
               onboardingCard={

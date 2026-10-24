@@ -85,7 +85,8 @@ export const RecipeView = memo(function RecipeView({
   }, [resolvedCoverUrl]);
 
   const hasValidCover = Boolean(resolvedCoverUrl && !hasImageError);
-  const maxTags = maxTagRows === 2 ? 4 : 2;
+  const isAdapted = Boolean(isCustomized || hasParent);
+  const maxTags = maxTagRows === 2 ? (isAdapted ? 1 : 4) : isAdapted ? 1 : 2;
   const visibleTags = styledTags.slice(0, maxTags);
   const remainingTagsCount = styledTags.length - maxTags;
   const hasTopBadges =
@@ -417,10 +418,12 @@ const createStyles = (theme: AppTheme, maxTagRows: 1 | 2) =>
     },
     tagsContainer: {
       flexDirection: 'row',
-      flexWrap: 'wrap',
+      flexWrap: maxTagRows === 1 ? 'nowrap' : 'wrap',
       alignItems: 'center',
       gap: 6,
       minHeight: maxTagRows === 2 ? 56 : 26,
+      maxHeight: maxTagRows === 2 ? 56 : 26,
+      overflow: 'hidden',
     },
     tagBadge: {
       paddingVertical: 3,
