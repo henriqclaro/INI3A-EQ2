@@ -108,7 +108,7 @@ export default function PublicRecipesScreen() {
             rating={item.averageRating}
             totalReviews={item.totalReviews}
             shouldShowNoReviewsBadge={true}
-            maxTagRows={isAdaptedRecipe ? 1 : 2}
+            maxTagRows={2}
             isCustomized={isAdaptedRecipe}
             hasParent={isAdaptedRecipe}
             style={isDesktop ? styles.desktopCard : undefined}

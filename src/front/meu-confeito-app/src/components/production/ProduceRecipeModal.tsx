@@ -103,7 +103,7 @@ function ProduceRecipeModalContent({
               onPress: () => {
                 onClose();
                 router.push({
-                  pathname: '/(tabs)/reports',
+                  pathname: '/(tabs)/analytics',
                   params: {
                     tab: 'projection',
                     recipeId: recipe.id,

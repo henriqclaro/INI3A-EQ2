@@ -419,7 +419,8 @@ const createStyles = (theme: AppTheme, maxTagRows: 1 | 2) =>
     tagsContainer: {
       flexDirection: 'row',
       flexWrap: maxTagRows === 1 ? 'nowrap' : 'wrap',
-      alignItems: 'center',
+      alignItems: 'flex-start',
+      alignContent: 'flex-start',
       gap: 6,
       minHeight: maxTagRows === 2 ? 56 : 26,
       maxHeight: maxTagRows === 2 ? 56 : 26,

@@ -405,25 +405,30 @@ function BakerHomeScreen() {
                   <View style={styles.tipCardTop}>
                     <View style={styles.tipIconBox}>
                       <MaterialCommunityIcons
-                        name="calculator-variant-outline"
+                        name="cart-outline"
                         size={20}
                         color={theme.colors.primary}
                       />
                     </View>
-                    <Text style={styles.tipCardTitle}>Gestão de Custos</Text>
+                    <Text style={styles.tipCardTitle}>Previsão de Compras</Text>
                   </View>
                   <Text style={styles.tipCardBody}>
-                    O custo unitário e a margem de lucro de cada receita são recalculados
-                    automaticamente sempre que você atualiza o preço dos insumos no estoque.
+                    Simule lotes de produção futuros para descobrir a demanda exata de insumos, o
+                    custo estimado e o que precisa ser comprado antes de começar.
                   </Text>
                   <TouchableOpacity
                     style={styles.tipActionBtn}
-                    onPress={() => router.push('/stock')}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/(tabs)/analytics',
+                        params: { tab: 'projection' },
+                      })
+                    }
                     activeOpacity={0.75}
                     accessibilityRole="button"
-                    accessibilityLabel="Acessar estoque de insumos"
+                    accessibilityLabel="Acessar previsão de compras"
                   >
-                    <Text style={styles.tipActionText}>Conferir Estoque</Text>
+                    <Text style={styles.tipActionText}>Planejar Compras</Text>
                     <MaterialCommunityIcons
                       name="arrow-right"
                       size={16}

@@ -44,7 +44,7 @@ export function DesktopSidebar({
   );
 
   const isStaffRole = isStaff(user?.role);
-  const hiddenTabNames = isCustomerRole ? ['recipes', 'reports'] : [];
+  const hiddenTabNames = isCustomerRole ? ['recipes', 'analytics'] : [];
   const visibleRoutes = state.routes.filter((route) => !hiddenTabNames.includes(route.name));
 
   const roleLabel = getRoleLabel(user?.role).toUpperCase();

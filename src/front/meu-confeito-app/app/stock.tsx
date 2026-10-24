@@ -257,27 +257,6 @@ export default function StockScreen() {
           </View>
 
           <View style={styles.headerActions}>
-            <CustomButton
-              variant="outline"
-              onPress={() =>
-                router.push({
-                  pathname: '/operations-history',
-                  params: { tab: 'movements' },
-                })
-              }
-              style={styles.shareButton}
-              accessibilityLabel="Ver histórico de movimentações do estoque"
-            >
-              <View style={styles.shareBtnContent}>
-                <MaterialCommunityIcons
-                  name="clipboard-text-clock-outline"
-                  size={18}
-                  color={theme.colors.primary}
-                />
-                <Text style={styles.shareBtnText}>Histórico</Text>
-              </View>
-            </CustomButton>
-
             {!isMobile && summaryMetrics.outOfStockCount > 0 && (
               <CustomButton
                 variant="outline"
@@ -585,7 +564,50 @@ export default function StockScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Estoque' }} />
+      <Stack.Screen
+        options={{
+          title: 'Estoque',
+          headerRight: () => (
+            <View style={styles.headerRightRow}>
+              {summaryMetrics.outOfStockCount > 0 && (
+                <TouchableOpacity
+                  onPress={handleShareMissingStock}
+                  style={styles.headerActionBtn}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel="Compartilhar lista de compras de insumos em falta"
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <MaterialCommunityIcons
+                    name="share-variant-outline"
+                    size={22}
+                    color={theme.colors.primary}
+                  />
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                onPress={() =>
+                  router.push({
+                    pathname: '/operations-history',
+                    params: { tab: 'movements' },
+                  })
+                }
+                style={styles.headerActionBtn}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Ver histórico de movimentações do estoque"
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <MaterialCommunityIcons
+                  name="clipboard-text-clock-outline"
+                  size={22}
+                  color={theme.colors.primary}
+                />
+              </TouchableOpacity>
+            </View>
+          ),
+        }}
+      />
 
       <View style={styles.container}>
         <FlatList
@@ -666,6 +688,18 @@ const createStyles = (
       paddingHorizontal: isMobile ? 16 : 24,
       paddingTop: 16,
       paddingBottom: 96,
+    },
+    headerRightRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    headerActionBtn: {
+      minWidth: 48,
+      minHeight: 48,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 8,
     },
     headerSection: {
       flexDirection: isMobile ? 'column' : 'row',

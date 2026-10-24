@@ -143,7 +143,7 @@ export default function RecipeScreen() {
     setIsInsufficientStockModalOpen(false);
     const targetYield = insufficientStockData?.targetYield ?? scaledYield;
     router.push({
-      pathname: '/(tabs)/reports',
+      pathname: '/(tabs)/analytics',
       params: {
         tab: 'projection',
         recipeId: recipe?.id,

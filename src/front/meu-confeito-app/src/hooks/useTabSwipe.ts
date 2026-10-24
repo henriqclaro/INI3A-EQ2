@@ -134,7 +134,7 @@ export function useTabSwipe({ activeTab, isCustomerRole }: UseTabSwipeOptions) {
 
       const tabs = isCustomerRoleRef.current
         ? ['home', 'profile']
-        : ['home', 'recipes', 'reports', 'profile'];
+        : ['home', 'recipes', 'analytics', 'profile'];
 
       const currentTab = activeTabRef.current;
       const currentIndex = tabs.indexOf(currentTab);

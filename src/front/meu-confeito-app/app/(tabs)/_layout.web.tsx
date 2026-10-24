@@ -42,7 +42,7 @@ export default function TabsWebLayout() {
           }
 
           const { navigation, state, descriptors, insets } = tabBarProps;
-          const hiddenTabNames = isCustomerRole ? ['recipes', 'reports'] : [];
+          const hiddenTabNames = isCustomerRole ? ['recipes', 'analytics'] : [];
           const visibleRoutes = state.routes.filter(
             (route) => !hiddenTabNames.includes(route.name),
           );
@@ -132,7 +132,7 @@ export default function TabsWebLayout() {
           }}
         />
         <Tabs.Screen
-          name="reports"
+          name="analytics"
           options={{
             title: 'Relatórios',
             href: isCustomerRole ? null : undefined,

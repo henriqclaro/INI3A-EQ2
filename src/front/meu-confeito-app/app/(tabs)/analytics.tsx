@@ -27,7 +27,7 @@ import { isBaker, isCustomer } from '@/src/utils/roles';
 
 type AnalyticsTab = 'profit' | 'projection';
 
-export default function ReportsScreen() {
+export default function AnalyticsScreen() {
   const { theme } = useThemeMode();
   const { user } = useAuth();
   const isBakerRole = isBaker(user?.role);

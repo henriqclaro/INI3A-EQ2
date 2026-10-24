@@ -42,8 +42,8 @@ export default function TabsLayout() {
           header: (props) => <CustomHeader {...props} />,
         }}
         tabBar={({ navigation, state, descriptors, insets }) => {
-          // Explicitly exclude recipes and reports tabs for customer users
-          const hiddenTabNames = isCustomerRole ? ['recipes', 'reports'] : [];
+          // Explicitly exclude recipes and analytics tabs for customer users
+          const hiddenTabNames = isCustomerRole ? ['recipes', 'analytics'] : [];
           const visibleRoutes = state.routes.filter(
             (route) => !hiddenTabNames.includes(route.name),
           );
@@ -125,12 +125,16 @@ export default function TabsLayout() {
             href: isCustomerRole ? null : undefined,
             tabBarItemStyle: isCustomerRole ? { display: 'none' } : undefined,
             tabBarIcon: ({ color }) => (
-              <MaterialCommunityIcons name="book-open-page-variant-outline" color={color} size={24} />
+              <MaterialCommunityIcons
+                name="book-open-page-variant-outline"
+                color={color}
+                size={24}
+              />
             ),
           }}
         />
         <Tabs.Screen
-          name="reports"
+          name="analytics"
           options={{
             title: 'Relatórios',
             href: isCustomerRole ? null : undefined,
