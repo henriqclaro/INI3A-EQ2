@@ -18,6 +18,7 @@ import { useThemeMode } from '@/src/contexts/ThemeContext';
 import { AppTheme } from '@/src/theme/themes';
 import { getRoleLabel, isStaff } from '@/src/utils/roles';
 
+import { Tooltip } from './Tooltip';
 import { UserAvatar } from './UserAvatar';
 
 type TabsProps = ComponentProps<typeof Tabs>;
@@ -131,20 +132,26 @@ export function DesktopSidebar({
       {/* Brand Header */}
       {isSidebarCollapsed ? (
         <View style={styles.brandHeaderCollapsed}>
-          <TouchableOpacity
-            style={styles.collapseButtonBox}
-            onPress={toggleSidebarCollapsed}
-            activeOpacity={0.75}
-            accessibilityRole="button"
-            accessibilityLabel="Expandir barra lateral"
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          <Tooltip
+            text="Expandir menu"
+            isEnabled={isSidebarCollapsed}
+            position={sidebarPosition === 'right' ? 'left' : 'right'}
           >
-            <MaterialCommunityIcons
-              name={collapseIconName}
-              size={22}
-              color={theme.colors.onSurfaceVariant}
-            />
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.collapseButtonBox}
+              onPress={toggleSidebarCollapsed}
+              activeOpacity={0.75}
+              accessibilityRole="button"
+              accessibilityLabel="Expandir barra lateral"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <MaterialCommunityIcons
+                name={collapseIconName}
+                size={22}
+                color={theme.colors.onSurfaceVariant}
+              />
+            </TouchableOpacity>
+          </Tooltip>
         </View>
       ) : (
         <View style={[styles.brandHeader, sidebarPosition === 'right' && styles.brandHeaderRight]}>
@@ -203,53 +210,59 @@ export function DesktopSidebar({
             };
 
             return (
-              <TouchableOpacity
+              <Tooltip
                 key={route.key}
-                style={[
-                  styles.navItem,
-                  isFocused && styles.navItemActive,
-                  isSidebarCollapsed && styles.navItemCollapsed,
-                ]}
-                onPress={handlePress}
-                activeOpacity={0.75}
-                accessibilityRole="button"
-                accessibilityState={{ selected: isFocused }}
-                accessibilityLabel={label}
+                text={label}
+                isEnabled={isSidebarCollapsed}
+                position={sidebarPosition === 'right' ? 'left' : 'right'}
               >
-                {isFocused && (
-                  <View
-                    style={[
-                      styles.activeIndicator,
-                      sidebarPosition === 'right'
-                        ? styles.activeIndicatorRight
-                        : styles.activeIndicatorLeft,
-                    ]}
-                  />
-                )}
-                <View style={styles.iconSlot}>
-                  {options.tabBarIcon ? (
-                    options.tabBarIcon({
-                      focused: isFocused,
-                      color: isFocused ? theme.colors.primary : theme.colors.onSurfaceVariant,
-                      size: 22,
-                    })
-                  ) : (
-                    <MaterialCommunityIcons
-                      name="circle-outline"
-                      size={20}
-                      color={isFocused ? theme.colors.primary : theme.colors.onSurfaceVariant}
+                <TouchableOpacity
+                  style={[
+                    styles.navItem,
+                    isFocused && styles.navItemActive,
+                    isSidebarCollapsed && styles.navItemCollapsed,
+                  ]}
+                  onPress={handlePress}
+                  activeOpacity={0.75}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: isFocused }}
+                  accessibilityLabel={label}
+                >
+                  {isFocused && (
+                    <View
+                      style={[
+                        styles.activeIndicator,
+                        sidebarPosition === 'right'
+                          ? styles.activeIndicatorRight
+                          : styles.activeIndicatorLeft,
+                      ]}
                     />
                   )}
-                </View>
-                {!isSidebarCollapsed && (
-                  <Text
-                    style={[styles.navLabel, isFocused && styles.navLabelActive]}
-                    numberOfLines={1}
-                  >
-                    {label}
-                  </Text>
-                )}
-              </TouchableOpacity>
+                  <View style={styles.iconSlot}>
+                    {options.tabBarIcon ? (
+                      options.tabBarIcon({
+                        focused: isFocused,
+                        color: isFocused ? theme.colors.primary : theme.colors.onSurfaceVariant,
+                        size: 22,
+                      })
+                    ) : (
+                      <MaterialCommunityIcons
+                        name="circle-outline"
+                        size={20}
+                        color={isFocused ? theme.colors.primary : theme.colors.onSurfaceVariant}
+                      />
+                    )}
+                  </View>
+                  {!isSidebarCollapsed && (
+                    <Text
+                      style={[styles.navLabel, isFocused && styles.navLabelActive]}
+                      numberOfLines={1}
+                    >
+                      {label}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </Tooltip>
             );
           })}
         </View>
@@ -266,39 +279,51 @@ export function DesktopSidebar({
           <View style={styles.navGroup}>
             {!isSidebarCollapsed && <Text style={styles.groupLabel}>GESTÃO DO ATELIÊ</Text>}
             {quickLinks.map((item) => (
-              <TouchableOpacity
+              <Tooltip
                 key={item.id}
-                style={[styles.navItem, isSidebarCollapsed && styles.navItemCollapsed]}
-                onPress={() => router.push(item.path)}
-                activeOpacity={0.75}
-                accessibilityRole="button"
-                accessibilityLabel={item.label}
+                text={item.label}
+                isEnabled={isSidebarCollapsed}
+                position={sidebarPosition === 'right' ? 'left' : 'right'}
               >
-                <View style={styles.iconSlot}>
-                  <MaterialCommunityIcons
-                    name={item.icon}
-                    size={22}
-                    color={theme.colors.onSurfaceVariant}
-                  />
-                </View>
-                {!isSidebarCollapsed && (
-                  <Text style={styles.navLabel} numberOfLines={1}>
-                    {item.label}
-                  </Text>
-                )}
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.navItem, isSidebarCollapsed && styles.navItemCollapsed]}
+                  onPress={() => router.push(item.path)}
+                  activeOpacity={0.75}
+                  accessibilityRole="button"
+                  accessibilityLabel={item.label}
+                >
+                  <View style={styles.iconSlot}>
+                    <MaterialCommunityIcons
+                      name={item.icon}
+                      size={22}
+                      color={theme.colors.onSurfaceVariant}
+                    />
+                  </View>
+                  {!isSidebarCollapsed && (
+                    <Text style={styles.navLabel} numberOfLines={1}>
+                      {item.label}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </Tooltip>
             ))}
 
             {isSidebarCollapsed ? (
-              <TouchableOpacity
-                style={styles.createButtonCollapsed}
-                onPress={() => router.push('/create-recipe')}
-                activeOpacity={0.85}
-                accessibilityRole="button"
-                accessibilityLabel="Criar nova receita"
+              <Tooltip
+                text="Nova Receita"
+                isEnabled={isSidebarCollapsed}
+                position={sidebarPosition === 'right' ? 'left' : 'right'}
               >
-                <MaterialCommunityIcons name="plus" size={22} color={theme.colors.onPrimary} />
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.createButtonCollapsed}
+                  onPress={() => router.push('/create-recipe')}
+                  activeOpacity={0.85}
+                  accessibilityRole="button"
+                  accessibilityLabel="Criar nova receita"
+                >
+                  <MaterialCommunityIcons name="plus" size={22} color={theme.colors.onPrimary} />
+                </TouchableOpacity>
+              </Tooltip>
             ) : (
               <TouchableOpacity
                 style={styles.createButton}
@@ -318,39 +343,51 @@ export function DesktopSidebar({
       {/* User Footer with Theme Toggle & Settings */}
       {isSidebarCollapsed ? (
         <View style={styles.userFooterCollapsed}>
-          <TouchableOpacity
-            style={styles.avatarButtonCollapsed}
-            onPress={() => router.navigate('/(tabs)/profile')}
-            activeOpacity={0.75}
-            accessibilityRole="button"
-            accessibilityLabel="Acessar perfil de usuário"
+          <Tooltip
+            text={user?.name || (isCustomerRole ? 'Perfil' : 'Perfil')}
+            isEnabled={isSidebarCollapsed}
+            position={sidebarPosition === 'right' ? 'left' : 'right'}
           >
-            <UserAvatar
-              url={user?.pfpUrl}
-              updatedAt={user?.updatedAt}
-              name={user?.name || (isCustomerRole ? 'Cliente' : 'Confeiteira')}
-              size={40}
-              fallbackType="initial"
-              fallbackBackgroundColor={theme.colors.primaryFixed}
-              borderColor={theme.colors.outlineVariant}
-              borderWidth={1}
-            />
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.avatarButtonCollapsed}
+              onPress={() => router.navigate('/(tabs)/profile')}
+              activeOpacity={0.75}
+              accessibilityRole="button"
+              accessibilityLabel="Acessar perfil de usuário"
+            >
+              <UserAvatar
+                url={user?.pfpUrl}
+                updatedAt={user?.updatedAt}
+                name={user?.name || (isCustomerRole ? 'Cliente' : 'Confeiteira')}
+                size={40}
+                fallbackType="initial"
+                fallbackBackgroundColor={theme.colors.primaryFixed}
+                borderColor={theme.colors.outlineVariant}
+                borderWidth={1}
+              />
+            </TouchableOpacity>
+          </Tooltip>
 
-          <TouchableOpacity
-            style={styles.collapsedMoreOptionsButton}
-            onPress={() => setIsSidebarCollapsed(false)}
-            activeOpacity={0.75}
-            accessibilityRole="button"
-            accessibilityLabel="Expandir opções da barra lateral"
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          <Tooltip
+            text="Mais opções"
+            isEnabled={isSidebarCollapsed}
+            position={sidebarPosition === 'right' ? 'left' : 'right'}
           >
-            <MaterialCommunityIcons
-              name="dots-horizontal"
-              size={20}
-              color={theme.colors.onSurfaceVariant}
-            />
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.collapsedMoreOptionsButton}
+              onPress={() => setIsSidebarCollapsed(false)}
+              activeOpacity={0.75}
+              accessibilityRole="button"
+              accessibilityLabel="Expandir opções da barra lateral"
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <MaterialCommunityIcons
+                name="dots-horizontal"
+                size={20}
+                color={theme.colors.onSurfaceVariant}
+              />
+            </TouchableOpacity>
+          </Tooltip>
         </View>
       ) : (
         <View style={styles.userFooter}>
