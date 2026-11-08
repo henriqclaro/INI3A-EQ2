@@ -36,7 +36,7 @@ export class AuthController {
   }
 
   async logOut(
-    req: Request<any, unknown, AuthDTO.RefreshOrDeleteRequest>,
+    req: Request<Record<string, string>, unknown, AuthDTO.RefreshOrDeleteRequest>,
     res: Response<ApiResponse>,
   ) {
     const refreshToken = req.body?.refreshToken || req.cookies?.refreshToken;

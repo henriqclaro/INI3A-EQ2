@@ -18,4 +18,10 @@ tagRoutes.post(
 
 tagRoutes.get('/', validate({ query: tag.querySchema }), tagController.search.bind(tagController));
 
+tagRoutes.get(
+  '/:id',
+  validate({ params: tag.paramsSchema }),
+  tagController.selectSingle.bind(tagController),
+);
+
 export { tagRoutes };

@@ -782,13 +782,14 @@ export class RecipeService {
     data: RecipeDTO.UpdateVisibilityRequest,
   ) {
     const isModeratorOrAdmin = context.userRole === 'ADMIN' || context.userRole === 'MODERATOR';
+    const targetUserId = data.userId ?? context.userId;
 
     if (data.status === 'SUSPENDED' && !isModeratorOrAdmin) {
       throw new ForbiddenError('Action denied for lack of privileges');
     }
 
     if (!isModeratorOrAdmin) {
-      this.checkPermission(context, data.userId);
+      this.checkPermission(context, targetUserId);
     }
 
     const recipe = await prisma.recipe.findUnique({
@@ -805,13 +806,13 @@ export class RecipeService {
       throw new NotFoundError('Recipe not found', 'RESOURCE_NOT_FOUND');
     }
 
-    if (!isModeratorOrAdmin && recipe.userId !== data.userId) {
+    if (!isModeratorOrAdmin && recipe.userId !== targetUserId) {
       throw new ForbiddenError('Action denied for lack of privileges');
     }
 
-    const targetUserId = recipe.userId ?? data.userId;
+    const recipeOwnerId = recipe.userId ?? targetUserId;
     const user = await prisma.user.findUnique({
-      where: { id: targetUserId },
+      where: { id: recipeOwnerId },
       select: {
         phone: true,
       },

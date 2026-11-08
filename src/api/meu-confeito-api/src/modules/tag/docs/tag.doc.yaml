@@ -48,3 +48,26 @@ paths:
                 $ref: '#/components/schemas/TagSearchResponse'
         '400':
           description: Erro na validação dos dados
+  /tags/{id}:
+    get:
+      summary: Seleciona uma tag específica por ID
+      tags:
+        - Tags
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID da tag
+      responses:
+        '200':
+          description: Tag selecionada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagSelectResponse'
+        '401':
+          description: Token de autenticação ausente ou inválido
+        '404':
+          description: Tag não encontrada

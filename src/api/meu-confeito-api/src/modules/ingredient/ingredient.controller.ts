@@ -50,4 +50,12 @@ export class IngredientController {
       'Ingredients selected successfully',
     ).send();
   }
+
+  async selectSingle(req: Request, res: Response<ApiResponse<IngredientDTO.SelectResponse>>) {
+    const context = this.extractProps(req);
+    const ingredientId = Number(req.params.id);
+    const responseData = await this.ingredientService.selectSingle(context, ingredientId);
+
+    return new DefaultSuccessResponse(res, responseData, 'Ingredient selected successfully').send();
+  }
 }

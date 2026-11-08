@@ -17,6 +17,8 @@ export namespace UserDTO {
   }
 
   export type RequestParams = z.infer<typeof user.paramsSchema>;
+  export type RecipeParams = z.infer<typeof user.recipeParamsSchema>;
+  export type UserRecipeParams = z.infer<typeof user.userRecipeParamsSchema>;
   export type QueryRequest = z.infer<typeof user.querySchema>;
   export type RecipeQueryRequest = z.infer<typeof user.recipeQuerySchema>;
 

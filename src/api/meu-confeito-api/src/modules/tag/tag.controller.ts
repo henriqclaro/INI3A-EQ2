@@ -40,4 +40,11 @@ export class TagController {
 
     return new DefaultSuccessResponse(res, responseData, 'Tags selected successfully').send();
   }
+
+  async selectSingle(req: Request, res: Response<ApiResponse<TagDTO.SelectResponse>>) {
+    const tagId = Number(req.params.id);
+    const responseData = await this.tagService.selectSingle(tagId);
+
+    return new DefaultSuccessResponse(res, responseData, 'Tag selected successfully').send();
+  }
 }

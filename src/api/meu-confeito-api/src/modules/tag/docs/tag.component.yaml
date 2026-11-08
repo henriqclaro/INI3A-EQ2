@@ -24,6 +24,30 @@ components:
             createdAt:
               type: string
               format: date-time
+    TagSelectResponse:
+      type: object
+      properties:
+        tag:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            type:
+              type: string
+              enum:
+                - USER
+                - PRODUCT
+                - VARIETY
+                - ATTRIBUTE
+            creatorId:
+              type: string
+              format: uuid
+              nullable: true
+            createdAt:
+              type: string
+              format: date-time
     TagSearchResponse:
       type: object
       properties:

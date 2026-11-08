@@ -29,6 +29,27 @@ export namespace IngredientDTO {
     };
   }
 
+  export interface SelectResponse {
+    ingredient: {
+      id: number;
+      parentId: number | null;
+      name: string;
+      slug: string;
+      aliases: string[];
+      description: string | null;
+      category: string;
+      baseDimension: string;
+      baseUnit: string;
+      creatorId: string | null;
+      createdAt: Date;
+      conversions: {
+        id: number;
+        fromUnit: string;
+        factorToBase: Decimal;
+      }[];
+    };
+  }
+
   export interface SearchResponse {
     ingredients: {
       id: number;

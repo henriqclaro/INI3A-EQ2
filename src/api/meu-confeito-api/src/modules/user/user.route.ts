@@ -25,13 +25,29 @@ userRoutes.post(
 
 userRoutes.use(authMiddleware);
 
+// Rotas Administrativas ------------------------
+
 userRoutes.get(
   '/',
   validate({ query: user.querySchema }),
   userController.search.bind(userController),
 );
 
-// Rotas de Avatar / Storage ------------------------
+// Rotas do Usuário Autenticado (/me) ------------------------
+
+userRoutes.get('/me', userController.selectMe.bind(userController));
+
+userRoutes.patch(
+  '/me',
+  validate({ body: user.updateSchema }),
+  userController.updateMe.bind(userController),
+);
+
+userRoutes.delete(
+  '/me',
+  validate({ body: user.deleteSchema }),
+  userController.deleteMe.bind(userController),
+);
 
 userRoutes.patch(
   '/me/avatar',
@@ -40,6 +56,36 @@ userRoutes.patch(
 );
 
 userRoutes.delete('/me/avatar', userController.deleteMyAvatar.bind(userController));
+
+userRoutes.get(
+  '/me/recipes',
+  validate({ query: user.recipeQuerySchema }),
+  userController.selectMyRecipes.bind(userController),
+);
+
+userRoutes.get('/me/saves', userController.selectMySaves.bind(userController));
+
+userRoutes.post(
+  '/me/saves',
+  validate({ body: user.saveRecipeSchema }),
+  userController.saveMyRecipe.bind(userController),
+);
+
+userRoutes.delete(
+  '/me/saves/:recipeId',
+  validate({ params: user.recipeParamsSchema }),
+  userController.removeSaveMyRecipe.bind(userController),
+);
+
+userRoutes.delete(
+  '/me/saves',
+  validate({ body: user.removeSaveRecipeSchema }),
+  userController.removeSaveMyRecipe.bind(userController),
+);
+
+userRoutes.get('/me/reviews', userController.selectMyReviews.bind(userController));
+
+// Rotas por ID de Usuário (Admin ou compatibilidade) ------------------------
 
 userRoutes.patch(
   '/:id/avatar',
@@ -72,7 +118,7 @@ userRoutes.delete(
   userController.delete.bind(userController),
 );
 
-// Rotas de Relações ------------------------
+// Rotas de Relações por ID ------------------------
 
 userRoutes.get(
   '/:id/recipes',
@@ -90,6 +136,12 @@ userRoutes.post(
   '/:id/saves',
   validate({ params: user.paramsSchema, body: user.saveRecipeSchema }),
   userController.saveRecipe.bind(userController),
+);
+
+userRoutes.delete(
+  '/:id/saves/:recipeId',
+  validate({ params: user.userRecipeParamsSchema }),
+  userController.removeSaveRecipe.bind(userController),
 );
 
 userRoutes.delete(

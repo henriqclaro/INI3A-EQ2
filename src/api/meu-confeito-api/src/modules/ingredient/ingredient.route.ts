@@ -22,4 +22,10 @@ ingredientRoutes.get(
   ingredientController.search.bind(ingredientController),
 );
 
+ingredientRoutes.get(
+  '/:id',
+  validate({ params: ingredient.paramsSchema }),
+  ingredientController.selectSingle.bind(ingredientController),
+);
+
 export { ingredientRoutes };

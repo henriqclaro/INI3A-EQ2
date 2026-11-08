@@ -47,7 +47,16 @@ export const updateSchema = z
   .partial();
 
 export const deleteSchema = z.object({
-  state: z.enum(['DELETED', 'SUSPENDED']),
+  state: z.enum(['DELETED', 'SUSPENDED']).default('DELETED'),
+});
+
+export const recipeParamsSchema = z.object({
+  recipeId: z.uuid('Invalid UUID for recipe ID'),
+});
+
+export const userRecipeParamsSchema = z.object({
+  id: z.uuid('Invalid UUID for user ID'),
+  recipeId: z.uuid('Invalid UUID for recipe ID'),
 });
 
 export const saveRecipeSchema = z.object({

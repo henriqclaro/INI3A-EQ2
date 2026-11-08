@@ -69,7 +69,7 @@ export const paramsSchema = z.object({
 
 export const userInventoryParamsSchema = z.object({
   id: z.uuid('Invalid UUID for recipe ID'),
-  userId: z.uuid('Invalid UUID for user ID'),
+  userId: z.union([z.uuid('Invalid UUID for user ID'), z.literal('me')]),
 });
 
 const sortFieldSchema = z
@@ -154,7 +154,7 @@ export const querySchema = z.object({
 });
 
 export const updateVisibilitySchema = z.object({
-  userId: z.uuid('Invalid UUID for User ID'),
+  userId: z.uuid('Invalid UUID for User ID').optional(),
   status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED', 'SUSPENDED']),
 });
 

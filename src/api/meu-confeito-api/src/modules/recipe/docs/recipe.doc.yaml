@@ -128,6 +128,32 @@ paths:
           description: Receita não encontrada
         '409':
           description: Conflito ao excluir receita em uso como sub-receita ou com produções registradas
+  /recipes/{id}/inventory:
+    get:
+      summary: Seleciona uma receita por ID incluindo o estoque do próprio usuário autenticado
+      tags:
+        - Receitas
+        - Ingredientes
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Receita com estoque do usuário autenticado selecionada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeSingleSelectUserInventoryResponse'
+        '401':
+          description: Token de autenticação ausente ou inválido
+        '403':
+          description: Ação negada por falta de privilégios
+        '404':
+          description: Receita não encontrada
   /recipes/{id}/users/{userId}:
     get:
       summary: Seleciona uma receita por ID incluindo o estoque do usuário
@@ -146,7 +172,7 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
+            description: UUID do usuário ou 'me' para o usuário autenticado
       responses:
         '200':
           description: Receita com estoque do usuário selecionada com sucesso

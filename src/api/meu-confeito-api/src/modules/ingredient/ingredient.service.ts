@@ -150,4 +150,39 @@ export class IngredientService {
 
     return { ingredients };
   }
+
+  async selectSingle(context: RequestContext, id: number): Promise<IngredientDTO.SelectResponse> {
+    const ingredient = await prisma.ingredient.findFirst({
+      where: {
+        id,
+        OR: [{ creatorId: null }, { creatorId: context.userId }],
+      },
+      select: {
+        id: true,
+        parentId: true,
+        name: true,
+        slug: true,
+        aliases: true,
+        description: true,
+        category: true,
+        baseDimension: true,
+        baseUnit: true,
+        creatorId: true,
+        createdAt: true,
+        conversions: {
+          select: {
+            id: true,
+            fromUnit: true,
+            factorToBase: true,
+          },
+        },
+      },
+    });
+
+    if (!ingredient) {
+      throw new NotFoundError('Ingredient not found', 'RESOURCE_NOT_FOUND');
+    }
+
+    return { ingredient };
+  }
 }

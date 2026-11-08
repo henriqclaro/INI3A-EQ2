@@ -1,5 +1,5 @@
 import prisma from '../../core/database/prisma.client';
-import { ConflictError, ForbiddenError } from '../../core/errors/http.error';
+import { ConflictError, ForbiddenError, NotFoundError } from '../../core/errors/http.error';
 import type { RequestContext } from '../../core/types/context.interface';
 import type { Prisma, TagType } from '../../generated/prisma/client';
 import type { TagDTO } from './tag.dto';
@@ -12,7 +12,8 @@ export class TagService {
   }
 
   async register(context: RequestContext, data: TagDTO.RegisterRequest) {
-    this.checkPermission(context, data.creatorId);
+    const creatorId = data.creatorId ?? context.userId;
+    this.checkPermission(context, creatorId);
 
     const tagExists = await prisma.tag.findUnique({
       where: { name: data.name },
@@ -26,7 +27,7 @@ export class TagService {
       data: {
         name: data.name,
         type: data.tagType,
-        creatorId: data.creatorId,
+        creatorId,
       },
       select: {
         id: true,
@@ -74,5 +75,24 @@ export class TagService {
     });
 
     return { tags };
+  }
+
+  async selectSingle(id: number): Promise<TagDTO.SelectResponse> {
+    const tag = await prisma.tag.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        creatorId: true,
+        createdAt: true,
+      },
+    });
+
+    if (!tag) {
+      throw new NotFoundError('Tag not found', 'RESOURCE_NOT_FOUND');
+    }
+
+    return { tag };
   }
 }

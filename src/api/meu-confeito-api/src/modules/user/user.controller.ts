@@ -45,13 +45,50 @@ export class UserController {
     return new DefaultSuccessResponse(res, responseData, 'Users selected successfully').send();
   }
 
+  async selectMe(req: Request, res: Response<ApiResponse<UserDTO.SelectResponse>>) {
+    const context = this.extractProps(req);
+
+    const responseData: UserDTO.SelectResponse = await this.userService.select(
+      context,
+      context.userId,
+    );
+
+    return new DefaultSuccessResponse(res, responseData, 'User selected successfully').send();
+  }
+
+  async updateMe(
+    req: Request<Record<string, string>, unknown, UserDTO.UpdateRequest>,
+    res: Response<ApiResponse<UserDTO.UpdateResponse>>,
+  ) {
+    const context = this.extractProps(req);
+
+    const responseData: UserDTO.UpdateResponse = await this.userService.update(
+      context,
+      context.userId,
+      req.body,
+    );
+
+    return new DefaultSuccessResponse(res, responseData, 'User updated successfully').send();
+  }
+
+  async deleteMe(
+    req: Request<Record<string, string>, unknown, UserDTO.DeleteRequest>,
+    res: Response<ApiResponse>,
+  ) {
+    const context = this.extractProps(req);
+
+    await this.userService.delete(context, context.userId, req.body ?? { state: 'DELETED' });
+
+    return new NoContentResponse(res, 'User deleted successfully').send();
+  }
+
   async select(
     req: Request<UserDTO.RequestParams>,
     res: Response<ApiResponse<UserDTO.SelectResponse>>,
   ) {
     const context = this.extractProps(req);
 
-    const userId = req.params.id;
+    const userId = req.params.id === 'me' ? context.userId : req.params.id;
 
     const responseData: UserDTO.SelectResponse = await this.userService.select(context, userId);
 
@@ -64,7 +101,7 @@ export class UserController {
   ) {
     const context = this.extractProps(req);
 
-    const userId = req.params.id;
+    const userId = req.params.id === 'me' ? context.userId : req.params.id;
 
     const responseData: UserDTO.UpdateResponse = await this.userService.update(
       context,
@@ -72,7 +109,7 @@ export class UserController {
       req.body,
     );
 
-    return new DefaultSuccessResponse(res, responseData, 'User updated sucessfully').send();
+    return new DefaultSuccessResponse(res, responseData, 'User updated successfully').send();
   }
 
   async delete(
@@ -81,7 +118,7 @@ export class UserController {
   ) {
     const context = this.extractProps(req);
 
-    const userId = req.params.id;
+    const userId = req.params.id === 'me' ? context.userId : req.params.id;
 
     await this.userService.delete(context, userId, req.body);
 
@@ -90,13 +127,86 @@ export class UserController {
 
   // Métodos de Relações ------------------------
 
+  async selectMyRecipes(
+    req: Request<Record<string, string>, unknown, unknown, UserDTO.RecipeQueryRequest>,
+    res: Response<ApiResponse<UserDTO.SelectUserRecipesResponse>>,
+  ) {
+    const context = this.extractProps(req);
+
+    const responseData: UserDTO.SelectUserRecipesResponse = await this.userService.selectUserRecipe(
+      context,
+      context.userId,
+      req.query,
+    );
+
+    return new DefaultSuccessResponse(
+      res,
+      responseData,
+      'User Recipes selected successfully',
+    ).send();
+  }
+
+  async selectMySaves(req: Request, res: Response<ApiResponse<UserDTO.SelectUserSavesResponse>>) {
+    const context = this.extractProps(req);
+
+    const responseData: UserDTO.SelectUserSavesResponse = await this.userService.selectUserSaves(
+      context,
+      context.userId,
+    );
+
+    return new DefaultSuccessResponse(res, responseData, 'User Saves selected successfully').send();
+  }
+
+  async saveMyRecipe(
+    req: Request<Record<string, string>, unknown, UserDTO.SaveRecipeRequest>,
+    res: Response<ApiResponse<UserDTO.SaveRecipeResponse>>,
+  ) {
+    const context = this.extractProps(req);
+
+    const responseData: UserDTO.SaveRecipeResponse = await this.userService.saveRecipe(
+      context,
+      context.userId,
+      req.body,
+    );
+
+    return new CreatedResponse(res, responseData, 'Recipe saved successfully').send();
+  }
+
+  async removeSaveMyRecipe(
+    req: Request<{ recipeId?: string }, unknown, UserDTO.RemoveSaveRecipeRequest>,
+    res: Response<ApiResponse>,
+  ) {
+    const context = this.extractProps(req);
+    const recipeId = req.params.recipeId || req.body?.recipeId;
+
+    await this.userService.removeSaveRecipe(context, context.userId, { recipeId });
+
+    return new NoContentResponse(res, 'Saved recipe removed successfully').send();
+  }
+
+  async selectMyReviews(
+    req: Request,
+    res: Response<ApiResponse<UserDTO.SelectUserReviewsResponse>>,
+  ) {
+    const context = this.extractProps(req);
+
+    const responseData: UserDTO.SelectUserReviewsResponse =
+      await this.userService.selectUserReviews(context, context.userId);
+
+    return new DefaultSuccessResponse(
+      res,
+      responseData,
+      'User reviews selected successfully',
+    ).send();
+  }
+
   async selectUserRecipe(
     req: Request<UserDTO.RequestParams, unknown, unknown, UserDTO.RecipeQueryRequest>,
     res: Response<ApiResponse<UserDTO.SelectUserRecipesResponse>>,
   ) {
     const context = this.extractProps(req);
 
-    const userId = req.params.id;
+    const userId = req.params.id === 'me' ? context.userId : req.params.id;
 
     const responseData: UserDTO.SelectUserRecipesResponse = await this.userService.selectUserRecipe(
       context,
@@ -117,7 +227,7 @@ export class UserController {
   ) {
     const context = this.extractProps(req);
 
-    const userId = req.params.id;
+    const userId = req.params.id === 'me' ? context.userId : req.params.id;
 
     const responseData: UserDTO.SelectUserSavesResponse = await this.userService.selectUserSaves(
       context,
@@ -133,7 +243,7 @@ export class UserController {
   ) {
     const context = this.extractProps(req);
 
-    const userId = req.params.id;
+    const userId = req.params.id === 'me' ? context.userId : req.params.id;
 
     const responseData: UserDTO.SaveRecipeResponse = await this.userService.saveRecipe(
       context,
@@ -145,14 +255,15 @@ export class UserController {
   }
 
   async removeSaveRecipe(
-    req: Request<UserDTO.RequestParams, unknown, UserDTO.RemoveSaveRecipeRequest>,
+    req: Request<{ id: string; recipeId?: string }, unknown, UserDTO.RemoveSaveRecipeRequest>,
     res: Response<ApiResponse>,
   ) {
     const context = this.extractProps(req);
 
-    const userId = req.params.id;
+    const userId = req.params.id === 'me' ? context.userId : req.params.id;
+    const recipeId = req.params.recipeId || req.body?.recipeId;
 
-    await this.userService.removeSaveRecipe(context, userId, req.body);
+    await this.userService.removeSaveRecipe(context, userId, { recipeId });
 
     return new NoContentResponse(res, 'Saved recipe removed successfully').send();
   }
@@ -163,7 +274,7 @@ export class UserController {
   ) {
     const context = this.extractProps(req);
 
-    const userId = req.params.id;
+    const userId = req.params.id === 'me' ? context.userId : req.params.id;
 
     const responseData: UserDTO.SelectUserReviewsResponse =
       await this.userService.selectUserReviews(context, userId);

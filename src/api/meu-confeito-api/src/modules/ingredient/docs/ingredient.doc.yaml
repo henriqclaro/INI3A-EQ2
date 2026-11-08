@@ -55,3 +55,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/IngredientSearchResponse'
+  /ingredients/{id}:
+    get:
+      summary: Seleciona um ingrediente específico por ID
+      tags:
+        - Ingredientes
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID do ingrediente
+      responses:
+        '200':
+          description: Ingrediente selecionado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngredientSelectResponse'
+        '401':
+          description: Token de autenticação ausente ou inválido
+        '404':
+          description: Ingrediente não encontrado

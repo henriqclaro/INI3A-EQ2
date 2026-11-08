@@ -20,21 +20,27 @@ recipeRoutes.post(
 );
 
 recipeRoutes.get(
+  '/',
+  validate({ query: recipe.querySchema }),
+  recipeController.search.bind(recipeController),
+);
+
+recipeRoutes.get(
   '/:id',
   validate({ params: recipe.paramsSchema }),
   recipeController.selectSingle.bind(recipeController),
 );
 
 recipeRoutes.get(
-  '/:id/users/:userId',
-  validate({ params: recipe.userInventoryParamsSchema }),
-  recipeController.selectSingleUserInventory.bind(recipeController),
+  '/:id/inventory',
+  validate({ params: recipe.paramsSchema }),
+  recipeController.selectMyInventory.bind(recipeController),
 );
 
 recipeRoutes.get(
-  '/',
-  validate({ query: recipe.querySchema }),
-  recipeController.search.bind(recipeController),
+  '/:id/users/:userId',
+  validate({ params: recipe.userInventoryParamsSchema }),
+  recipeController.selectSingleUserInventory.bind(recipeController),
 );
 
 recipeRoutes.patch(

@@ -3,7 +3,11 @@ import { z } from 'zod';
 export const registerSchema = z.object({
   name: z.string('Invalid string for name'),
   tagType: z.enum(['USER', 'PRODUCT', 'VARIETY', 'ATTRIBUTE']),
-  creatorId: z.uuid('Invalid UUID for Creator ID'),
+  creatorId: z.uuid('Invalid UUID for Creator ID').optional(),
+});
+
+export const paramsSchema = z.object({
+  id: z.string().transform(Number).pipe(z.number().int().positive('Invalid tag ID')),
 });
 
 export const querySchema = z.object({
