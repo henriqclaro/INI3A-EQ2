@@ -37,16 +37,23 @@ Request Flow: `Routes -> Middlewares/Zod Validation -> Controller -> Service -> 
 ### Simplified tree
 
 - **Database Schema:** `prisma/schema.prisma`
-- **Routes:** `src/routes/[module].route.ts`
-- **Zod Validation:** `src/validation/[module].schema.ts`
-- **Middlewares:** `src/middlewares/auth.middleware.ts`, `src/middlewares/error.handler.ts` and `src/middlewares/validate.middleware.ts`
-- **Controllers:** `src/controllers/[module].controller.ts`
-- **Services:** `src/services/[module].service.ts`
-- **Responses:** `src/responses/http.[success or error].ts`
-- **Types:** `src/types`
-  - _DTOs:_ `src/types/dtos`
-- **Documentation:** `src/docs/[module].doc.yaml`
-  - _Yaml Components:_ `src/docs/components/[module].component.yaml`
+- **Application Routes Aggregator:** `src/routes.ts`
+- **Core (Shared & Cross-Cutting Infrastructure):** `src/core/`
+  - _Database:_ `src/core/database/prisma.client.ts`
+  - _Errors:_ `src/core/errors/app.error.ts`, `http.error.ts`, `error.code.ts`
+  - _HTTP Responses:_ `src/core/http/api.response.ts`, `http.success.ts`, `response.success.ts`
+  - _Middlewares:_ `src/core/middlewares/auth.middleware.ts`, `error.handler.ts`, `logger.middleware.ts`, `rate-limit.middleware.ts`, `request-id.middleware.ts`, `upload.middleware.ts`, `validate.middleware.ts`
+  - _Types:_ `src/core/types/context.interface.ts`, `express.d.ts`, `schema.interface.ts`
+  - _Utils:_ `src/core/utils/slugify.util.ts`, `storage.util.ts`
+- **Modules (Package by Feature):** `src/modules/[module]/`
+  - _Routes:_ `src/modules/[module]/[module].route.ts`
+  - _Zod Validation:_ `src/modules/[module]/[module].schema.ts`
+  - _Controllers:_ `src/modules/[module]/[module].controller.ts`
+  - _Services:_ `src/modules/[module]/[module].service.ts`
+  - _DTOs:_ `src/modules/[module]/[module].dto.ts`
+  - _Domain Utils (optional):_ `src/modules/[module]/utils/[util].util.ts`
+  - _Documentation:_ `src/modules/[module]/docs/[module].doc.yaml`
+  - _Yaml Components:_ `src/modules/[module]/docs/[module].component.yaml`
 
 ### Run the project
 

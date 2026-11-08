@@ -7,11 +7,11 @@ import hpp from 'hpp';
 
 import { STORAGE_ROOT } from './config/storage.config';
 import { setupSwagger } from './config/swagger.config';
-import { errorHandler } from './middlewares/error.handler';
-import { requestLoggerMiddleware } from './middlewares/logger.middleware';
-import { globalRateLimiter } from './middlewares/rate-limit.middleware';
-import { requestIdMiddleware } from './middlewares/request-id.middleware';
-import { NotFoundError } from './responses/http.error';
+import { NotFoundError } from './core/errors/http.error';
+import { errorHandler } from './core/middlewares/error.handler';
+import { requestLoggerMiddleware } from './core/middlewares/logger.middleware';
+import { globalRateLimiter } from './core/middlewares/rate-limit.middleware';
+import { requestIdMiddleware } from './core/middlewares/request-id.middleware';
 import { routes } from './routes';
 
 const app = express();
