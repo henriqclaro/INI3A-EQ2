@@ -48,8 +48,16 @@ export const RecipeService = {
     const response = await api.get<RecipeResponse>(`/recipes/${recipeId}`);
     return response.data;
   },
-  getRecipeWithUserInventory: async (recipeId: string, userId: string) => {
-    const response = await api.get<RecipeResponse>(`/recipes/${recipeId}/users/${userId}`);
+  getRecipeInventory: async (recipeId: string) => {
+    const response = await api.get<RecipeResponse>(`/recipes/${recipeId}/inventory`);
+    return response.data;
+  },
+  getRecipeWithUserInventory: async (recipeId: string, userId?: string) => {
+    const url =
+      !userId || userId === 'me'
+        ? `/recipes/${recipeId}/inventory`
+        : `/recipes/${recipeId}/users/${userId}`;
+    const response = await api.get<RecipeResponse>(url);
     return response.data;
   },
   search: async (

@@ -36,7 +36,9 @@ export default function SavedRecipesScreen() {
   const isDesktop = width >= 768;
   const containerWidth = Math.min(width - (isDesktop ? 64 : 32), 1040);
   const cardWidth = isDesktop ? Math.floor((containerWidth - 16) / 2) : Math.min(width - 32, 540);
-  const { savedRecipes, isLoading, isOffline, refetch, removeSave } = useSavedRecipes(user?.id);
+  const { savedRecipes, isLoading, isOffline, refetch, removeSave } = useSavedRecipes(
+    user ? 'me' : undefined,
+  );
 
   const styles = useMemo(
     () => createStyles(theme, isDesktop, cardWidth),

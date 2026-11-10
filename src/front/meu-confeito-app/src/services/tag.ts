@@ -11,7 +11,7 @@ export interface TagSearchResponse {
 export interface TagRegisterInput {
   name: string;
   tagType: TagType;
-  creatorId: string;
+  creatorId?: string;
 }
 
 export interface TagRegisterResponse {

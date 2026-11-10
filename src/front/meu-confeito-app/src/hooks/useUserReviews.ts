@@ -23,7 +23,7 @@ export function useUserReviews(userId: string | undefined) {
     try {
       setIsLoading(true);
       setError(null);
-      const res = await UserService.getUserReviews(userId);
+      const res = await UserService.getUserReviews('me');
       const reviews = res.data?.reviews || [];
       setUserReviews(reviews);
       setIsOffline(false);
@@ -60,7 +60,7 @@ export function useUserReviews(userId: string | undefined) {
       try {
         setIsLoading(true);
         setError(null);
-        const res = await UserService.getUserReviews(userId!);
+        const res = await UserService.getUserReviews('me');
         const reviews = res.data?.reviews || [];
         if (isMounted) {
           setUserReviews(reviews);

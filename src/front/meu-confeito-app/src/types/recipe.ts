@@ -193,7 +193,7 @@ export interface RecipeRegisterResponseData {
 }
 
 export interface UpdateRecipeVisibilityInput {
-  userId: string;
+  userId?: string;
   status: RecipeStatus;
 }
 

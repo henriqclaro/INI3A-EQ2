@@ -108,7 +108,7 @@ function BakerHomeScreen() {
     recipes,
     isOffline: isRecipesOffline,
     refetch: refetchRecipes,
-  } = useUserRecipes(user?.id);
+  } = useUserRecipes(user ? 'me' : undefined);
   const {
     inventory,
     isOffline: isInventoryOffline,
@@ -124,7 +124,7 @@ function BakerHomeScreen() {
     savedRecipes,
     isOffline: isSavedOffline,
     refetch: refetchSavedRecipes,
-  } = useSavedRecipes(user?.id);
+  } = useSavedRecipes(user ? 'me' : undefined);
 
   const isHomeOffline =
     isNetworkOffline ||

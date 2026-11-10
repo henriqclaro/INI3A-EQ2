@@ -62,13 +62,13 @@ export default function RecipesScreen() {
     isOffline: isUserRecipesOffline,
     loadMore: loadMoreUserRecipes,
     refetch: refetchUserRecipes,
-  } = useUserRecipes(user?.id, statusParam);
+  } = useUserRecipes(user ? 'me' : undefined, statusParam);
   const {
     savedRecipes,
     isLoading: isLoadingSavedRecipes,
     isOffline: isSavedRecipesOffline,
     refetch: refetchSavedRecipes,
-  } = useSavedRecipes(user?.id);
+  } = useSavedRecipes(user ? 'me' : undefined);
   const isAppOffline = isUserRecipesOffline || isSavedRecipesOffline || isNetworkOffline;
   const {
     downloadedRecipes,

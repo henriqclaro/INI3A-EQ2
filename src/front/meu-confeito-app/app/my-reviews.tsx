@@ -36,7 +36,9 @@ export default function MyReviewsScreen() {
   const isDesktop = width >= 768;
   const containerWidth = Math.min(width - (isDesktop ? 64 : 32), 1040);
   const cardWidth = isDesktop ? Math.floor((containerWidth - 16) / 2) : Math.min(width - 32, 540);
-  const { userReviews, isLoading, isOffline, refetch, deleteReview } = useUserReviews(user?.id);
+  const { userReviews, isLoading, isOffline, refetch, deleteReview } = useUserReviews(
+    user ? 'me' : undefined,
+  );
 
   const styles = useMemo(
     () => createStyles(theme, isDesktop, cardWidth),

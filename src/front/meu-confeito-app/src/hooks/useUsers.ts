@@ -38,11 +38,11 @@ export function useUserEdit() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const editUser = async (data: UserEditData, userId: string) => {
+  const editUser = async (data: UserEditData, userId?: string) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await UserService.edit(data, userId);
+      const response = await UserService.edit(data, userId ?? 'me');
       return response;
     } catch (err) {
       console.error('Error editing user: ', err);
@@ -153,11 +153,11 @@ export function useUserDelete() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const deleteUser = async (userId: string) => {
+  const deleteUser = async (userId?: string) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await UserService.delete(userId);
+      const response = await UserService.delete(userId ?? 'me');
       return response;
     } catch (err: unknown) {
       console.error('Error deleting user:', err);

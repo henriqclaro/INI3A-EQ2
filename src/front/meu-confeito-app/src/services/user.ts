@@ -111,12 +111,22 @@ export const UserService = {
     const response = await api.post<UserRegisterResponse>('/users', data);
     return response.data;
   },
-  getById: async (userId: string) => {
-    const response = await api.get<UserEditResponse>(`/users/${userId}`);
+  getMe: async () => {
+    const response = await api.get<UserEditResponse>('/users/me');
     return response.data;
   },
-  edit: async (data: UserEditData, userId: string) => {
-    const response = await api.patch<UserEditResponse>(`/users/${userId}`, data);
+  getById: async (userId: string) => {
+    const url = userId === 'me' ? '/users/me' : `/users/${userId}`;
+    const response = await api.get<UserEditResponse>(url);
+    return response.data;
+  },
+  editMe: async (data: UserEditData) => {
+    const response = await api.patch<UserEditResponse>('/users/me', data);
+    return response.data;
+  },
+  edit: async (data: UserEditData, userId?: string) => {
+    const url = !userId || userId === 'me' ? '/users/me' : `/users/${userId}`;
+    const response = await api.patch<UserEditResponse>(url, data);
     return response.data;
   },
   uploadAvatar: async (formData: FormData) => {
@@ -131,11 +141,16 @@ export const UserService = {
     const response = await api.delete('/users/me/avatar');
     return response.data;
   },
+  deleteMe: async () => {
+    const response = await api.delete('/users/me', { data: { state: 'DELETED' } });
+    return response.data;
+  },
   /**
    * Voluntary self-deletion (CUSTOMER/BAKER) or administrative deletion (ADMIN).
    */
-  delete: async (userId: string) => {
-    const response = await api.delete(`/users/${userId}`, { data: { state: 'DELETED' } });
+  delete: async (userId?: string) => {
+    const url = !userId || userId === 'me' ? '/users/me' : `/users/${userId}`;
+    const response = await api.delete(url, { data: { state: 'DELETED' } });
     return response.data;
   },
   /**
@@ -166,7 +181,7 @@ export const UserService = {
     const response = await api.get<SearchUsersResponse>(url);
     return response.data;
   },
-  getRecipes: async (userId: string, status?: RecipeStatus, page?: number) => {
+  getMyRecipes: async (status?: RecipeStatus, page?: number) => {
     const params = new URLSearchParams();
     if (status) {
       params.append('status', status);
@@ -175,9 +190,21 @@ export const UserService = {
       params.append('page', page.toString());
     }
     const queryString = params.toString();
-    const url = queryString
-      ? `/users/${userId}/recipes?${queryString}`
-      : `/users/${userId}/recipes`;
+    const url = queryString ? `/users/me/recipes?${queryString}` : '/users/me/recipes';
+    const response = await api.get<UserRecipesResponse>(url);
+    return response.data;
+  },
+  getRecipes: async (userId?: string, status?: RecipeStatus, page?: number) => {
+    const params = new URLSearchParams();
+    if (status) {
+      params.append('status', status);
+    }
+    if (page !== undefined) {
+      params.append('page', page.toString());
+    }
+    const queryString = params.toString();
+    const basePath = !userId || userId === 'me' ? '/users/me/recipes' : `/users/${userId}/recipes`;
+    const url = queryString ? `${basePath}?${queryString}` : basePath;
     const response = await api.get<UserRecipesResponse>(url);
     return response.data;
   },
@@ -206,20 +233,41 @@ export const UserService = {
       },
     };
   },
-  getSavedRecipes: async (userId: string) => {
-    const response = await api.get<SelectUserSavesResponse>(`/users/${userId}/saves`);
+  getMySavedRecipes: async () => {
+    const response = await api.get<SelectUserSavesResponse>('/users/me/saves');
     return response.data;
   },
-  saveRecipe: async (userId: string, recipeId: string) => {
-    const response = await api.post<SaveRecipeResponse>(`/users/${userId}/saves`, { recipeId });
+  getSavedRecipes: async (userId?: string) => {
+    const url = !userId || userId === 'me' ? '/users/me/saves' : `/users/${userId}/saves`;
+    const response = await api.get<SelectUserSavesResponse>(url);
     return response.data;
   },
-  removeSavedRecipe: async (userId: string, recipeId: string) => {
-    const response = await api.delete(`/users/${userId}/saves`, { data: { recipeId } });
+  saveRecipe: async (userIdOrRecipeId: string, maybeRecipeId?: string) => {
+    const isSingleArg = maybeRecipeId === undefined;
+    const recipeId = isSingleArg ? userIdOrRecipeId : maybeRecipeId;
+    const userId = isSingleArg ? 'me' : userIdOrRecipeId;
+    const url = !userId || userId === 'me' ? '/users/me/saves' : `/users/${userId}/saves`;
+    const response = await api.post<SaveRecipeResponse>(url, { recipeId });
     return response.data;
   },
-  getUserReviews: async (userId: string) => {
-    const response = await api.get<SelectUserReviewsResponse>(`/users/${userId}/reviews`);
+  removeSavedRecipe: async (userIdOrRecipeId: string, maybeRecipeId?: string) => {
+    const isSingleArg = maybeRecipeId === undefined;
+    const recipeId = isSingleArg ? userIdOrRecipeId : maybeRecipeId;
+    const userId = isSingleArg ? 'me' : userIdOrRecipeId;
+    const url =
+      !userId || userId === 'me'
+        ? `/users/me/saves/${recipeId}`
+        : `/users/${userId}/saves/${recipeId}`;
+    const response = await api.delete(url);
+    return response.data;
+  },
+  getMyReviews: async () => {
+    const response = await api.get<SelectUserReviewsResponse>('/users/me/reviews');
+    return response.data;
+  },
+  getUserReviews: async (userId?: string) => {
+    const url = !userId || userId === 'me' ? '/users/me/reviews' : `/users/${userId}/reviews`;
+    const response = await api.get<SelectUserReviewsResponse>(url);
     return response.data;
   },
 };

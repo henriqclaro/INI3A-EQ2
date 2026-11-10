@@ -126,7 +126,9 @@ export function RecipeForm({
   const isSmallScreen = width < 350;
 
   const { ingredients: availableIngredients, isLoading: isLoadingIngredients } = useIngredients();
-  const { recipes: userRecipes, isLoading: isLoadingUserRecipes } = useUserRecipes(user?.id);
+  const { recipes: userRecipes, isLoading: isLoadingUserRecipes } = useUserRecipes(
+    user ? 'me' : undefined,
+  );
 
   const styles = useMemo(() => createStyles(theme, isSmallScreen), [theme, isSmallScreen]);
 

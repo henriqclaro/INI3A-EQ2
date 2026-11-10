@@ -887,7 +887,7 @@ export default function EditProfileScreen() {
 
       if (Object.keys(userData).length > 0) {
         try {
-          const response = await editUser(userData, user!.id);
+          const response = await editUser(userData);
           if (response?.data?.user) {
             await updateUser(response.data.user);
           } else {
