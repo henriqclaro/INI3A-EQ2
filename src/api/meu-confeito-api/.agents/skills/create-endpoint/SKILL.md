@@ -40,7 +40,7 @@ Inspect `prisma/schema.prisma` to confirm the required models, relations, and fi
 
 ### Step 2: Define Zod Validation Schemas
 
-Create or update schemas in `src/validation/[module].schema.ts`.
+Create or update schemas in `src/modules/[module]/[module].schema.ts`.
 
 1. Define schemas for request payloads, route parameters, query parameters, or headers:
 
@@ -67,21 +67,26 @@ Create or update schemas in `src/validation/[module].schema.ts`.
    });
    ```
 
-2. Ensure the module is exported in `src/validation/index.ts`:
+2. Register the module schemas in `src/config/swagger.config.ts`:
    ```typescript
-   export * as [module] from './[module].schema';
+   import * as [module] from '../modules/[module]/[module].schema';
+
+   const schemas = {
+     // ... outros módulos
+     [module],
+   };
    ```
-   _(This ensures `swagger.config.ts` automatically registers OpenAPI schemas under `[Module][Schema]` format, e.g. `RecipeRegisterSchema`)._
+   _(This ensures Swagger automatically registers OpenAPI schemas under `[Module][Schema]` format, e.g. `RecipeRegisterSchema`)._
 
 ---
 
 ### Step 3: Define DTO Types
 
-Create or update DTO interfaces in `src/types/dtos/[module].dto.ts` inside a dedicated namespace:
+Create or update DTO interfaces in `src/modules/[module]/[module].dto.ts` inside a dedicated namespace:
 
 ```typescript
 import type { z } from 'zod';
-import type * as [module] from '../../validation/[module].schema';
+import type * as [module] from './[module].schema';
 
 export namespace [Module]DTO {
   // Request DTOs inferred from Zod schemas
@@ -113,11 +118,11 @@ export namespace [Module]DTO {
 
 ### Step 4: Implement Service Business Logic
 
-Create or update `src/services/[module].service.ts`:
+Create or update `src/modules/[module]/[module].service.ts`:
 
-1. Inject `prisma` from `../config/database`.
+1. Inject `prisma` from `../../core/database/prisma.client`.
 2. Check user permissions using `RequestContext` when accessing or mutating user-scoped data.
-3. Use domain-specific error classes from `src/responses/http.error`:
+3. Use domain-specific error classes from `../../core/errors/http.error`:
    - `NotFoundError('Resource not found', 'RESOURCE_NOT_FOUND')` (404)
    - `ForbiddenError('Action denied for lack of privileges', 'AUTH_INSUFFICIENT_PERMISSIONS')` (403)
    - `ConflictError('Data conflict error', 'RESOURCE_ALREADY_EXISTS')` (409)
@@ -126,10 +131,10 @@ Create or update `src/services/[module].service.ts`:
 4. Return an object matching the response DTO.
 
 ```typescript
-import prisma from '../config/database';
-import { ForbiddenError, NotFoundError } from '../responses/http.error';
-import type { RequestContext } from '../types/context.interface';
-import type { [Module]DTO } from '../types/dtos/[module].dto';
+import prisma from '../../core/database/prisma.client';
+import { ForbiddenError, NotFoundError } from '../../core/errors/http.error';
+import type { RequestContext } from '../../core/types/context.interface';
+import type { [Module]DTO } from './[module].dto';
 
 export class [Module]Service {
   private checkPermission(context: RequestContext, ownerId: string) {
@@ -172,26 +177,28 @@ export class [Module]Service {
 
 ### Step 5: Implement Controller
 
-Create or update `src/controllers/[module].controller.ts`:
+Create or update `src/modules/[module]/[module].controller.ts`:
 
 1. Instantiate the service.
-2. Extract context via `extractProps(req: Request)`: `{ userId: req.userId, userRole: req.userRole }`.
+2. Extract context via `extractProps(req: { userId: string; userRole: Role })`: `{ userId: req.userId, userRole: req.userRole }`.
 3. Type the request and response with `Request<Params, ResBody, ReqBody, ReqQuery>` and `Response<ApiResponse<DTO>>`.
-4. Send standardized responses using classes from `src/responses/http.success`:
+4. Send standardized responses using classes from `../../core/http/http.success`:
    - `CreatedResponse(res, responseData, 'Message').send()` (201 Created)
    - `DefaultSuccessResponse(res, responseData, 'Message').send()` (200 OK)
    - `NoContentResponse(res, 'Message').send()` (204 No Content)
 
 ```typescript
 import type { Request, Response } from 'express';
+import type { Role } from '../../generated/prisma/client';
 import {
   CreatedResponse,
   DefaultSuccessResponse,
   NoContentResponse,
-} from '../responses/http.success';
-import { [Module]Service } from '../services/[module].service';
-import type { ApiResponse } from '../types/api.response';
-import type { [Module]DTO } from '../types/dtos/[module].dto';
+} from '../../core/http/http.success';
+import { [Module]Service } from './[module].service';
+import type { ApiResponse } from '../../core/http/api.response';
+import type { RequestContext } from '../../core/types/context.interface';
+import type { [Module]DTO } from './[module].dto';
 
 export class [Module]Controller {
   private [module]Service: [Module]Service;
@@ -200,7 +207,7 @@ export class [Module]Controller {
     this.[module]Service = new [Module]Service();
   }
 
-  private extractProps(req: Request) {
+  private extractProps(req: { userId: string; userRole: Role }): RequestContext {
     return {
       userId: req.userId,
       userRole: req.userRole,
@@ -233,17 +240,17 @@ export class [Module]Controller {
 
 ### Step 6: Configure and Register Routes
 
-1. In `src/routes/[module].route.ts`:
+1. In `src/modules/[module]/[module].route.ts`:
    - Use `authMiddleware` for protected routes.
    - Attach `validate({ body, params, query, headers })` passing the Zod schemas.
    - Bind controller methods (`controller.method.bind(controller)`).
 
    ```typescript
    import { Router } from 'express';
-   import { [Module]Controller } from '../controllers/[module].controller';
-   import { authMiddleware } from '../middlewares/auth.middleware';
-   import { validate } from '../middlewares/validate.middleware';
-   import * as [module] from '../validation/[module].schema';
+   import { [Module]Controller } from './[module].controller';
+   import { authMiddleware } from '../../core/middlewares/auth.middleware';
+   import { validate } from '../../core/middlewares/validate.middleware';
+   import * as [module] from './[module].schema';
 
    const [module]Routes = Router();
    const [module]Controller = new [Module]Controller();
@@ -265,9 +272,9 @@ export class [Module]Controller {
    export { [module]Routes };
    ```
 
-2. Register the module route in `src/routes/index.ts` if not already registered:
+2. Register the module route in `src/routes.ts` if not already registered:
    ```typescript
-   import { [module]Routes } from './[module].route';
+   import { [module]Routes } from './modules/[module]/[module].route';
 
    routes.use('/[module]s', [module]Routes);
    ```
@@ -278,8 +285,8 @@ export class [Module]Controller {
 
 Invoke or follow the `generate-docs` skill to create:
 
-1. Response schema component in `src/docs/components/[module].component.yaml`.
-2. Endpoint path definition in `src/docs/[module].doc.yaml` (descriptions, summaries, and tags in Portuguese).
+1. Response schema component in `src/modules/[module]/docs/[module].component.yaml`.
+2. Endpoint path definition in `src/modules/[module]/docs/[module].doc.yaml` (descriptions, summaries, and tags in Portuguese).
 
 ---
 

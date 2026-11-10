@@ -4,7 +4,29 @@ import swaggerJSDoc, { type Options } from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import z from 'zod';
 
-import * as schemas from '../validation/index';
+import * as analytics from '../modules/analytics/analytics.schema';
+import * as auth from '../modules/auth/auth.schema';
+import * as bakerProfile from '../modules/baker-profile/baker-profile.schema';
+import * as ingredient from '../modules/ingredient/ingredient.schema';
+import * as inventory from '../modules/inventory/inventory.schema';
+import * as production from '../modules/production/production.schema';
+import * as recipe from '../modules/recipe/recipe.schema';
+import * as showcase from '../modules/showcase/showcase.schema';
+import * as tag from '../modules/tag/tag.schema';
+import * as user from '../modules/user/user.schema';
+
+const schemas = {
+  analytics,
+  auth,
+  bakerProfile,
+  ingredient,
+  inventory,
+  production,
+  recipe,
+  showcase,
+  tag,
+  user,
+};
 
 const generateSwaggerSchemas = () => {
   const swaggerComponents: Record<string, any> = {};
@@ -41,7 +63,7 @@ const swaggerOptions: Options = {
       schemas: generateSwaggerSchemas(),
     },
   },
-  apis: ['./src/docs/**/*.yaml'],
+  apis: ['./src/modules/**/*.yaml'],
 };
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);

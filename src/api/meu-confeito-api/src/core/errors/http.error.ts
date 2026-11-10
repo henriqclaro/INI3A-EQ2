@@ -1,0 +1,65 @@
+import { AppError } from './app.error';
+import type { AppErrorCode, AuthErrorCode, SystemErrorCode } from './error.code';
+
+export class DefaultAppError extends AppError {
+  constructor(message: string, errorCode: AppErrorCode) {
+    super(400, message, errorCode);
+  }
+}
+
+export class AuthError extends AppError {
+  constructor(message: string, errorCode: AuthErrorCode) {
+    super(401, message, errorCode);
+  }
+}
+
+export class ForbiddenError extends AppError {
+  constructor(
+    messsage = 'Forbidden for lack of privileges',
+    errorCode: AppErrorCode = 'AUTH_INSUFFICIENT_PERMISSIONS',
+  ) {
+    super(403, messsage, errorCode);
+  }
+}
+
+export class NotFoundError extends AppError {
+  constructor(message = 'Resource not found', errorCode: AppErrorCode = 'RESOURCE_NOT_FOUND') {
+    super(404, message, errorCode);
+  }
+}
+
+export class ConflictError extends AppError {
+  constructor(
+    message = 'Data conflict error',
+    errorCode: AppErrorCode = 'RESOURCE_ALREADY_EXISTS',
+  ) {
+    super(409, message, errorCode);
+  }
+}
+
+export class GoneError extends AppError {
+  constructor(
+    message = 'Resource gone, do not request it again',
+    errorCode: AppErrorCode = 'RESOURCE_GONE',
+  ) {
+    super(410, message, errorCode);
+  }
+}
+
+export class TooManyRequestsError extends AppError {
+  constructor(
+    message = 'Too many requests, please try again later',
+    errorCode: AppErrorCode = 'RATE_LIMIT_EXCEEDED',
+  ) {
+    super(429, message, errorCode);
+  }
+}
+
+export class InternalError extends AppError {
+  constructor(
+    message = 'An internal server error occurred',
+    errorCode: SystemErrorCode = 'INTERNAL_SERVER_ERROR',
+  ) {
+    super(500, message, errorCode);
+  }
+}

@@ -30,7 +30,10 @@ export default function ArchivedRecipesScreen() {
 
   const isDesktop = width >= 768;
   const numCols = isDesktop ? 2 : 1;
-  const { recipes, isLoading, isOffline, refetch } = useUserRecipes(user?.id, 'ARCHIVED');
+  const { recipes, isLoading, isOffline, refetch } = useUserRecipes(
+    user ? 'me' : undefined,
+    'ARCHIVED',
+  );
 
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 

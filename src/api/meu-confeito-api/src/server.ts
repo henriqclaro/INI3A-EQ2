@@ -1,8 +1,8 @@
 import type { Server } from 'node:http';
 
 import app from './app';
-import { connectDB, disconnectDB } from './config/database';
 import { env } from './config/env.config';
+import { connectDB, disconnectDB } from './core/database/prisma.client';
 
 let server: Server | undefined;
 

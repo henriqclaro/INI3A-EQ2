@@ -22,7 +22,7 @@ export function useSavedRecipes(userId: string | undefined) {
     try {
       setIsLoading(true);
       setError(null);
-      const res = await UserService.getSavedRecipes(userId);
+      const res = await UserService.getSavedRecipes('me');
       const saves = res.data?.userSaves || [];
       setSavedRecipes(saves);
       setIsOffline(false);
@@ -59,7 +59,7 @@ export function useSavedRecipes(userId: string | undefined) {
       try {
         setIsLoading(true);
         setError(null);
-        const res = await UserService.getSavedRecipes(userId!);
+        const res = await UserService.getSavedRecipes('me');
         const saves = res.data?.userSaves || [];
         if (isMounted) {
           setSavedRecipes(saves);
@@ -113,7 +113,7 @@ export function useSavedRecipes(userId: string | undefined) {
 
       setIsTogglingSave(true);
       try {
-        await UserService.saveRecipe(userId, recipeId);
+        await UserService.saveRecipe('me', recipeId);
         await fetchSavedRecipes();
         return true;
       } catch (err: unknown) {
@@ -157,7 +157,7 @@ export function useSavedRecipes(userId: string | undefined) {
 
       setIsTogglingSave(true);
       try {
-        await UserService.removeSavedRecipe(userId, recipeId);
+        await UserService.removeSavedRecipe('me', recipeId);
         const updated = savedRecipes.filter((item) => item.recipe.id !== recipeId);
         setSavedRecipes(updated);
         OfflineCacheService.saveSavedRecipes(updated).catch(() => {});

@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { z } from 'zod';
 
-import { envSchema } from '../validation/env.schema';
+import { envSchema } from './env.schema';
 
 const _env = envSchema.safeParse(process.env);
 

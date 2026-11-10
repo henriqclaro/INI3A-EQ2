@@ -37,7 +37,7 @@ export function ShowcaseRecipePickerModal({
   const { theme } = useThemeMode();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
-  const { recipes, isLoading } = useUserRecipes(userId, 'PUBLISHED');
+  const { recipes, isLoading } = useUserRecipes(userId ? 'me' : undefined, 'PUBLISHED');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 

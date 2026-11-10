@@ -200,7 +200,7 @@ export function useSingleRecipe(recipeId: string, userId?: string) {
       setIsLoading(true);
       setError(null);
       const res = userId
-        ? await RecipeService.getRecipeWithUserInventory(recipeId, userId)
+        ? await RecipeService.getRecipeWithUserInventory(recipeId, 'me')
         : await RecipeService.getRecipe(recipeId);
 
       let recipeData = res.data.recipe;
@@ -259,7 +259,7 @@ export function useSingleRecipe(recipeId: string, userId?: string) {
         setIsLoading(true);
         setError(null);
         const res = userId
-          ? await RecipeService.getRecipeWithUserInventory(recipeId, userId)
+          ? await RecipeService.getRecipeWithUserInventory(recipeId, 'me')
           : await RecipeService.getRecipe(recipeId);
 
         let recipeData = res.data.recipe;
@@ -320,13 +320,10 @@ export function useSingleRecipe(recipeId: string, userId?: string) {
   }, [recipeId, userId]);
 
   const updateVisibility = async (status: RecipeStatus) => {
-    if (!userId) {
-      throw new Error('User ID is required to update recipe visibility');
-    }
     setIsUpdatingVisibility(true);
     try {
       const res = await RecipeService.updateVisibility(recipeId, {
-        userId,
+        ...(userId && userId !== 'me' ? { userId } : {}),
         status: status as 'DRAFT' | 'PUBLISHED' | 'ARCHIVED',
       });
       setRecipe((prev) => {

@@ -108,28 +108,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshUser = useCallback(async () => {
-    let currentUserId: string | undefined;
-    setUser((prev) => {
-      currentUserId = prev?.id;
-      return prev;
-    });
-
-    if (!currentUserId) {
-      const stored = await Storage.getItem('user_profile');
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          currentUserId = parsed?.id;
-        } catch (e) {
-          console.error('Error parsing stored user profile for refresh:', e);
-        }
-      }
-    }
-
-    if (!currentUserId) return;
+    const token = Storage.getFastItem('access_token') || (await Storage.getItem('access_token'));
+    if (!token) return;
 
     try {
-      const res = await UserService.getById(currentUserId);
+      const res = await UserService.getMe();
       if (res?.data?.user) {
         await updateUser(res.data.user);
       }

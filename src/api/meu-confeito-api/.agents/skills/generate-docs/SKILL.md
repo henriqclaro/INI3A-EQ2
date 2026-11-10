@@ -13,19 +13,18 @@ This skill guides the documentation of endpoints and components in **Meu Confeit
 
 ## Documentation Architecture
 
-The documentation system relies on a two-tier YAML structure combined with automated Zod schema discovery:
+The documentation system relies on a two-tier YAML structure per module combined with automated Zod schema discovery:
 
 ```text
 src/
-├── docs/
-│   ├── [module].doc.yaml             # Paths, methods, parameters, request bodies & response refs
-│   └── components/
-│       └── [module].component.yaml   # Response schemas and complex objects
 ├── config/
 │   └── swagger.config.ts             # Dynamically mounts YAMLs and auto-generates Zod schemas
-└── validation/
-    ├── index.ts                      # Re-exports all domain validation schemas
-    └── [module].schema.ts            # Zod validation schemas
+└── modules/
+    └── [module]/
+        ├── [module].schema.ts        # Zod validation schemas
+        └── docs/
+            ├── [module].doc.yaml     # Paths, methods, parameters, request bodies & response refs
+            └── [module].component.yaml # Response schemas and complex objects
 ```
 
 ---
@@ -42,18 +41,18 @@ In accordance with `AGENTS.md`, **all documentation text must be in Portuguese**
 
 ### 2. Automatic Zod Schema Naming
 
-The Swagger config dynamically converts Zod schemas exported in `src/validation/index.ts` to OpenAPI component schemas:
+The Swagger config dynamically converts Zod schemas registered from `src/modules/[module]/[module].schema.ts` in `src/config/swagger.config.ts` to OpenAPI component schemas:
 
 $$\text{Domain Name (PascalCase)} + \text{Schema Name (PascalCase)} \longrightarrow \text{Swagger Component Key}$$
 
 **Examples:**
 
-| Domain (`validation/index.ts`) | Schema (`validation/[module].schema.ts`) | Swagger Ref Key                             |
-| :----------------------------- | :--------------------------------------- | :------------------------------------------ |
-| `user`                         | `registerSchema`                         | `#/components/schemas/UserRegisterSchema`   |
-| `user`                         | `paramsSchema`                           | `#/components/schemas/UserParamsSchema`     |
-| `recipe`                       | `registerSchema`                         | `#/components/schemas/RecipeRegisterSchema` |
-| `auth`                         | `logInSchema`                            | `#/components/schemas/AuthLogInSchema`      |
+| Domain (`swagger.config.ts`) | Schema (`modules/[module]/[module].schema.ts`) | Swagger Ref Key                             |
+| :--------------------------- | :--------------------------------------------- | :------------------------------------------ |
+| `user`                       | `registerSchema`                               | `#/components/schemas/UserRegisterSchema`   |
+| `user`                       | `paramsSchema`                                 | `#/components/schemas/UserParamsSchema`     |
+| `recipe`                     | `registerSchema`                               | `#/components/schemas/RecipeRegisterSchema` |
+| `auth`                       | `logInSchema`                                  | `#/components/schemas/AuthLogInSchema`      |
 
 ---
 
@@ -61,16 +60,16 @@ $$\text{Domain Name (PascalCase)} + \text{Schema Name (PascalCase)} \longrightar
 
 ### Step 1: Verify Route & Validation Schemas
 
-1. Review the endpoint route in `src/routes/[module].route.ts` to determine:
+1. Review the endpoint route in `src/modules/[module]/[module].route.ts` to determine:
    - Relative path (relative to `/api/v1` base URL, e.g., `/users/{id}/recipes`).
    - HTTP method (`get`, `post`, `patch`, `put`, `delete`).
    - Route parameters (e.g., `:id` becomes `{id}` in OpenAPI).
    - Query parameters (e.g., `?page=0&search=bolo`).
-2. Ensure the validation schemas are defined in `src/validation/[module].schema.ts` and re-exported in `src/validation/index.ts`.
+2. Ensure the validation schemas are defined in `src/modules/[module]/[module].schema.ts` and registered in `src/config/swagger.config.ts`.
 
 ---
 
-### Step 2: Create / Update Response Component (`src/docs/components/[module].component.yaml`)
+### Step 2: Create / Update Response Component (`src/modules/[module]/docs/[module].component.yaml`)
 
 Define response schemas corresponding to the DTO response interface under `components.schemas`:
 
@@ -115,7 +114,7 @@ components:
 
 ---
 
-### Step 3: Create / Update Path Documentation (`src/docs/[module].doc.yaml`)
+### Step 3: Create / Update Path Documentation (`src/modules/[module]/docs/[module].doc.yaml`)
 
 Define the path operation with tags, parameters, request body, and possible HTTP status responses:
 
@@ -214,7 +213,7 @@ Ensure documentation covers standard HTTP status codes used across the API:
 
 1. **Format YAML files with Prettier:**
    ```bash
-   npx prettier --write src/docs/[module].doc.yaml src/docs/components/[module].component.yaml
+   npx prettier --write src/modules/[module]/docs/[module].doc.yaml src/modules/[module]/docs/[module].component.yaml
    ```
 2. **Verify Schema References:**
    - Double-check that all `$ref` in `paths` point to valid components defined in either `components/schemas` (from `[module].component.yaml`) or auto-generated Zod schemas (`[Module][Schema]`).

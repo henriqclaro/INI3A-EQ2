@@ -222,7 +222,7 @@ export default function SettingsScreen() {
     }
 
     try {
-      await deleteUser(user.id);
+      await deleteUser();
       setIsDeleteModalVisible(false);
       await signOut();
       Alert.alert(
