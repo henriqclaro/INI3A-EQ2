@@ -36,6 +36,14 @@ import { matchesSearch } from '@/src/utils/text';
 type OperationTab = 'movements' | 'productions';
 type MovementFilter = 'ALL' | 'PURCHASE' | 'WASTE' | 'MANUAL_ADJUSTMENT' | 'PRODUCTION';
 
+const MOVEMENT_FILTER_CHIPS: { key: MovementFilter; label: string }[] = [
+  { key: 'ALL', label: 'Todas' },
+  { key: 'PURCHASE', label: 'Compras' },
+  { key: 'WASTE', label: 'Descartes' },
+  { key: 'MANUAL_ADJUSTMENT', label: 'Ajustes' },
+  { key: 'PRODUCTION', label: 'Produções' },
+];
+
 export default function OperationsHistoryScreen() {
   const { theme } = useThemeMode();
   const params = useLocalSearchParams<{
@@ -117,9 +125,10 @@ export default function OperationsHistoryScreen() {
   const productionsQuery = useMemo(
     () => ({
       recipeId: params.recipeId || undefined,
-      includeCanceled: productionFilter === 'all',
+      limit: 100,
+      includeCanceled: true,
     }),
-    [params.recipeId, productionFilter],
+    [params.recipeId],
   );
 
   const {
@@ -189,95 +198,108 @@ export default function OperationsHistoryScreen() {
   }, [transactions]);
 
   // ---------------------------------------------------------------------------
-  // PRODUCTIONS METRICS
+  // PRODUCTIONS METRICS & FILTERING
   // ---------------------------------------------------------------------------
-  const totalCostSum = useMemo(() => {
-    return productions.reduce((acc, p) => {
-      if (p.canceledAt) return acc;
-      return acc + (Number(p.totalCost) || 0);
-    }, 0);
+  const activeProductions = useMemo(() => {
+    return productions.filter((p) => !p.canceledAt);
   }, [productions]);
 
-  const activeProductionsCount = useMemo(() => {
-    return productions.filter((p) => !p.canceledAt).length;
-  }, [productions]);
+  const activeProductionsCount = activeProductions.length;
+  const totalProductionsCount = productions.length;
+
+  const filteredProductions = useMemo(() => {
+    if (productionFilter === 'active') {
+      return activeProductions;
+    }
+    return productions;
+  }, [productionFilter, activeProductions, productions]);
+
+  const totalCostSum = useMemo(() => {
+    return activeProductions.reduce((acc, p) => {
+      return acc + (Number(p.totalCost) || 0);
+    }, 0);
+  }, [activeProductions]);
 
   // ---------------------------------------------------------------------------
   // HANDLERS
   // ---------------------------------------------------------------------------
-  const handleOpenTransactionDetails = (tx: TransactionItem) => {
+  const handleOpenTransactionDetails = useCallback((tx: TransactionItem) => {
     setSelectedTransaction(tx);
     setIsTransactionModalVisible(true);
-  };
+  }, []);
 
-  const handleCloseTransactionDetails = () => {
+  const handleCloseTransactionDetails = useCallback(() => {
     setIsTransactionModalVisible(false);
     setSelectedTransaction(null);
-  };
+  }, []);
 
-  const handleOpenProductionDetails = (prod: ProductionItem) => {
+  const handleOpenProductionDetails = useCallback((prod: ProductionItem) => {
     setSelectedProduction(prod);
     setIsProductionModalVisible(true);
-  };
+  }, []);
 
-  const handleCloseProductionDetails = () => {
+  const handleCloseProductionDetails = useCallback(() => {
     setIsProductionModalVisible(false);
     setSelectedProduction(null);
-  };
+  }, []);
 
-  const handleViewLinkedProduction = (productionId: string) => {
-    handleSelectTab('productions');
-    const matched = productions.find((p) => p.id === productionId);
-    if (matched) {
-      setSelectedProduction(matched);
-      setIsProductionModalVisible(true);
-    }
-  };
+  const handleViewLinkedProduction = useCallback(
+    (productionId: string) => {
+      handleSelectTab('productions');
+      const matched = productions.find((p) => p.id === productionId);
+      if (matched) {
+        setSelectedProduction(matched);
+        setIsProductionModalVisible(true);
+      }
+    },
+    [handleSelectTab, productions],
+  );
 
-  const handleCancelProduction = (productionId: string) => {
-    if (isProductionsOffline) {
+  const handleCancelProduction = useCallback(
+    (productionId: string) => {
+      if (isProductionsOffline) {
+        Alert.alert(
+          'Ação Indisponível Offline',
+          'O cancelamento de lotes de produção e a recomposição de estoque requerem conexão com a internet.',
+        );
+        return;
+      }
+
       Alert.alert(
-        'Ação Indisponível Offline',
-        'O cancelamento de lotes de produção e a recomposição de estoque requerem conexão com a internet.',
-      );
-      return;
-    }
-
-    Alert.alert(
-      'Cancelar Produção',
-      'Tem certeza de que deseja cancelar esta produção? Todos os ingredientes consumidos retornarão ao seu estoque.',
-      [
-        { text: 'Não', style: 'cancel' },
-        {
-          text: 'Sim, Cancelar',
-          style: 'destructive',
-          onPress: async () => {
-            setIsCanceling(true);
-            try {
-              const updated = await cancelProduction(productionId);
-              if (selectedProduction?.id === productionId) {
-                setSelectedProduction(updated);
+        'Cancelar Produção',
+        'Tem certeza de que deseja cancelar esta produção? Todos os ingredientes consumidos retornarão ao seu estoque.',
+        [
+          { text: 'Não', style: 'cancel' },
+          {
+            text: 'Sim, Cancelar',
+            style: 'destructive',
+            onPress: async () => {
+              setIsCanceling(true);
+              try {
+                const updated = await cancelProduction(productionId);
+                setSelectedProduction((prev) => (prev?.id === productionId ? updated : prev));
+                refetchTransactions();
+                Alert.alert('Sucesso', 'Produção cancelada com sucesso! O estoque foi restaurado.');
+              } catch (err: unknown) {
+                const apiErr = err as {
+                  response?: { data?: { message?: string } };
+                  message?: string;
+                };
+                const msg =
+                  apiErr?.response?.data?.message ||
+                  apiErr?.message ||
+                  'Não foi possível cancelar a produção.';
+                Alert.alert('Erro', msg);
+              } finally {
+                setIsCanceling(false);
               }
-              refetchTransactions();
-              Alert.alert('Sucesso', 'Produção cancelada com sucesso! O estoque foi restaurado.');
-            } catch (err: unknown) {
-              const apiErr = err as {
-                response?: { data?: { message?: string } };
-                message?: string;
-              };
-              const msg =
-                apiErr?.response?.data?.message ||
-                apiErr?.message ||
-                'Não foi possível cancelar a produção.';
-              Alert.alert('Erro', msg);
-            } finally {
-              setIsCanceling(false);
-            }
+            },
           },
-        },
-      ],
-    );
-  };
+        ],
+      );
+    },
+    [cancelProduction, isProductionsOffline, refetchTransactions],
+  );
 
   const styles = useMemo(
     () => createStyles(theme, isDesktop, cardWidth),
@@ -285,6 +307,188 @@ export default function OperationsHistoryScreen() {
   );
 
   const itemSeparator = useCallback(() => <View style={styles.separator} />, [styles.separator]);
+
+  const renderMovementCard = useCallback(
+    ({ item }: { item: TransactionItem }) => (
+      <View style={styles.cardWrapper}>
+        <InventoryTransactionCard
+          transaction={item}
+          onPress={handleOpenTransactionDetails}
+          style={isDesktop ? styles.desktopTransactionCard : undefined}
+        />
+      </View>
+    ),
+    [handleOpenTransactionDetails, isDesktop, styles.cardWrapper, styles.desktopTransactionCard],
+  );
+
+  const renderProductionCard = useCallback(
+    ({ item }: { item: ProductionItem }) => (
+      <View style={styles.cardWrapper}>
+        <ProductionCard
+          production={item}
+          onViewDetails={handleOpenProductionDetails}
+          onCancel={handleCancelProduction}
+          isCanceling={isCanceling}
+          style={isDesktop ? styles.desktopProductionCard : undefined}
+        />
+      </View>
+    ),
+    [
+      handleCancelProduction,
+      handleOpenProductionDetails,
+      isCanceling,
+      isDesktop,
+      styles.cardWrapper,
+      styles.desktopProductionCard,
+    ],
+  );
+
+  const movementsListHeader = useMemo(
+    () => (
+      <View style={styles.movementsHeader}>
+        <OperationsSummaryCard
+          mode="movements"
+          purchasesTotal={purchasesTotal}
+          wasteTotal={wasteTotal}
+          movementsCount={transactions.length}
+        />
+
+        {/* Type Filter Chips */}
+        <View style={styles.filterChipScroll}>
+          {MOVEMENT_FILTER_CHIPS.map((chip) => {
+            const isChipActive = movementFilter === chip.key;
+            return (
+              <TouchableOpacity
+                key={chip.key}
+                style={[styles.chipBtn, isChipActive && styles.chipBtnActive]}
+                onPress={() => setMovementFilter(chip.key)}
+                accessibilityRole="button"
+                accessibilityLabel={`Filtrar por ${chip.label}`}
+              >
+                <Text style={[styles.chipText, isChipActive && styles.chipTextActive]}>
+                  {chip.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* Search Bar */}
+        <View style={styles.searchWrapper}>
+          <Input
+            value={searchQuery}
+            placeholder="Buscar insumo ou receita..."
+            onChangeText={setSearchQuery}
+            isClearable
+            onClear={() => setSearchQuery('')}
+            containerStyle={styles.searchInput}
+            leftIcon={
+              <MaterialCommunityIcons
+                name="magnify"
+                size={20}
+                color={theme.colors.onSurfaceVariant}
+              />
+            }
+          />
+        </View>
+      </View>
+    ),
+    [
+      movementFilter,
+      purchasesTotal,
+      searchQuery,
+      styles.chipBtn,
+      styles.chipBtnActive,
+      styles.chipText,
+      styles.chipTextActive,
+      styles.filterChipScroll,
+      styles.movementsHeader,
+      styles.searchInput,
+      styles.searchWrapper,
+      theme.colors.onSurfaceVariant,
+      transactions.length,
+      wasteTotal,
+    ],
+  );
+
+  const movementsListEmpty = useMemo(() => {
+    if (isLoadingTransactions && transactions.length === 0) {
+      return (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <Text style={styles.loadingText}>Carregando movimentações de estoque...</Text>
+        </View>
+      );
+    }
+
+    if (transactionsError && transactions.length === 0) {
+      return (
+        <View style={styles.centerContainer}>
+          <MaterialCommunityIcons
+            name="alert-circle-outline"
+            size={56}
+            color={theme.colors.error}
+          />
+          <Text style={styles.emptyTitle}>Erro ao carregar movimentações</Text>
+          <Text style={styles.emptySubtitle}>{transactionsError}</Text>
+          <TouchableOpacity
+            style={styles.retryBtn}
+            onPress={() => refetchTransactions()}
+            accessibilityRole="button"
+            accessibilityLabel="Tentar novamente"
+          >
+            <Text style={styles.retryBtnText}>Tentar Novamente</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.emptyContainer}>
+        <MaterialCommunityIcons
+          name="clipboard-text-clock-outline"
+          size={56}
+          color={theme.colors.outline}
+        />
+        <Text style={styles.emptyTitle}>Nenhuma movimentação encontrada</Text>
+        <Text style={styles.emptySubtitle}>
+          Quando você registrar compras, descartes, perdas ou produzir receitas, as transações do
+          livro-razão aparecerão registradas aqui.
+        </Text>
+        <TouchableOpacity
+          style={styles.actionBtn}
+          onPress={() => router.push('/stock')}
+          accessibilityRole="button"
+          accessibilityLabel="Ir para o Estoque"
+        >
+          <MaterialCommunityIcons
+            name="package-variant-closed"
+            size={18}
+            color={theme.colors.onPrimary}
+          />
+          <Text style={styles.actionBtnText}>Acessar Meu Estoque</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }, [
+    isLoadingTransactions,
+    transactions.length,
+    transactionsError,
+    styles.centerContainer,
+    styles.loadingText,
+    styles.emptyTitle,
+    styles.emptySubtitle,
+    styles.retryBtn,
+    styles.retryBtnText,
+    styles.emptyContainer,
+    styles.actionBtn,
+    styles.actionBtnText,
+    theme.colors.primary,
+    theme.colors.error,
+    theme.colors.outline,
+    theme.colors.onPrimary,
+    refetchTransactions,
+  ]);
 
   return (
     <>
@@ -333,7 +537,7 @@ export default function OperationsHistoryScreen() {
               onPress={() => handleSelectTab('productions')}
               activeOpacity={0.8}
               accessibilityRole="button"
-              accessibilityLabel={`Aba de lotes de produção, ${productions.length} lotes`}
+              accessibilityLabel={`Aba de lotes de produção, ${totalProductionsCount} lotes`}
             >
               <MaterialCommunityIcons
                 name="pot-steam-outline"
@@ -350,153 +554,40 @@ export default function OperationsHistoryScreen() {
                   activeTab === 'productions' && styles.mainTabBtnTextActive,
                 ]}
               >
-                Produções ({productions.length})
+                Produções ({totalProductionsCount})
               </Text>
             </TouchableOpacity>
           </View>
-
-          {/* Unified Summary Card */}
-          <OperationsSummaryCard
-            mode={activeTab}
-            purchasesTotal={purchasesTotal}
-            wasteTotal={wasteTotal}
-            movementsCount={transactions.length}
-            productionsCount={activeProductionsCount}
-            productionsTotalCost={totalCostSum}
-          />
 
           {/* ================================================================= */}
           {/* TAB 1: MOVIMENTAÇÕES DE ESTOQUE                                   */}
           {/* ================================================================= */}
           {activeTab === 'movements' && (
             <View style={styles.tabContentContainer}>
-              {/* Type Filter Chips */}
-              <View style={styles.filterChipScroll}>
-                {(
-                  [
-                    { key: 'ALL', label: 'Todas' },
-                    { key: 'PURCHASE', label: 'Compras' },
-                    { key: 'WASTE', label: 'Descartes' },
-                    { key: 'MANUAL_ADJUSTMENT', label: 'Ajustes' },
-                    { key: 'PRODUCTION', label: 'Produções' },
-                  ] as { key: MovementFilter; label: string }[]
-                ).map((chip) => {
-                  const isChipActive = movementFilter === chip.key;
-                  return (
-                    <TouchableOpacity
-                      key={chip.key}
-                      style={[styles.chipBtn, isChipActive && styles.chipBtnActive]}
-                      onPress={() => setMovementFilter(chip.key)}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Filtrar por ${chip.label}`}
-                    >
-                      <Text style={[styles.chipText, isChipActive && styles.chipTextActive]}>
-                        {chip.label}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-
-              {/* Search Bar */}
-              <View style={styles.searchWrapper}>
-                <Input
-                  value={searchQuery}
-                  placeholder="Buscar insumo ou receita..."
-                  onChangeText={setSearchQuery}
-                  isClearable
-                  onClear={() => setSearchQuery('')}
-                  containerStyle={styles.searchInput}
-                  leftIcon={
-                    <MaterialCommunityIcons
-                      name="magnify"
-                      size={20}
-                      color={theme.colors.onSurfaceVariant}
-                    />
-                  }
-                />
-              </View>
-
-              {/* Movements List */}
-              {isLoadingTransactions && transactions.length === 0 ? (
-                <View style={styles.centerContainer}>
-                  <ActivityIndicator size="large" color={theme.colors.primary} />
-                  <Text style={styles.loadingText}>Carregando movimentações de estoque...</Text>
-                </View>
-              ) : transactionsError && transactions.length === 0 ? (
-                <View style={styles.centerContainer}>
-                  <MaterialCommunityIcons
-                    name="alert-circle-outline"
-                    size={56}
-                    color={theme.colors.error}
+              <FlatList
+                data={
+                  isLoadingTransactions && transactions.length === 0 ? [] : filteredTransactions
+                }
+                keyExtractor={(item) => item.id}
+                numColumns={numCols}
+                key={isDesktop ? 'desktop-grid-movements' : 'mobile-list-movements'}
+                columnWrapperStyle={numCols > 1 ? styles.columnWrapper : undefined}
+                ItemSeparatorComponent={itemSeparator}
+                ListHeaderComponent={movementsListHeader}
+                ListEmptyComponent={movementsListEmpty}
+                contentContainerStyle={styles.listContent}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                refreshControl={
+                  <RefreshControl
+                    refreshing={isLoadingTransactions}
+                    onRefresh={refetchTransactions}
+                    tintColor={theme.colors.primary}
+                    colors={[theme.colors.primary]}
                   />
-                  <Text style={styles.emptyTitle}>Erro ao carregar movimentações</Text>
-                  <Text style={styles.emptySubtitle}>{transactionsError}</Text>
-                  <TouchableOpacity
-                    style={styles.retryBtn}
-                    onPress={() => refetchTransactions()}
-                    accessibilityRole="button"
-                    accessibilityLabel="Tentar novamente"
-                  >
-                    <Text style={styles.retryBtnText}>Tentar Novamente</Text>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <FlatList
-                  data={filteredTransactions}
-                  keyExtractor={(item) => item.id}
-                  numColumns={numCols}
-                  key={isDesktop ? 'desktop-grid-movements' : 'mobile-list-movements'}
-                  columnWrapperStyle={numCols > 1 ? styles.columnWrapper : undefined}
-                  ItemSeparatorComponent={itemSeparator}
-                  contentContainerStyle={styles.listContent}
-                  showsVerticalScrollIndicator={false}
-                  refreshControl={
-                    <RefreshControl
-                      refreshing={isLoadingTransactions}
-                      onRefresh={refetchTransactions}
-                      tintColor={theme.colors.primary}
-                      colors={[theme.colors.primary]}
-                    />
-                  }
-                  renderItem={({ item }) => (
-                    <View style={styles.cardWrapper}>
-                      <InventoryTransactionCard
-                        transaction={item}
-                        onPress={handleOpenTransactionDetails}
-                        style={isDesktop ? styles.desktopTransactionCard : undefined}
-                      />
-                    </View>
-                  )}
-                  ListEmptyComponent={
-                    <View style={styles.emptyContainer}>
-                      <MaterialCommunityIcons
-                        name="clipboard-text-clock-outline"
-                        size={56}
-                        color={theme.colors.outline}
-                      />
-                      <Text style={styles.emptyTitle}>Nenhuma movimentação encontrada</Text>
-                      <Text style={styles.emptySubtitle}>
-                        Quando você registrar compras, descartes, perdas ou produzir receitas, as
-                        transações do livro-razão aparecerão registradas aqui.
-                      </Text>
-                      <TouchableOpacity
-                        style={styles.actionBtn}
-                        onPress={() => router.push('/stock')}
-                        accessibilityRole="button"
-                        accessibilityLabel="Ir para o Estoque"
-                      >
-                        <MaterialCommunityIcons
-                          name="package-variant-closed"
-                          size={18}
-                          color={theme.colors.onPrimary}
-                        />
-                        <Text style={styles.actionBtnText}>Acessar Meu Estoque</Text>
-                      </TouchableOpacity>
-                    </View>
-                  }
-                />
-              )}
+                }
+                renderItem={renderMovementCard}
+              />
             </View>
           )}
 
@@ -505,6 +596,13 @@ export default function OperationsHistoryScreen() {
           {/* ================================================================= */}
           {activeTab === 'productions' && (
             <View style={styles.tabContentContainer}>
+              {/* Unified Summary Card */}
+              <OperationsSummaryCard
+                mode="productions"
+                productionsCount={activeProductionsCount}
+                productionsTotalCost={totalCostSum}
+              />
+
               {/* Filter Tabs */}
               <View style={styles.productionFilterRow}>
                 <TouchableOpacity
@@ -561,7 +659,7 @@ export default function OperationsHistoryScreen() {
                       productionFilter === 'all' && styles.prodFilterBtnTextActive,
                     ]}
                   >
-                    Todas ({productions.length})
+                    Todas ({totalProductionsCount})
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -592,7 +690,7 @@ export default function OperationsHistoryScreen() {
                 </View>
               ) : (
                 <FlatList
-                  data={productions}
+                  data={filteredProductions}
                   keyExtractor={(item) => item.id}
                   numColumns={numCols}
                   key={isDesktop ? 'desktop-grid-productions' : 'mobile-list-productions'}
@@ -608,17 +706,7 @@ export default function OperationsHistoryScreen() {
                       colors={[theme.colors.primary]}
                     />
                   }
-                  renderItem={({ item }) => (
-                    <View style={styles.cardWrapper}>
-                      <ProductionCard
-                        production={item}
-                        onViewDetails={handleOpenProductionDetails}
-                        onCancel={handleCancelProduction}
-                        isCanceling={isCanceling}
-                        style={isDesktop ? styles.desktopProductionCard : undefined}
-                      />
-                    </View>
-                  )}
+                  renderItem={renderProductionCard}
                   ListEmptyComponent={
                     <View style={styles.emptyContainer}>
                       <MaterialCommunityIcons
@@ -799,7 +887,11 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number) =
       color: theme.colors.onPrimary,
       fontWeight: '700',
     },
+    movementsHeader: {
+      width: '100%',
+    },
     listContent: {
+      flexGrow: 1,
       paddingBottom: 40,
     },
     columnWrapper: {
@@ -829,6 +921,7 @@ const createStyles = (theme: AppTheme, isDesktop: boolean, cardWidth?: number) =
       justifyContent: 'center',
       alignItems: 'center',
       paddingHorizontal: 24,
+      paddingVertical: 48,
       gap: 12,
     },
     loadingText: {
