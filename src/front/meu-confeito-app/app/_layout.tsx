@@ -54,7 +54,7 @@ function useProtectedRoute() {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const unstable_settings = {
-  initialRouteName: 'index',
+  anchor: 'index',
 };
 
 function RootLayoutContent() {

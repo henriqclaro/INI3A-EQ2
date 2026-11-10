@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
+  type ScrollViewInstance,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -85,7 +86,7 @@ export default function RecipeScreen() {
   const [scaleFactor, setScaleFactor] = useState(1);
   const [isKitchenModeOpen, setIsKitchenModeOpen] = useState(false);
   const [isOwnerActionsExpanded, setIsOwnerActionsExpanded] = useState(true);
-  const recipeScrollViewRef = useRef<ScrollView>(null);
+  const recipeScrollViewRef = useRef<ScrollViewInstance>(null);
 
   const scaledYield = useMemo(() => {
     if (!recipe?.baseYield) return 1;

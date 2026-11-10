@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Platform } from 'react-native';
 
-import { useNavigation } from 'expo-router';
+import { usePreventRemove } from 'expo-router';
 
 export interface UseUnsavedChangesWarningOptions {
   title?: string;
@@ -18,7 +18,7 @@ export function useUnsavedChangesWarning(
   hasUnsavedChanges: boolean,
   options: UseUnsavedChangesWarningOptions = {},
 ) {
-  const navigation = useNavigation();
+  const [isNavigatingBypass, setIsNavigatingBypass] = useState(false);
   const isNavigatingBypassRef = useRef(false);
 
   const {
@@ -31,6 +31,7 @@ export function useUnsavedChangesWarning(
   // Allows intentional transitions (such as after a successful save) to bypass the prompt
   const allowNextNavigation = useCallback(() => {
     isNavigatingBypassRef.current = true;
+    setIsNavigatingBypass(true);
   }, []);
 
   // Web: Warn before closing tab or reloading page
@@ -54,36 +55,26 @@ export function useUnsavedChangesWarning(
   }, [hasUnsavedChanges]);
 
   // React Navigation: Intercept stack pop, hardware back, and header back buttons
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', (event) => {
-      if (!hasUnsavedChanges || isNavigatingBypassRef.current) {
-        return;
-      }
-
-      // Prevent the screen from being removed
-      event.preventDefault();
-
-      Alert.alert(title, message, [
-        {
-          text: cancelText,
-          style: 'cancel',
-          onPress: () => {
-            // Stay on the current screen
-          },
+  usePreventRemove(hasUnsavedChanges && !isNavigatingBypass, ({ repeat }) => {
+    Alert.alert(title, message, [
+      {
+        text: cancelText,
+        style: 'cancel',
+        onPress: () => {
+          // Stay on the current screen
         },
-        {
-          text: confirmText,
-          style: 'destructive',
-          onPress: () => {
-            isNavigatingBypassRef.current = true;
-            navigation.dispatch(event.data.action);
-          },
+      },
+      {
+        text: confirmText,
+        style: 'destructive',
+        onPress: () => {
+          isNavigatingBypassRef.current = true;
+          setIsNavigatingBypass(true);
+          repeat();
         },
-      ]);
-    });
-
-    return unsubscribe;
-  }, [navigation, hasUnsavedChanges, title, message, confirmText, cancelText]);
+      },
+    ]);
+  });
 
   return {
     allowNextNavigation,

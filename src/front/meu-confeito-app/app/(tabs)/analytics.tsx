@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
+  type ScrollViewInstance,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -46,7 +47,7 @@ export default function AnalyticsScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const lastHandledParamsKeyRef = useRef<string>('');
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<ScrollViewInstance>(null);
   const contentYRef = useRef(0);
   const tabSelectorYRef = useRef(0);
 

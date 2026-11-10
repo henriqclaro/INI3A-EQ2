@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Modal, Platform, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  type AlertButton,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
@@ -73,9 +82,11 @@ export function DesktopAlert() {
     }
   };
 
-  const handleButtonPress = (onPressCallback?: () => void) => {
+  const handleButtonPress = (onPressCallback?: AlertButton['onPress']) => {
     desktopAlertManager.hide();
-    onPressCallback?.();
+    if (typeof onPressCallback === 'function') {
+      onPressCallback();
+    }
   };
 
   return (

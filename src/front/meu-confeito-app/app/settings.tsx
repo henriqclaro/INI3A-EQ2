@@ -4,12 +4,13 @@ import {
   BackHandler,
   Platform,
   ScrollView,
+  type ScrollViewInstance,
   StyleSheet,
   View,
   useWindowDimensions,
 } from 'react-native';
 
-import { Stack, router, useLocalSearchParams, useNavigation } from 'expo-router';
+import { Stack, router, useLocalSearchParams, usePreventRemove } from 'expo-router';
 
 import {
   AboutAppTopic,
@@ -40,10 +41,9 @@ import { isBaker, isCustomer } from '@/src/utils/roles';
 export default function SettingsScreen() {
   const { theme } = useThemeMode();
   const { width } = useWindowDimensions();
-  const navigation = useNavigation();
   const params = useLocalSearchParams<{ topic?: string; section?: string }>();
-  const desktopScrollRef = useRef<ScrollView>(null);
-  const mobileScrollRef = useRef<ScrollView>(null);
+  const desktopScrollRef = useRef<ScrollViewInstance>(null);
+  const mobileScrollRef = useRef<ScrollViewInstance>(null);
 
   const isSmallScreen = width < theme.breakpoints.sm;
   const isDesktop = Platform.OS === 'web' || width >= theme.breakpoints.md;
@@ -172,17 +172,10 @@ export default function SettingsScreen() {
   }, [isDesktop, effectiveTopicId]);
 
   // Navigation back interception (CustomHeader back action)
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
-      if (!isDesktop && effectiveTopicId !== null) {
-        e.preventDefault();
-        setLocalTopicId(null);
-        router.setParams({ topic: '' });
-      }
-    });
-
-    return unsubscribe;
-  }, [navigation, isDesktop, effectiveTopicId]);
+  usePreventRemove(!isDesktop && effectiveTopicId !== null, () => {
+    setLocalTopicId(null);
+    router.setParams({ topic: '' });
+  });
 
   const activeTopicId: SettingsTopicId = effectiveTopicId || 'account';
   const activeTopic = topics.find((t) => t.id === activeTopicId) || topics[0];

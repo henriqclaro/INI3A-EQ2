@@ -377,7 +377,7 @@ export default function PublicRecipesScreen() {
           ListHeaderComponent={listHeader}
           ItemSeparatorComponent={itemSeparator}
           ListEmptyComponent={listEmpty}
-          ListFooterComponent={listFooter}
+          ListFooterComponent={listFooter ?? undefined}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.4}
           style={styles.scrollView}

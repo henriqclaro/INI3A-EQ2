@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 
 import { Tabs } from 'expo-router';
-import { CommonActions } from 'expo-router/react-navigation';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { BottomNavigation } from 'react-native-paper';
@@ -41,7 +40,7 @@ export default function TabsWebLayout() {
             return <DesktopSidebar {...tabBarProps} isCustomerRole={isCustomerRole} />;
           }
 
-          const { navigation, state, descriptors, insets } = tabBarProps;
+          const { state, descriptors, emitter, navigateToTab, insets } = tabBarProps;
           const hiddenTabNames = isCustomerRole ? ['recipes', 'analytics'] : [];
           const visibleRoutes = state.routes.filter(
             (route) => !hiddenTabNames.includes(route.name),
@@ -61,7 +60,7 @@ export default function TabsWebLayout() {
               navigationState={filteredNavigationState}
               safeAreaInsets={insets}
               onTabPress={({ route, preventDefault }) => {
-                const event = navigation.emit({
+                const event = emitter.emit({
                   type: 'tabPress',
                   target: route.key,
                   canPreventDefault: true,
@@ -70,10 +69,7 @@ export default function TabsWebLayout() {
                 if (event.defaultPrevented) {
                   preventDefault();
                 } else {
-                  navigation.dispatch({
-                    ...CommonActions.navigate(route.name, route.params),
-                    target: state.key,
-                  });
+                  navigateToTab(route.key);
                 }
               }}
               renderIcon={({ route, focused, color }) => {
@@ -110,7 +106,7 @@ export default function TabsWebLayout() {
             tabBarIcon: ({ color }) => (
               <MaterialCommunityIcons
                 name={isCustomerRole ? 'store-search-outline' : 'home-outline'}
-                color={color}
+                color={color as string}
                 size={24}
               />
             ),
@@ -125,7 +121,7 @@ export default function TabsWebLayout() {
             tabBarIcon: ({ color }) => (
               <MaterialCommunityIcons
                 name="book-open-page-variant-outline"
-                color={color}
+                color={color as string}
                 size={24}
               />
             ),
@@ -138,7 +134,11 @@ export default function TabsWebLayout() {
             href: isCustomerRole ? null : undefined,
             tabBarItemStyle: isCustomerRole ? { display: 'none' } : undefined,
             tabBarIcon: ({ color }) => (
-              <MaterialCommunityIcons name="chart-timeline-variant" color={color} size={24} />
+              <MaterialCommunityIcons
+                name="chart-timeline-variant"
+                color={color as string}
+                size={24}
+              />
             ),
           }}
         />
@@ -147,7 +147,7 @@ export default function TabsWebLayout() {
           options={{
             title: 'Perfil',
             tabBarIcon: ({ color }) => (
-              <MaterialCommunityIcons name="account-outline" color={color} size={24} />
+              <MaterialCommunityIcons name="account-outline" color={color as string} size={24} />
             ),
           }}
         />

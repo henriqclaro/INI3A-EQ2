@@ -9,6 +9,7 @@ import {
   Text,
   TextStyle,
   View,
+  type ViewInstance,
   ViewStyle,
 } from 'react-native';
 
@@ -78,7 +79,7 @@ export function Tooltip({
     height: 0,
   });
 
-  const anchorRef = useRef<View | null>(null);
+  const anchorRef = useRef<ViewInstance | null>(null);
   const showTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

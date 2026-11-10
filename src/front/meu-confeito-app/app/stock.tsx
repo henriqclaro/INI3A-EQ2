@@ -620,7 +620,7 @@ export default function StockScreen() {
           ItemSeparatorComponent={itemSeparator}
           ListHeaderComponent={listHeader}
           ListEmptyComponent={listEmpty}
-          ListFooterComponent={listFooter}
+          ListFooterComponent={listFooter ?? undefined}
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}

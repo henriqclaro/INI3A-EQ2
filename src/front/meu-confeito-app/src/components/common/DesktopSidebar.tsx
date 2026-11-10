@@ -3,7 +3,6 @@ import { useMemo } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { Tabs, router } from 'expo-router';
-import { CommonActions } from 'expo-router/react-navigation';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
@@ -31,7 +30,8 @@ export interface DesktopSidebarProps extends TabBarProps {
 export function DesktopSidebar({
   state,
   descriptors,
-  navigation,
+  emitter,
+  navigateToTab,
   isCustomerRole,
 }: DesktopSidebarProps) {
   const { theme, isDarkMode, isHighContrast, toggleTheme } = useThemeMode();
@@ -195,17 +195,14 @@ export function DesktopSidebar({
             const label = (options.tabBarLabel as string) || options.title || route.name;
 
             const handlePress = () => {
-              const event = navigation.emit({
+              const event = emitter.emit({
                 type: 'tabPress',
                 target: route.key,
                 canPreventDefault: true,
               });
 
               if (!isFocused && !event.defaultPrevented) {
-                navigation.dispatch({
-                  ...CommonActions.navigate(route.name, route.params),
-                  target: state.key,
-                });
+                navigateToTab(route.key);
               }
             };
 

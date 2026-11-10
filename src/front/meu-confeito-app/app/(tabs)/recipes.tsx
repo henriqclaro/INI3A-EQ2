@@ -561,7 +561,7 @@ export default function RecipesScreen() {
         columnWrapperStyle={numCols > 1 ? styles.columnWrapper : undefined}
         ItemSeparatorComponent={itemSeparator}
         ListHeaderComponent={listHeader}
-        ListFooterComponent={listFooter}
+        ListFooterComponent={listFooter ?? undefined}
         ListEmptyComponent={listEmpty}
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.4}
