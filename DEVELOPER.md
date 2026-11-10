@@ -4,8 +4,8 @@
     <img src="docs/assets/LogoLightHorizontal-MeuConfeito.png" alt="Meu Confeito Logo" width="420">
   </picture>
   <p>
-    <a href="https://reactnative.dev/"><img src="https://img.shields.io/badge/React_Native-0.86-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React Native" /></a>
-    <a href="https://expo.dev/"><img src="https://img.shields.io/badge/Expo-57-000000?style=flat-square&logo=expo&logoColor=white" alt="Expo" /></a>
+    <a href="https://reactnative.dev/"><img src="https://img.shields.io/badge/React_Native-0.88-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React Native" /></a>
+    <a href="https://expo.dev/"><img src="https://img.shields.io/badge/Expo-58-000000?style=flat-square&logo=expo&logoColor=white" alt="Expo" /></a>
     <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-6.x-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" /></a>
     <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-22.x-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js" /></a>
     <a href="https://expressjs.com/"><img src="https://img.shields.io/badge/Express.js-5.x-000000?style=flat-square&logo=express&logoColor=white" alt="Express" /></a>
@@ -240,24 +240,25 @@ npx expo start
 
 ```
 └── meu-confeito-api/
-    ├── .env              --Variáveis importantes e sensíveis (não sobe pro GitHub)
-    ├── .env.example      --Exemplo do .env para copiar (sobe pro GitHub)
-    ├── node_modules/     --Dependências (não sobe pro GitHub, gerar com o npm)
-    ├── prisma/           --ORM: Schema do Banco e migrations
+    ├── .env                 --Variáveis importantes e sensíveis (não sobe pro GitHub)
+    ├── .env.example         --Exemplo do .env para copiar (sobe pro GitHub)
+    ├── node_modules/        --Dependências (não sobe pro GitHub, gerar com o npm)
+    ├── prisma/              --ORM: Schema do Banco e migrations
+    │   └── migrations/      --Histórico e arquivos de versionamento do Banco de Dados
     └── src/
-        ├── config/       --Configurações do ambiente da API
-        ├── controllers/  --Receptores de Requisições, mandam dados pro Service
-        ├── docs/         --Arquivos para geração da documentação com o Swagger
-        ├── generated/    --Models e Prisma (não sobe pro GitHub, gerar com o Prisma)
-        ├── middlewares/  --Interceptadores de Rotas, para verificação e tratamento
-        ├── responses/    --Classess de Respostas, para padronização
-        ├── routes/       --Gerenciamento de Rotas, chamam o Controller
-            └── index.ts  --Index de Rotas, todas as Rotas da API
-        ├── services/     --Parte lógica da API, processam dados com o Banco
-        ├── types/        --Tipagens e Interfaces da API
-            └── dtos/     --Tipagem de Requisições e Respostas
-        ├── utils/        --Funções úteis, para complementar (ex: conversão monetária)
-        └── validation/   --Schemas para validação de Requisições com o Zod
+        ├── config/          --Configurações do ambiente da API
+        ├── core/            --Recursos centrais, transversais e compartilhados da aplicação
+        │   ├── database/    --Conexão e inicialização do cliente do Banco de Dados
+        │   ├── errors/      --Classes personalizadas de erro e tratamento de exceções
+        │   ├── http/        --Classes e utilitários de respostas/requisições HTTP para padronização
+        │   ├── middlewares/ --Interceptadores globais de rotas, para verificação e tratamento
+        │   ├── types/       --Tipagens e interfaces globais da API
+        │   └── utils/       --Funções úteis e helpers compartilhados entre módulos
+        ├── generated/       --Arquivos gerados automaticamente (não sobe pro GitHub)
+        │   └── prisma/      --Models, tipos internos e client gerados pelo Prisma
+        └── modules/         --Módulos de negócio da API, isolados por domínio (auth, user, recipe, etc.)
+            └── [módulo]/    --Estrutura individual do domínio (controllers, services, rotas e regras)
+                └── docs/    --Arquivos para geração da documentação Swagger específicos do módulo
 ```
 
 ### 1. Gere a pasta com os models necessários (`generated/`):

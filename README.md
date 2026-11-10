@@ -7,8 +7,8 @@
   <p><strong>Gestão prática, fichas técnicas automatizadas e precificação inteligente para confeitaria artesanal.</strong></p>
 
   <p>
-    <a href="https://reactnative.dev/"><img src="https://img.shields.io/badge/React_Native-0.86-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React Native" /></a>
-    <a href="https://expo.dev/"><img src="https://img.shields.io/badge/Expo-57-000000?style=flat-square&logo=expo&logoColor=white" alt="Expo" /></a>
+    <a href="https://reactnative.dev/"><img src="https://img.shields.io/badge/React_Native-0.88-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React Native" /></a>
+    <a href="https://expo.dev/"><img src="https://img.shields.io/badge/Expo-58-000000?style=flat-square&logo=expo&logoColor=white" alt="Expo" /></a>
     <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-6.x-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" /></a>
     <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-22.x-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js" /></a>
     <a href="https://expressjs.com/"><img src="https://img.shields.io/badge/Express.js-5.x-000000?style=flat-square&logo=express&logoColor=white" alt="Express" /></a>
@@ -63,7 +63,7 @@ A plataforma garante controle de ponta a ponta: do cálculo de custo por grama d
 
 | Camada                     | Tecnologia                                             | Finalidade                                                                                 |
 | :------------------------- | :----------------------------------------------------- | :----------------------------------------------------------------------------------------- |
-| **Mobile & Web**           | **React Native** + **Expo (SDK 57)**                   | Aplicação móvel focada em Android com suporte a Web/Desktop                                |
+| **Mobile & Web**           | **React Native** + **Expo (SDK 58)**                   | Aplicação móvel focada em Android com suporte a Web/Desktop                                |
 | **Navegação & UI**         | **Expo Router**, **React Native Paper**, **FlashList** | Roteamento baseado em arquivos, componentes Material Design e listas de alta performance   |
 | **Linguagem (Full-stack)** | **TypeScript**                                         | Tipagem estática fim a fim para confiabilidade em cálculos matemáticos e regras de negócio |
 | **Backend API**            | **Node.js** + **Express.js 5**                         | API RESTful modular para sincronização em tempo real                                       |
